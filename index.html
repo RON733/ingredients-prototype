@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G Shot Teas — Live Kitchen Ordering</title>
+  <meta name="description" content="G Shot Teas is a modern milk tea & food ordering app with real-time ingredient tracking and kitchen inventory management." />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand:   { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c',800:'#9a3412',900:'#7c2d12' },
+            surface: { 900:'#0f1117',800:'#181b23',700:'#1e2130',600:'#252a3a',500:'#2d3348',400:'#404660' }
+          },
+          animation: {
+            'slide-in':   'slideIn 0.3s ease-out',
+            'fade-in':    'fadeIn 0.25s ease-out',
+            'bounce-sm':  'bounceSm 0.4s ease-out',
+            'toast-in':   'toastIn 0.35s cubic-bezier(.22,1,.36,1)',
+            'cart-pulse': 'cartPulse 0.4s ease-out',
+          },
+          keyframes: {
+            slideIn:    { from:{ transform:'translateX(100%)', opacity:0 },    to:{ transform:'translateX(0)',  opacity:1 } },
+            fadeIn:     { from:{ opacity:0, transform:'translateY(8px)' },      to:{ opacity:1, transform:'translateY(0)' } },
+            bounceSm:   { '0%':{ transform:'scale(1)' },'50%':{ transform:'scale(1.15)' },'100%':{ transform:'scale(1)' } },
+            toastIn:    { from:{ opacity:0, transform:'translateY(24px) scale(0.95)' }, to:{ opacity:1, transform:'translateY(0) scale(1)' } },
+            cartPulse:  { '0%':{ transform:'scale(1)' },'40%':{ transform:'scale(1.25)' },'100%':{ transform:'scale(1)' } },
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="./css/styles.css" />
+
+  <!-- React 18 -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+
+  <!-- Babel (for JSX in browser) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="dark">
+<div id="root"></div>
+
+<!-- Load order matters: data → context → components → app -->
+<script type="text/babel" src="./js/data.js"></script>
+<script type="text/babel" src="./js/AppContext.js"></script>
+<script type="text/babel" src="./js/components/ToastContainer.js"></script>
+<script type="text/babel" src="./js/components/Header.js"></script>
+<script type="text/babel" src="./js/components/StatusBadge.js"></script>
+<script type="text/babel" src="./js/components/FoodCard.js"></script>
+<script type="text/babel" src="./js/components/CartDrawer.js"></script>
+<script type="text/babel" src="./js/components/CustomerView.js"></script>
+<script type="text/babel" src="./js/admin/InventoryTab.js"></script>
+<script type="text/babel" src="./js/admin/RecipesTab.js"></script>
+<script type="text/babel" src="./js/admin/OrdersTab.js"></script>
+<script type="text/babel" src="./js/admin/AdminView.js"></script>
+<script type="text/babel" src="./js/App.js"></script>
+</body>
+</html>
