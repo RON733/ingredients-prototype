@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>G Shot Teas — Live Kitchen Ordering</title>
-  <meta name="description" content="G Shot Teas is a modern milk tea & food ordering app with real-time ingredient tracking and kitchen inventory management." />
+  <title>G Shot Teas — Ordering & Kitchen Sales Management System</title>
+  <meta name="description" content="Web-Based Ordering and Sales Management System for G Shot Teas with Real-Time Kitchen Ingredient Inventory and Portions Tracking." />
+  <link rel="icon" type="image/png" href="./assets/logo-square.png" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -16,7 +17,7 @@
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
           colors: {
             brand:   { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c',800:'#9a3412',900:'#7c2d12' },
-            surface: { 900:'#0f1117',800:'#181b23',700:'#1e2130',600:'#252a3a',500:'#2d3348',400:'#404660' }
+            surface: { 950:'#090a0f',900:'#0f1117',800:'#181b23',700:'#1e2130',600:'#252a3a',500:'#2d3348',400:'#404660' }
           },
           animation: {
             'slide-in':   'slideIn 0.3s ease-out',
@@ -26,48 +27,74 @@
             'cart-pulse': 'cartPulse 0.4s ease-out',
           },
           keyframes: {
-            slideIn:    { from:{ transform:'translateX(100%)', opacity:0 },    to:{ transform:'translateX(0)',  opacity:1 } },
-            fadeIn:     { from:{ opacity:0, transform:'translateY(8px)' },      to:{ opacity:1, transform:'translateY(0)' } },
-            bounceSm:   { '0%':{ transform:'scale(1)' },'50%':{ transform:'scale(1.15)' },'100%':{ transform:'scale(1)' } },
+            slideIn:    { from:{ transform:'translateX(100%)', opacity:0 }, to:{ transform:'translateX(0)', opacity:1 } },
+            fadeIn:     { from:{ opacity:0, transform:'translateY(8px)' }, to:{ opacity:1, transform:'translateY(0)' } },
+            bounceSm:   { '0%':{ transform:'scale(1)' },'50%':{ transform:'scale(1.08)' },'100%':{ transform:'scale(1)' } },
             toastIn:    { from:{ opacity:0, transform:'translateY(24px) scale(0.95)' }, to:{ opacity:1, transform:'translateY(0) scale(1)' } },
-            cartPulse:  { '0%':{ transform:'scale(1)' },'40%':{ transform:'scale(1.25)' },'100%':{ transform:'scale(1)' } },
+            cartPulse:  { '0%':{ transform:'scale(1)' },'40%':{ transform:'scale(1.2)' },'100%':{ transform:'scale(1)' } },
           }
         }
       }
     }
   </script>
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-  <!-- Custom styles -->
+  <!-- PrimeIcons (Document Spec) -->
+  <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css" />
+
+  <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="./css/styles.css" />
 
-  <!-- React 18 -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Core Frameworks (Document Specs: Vue 3, Pinia, Axios) -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/vue-demi"></script>
+  <script src="https://unpkg.com/pinia/dist/pinia.iife.prod.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-  <!-- Babel (for JSX in browser) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Google Identity Services (Sign In with Google) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="dark">
-<div id="root"></div>
+<body class="bg-surface-950 text-gray-100 antialiased selection:bg-brand-500 selection:text-white">
+  <div id="root"></div>
 
-<!-- Load order matters: data → context → components → app -->
-<script type="text/babel" src="./js/data.js"></script>
-<script type="text/babel" src="./js/AppContext.js"></script>
-<script type="text/babel" src="./js/components/ToastContainer.js"></script>
-<script type="text/babel" src="./js/components/Header.js"></script>
-<script type="text/babel" src="./js/components/StatusBadge.js"></script>
-<script type="text/babel" src="./js/components/FoodCard.js"></script>
-<script type="text/babel" src="./js/components/CartDrawer.js"></script>
-<script type="text/babel" src="./js/components/CustomerView.js"></script>
-<script type="text/babel" src="./js/admin/InventoryTab.js"></script>
-<script type="text/babel" src="./js/admin/RecipesTab.js"></script>
-<script type="text/babel" src="./js/admin/OrdersTab.js"></script>
-<script type="text/babel" src="./js/admin/AdminView.js"></script>
-<script type="text/babel" src="./js/App.js"></script>
+  <!-- API Client & Pinia Store -->
+  <script src="./js/api.js"></script>
+  <script src="./js/store.js"></script>
+
+  <!-- Customer Side Components (Figures 1-13) -->
+  <script src="./js/components/Navbar.js"></script>
+  <script src="./js/components/LandingHero.js"></script>
+  <script src="./js/components/FeaturedSection.js"></script>
+  <script src="./js/components/MenuSection.js"></script>
+  <script src="./js/components/CustomizationModal.js"></script>
+  <script src="./js/components/CartDrawer.js"></script>
+  <script src="./js/components/CheckoutView.js"></script>
+  <script src="./js/components/OrderTracker.js"></script>
+  <script src="./js/components/OrderHistoryView.js"></script>
+  <script src="./js/components/ActiveOrderWidget.js"></script>
+  <script src="./js/components/ChatbotAssistant.js"></script>
+  <script src="./js/components/EventBookingModal.js"></script>
+  <script src="./js/components/AuthModal.js"></script>
+  <script src="./js/components/AboutSection.js"></script>
+  <script src="./js/components/ContactSection.js"></script>
+
+  <!-- Staff, Admin & Super Admin Components (Figures 14-17 + Ingredient Prototype) -->
+  <script src="./js/admin/AdminOrdersTab.js"></script>
+  <script src="./js/admin/AdminAnalyticsTab.js"></script>
+  <script src="./js/admin/AdminCompletedTab.js"></script>
+  <script src="./js/admin/AdminProductsTab.js"></script>
+  <script src="./js/admin/AdminInventoryTab.js"></script>
+  <script src="./js/admin/AdminRecipesTab.js"></script>
+  <script src="./js/admin/AdminBookingsTab.js"></script>
+  <script src="./js/admin/AdminUsersTab.js"></script>
+  <script src="./js/admin/AdminAuditTab.js"></script>
+  <script src="./js/admin/AdminDashboard.js"></script>
+
+  <!-- Main Vue 3 Application Root -->
+  <script src="./js/App.js"></script>
 </body>
 </html>
