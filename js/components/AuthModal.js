@@ -225,18 +225,7 @@ const AuthModal = {
     
 
     
-        store.settings.google_client_id = customClientId.value.trim();
-        store.notify('Google Client ID updated! Initializing Google Sign-In...');
-        showGoogleHelper.value = false;
-        Vue.nextTick(() => {
-          initGoogleIdentity();
-        });
-      } catch (err) {
-        store.notify('Failed to save Google Client ID', 'error');
-      } finally {
-        savingClientId.value = false;
-      }
-    };
+
 
     const handleSubmit = async () => {
       loading.value = true;
@@ -290,4 +279,5 @@ const AuthModal = {
     };
   },
 };
+
 
