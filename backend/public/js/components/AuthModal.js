@@ -44,7 +44,7 @@ const AuthModal = {
 
           <!-- Custom Google Sign-In Button (Primary trigger or fallback when client_id pending) -->
           <button 
-            v-if="!isGoogleClientConfigured"
+            v-if="!isGoogleClientConfigured || !hasGoogleRendered"
             type="button"
             @click="handleContinueWithGoogle"
             :disabled="googleLoading"
@@ -169,9 +169,14 @@ const AuthModal = {
 
     
 
+    const hasGoogleRendered = Vue.ref(false);
+
     const initGoogleIdentity = () => {
       const clientId = store.googleConfig?.client_id || store.settings?.google_client_id;
-      if (!clientId || !window.google?.accounts?.id) return;
+      if (!clientId || !window.google?.accounts?.id) {
+        hasGoogleRendered.value = false;
+        return;
+      }
 
       try {
         window.google.accounts.id.initialize({
@@ -191,9 +196,11 @@ const AuthModal = {
             width: 320,
             text: store.authMode === 'login' ? 'signin_with' : 'signup_with',
           });
+          hasGoogleRendered.value = true;
         }
       } catch (err) {
         console.warn('Google Identity initialization:', err);
+        hasGoogleRendered.value = false;
       }
     };
 
@@ -209,14 +216,20 @@ const AuthModal = {
       }
     };
 
-        const handleContinueWithGoogle = () => {
+    const handleContinueWithGoogle = () => {
       if (isGoogleClientConfigured.value && window.google?.accounts?.id) {
         try {
           window.google.accounts.id.prompt();
           return;
-        } catch (e) {}
+        } catch (e) {
+          console.warn('Google prompt error:', e);
+        }
       }
-      store.notify('Google Sign-In is being initialized. Please sign in with email and password below.', 'info');
+      if (!window.google?.accounts?.id) {
+        store.notify('Google Sign-In is blocked by Brave Shields or an ad-blocker. Please turn Brave Shields OFF for 127.0.0.1 (click the lion icon in your address bar) or sign in with email and password below.', 'warning');
+      } else {
+        store.notify('Google OAuth credentials need authorized origins set in Google Cloud Console. You can sign in with your email and password below.', 'info');
+      }
     };
 
     
@@ -267,6 +280,7 @@ const AuthModal = {
       
       
       isGoogleClientConfigured,
+      hasGoogleRendered,
       toggleAuthMode,
       
       handleContinueWithGoogle,
@@ -276,6 +290,7 @@ const AuthModal = {
     };
   },
 };
+
 
 
 

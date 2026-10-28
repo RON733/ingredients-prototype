@@ -286,7 +286,7 @@ const useGShotStore = defineStore('gshot', {
     usersList: [],
     bookingsList: [],
     analytics: null,
-    googleConfig: { client_id: '', configured: false },
+    googleConfig: { client_id: '373451248580-gkci5qsn9j0euan2hafq5v01bhborvlo.apps.googleusercontent.com', configured: true },
 
     // Shopping Cart
     cart: JSON.parse(localStorage.getItem('gst_cart') || '[]'),
@@ -759,6 +759,7 @@ const useGShotStore = defineStore('gshot', {
 });
 
 window.useGShotStore = useGShotStore;
+
 
 
 
