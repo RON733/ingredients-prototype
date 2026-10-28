@@ -114,6 +114,16 @@ const OrderTracker = {
               </span>
             </span>
           </div>
+          <div v-if="order.gcash_ref" class="flex justify-between text-xs">
+            <span class="text-gray-400">GCash Ref No.</span>
+            <span class="font-mono font-bold text-sky-400">{{ order.gcash_ref }}</span>
+          </div>
+          <div v-if="order.proof_image && !order.gcash_ref" class="flex justify-between text-xs">
+            <span class="text-gray-400">Payment Verification</span>
+            <span class="font-bold text-emerald-400 flex items-center gap-1">
+              <i class="pi pi-check-circle text-[10px]"></i> Receipt Screenshot Attached
+            </span>
+          </div>
           <div v-if="order.delivery_fee > 0" class="flex justify-between text-gray-400">
             <span>Delivery Fee</span>
             <span class="font-medium text-white">₱{{ Number(order.delivery_fee).toFixed(2) }}</span>

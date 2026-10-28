@@ -17,19 +17,12 @@ const App = {
         <!-- Navigation Header (Customer Views) -->
         <Navbar v-if="store.currentView !== 'admin'" />
 
-        <!-- Store Closed Announcement Banner (Customer Views) -->
-        <div 
-          v-if="store.currentView === 'customer' && !store.isStoreOpen"
-          class="bg-gradient-to-r from-rose-950/95 via-surface-900 to-rose-950/95 border-b border-rose-500/30 text-rose-300 text-xs py-2.5 px-4 text-center font-semibold flex items-center justify-center gap-2 animate-fade-in sticky top-20 z-30 backdrop-blur-md">
-          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
-          <span>Notice: G Shot Teas is currently <strong>CLOSED for live ordering</strong> (Hours: 9:00 AM – 10:00 PM). You can still browse our menu, customize ingredients, and book catering packages!</span>
-        </div>
-
         <!-- Main Content Area -->
         <main class="flex-1">
           <!-- 1. Customer Landing & Menu -->
           <div v-if="store.currentView === 'customer'" class="animate-fade-in">
             <LandingHero />
+            <AnnouncementSection />
             <FeaturedSection />
             <MenuSection />
             <AboutSection />
@@ -75,7 +68,9 @@ const App = {
         <CartDrawer />
         <CustomizationModal />
         <EventBookingModal />
+        <AnnouncementModal />
         <AuthModal />
+        <StaffPinModal v-if="store.currentView !== 'admin'" />
         <ChatbotAssistant v-if="store.currentView !== 'admin'" />
 
         <!-- Flyer Fullscreen Lightbox Modal -->
@@ -95,11 +90,11 @@ const App = {
             <div class="p-3 bg-black flex items-center justify-center">
               <img :src="store.previewFlyerImage" alt="Flyer Preview" class="max-h-[72vh] w-auto object-contain rounded-xl shadow-lg" />
             </div>
-            <div class="p-4 bg-surface-800 flex items-center justify-between gap-3 border-t border-surface-700">
-              <span class="text-xs text-gray-300 font-medium truncate">Direct: Jefferson Alulod • 0993.700.5426</span>
+            <div class="p-3 sm:p-4 bg-surface-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 border-t border-surface-700">
+              <span class="text-[11px] sm:text-xs text-gray-300 font-medium truncate text-center sm:text-left">Direct: Jefferson Alulod • 0993.700.5426</span>
               <button 
                 @click="store.closeFlyer(); store.openBookingWithPackage(store.previewFlyerImage.includes('coffee') ? 'Coffee Package' : 'Fruity Float Package')"
-                class="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-surface-950 transition-all shrink-0">
+                class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-surface-950 transition-all shrink-0 text-center">
                 Book This Package
               </button>
             </div>
@@ -168,6 +163,7 @@ app.component('ActiveOrderWidget', ActiveOrderWidget);
 app.component('ChatbotAssistant', ChatbotAssistant);
 app.component('EventBookingModal', EventBookingModal);
 app.component('AuthModal', AuthModal);
+app.component('StaffPinModal', typeof StaffPinModal !== 'undefined' ? StaffPinModal : (window.StaffPinModal || {}));
 app.component('AboutSection', AboutSection);
 app.component('ContactSection', ContactSection);
 
@@ -179,7 +175,11 @@ app.component('AdminProductsTab', AdminProductsTab);
 app.component('AdminInventoryTab', AdminInventoryTab);
 app.component('AdminRecipesTab', AdminRecipesTab);
 app.component('AdminBookingsTab', AdminBookingsTab);
+app.component('AdminAnnouncementsTab', AdminAnnouncementsTab);
 app.component('AdminUsersTab', AdminUsersTab);
 app.component('AdminAuditTab', AdminAuditTab);
+
+app.component('AnnouncementSection', AnnouncementSection);
+app.component('AnnouncementModal', AnnouncementModal);
 
 app.mount('#root');

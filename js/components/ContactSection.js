@@ -22,6 +22,17 @@ const ContactSection = {
 
             <div class="space-y-4 text-xs">
               <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-800 text-amber-400 flex items-center justify-center shrink-0">
+                  <i class="pi pi-user"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-gray-300">Store Owner & Proprietor</p>
+                  <p class="text-white font-semibold mt-0.5">Jefferson Alulod</p>
+                  <p class="text-[10px] text-gray-400">Direct Inquiries: 0993.700.5426</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3">
                 <div class="w-8 h-8 rounded-lg bg-surface-800 text-brand-400 flex items-center justify-center shrink-0">
                   <i class="pi pi-map-marker"></i>
                 </div>
@@ -39,7 +50,7 @@ const ContactSection = {
                 </div>
                 <div>
                   <p class="font-bold text-gray-300">Contact Number</p>
-                  <p class="text-gray-400 mt-0.5">+63 912 345 6789</p>
+                  <p class="text-gray-400 mt-0.5">0993.700.5426 / +63 912 345 6789</p>
                 </div>
               </div>
 

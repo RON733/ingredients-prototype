@@ -88,6 +88,16 @@ class OrderController extends Controller
             'items.*.customization' => 'nullable|array',
         ]);
 
+        if ($validated['payment_method'] === 'GCash') {
+            $hasRef = !empty(trim($validated['gcash_ref'] ?? ''));
+            $hasProof = !empty(trim($validated['proof_image'] ?? ''));
+            if (!$hasRef && !$hasProof) {
+                return response()->json([
+                    'message' => 'GCash payment requires either a reference number or a receipt screenshot to proceed.'
+                ], 422);
+            }
+        }
+
         return DB::transaction(function () use ($validated, $request) {
             // 1. Gather all required ingredients across items
             $ingredientDeductions = [];
@@ -193,13 +203,17 @@ class OrderController extends Controller
                 $order->items()->create($it);
             }
 
-            AuditLog::create([
-                'user_name' => $validated['customer_name'],
-                'user_role' => $request->user()?->role ?? 'customer',
-                'action' => 'Order Placed',
-                'details' => "Order {$orderNumber} placed for ₱{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). Raw ingredients depleted automatically.",
-                'ip_address' => $request->ip(),
-            ]);
+            $placingRole = $request->user()?->role;
+            if ($placingRole && in_array($placingRole, ['staff', 'admin', 'super_admin'])) {
+                AuditLog::create([
+                    'user_id' => $request->user()?->id,
+                    'user_name' => $request->user()?->name ?? $validated['customer_name'],
+                    'user_role' => $placingRole,
+                    'action' => 'POS Order Placed',
+                    'details' => "Order {$orderNumber} processed by staff for ₱{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). Raw ingredients depleted automatically.",
+                    'ip_address' => $request->ip(),
+                ]);
+            }
 
             return response()->json([
                 'message' => 'Order placed successfully!',

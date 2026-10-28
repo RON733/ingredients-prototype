@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'superadmin@gshotteas.com',
             'password' => Hash::make('password123'),
             'role' => 'super_admin',
+            'pin' => '1111',
             'phone' => '09685002301',
             'address' => 'BLK 6 LOT 22 BSRV1, Brgy. Pooc, Santa Rosa, Laguna',
             'status' => 'active',
@@ -34,6 +35,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@gshotteas.com',
             'password' => Hash::make('password123'),
             'role' => 'admin',
+            'pin' => '2222',
             'phone' => '+63 912 345 6789',
             'address' => 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna',
             'status' => 'active',
@@ -44,8 +46,20 @@ class DatabaseSeeder extends Seeder
             'email' => 'staff@gshotteas.com',
             'password' => Hash::make('password123'),
             'role' => 'staff',
+            'pin' => '1234',
             'phone' => '09497564031',
             'address' => 'Purok 5 387, Brgy. Marinig, Cabuyao, Laguna',
+            'status' => 'active',
+        ]);
+
+        $staff2 = User::create([
+            'name' => 'Sarah Mae Santos',
+            'email' => 'barista2@gshotteas.com',
+            'password' => Hash::make('password123'),
+            'role' => 'staff',
+            'pin' => '5678',
+            'phone' => '09171234567',
+            'address' => 'Brgy. Tagapo, Santa Rosa, Laguna',
             'status' => 'active',
         ]);
 
@@ -472,7 +486,7 @@ class DatabaseSeeder extends Seeder
             SystemSetting::create(['key' => $k, 'value' => $v]);
         }
 
-        // 8. Seed Audit Log
+        // 8. Seed Audit Log (Exclusively Staff, Admin, and Super Admin)
         AuditLog::create([
             'user_name' => 'Tyron Erick Rico',
             'user_role' => 'super_admin',
@@ -485,6 +499,13 @@ class DatabaseSeeder extends Seeder
             'user_role' => 'admin',
             'action' => 'Menu Updated',
             'details' => 'Initial 12 menu items and raw ingredient inventory mapped.',
+            'ip_address' => '127.0.0.1',
+        ]);
+        AuditLog::create([
+            'user_name' => 'Mhar Anthony Lirio',
+            'user_role' => 'staff',
+            'action' => 'Inventory Audit Completed',
+            'details' => 'Opening stock levels verified for brioche buns, tea bags, and syrups.',
             'ip_address' => '127.0.0.1',
         ]);
     }

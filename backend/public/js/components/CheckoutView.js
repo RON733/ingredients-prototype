@@ -124,47 +124,120 @@ const CheckoutView = {
             </div>
 
             <!-- GCash Payment Verification Card -->
-            <div v-if="form.payment_method === 'GCash'" class="p-4 rounded-2xl bg-sky-950/30 border border-sky-800/40 space-y-3">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-xs font-bold text-sky-300">GCash Account Details</p>
-                  <p class="text-sm font-black text-white">0912 345 6789 <span class="text-xs font-normal text-sky-400">(Jefferson A.)</span></p>
-                </div>
-                <div class="px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 text-[10px] font-bold uppercase tracking-wider">
-                  Verified Merchant
-                </div>
-              </div>
-
-              <!-- GCash Reference Number Input -->
-              <div>
-                <label class="block text-[11px] font-bold text-sky-300 mb-1">
-                  GCash Reference Number (Optional)
-                </label>
-                <input 
-                  v-model="form.gcash_ref"
-                  type="text" 
-                  placeholder="e.g. 908234819023"
-                  class="w-full px-3 py-2 rounded-lg bg-surface-900 border border-sky-700/60 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-400"
-                />
-              </div>
-
-              <!-- Proof of Payment Upload simulation -->
-              <div>
-                <label class="block text-[11px] font-bold text-sky-300 mb-1">
-                  Upload Proof of Payment (Screenshot)
-                </label>
+            <div v-if="form.payment_method === 'GCash'" class="p-4 sm:p-5 rounded-2xl bg-sky-950/40 border border-sky-600/50 space-y-4 animate-fade-in shadow-xl">
+              
+              <!-- Merchant Header -->
+              <div class="flex items-center justify-between pb-3 border-b border-sky-800/40">
                 <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center font-black text-sky-400 text-sm">
+                    G
+                  </div>
+                  <div>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-sky-300">Official Store GCash</p>
+                    <p class="text-sm font-black text-white font-mono">0912 345 6789 <span class="text-xs font-semibold text-sky-400 font-sans">(Jefferson A.)</span></p>
+                  </div>
+                </div>
+                <div class="px-2.5 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+                  <i class="pi pi-verified text-[10px] text-sky-400"></i>
+                  <span>Verified Merchant</span>
+                </div>
+              </div>
+
+              <!-- Required Policy Notice / Dynamic Verification Status -->
+              <div 
+                v-if="!form.gcash_ref?.trim() && !form.proof_image" 
+                class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2.5">
+                <i class="pi pi-exclamation-triangle text-amber-400 mt-0.5 text-sm shrink-0"></i>
+                <div class="space-y-0.5">
+                  <p class="font-bold text-amber-200">Payment Proof Required to Proceed</p>
+                  <p class="text-[11px] text-amber-300/90 leading-relaxed">
+                    Please provide either your <strong>GCash Reference Number</strong> OR <strong>upload a screenshot of the receipt</strong> below to place this order.
+                  </p>
+                </div>
+              </div>
+
+              <div 
+                v-else 
+                class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5">
+                <i class="pi pi-check-circle text-emerald-400 text-base shrink-0"></i>
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold text-emerald-200">Payment Verification Attached</p>
+                  <p class="text-[11px] text-emerald-300/90 truncate">
+                    {{ form.gcash_ref?.trim() ? 'Reference No: ' + form.gcash_ref : 'Receipt Screenshot: ' + proofFileName }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Option A: GCash Reference Number Input -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-[11px] font-bold text-sky-300">
+                    Option A: GCash Reference Number
+                  </label>
+                  <span class="text-[10px] text-gray-400 font-semibold">(e.g. 13-digit transaction code)</span>
+                </div>
+                <div class="relative">
+                  <i class="pi pi-hashtag absolute left-3.5 top-1/2 -translate-y-1/2 text-sky-400/70 text-xs"></i>
+                  <input 
+                    v-model="form.gcash_ref"
+                    type="text" 
+                    placeholder="e.g. 908234819023"
+                    class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-surface-900 border border-sky-700/60 text-xs font-mono font-bold text-white placeholder-gray-500 focus:outline-none focus:border-sky-400 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <!-- Divider -->
+              <div class="flex items-center gap-3">
+                <div class="flex-1 h-px bg-sky-800/40"></div>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-sky-400/80">OR</span>
+                <div class="flex-1 h-px bg-sky-800/40"></div>
+              </div>
+
+              <!-- Option B: Upload Receipt Screenshot -->
+              <div>
+                <label class="block text-[11px] font-bold text-sky-300 mb-1.5">
+                  Option B: Upload Receipt Screenshot
+                </label>
+                
+                <div v-if="!form.proof_image" class="relative">
                   <input 
                     type="file" 
                     accept="image/*"
+                    id="gcash_receipt_file"
                     @change="handleImageUpload"
-                    class="text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer"
+                    class="hidden"
                   />
-                  <span v-if="proofFileName" class="text-xs text-emerald-400 truncate max-w-[150px]">
-                    ✓ {{ proofFileName }}
-                  </span>
+                  <label 
+                    for="gcash_receipt_file"
+                    class="w-full p-4 rounded-xl border border-dashed border-sky-700/80 hover:border-sky-400 bg-surface-900/60 hover:bg-surface-900 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1.5 group">
+                    <i class="pi pi-upload text-lg text-sky-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-xs font-bold text-white group-hover:text-sky-300">Click to upload payment screenshot</span>
+                    <span class="text-[10px] text-gray-400">PNG, JPG, or JPEG</span>
+                  </label>
+                </div>
+
+                <!-- Preview Thumbnail with Remove Button -->
+                <div v-else class="p-3 rounded-xl bg-surface-900 border border-sky-500/40 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <img :src="form.proof_image" alt="Receipt Preview" class="w-12 h-12 rounded-lg object-cover border border-surface-700 shrink-0" />
+                    <div class="min-w-0">
+                      <p class="text-xs font-bold text-white truncate">{{ proofFileName || 'Receipt Screenshot' }}</p>
+                      <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                        <i class="pi pi-check"></i> Screenshot Attached
+                      </span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    @click="removeProofImage"
+                    class="p-2 rounded-lg text-rose-400 hover:text-white hover:bg-rose-950/50 transition-colors cursor-pointer"
+                    title="Remove Screenshot">
+                    <i class="pi pi-trash text-xs"></i>
+                  </button>
                 </div>
               </div>
+
             </div>
           </div>
 
@@ -275,9 +348,23 @@ const CheckoutView = {
     const handleImageUpload = (e) => {
       const file = e.target.files[0];
       if (file) {
+        if (!file.type.startsWith('image/')) {
+          store.notify('Please upload an image file (PNG, JPG, JPEG).', 'error');
+          return;
+        }
         proofFileName.value = file.name;
-        form.proof_image = `data:${file.type};base64,...[simulated_receipt]`;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          form.proof_image = event.target.result;
+          store.notify('Receipt screenshot attached successfully!', 'success');
+        };
+        reader.readAsDataURL(file);
       }
+    };
+
+    const removeProofImage = () => {
+      form.proof_image = '';
+      proofFileName.value = '';
     };
 
     const backToMenu = () => {
@@ -295,6 +382,16 @@ const CheckoutView = {
       if (form.order_type === 'Delivery' && !form.delivery_address.trim()) {
         store.notify('Please specify your complete delivery address.', 'error');
         return;
+      }
+
+      // GCash Proof Validation: Don't proceed without ref or receipt
+      if (form.payment_method === 'GCash') {
+        const hasRef = form.gcash_ref && form.gcash_ref.trim().length > 0;
+        const hasProof = form.proof_image && form.proof_image.trim().length > 0;
+        if (!hasRef && !hasProof) {
+          store.notify('For GCash payments, please provide a screenshot of the receipt or a reference number.', 'error');
+          return;
+        }
       }
 
       isSubmitting.value = true;
@@ -347,6 +444,7 @@ const CheckoutView = {
       proofFileName,
       useCurrentLocation,
       handleImageUpload,
+      removeProofImage,
       backToMenu,
       submitOrder,
     };

@@ -6,7 +6,7 @@ const AuthModal = {
       class="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
       @click.self="store.authModalOpen = false">
       
-      <div class="relative w-full max-w-md bg-surface-900 border border-surface-700 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8">
+      <div class="relative w-full max-w-md bg-surface-900 border border-surface-700 rounded-3xl shadow-2xl overflow-y-auto max-h-[92vh] p-5 sm:p-8">
         
         <!-- Close Button -->
         <button 

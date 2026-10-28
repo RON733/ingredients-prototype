@@ -34,7 +34,10 @@
     logout: () => apiClient.post('/auth/logout'),
     updateProfile: (data) => apiClient.put('/auth/profile', data),
     getUsers: () => apiClient.get('/v1/users'),
+    createUser: (data) => apiClient.post('/v1/users', data),
     updateUser: (id, data) => apiClient.patch(`/v1/users/${id}`, data),
+    getStaffList: () => apiClient.get('/v1/auth/staff-list'),
+    quickPinLogin: (pin, userId) => apiClient.post('/v1/auth/pin-switch', { pin, user_id: userId }),
 
     // Products & Menu
     getProducts: (params) => apiClient.get('/products', { params }),
@@ -63,6 +66,14 @@
     getBookings: () => apiClient.get('/v1/bookings'),
     createBooking: (data) => apiClient.post('/bookings', data),
     updateBookingStatus: (id, status) => apiClient.patch(`/v1/bookings/${id}/status`, { status }),
+
+    // Announcements (Promos, New Menus, Store Advisories)
+    getAnnouncements: (params) => apiClient.get('/announcements', { params }),
+    getAllAnnouncements: () => apiClient.get('/v1/announcements', { params: { all: 1 } }),
+    createAnnouncement: (data) => apiClient.post('/v1/announcements', data),
+    updateAnnouncement: (id, data) => apiClient.put(`/v1/announcements/${id}`, data),
+    toggleAnnouncement: (id) => apiClient.patch(`/v1/announcements/${id}/toggle`),
+    deleteAnnouncement: (id) => apiClient.delete(`/v1/announcements/${id}`),
 
     // Analytics & System
     getAnalytics: (params) => apiClient.get('/v1/analytics/overview', { params }),

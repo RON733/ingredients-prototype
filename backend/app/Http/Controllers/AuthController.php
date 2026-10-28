@@ -35,14 +35,16 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        AuditLog::create([
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_role' => $user->role,
-            'action' => 'Customer Registered',
-            'details' => 'New account created for ' . $user->email,
-            'ip_address' => $request->ip(),
-        ]);
+        if (in_array($user->role, ['staff', 'admin', 'super_admin'])) {
+            AuditLog::create([
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_role' => $user->role,
+                'action' => 'Personnel Registered',
+                'details' => 'New staff/admin account created for ' . $user->email,
+                'ip_address' => $request->ip(),
+            ]);
+        }
 
         return response()->json([
             'message' => 'Registration successful',
@@ -74,14 +76,16 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        AuditLog::create([
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_role' => $user->role,
-            'action' => 'User Logged In',
-            'details' => 'Signed in with role: ' . $user->role,
-            'ip_address' => $request->ip(),
-        ]);
+        if (in_array($user->role, ['staff', 'admin', 'super_admin'])) {
+            AuditLog::create([
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_role' => $user->role,
+                'action' => 'User Logged In',
+                'details' => 'Signed in with role: ' . $user->role,
+                'ip_address' => $request->ip(),
+            ]);
+        }
 
         return response()->json([
             'message' => 'Login successful',
@@ -213,14 +217,16 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        AuditLog::create([
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_role' => $user->role,
-            'action' => $isNew ? 'Customer Registered via Google' : 'User Logged In via Google',
-            'details' => 'Signed in with Google account (' . $user->email . ')',
-            'ip_address' => $request->ip(),
-        ]);
+        if (in_array($user->role, ['staff', 'admin', 'super_admin'])) {
+            AuditLog::create([
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_role' => $user->role,
+                'action' => $isNew ? 'Personnel Registered via Google' : 'Personnel Logged In via Google',
+                'details' => 'Signed in with Google account (' . $user->email . ')',
+                'ip_address' => $request->ip(),
+            ]);
+        }
 
         return response()->json([
             'message' => $isNew ? 'Registration successful via Google' : 'Login successful via Google',
@@ -275,16 +281,135 @@ class AuthController extends Controller
         return response()->json($users);
     }
 
+    public function listStaff(Request $request)
+    {
+        $staff = User::whereIn('role', ['staff', 'admin', 'super_admin'])
+            ->where('status', 'active')
+            ->select('id', 'name', 'email', 'role', 'avatar')
+            ->orderBy('name')
+            ->get();
+        return response()->json($staff);
+    }
+
+    public function createUser(Request $request)
+    {
+        $creator = $request->user();
+        if (!$creator || !in_array($creator->role, ['super_admin', 'admin'])) {
+            return response()->json(['message' => 'Unauthorized. Only Admin and Super Admin can create personnel accounts.'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6',
+            'role' => 'required|string|in:staff,admin,super_admin',
+            'pin' => 'nullable|string|min:4|max:10',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        if ($validated['role'] === 'super_admin' && $creator->role !== 'super_admin') {
+            return response()->json(['message' => 'Only Super Admins can create another Super Admin account.'], 403);
+        }
+
+        $pin = !empty($validated['pin']) ? trim($validated['pin']) : '1234';
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'pin' => $pin,
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'status' => 'active',
+        ]);
+
+        AuditLog::create([
+            'user_id' => $creator?->id,
+            'user_name' => $creator?->name ?? 'Admin',
+            'user_role' => $creator?->role ?? 'admin',
+            'action' => 'Personnel Account Created',
+            'details' => "Created new {$user->role} account for {$user->name} ({$user->email}) with PIN assigned.",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => 'Personnel account created successfully.',
+            'user' => $user,
+        ], 201);
+    }
+
+    public function quickPinLogin(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'sometimes|nullable|integer',
+            'pin' => 'required|string',
+        ]);
+
+        $query = User::where('pin', trim($validated['pin']))
+            ->whereIn('role', ['staff', 'admin', 'super_admin'])
+            ->where('status', 'active');
+
+        if (!empty($validated['user_id'])) {
+            $query->where('id', $validated['user_id']);
+        }
+
+        $user = $query->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Invalid PIN. Please check your 4-digit code.'
+            ], 401);
+        }
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_role' => $user->role,
+            'action' => 'Staff Fast Switch via PIN',
+            'details' => "Active POS operator switched to {$user->name} ({$user->role}) via 4-digit PIN verification.",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => "Welcome on duty, {$user->name}!",
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
     public function updateUserRole(Request $request, $id)
     {
+        $creator = $request->user();
+        if (!$creator || !in_array($creator->role, ['super_admin', 'admin'])) {
+            return response()->json(['message' => 'Unauthorized. Only Admin and Super Admin can manage personnel roles and status.'], 403);
+        }
+
         $user = User::findOrFail($id);
         $validated = $request->validate([
             'role' => 'sometimes|string|in:super_admin,admin,staff,customer',
             'status' => 'sometimes|string|in:active,deactivated',
+            'pin' => 'sometimes|nullable|string|min:4|max:10',
+            'name' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|nullable|string|max:20',
         ]);
+
+        if (isset($validated['role']) && $validated['role'] === 'super_admin' && $creator->role !== 'super_admin') {
+            return response()->json(['message' => 'Only Super Admins can assign the Super Admin role.'], 403);
+        }
+
+        if ($user->role === 'super_admin' && $creator->role !== 'super_admin') {
+            return response()->json(['message' => 'Only Super Admins can modify another Super Admin account.'], 403);
+        }
 
         if (isset($validated['role'])) $user->role = $validated['role'];
         if (isset($validated['status'])) $user->status = $validated['status'];
+        if (array_key_exists('pin', $validated)) $user->pin = $validated['pin'];
+        if (isset($validated['name'])) $user->name = $validated['name'];
+        if (isset($validated['phone'])) $user->phone = $validated['phone'];
         $user->save();
 
         AuditLog::create([
@@ -292,7 +417,7 @@ class AuthController extends Controller
             'user_name' => $request->user()?->name ?? 'Admin',
             'user_role' => $request->user()?->role ?? 'admin',
             'action' => 'User Role / Status Updated',
-            'details' => "Updated user #{$user->id} ({$user->name}) role to {$user->role}, status to {$user->status}",
+            'details' => "Updated user #{$user->id} ({$user->name}) role to {$user->role}, status to {$user->status}" . (isset($validated['pin']) ? ", PIN updated." : "."),
             'ip_address' => $request->ip(),
         ]);
 

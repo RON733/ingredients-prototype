@@ -46,13 +46,17 @@ class EventBookingController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        AuditLog::create([
-            'user_name' => $validated['client_name'],
-            'user_role' => $request->user()?->role ?? 'customer',
-            'action' => 'Event Booking Requested',
-            'details' => "Booking for {$validated['event_type']} on {$validated['event_date']} ({$validated['guest_count']} guests)",
-            'ip_address' => $request->ip(),
-        ]);
+        $bookingRole = $request->user()?->role;
+        if ($bookingRole && in_array($bookingRole, ['staff', 'admin', 'super_admin'])) {
+            AuditLog::create([
+                'user_id' => $request->user()?->id,
+                'user_name' => $request->user()?->name ?? $validated['client_name'],
+                'user_role' => $bookingRole,
+                'action' => 'Event Booking Logged',
+                'details' => "Booking for {$validated['event_type']} on {$validated['event_date']} ({$validated['guest_count']} guests)",
+                'ip_address' => $request->ip(),
+            ]);
+        }
 
         return response()->json([
             'message' => 'Event booking submitted successfully! Our staff will contact you to confirm details.',

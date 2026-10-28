@@ -1,22 +1,22 @@
 // G Shot Teas — Navbar Component
 const Navbar = {
   template: `
-    <header class="sticky top-0 z-40 bg-surface-900/95 backdrop-blur-md border-b border-surface-700/60 transition-all">
-      <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-12 h-20 flex items-center justify-between gap-6">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-surface-900/95 backdrop-blur-md border-b border-surface-700/60 shadow-xl transition-all">
+      <div class="w-full px-3 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6">
         
         <!-- 1. Left: Brand Logo & Identity -->
-        <div class="flex items-center gap-3.5 cursor-pointer group flex-shrink-0" @click="goHome">
-          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 p-0.5 shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <div class="w-full h-full bg-surface-900 rounded-[10px] flex items-center justify-center">
-              <span class="text-2xl font-black text-brand-500">G'</span>
+        <div class="flex items-center gap-2 sm:gap-3.5 cursor-pointer group flex-shrink-0" @click="goHome">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 p-0.5 shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
+            <div class="w-full h-full bg-surface-900 rounded-[8px] sm:rounded-[10px] flex items-center justify-center">
+              <span class="text-lg sm:text-2xl font-black text-brand-500">G'</span>
             </div>
           </div>
           <div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-xl font-extrabold tracking-tight text-white group-hover:text-brand-400 transition-colors">G SHOT</span>
-              <span class="text-xs px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-400 font-bold tracking-wider">TEAS</span>
+            <div class="flex items-center gap-1 sm:gap-1.5">
+              <span class="text-base sm:text-xl font-extrabold tracking-tight text-white group-hover:text-brand-400 transition-colors">G SHOT</span>
+              <span class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-400 font-bold tracking-wider">TEAS</span>
             </div>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Santa Rosa • Laguna</p>
+            <p class="hidden sm:block text-[10px] text-gray-400 uppercase tracking-widest font-medium">Santa Rosa • Laguna</p>
           </div>
         </div>
 
@@ -68,7 +68,7 @@ const Navbar = {
           
           <!-- Unified Staff & Demo Controls Capsule -->
           <div class="hidden sm:flex items-center bg-surface-950/80 border border-surface-700/60 rounded-xl p-1 gap-1.5 shadow-inner">
-            <!-- Store Open / Close Status Badge & Toggle -->
+            <!-- Store Open / Close Status Badge & Toggle (Desktop) -->
             <button 
               @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
               :class="[
@@ -116,38 +116,50 @@ const Navbar = {
           </div>
 
           <!-- Customer Action Buttons Group -->
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            <!-- Compact Store Status Pill on Mobile (visible above 380px) -->
+            <button 
+              @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
+              class="hidden xs:flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all"
+              :class="store.isStoreOpen 
+                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' 
+                : 'bg-rose-500/15 text-rose-400 border-rose-500/30'"
+              :title="store.isStaffOrAdmin ? 'Click to toggle Store Status' : 'Store is currently ' + (store.isStoreOpen ? 'Open' : 'Closed')">
+              <span class="w-1.5 h-1.5 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
+              <span>{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
+            </button>
+
             <!-- Shopping Cart Button with Badge -->
             <button 
               @click="store.cartOpen = true"
-              class="relative p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700/60 transition-all hover:scale-105 shadow-sm"
+              class="relative p-2 sm:p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700/60 transition-all hover:scale-105 shadow-sm shrink-0"
               aria-label="View Shopping Cart">
-              <i class="pi pi-shopping-cart text-lg"></i>
+              <i class="pi pi-shopping-cart text-sm sm:text-lg"></i>
               <span 
                 v-if="store.cartCount > 0"
-                class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-r from-brand-600 to-rose-600 text-white text-[11px] font-bold rounded-full flex items-center justify-center animate-bounce-sm shadow-md">
+                class="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-r from-brand-600 to-rose-600 text-white text-[10px] sm:text-[11px] font-bold rounded-full flex items-center justify-center animate-bounce-sm shadow-md">
                 {{ store.cartCount }}
               </span>
             </button>
 
             <!-- User Profile / Auth Button -->
-            <div class="relative">
+            <div class="relative shrink-0">
               <button 
                 @click="toggleProfileMenu"
-                class="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700/60 transition-all shadow-sm">
-                <img v-if="store.user?.avatar" :src="store.user.avatar" class="w-6 h-6 rounded-full object-cover ring-2 ring-brand-500/50 flex-shrink-0" />
-                <i v-else class="pi pi-user text-base"></i>
+                class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700/60 transition-all shadow-sm">
+                <img v-if="store.user?.avatar" :src="store.user.avatar" class="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover ring-2 ring-brand-500/50 flex-shrink-0" />
+                <i v-else class="pi pi-user text-sm sm:text-base"></i>
                 <span class="hidden md:inline text-xs font-semibold max-w-[120px] truncate">
                   {{ store.user ? store.user.name : 'Sign In' }}
                 </span>
-                <i class="pi pi-chevron-down text-[9px] text-gray-400"></i>
+                <i class="pi pi-chevron-down text-[8px] sm:text-[9px] text-gray-400"></i>
               </button>
 
               <!-- Profile Dropdown (Figure 8 in Capstone document) -->
               <div 
                 v-if="store.profileDropdownOpen" 
                 @click.outside="store.profileDropdownOpen = false"
-                class="absolute right-0 mt-2 w-64 bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl py-2 z-50 animate-fade-in">
+                class="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] bg-surface-800 border border-surface-700 rounded-2xl shadow-2xl py-2 z-50 animate-fade-in">
                 <div v-if="store.user" class="px-4 py-3 border-b border-surface-700/80 flex items-center gap-3">
                   <img v-if="store.user.avatar" :src="store.user.avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-brand-500/40 flex-shrink-0" />
                   <div v-else class="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">
@@ -187,6 +199,15 @@ const Navbar = {
                     class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors">
                     <i class="pi pi-th-large text-purple-400"></i> Management Dashboard
                   </button>
+                  <button 
+                    v-if="store.isStaffOrAdmin"
+                    @click="showUserMenu = false; store.staffPinModalOpen = true" 
+                    class="w-full text-left px-4 py-2 text-xs text-sky-300 hover:bg-surface-700/70 hover:text-sky-200 flex items-center justify-between transition-colors">
+                    <span class="flex items-center gap-2.5">
+                      <i class="pi pi-id-card text-sky-400"></i> Fast Staff PIN Switch
+                    </span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono font-bold">PIN</span>
+                  </button>
                 </div>
 
                 <div class="border-t border-surface-700/80 pt-1.5">
@@ -205,16 +226,153 @@ const Navbar = {
                 </div>
               </div>
             </div>
+
+            <!-- Mobile Hamburger Menu Button -->
+            <button 
+              @click="mobileMenuOpen = !mobileMenuOpen" 
+              class="lg:hidden p-2 sm:p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700/60 transition-colors shrink-0"
+              aria-label="Toggle Mobile Menu">
+              <i class="pi text-sm sm:text-base" :class="mobileMenuOpen ? 'pi-times' : 'pi-bars'"></i>
+            </button>
           </div>
 
         </div>
 
       </div>
+
+      <!-- Store Closed Announcement Banner (Integrated into Fixed Header) -->
+      <div 
+        v-if="store.currentView === 'customer' && !store.isStoreOpen"
+        class="bg-gradient-to-r from-rose-950/95 via-surface-900 to-rose-950/95 border-t border-b border-rose-500/30 text-rose-300 text-[11px] sm:text-xs py-2 px-4 text-center font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-inner">
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+        <span>Notice: G Shot Teas is currently <strong>CLOSED for live ordering</strong> (Hours: 9:00 AM – 10:00 PM). You can still browse our menu, customize ingredients, and book catering packages!</span>
+      </div>
+
+      <!-- Mobile Navigation Drawer / Slide-Down Menu -->
+      <div 
+        v-if="mobileMenuOpen" 
+        class="lg:hidden border-t border-surface-800 bg-surface-900/98 backdrop-blur-xl px-4 py-5 shadow-2xl space-y-4 animate-fade-in max-h-[calc(100vh-5rem)] overflow-y-auto">
+        
+        <!-- Primary Navigation Links -->
+        <nav class="grid grid-cols-2 gap-2 text-xs font-bold">
+          <button 
+            @click="navTo('home')" 
+            class="flex items-center gap-2 p-3 rounded-xl transition-all"
+            :class="store.activeSection === 'home' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            <i class="pi pi-home text-sm"></i>
+            <span>Home</span>
+          </button>
+
+          <button 
+            @click="navTo('menu')" 
+            class="flex items-center gap-2 p-3 rounded-xl transition-all"
+            :class="store.activeSection === 'menu' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            <i class="pi pi-th-large text-sm"></i>
+            <span>Menu</span>
+          </button>
+
+          <button 
+            @click="navTo('about')" 
+            class="flex items-center gap-2 p-3 rounded-xl transition-all"
+            :class="store.activeSection === 'about' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            <i class="pi pi-info-circle text-sm"></i>
+            <span>About Us</span>
+          </button>
+
+          <button 
+            @click="navTo('contact')" 
+            class="flex items-center gap-2 p-3 rounded-xl transition-all"
+            :class="store.activeSection === 'contact' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            <i class="pi pi-envelope text-sm"></i>
+            <span>Contact</span>
+          </button>
+        </nav>
+
+        <!-- Book Event Call to Action -->
+        <button 
+          @click="store.bookingModalOpen = true; mobileMenuOpen = false" 
+          class="w-full py-3 rounded-xl font-black text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-surface-950 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer">
+          <span>🎉 Book Catering & Mobile Bar</span>
+        </button>
+
+        <!-- Operations Card: Live Clock & Store Status -->
+        <div class="p-3.5 rounded-2xl bg-surface-950/80 border border-surface-700/60 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 font-mono text-gray-300">
+            <i class="pi pi-clock text-brand-400"></i>
+            <span>{{ currentTime }}</span>
+          </div>
+
+          <button 
+            @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all"
+            :class="store.isStoreOpen ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'">
+            <span class="w-2 h-2 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
+            <span>{{ store.isStoreOpen ? 'Store is OPEN' : 'Store is CLOSED' }}</span>
+            <i v-if="store.isStaffOrAdmin" class="pi pi-sync text-[10px] ml-1"></i>
+          </button>
+        </div>
+
+        <!-- Staff / Admin Controls Section -->
+        <div class="pt-2 border-t border-surface-800 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[10px] uppercase font-bold text-gray-400">Role Switcher:</span>
+            <select 
+              :value="store.user?.role || 'customer'"
+              @change="onRoleChange($event.target.value)"
+              class="text-xs font-semibold bg-surface-800 text-gray-300 border border-surface-700 rounded-lg px-2.5 py-1.5 cursor-pointer">
+              <option value="customer">Role: Customer</option>
+              <option value="staff">Role: Staff</option>
+              <option value="admin">Role: Admin</option>
+              <option value="super_admin">Role: Super Admin</option>
+            </select>
+          </div>
+
+          <button 
+            v-if="store.isStaffOrAdmin"
+            @click="togglePortal(); mobileMenuOpen = false"
+            class="w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+            :class="store.currentView === 'admin' 
+              ? 'bg-gradient-to-r from-brand-600 to-rose-600 text-white shadow-md' 
+              : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
+            <i class="pi pi-shield"></i>
+            <span>{{ store.currentView === 'admin' ? 'Switch to Customer Site' : 'Open Admin Panel' }}</span>
+          </button>
+        </div>
+
+        <!-- Account quick actions -->
+        <div class="pt-2 border-t border-surface-800 flex items-center justify-between text-xs">
+          <div v-if="store.user" class="flex items-center gap-2">
+            <img v-if="store.user.avatar" :src="store.user.avatar" class="w-6 h-6 rounded-full object-cover" />
+            <span class="text-white font-bold truncate max-w-[140px]">{{ store.user.name }}</span>
+          </div>
+          <button 
+            v-if="store.user"
+            @click="handleLogout(); mobileMenuOpen = false"
+            class="text-rose-400 font-bold hover:underline cursor-pointer">
+            Log Out
+          </button>
+          <button 
+            v-else
+            @click="openAuthModal(); mobileMenuOpen = false"
+            class="text-brand-400 font-bold hover:underline flex items-center gap-1.5 cursor-pointer">
+            <i class="pi pi-sign-in"></i>
+            <span>Sign In / Register</span>
+          </button>
+        </div>
+
     </header>
+
+    <!-- Document Flow Height Spacer for Fixed Header -->
+    <div 
+      :class="store.currentView === 'customer' && !store.isStoreOpen ? 'h-24 sm:h-28' : 'h-16 sm:h-20'" 
+      class="shrink-0 transition-all duration-300 pointer-events-none" 
+      aria-hidden="true">
+    </div>
   `,
   setup() {
     const store = useGShotStore();
     const currentTime = Vue.ref('');
+    const mobileMenuOpen = Vue.ref(false);
 
     const updateClock = () => {
       const now = new Date();
@@ -237,12 +395,14 @@ const Navbar = {
     });
 
     const goHome = () => {
+      mobileMenuOpen.value = false;
       store.currentView = 'customer';
       store.activeSection = 'home';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const navTo = (section) => {
+      mobileMenuOpen.value = false;
       store.currentView = 'customer';
       store.activeSection = section;
       const el = document.getElementById(section);
@@ -256,6 +416,7 @@ const Navbar = {
     };
 
     const togglePortal = () => {
+      mobileMenuOpen.value = false;
       store.currentView = store.currentView === 'admin' ? 'customer' : 'admin';
     };
 
@@ -268,17 +429,20 @@ const Navbar = {
     };
 
     const openAuthModal = () => {
+      mobileMenuOpen.value = false;
       store.profileDropdownOpen = false;
       store.authModalOpen = true;
     };
 
     const goToView = (view) => {
+      mobileMenuOpen.value = false;
       store.profileDropdownOpen = false;
       store.currentView = view;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleLogout = () => {
+      mobileMenuOpen.value = false;
       store.profileDropdownOpen = false;
       store.logout();
     };
@@ -286,6 +450,7 @@ const Navbar = {
     return {
       store,
       currentTime,
+      mobileMenuOpen,
       goHome,
       navTo,
       onRoleChange,

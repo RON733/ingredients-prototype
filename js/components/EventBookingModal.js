@@ -5,33 +5,32 @@ const EventBookingModal = {
       v-if="store.bookingModalOpen"
       class="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
       @click.self="store.bookingModalOpen = false">
-      
-      <div class="relative w-full max-w-xl bg-surface-900 border border-surface-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+           <div class="relative w-full max-w-xl bg-surface-900 border border-surface-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         <!-- Header -->
-        <div class="p-6 bg-gradient-to-r from-surface-800 to-surface-900 border-b border-surface-700 flex items-center justify-between">
+        <div class="p-4 sm:p-6 bg-gradient-to-r from-surface-800 to-surface-900 border-b border-surface-700 flex items-center justify-between shrink-0">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold shrink-0">
               🎉
             </div>
             <div>
-              <h3 class="text-xl font-black text-white">Book Catering or Mobile Bar</h3>
-              <p class="text-xs text-gray-400">Make your birthday, corporate gathering, or wedding unforgettable</p>
+              <h3 class="text-base sm:text-xl font-black text-white">Book Catering or Mobile Bar</h3>
+              <p class="text-[11px] sm:text-xs text-gray-400">Make your birthday, corporate gathering, or wedding unforgettable</p>
             </div>
           </div>
 
           <button 
             @click="store.bookingModalOpen = false"
-            class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center">
+            class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center shrink-0">
             ✕
           </button>
         </div>
 
         <!-- Form Body -->
-        <form @submit.prevent="submitBooking" class="p-6 space-y-4 text-xs">
+        <form @submit.prevent="submitBooking" class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
           
           <!-- Package Quick Select Banner -->
-          <div class="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-surface-950/70 border border-surface-800">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 p-3 rounded-2xl bg-surface-950/70 border border-surface-800">
             <div 
               @click="selectPackage('Coffee Package')" 
               class="p-2.5 rounded-xl border transition-all cursor-pointer flex items-center gap-2.5"
@@ -109,7 +108,7 @@ const EventBookingModal = {
                 v-model.number="form.guest_count"
                 type="number" 
                 min="10" 
-                max="500"
+                max="500" 
                 required
                 class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
               />
@@ -166,15 +165,15 @@ const EventBookingModal = {
           </div>
 
           <!-- Estimated Cost Calculation -->
-          <div class="p-4 rounded-2xl bg-surface-800/80 border border-surface-700 space-y-2">
-            <div class="flex items-center justify-between">
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-800/80 border border-surface-700 space-y-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
               <div>
-                <p class="text-[11px] text-gray-400 uppercase font-bold">Estimated Base Price</p>
-                <p class="text-base font-black text-amber-400">₱{{ estimatedCost.toLocaleString() }}.00</p>
+                <p class="text-[10px] sm:text-[11px] text-gray-400 uppercase font-bold">Estimated Base Price</p>
+                <p class="text-base sm:text-lg font-black text-amber-400">₱{{ estimatedCost.toLocaleString() }}.00</p>
               </div>
-              <div class="text-right">
+              <div class="sm:text-right">
                 <span class="text-[10px] text-gray-400 block">Transportation fee varies by location</span>
-                <span class="text-[11px] font-bold text-white">Direct: Jefferson Alulod (0993.700.5426)</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-white">Direct: Jefferson Alulod (0993.700.5426)</span>
               </div>
             </div>
             <p class="text-[10px] text-gray-400 border-t border-surface-700/60 pt-2 leading-relaxed">
@@ -183,17 +182,17 @@ const EventBookingModal = {
           </div>
 
           <!-- Submit Buttons -->
-          <div class="pt-2 flex items-center justify-end gap-3">
+          <div class="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3">
             <button 
               type="button"
               @click="store.bookingModalOpen = false"
-              class="px-4 py-2.5 rounded-xl font-bold text-gray-400 hover:text-white transition-colors">
+              class="px-4 py-2.5 rounded-xl font-bold text-gray-400 hover:text-white transition-colors text-center">
               Cancel
             </button>
             <button 
               type="submit"
               :disabled="loading"
-              class="px-6 py-2.5 rounded-xl font-black bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-surface-950 shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer">
+              class="px-6 py-2.5 rounded-xl font-black bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-surface-950 shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
               <i v-if="loading" class="pi pi-spin pi-spinner"></i>
               <span v-else>Submit Booking Request</span>
             </button>

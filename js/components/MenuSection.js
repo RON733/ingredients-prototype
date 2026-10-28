@@ -14,15 +14,15 @@ const MenuSection = {
       </div>
 
       <!-- Controls: Categories, Search, and Sort -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 sm:mb-10">
         
-        <!-- Category Filter Pills -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+        <!-- Category Filter Pills (Full bleed scroll on mobile) -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
           <button 
             v-for="cat in categories" 
             :key="cat"
             @click="selectedCategory = cat"
-            class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap"
+            class="px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0"
             :class="selectedCategory === cat 
               ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/30' 
               : 'bg-surface-800 text-gray-300 hover:bg-surface-700 hover:text-white border border-surface-700/50'">
@@ -30,8 +30,8 @@ const MenuSection = {
           </button>
         </div>
 
-        <!-- Search Bar and Sort Dropdown -->
-        <div class="flex items-center gap-3 w-full md:w-auto">
+        <!-- Search Bar and Sort Dropdown (Responsive stack) -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
           <!-- Live Search Bar -->
           <div class="relative flex-1 md:w-64">
             <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -39,7 +39,7 @@ const MenuSection = {
               v-model="searchQuery"
               type="text" 
               placeholder="Search menu..." 
-              class="w-full pl-10 pr-4 py-2 rounded-xl bg-surface-800 text-white placeholder-gray-500 text-xs sm:text-sm border border-surface-700 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
+              class="w-full pl-10 pr-8 py-2.5 rounded-xl bg-surface-800 text-white placeholder-gray-500 text-xs sm:text-sm border border-surface-700 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
             />
             <button 
               v-if="searchQuery" 
@@ -53,7 +53,7 @@ const MenuSection = {
           <div class="relative">
             <select 
               v-model="sortOrder"
-              class="px-3.5 py-2 rounded-xl bg-surface-800 text-gray-300 text-xs sm:text-sm border border-surface-700 focus:outline-none focus:border-brand-500 cursor-pointer">
+              class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-surface-800 text-gray-300 text-xs sm:text-sm border border-surface-700 focus:outline-none focus:border-brand-500 cursor-pointer">
               <option value="default">Sort by Default</option>
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>

@@ -47,6 +47,27 @@ const AboutSection = {
 
         </div>
 
+        <!-- Store Leadership & Location Banner -->
+        <div class="p-6 rounded-3xl bg-surface-850 border border-surface-700/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-500 p-0.5 flex items-center justify-center shrink-0">
+              <div class="w-full h-full bg-surface-900 rounded-[14px] flex items-center justify-center text-brand-400 font-black text-lg">
+                👑
+              </div>
+            </div>
+            <div>
+              <p class="text-xs text-brand-400 font-bold uppercase tracking-wider">Store Founder & Owner</p>
+              <h4 class="text-base font-black text-white">Jefferson Alulod</h4>
+              <p class="text-[11px] text-gray-400">Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna • 0993.700.5426</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="#contact" class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 text-xs font-bold border border-surface-700 transition-colors">
+              Store Details
+            </a>
+          </div>
+        </div>
+
       </div>
     </section>
   `,

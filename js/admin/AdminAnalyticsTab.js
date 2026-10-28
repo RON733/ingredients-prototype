@@ -130,7 +130,7 @@ const AdminAnalyticsTab = {
           </div>
 
           <!-- X-Axis Labels -->
-          <div class="flex justify-between text-[11px] text-gray-400 font-mono pt-2 border-t border-surface-700/50">
+          <div class="flex justify-between text-[9px] sm:text-[11px] text-gray-400 font-mono pt-2 border-t border-surface-700/50">
             <span v-for="(item, idx) in trendItems" :key="idx">
               {{ item.label }}
             </span>

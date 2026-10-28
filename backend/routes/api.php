@@ -9,12 +9,15 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\EventBookingController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SystemController;
+use App\Http\Controllers\AnnouncementController;
 
 // --- Public Endpoints ---
 Route::post('/auth/login', [AuthController::class, 'login'])->name('login');
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::get('/auth/google/config', [AuthController::class, 'googleConfig']);
+Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
+Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -25,6 +28,7 @@ Route::post('/orders', [OrderController::class, 'store']);
 
 Route::get('/ingredients', [IngredientController::class, 'index']);
 Route::get('/settings', [SystemController::class, 'settings']);
+Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
 
@@ -58,9 +62,18 @@ Route::middleware('auth:sanctum')->group(function () {
     // Analytics (Owner / Admin Exclusive)
     Route::get('/analytics/overview', [AnalyticsController::class, 'overview']);
 
-    // Super Admin Controls & Audit Trail
+    // Announcements (Staff & Admin)
+    Route::post('/announcements', [AnnouncementController::class, 'store']);
+    Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
+    Route::patch('/announcements/{id}/toggle', [AnnouncementController::class, 'toggleActive']);
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
+
+    // Personnel & Super Admin Controls & Audit Trail
     Route::get('/users', [AuthController::class, 'listUsers']);
+    Route::post('/users', [AuthController::class, 'createUser']);
     Route::patch('/users/{id}', [AuthController::class, 'updateUserRole']);
+    Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
+    Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
     Route::post('/settings', [SystemController::class, 'updateSettings']);
     Route::get('/audit-logs', [SystemController::class, 'auditLogs']);
 });
@@ -82,7 +95,17 @@ Route::prefix('v1')->group(function () {
     Route::patch('/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);
     Route::get('/analytics/overview', [AnalyticsController::class, 'overview']);
     Route::get('/users', [AuthController::class, 'listUsers']);
+    Route::post('/users', [AuthController::class, 'createUser']);
     Route::patch('/users/{id}', [AuthController::class, 'updateUserRole']);
+    Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
+    Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
     Route::post('/settings', [SystemController::class, 'updateSettings']);
     Route::get('/audit-logs', [SystemController::class, 'auditLogs']);
+
+    // Announcements
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
+    Route::post('/announcements', [AnnouncementController::class, 'store']);
+    Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
+    Route::patch('/announcements/{id}/toggle', [AnnouncementController::class, 'toggleActive']);
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
 });

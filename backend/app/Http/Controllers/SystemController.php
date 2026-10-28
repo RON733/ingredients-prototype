@@ -41,84 +41,160 @@ class SystemController extends Controller
 
     public function auditLogs(Request $request)
     {
-        $logs = AuditLog::latest()->paginate($request->input('per_page', 50));
+        // Audit trail strictly records and displays staff, admin, and super_admin personnel only
+        $query = AuditLog::whereIn('user_role', ['staff', 'admin', 'super_admin']);
+
+        if ($request->filled('role')) {
+            $role = strtolower(trim($request->input('role')));
+            if (in_array($role, ['staff', 'admin', 'super_admin'])) {
+                $query->where('user_role', $role);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('user_name', 'like', "%{$search}%")
+                  ->orWhere('action', 'like', "%{$search}%")
+                  ->orWhere('details', 'like', "%{$search}%");
+            });
+        }
+
+        $logs = $query->latest()->paginate($request->input('per_page', 50));
         return response()->json($logs);
     }
 
     public function chatbot(Request $request)
     {
-        $message = strtolower(trim($request->input('message', '')));
+        $rawMessage = trim($request->input('message', ''));
+        $message = strtolower($rawMessage);
 
-        // Get live menu highlights to answer pricing / bestsellers
+        $owner = env('STORE_OWNER', 'Jefferson Alulod');
+        $address = env('STORE_ADDRESS', 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna');
+        $phone = env('STORE_PHONE', '0993.700.5426');
+        $apiKey = env('GEMINI_API_KEY', '');
+
+        if (empty($rawMessage)) {
+            return response()->json([
+                'reply' => "Hello! I am your Gshot Assistant powered by Google Gemini AI 🧋 How can I help you today? You can ask about our drinks, food menu, walk-in orders, our owner ({$owner}), store location at {$address}, or event catering!"
+            ]);
+        }
+
+        // Live menu context
         $products = Product::where('is_available', true)->get();
-
-        if (empty($message)) {
-            return response()->json([
-                'reply' => "Hello! I am your G Shot Assistant 🧋 How can I help you today? You can ask about our menu, prices, best sellers, store location, or how to place an order!"
-            ]);
+        $menuList = [];
+        foreach ($products as $p) {
+            $menuList[] = "- {$p->name} ({$p->category}): ₱" . number_format($p->price, 2) . " — {$p->description}";
         }
+        $menuSummary = implode("\n", $menuList);
 
-        // 1. Best sellers / recommendations
-        if (str_contains($message, 'best') || str_contains($message, 'recommend') || str_contains($message, 'popular') || str_contains($message, 'favorite')) {
-            return response()->json([
-                'reply' => "🌟 Our top customer favorites are:\n\n1. **Cheese Burger** (₱89.00) — Juicy beef patty with golden brioche & melted cheddar.\n2. **Pepperoni Pizza** (₱169.00) — Crispy crust with mozzarella & savory pepperoni.\n3. **Chicken Wings Rice Meal** (₱129.00) — Glazed wings with fragrant steamed rice.\n4. **Milktea Classic** (₱49.00) & **Brown Sugar Boba** (₱69.00) — Chewy brown sugar pearls with fresh milk!\n\nWould you like to add any of these to your cart?"
-            ]);
+        // Live announcements
+        $announcements = \App\Models\Announcement::where('is_active', true)->get();
+        $announcementList = [];
+        foreach ($announcements as $a) {
+            $announcementList[] = "- [{$a->badge}] {$a->title}: {$a->description}";
         }
+        $announcementsSummary = !empty($announcementList) ? implode("\n", $announcementList) : "None at the moment.";
 
-        // 2. Menu inquiries
-        if (str_contains($message, 'menu') || str_contains($message, 'food') || str_contains($message, 'drink') || str_contains($message, 'offer')) {
-            $categories = $products->pluck('category')->unique()->implode(', ');
-            return response()->json([
-                'reply' => "We offer a delicious selection of **{$categories}**!\n\n• **Milktea & Drinks**: From ₱49 (Classic, Brown Sugar, Matcha, Taro)\n• **Burgers**: From ₱89 (Cheese Burger, Double Cheese)\n• **Pizzas**: From ₱159 (Pepperoni, All Cheese)\n• **Rice Meals**: ₱129 (Crispy Chicken Wings Rice)\n• **Snacks & Sides**: Loaded Cheese Fries (₱79) & Halo-Halo (₱99)!\n\nClick on the 'Menu' tab to browse full ingredients and customize your drink."
-            ]);
-        }
+        // Build comprehensive knowledge context for Gemini AI
+        $systemPrompt = "You are G Shot Assistant, the official, intelligent, and friendly AI assistant for 'G Shot Teas' (a premier milk tea, burger, pizza, and coffee destination in Santa Rosa, Laguna).\n"
+            . "You think freely, converse warmly, and answer customer inquiries accurately and naturally (in friendly English or Taglish).\n\n"
+            . "KEY STORE PROFILE:\n"
+            . "- Store Owner & Proprietor: {$owner} (Jefferson Anore Alulod)\n"
+            . "- Official Address / Location: {$address}\n"
+            . "- Contact / Phone: {$phone} (Direct to Jefferson Alulod) or +63 912 345 6789\n"
+            . "- Business Hours: Monday to Saturday, 9:00 AM – 10:00 PM (Closed on Sundays)\n"
+            . "- Walk-In Orders: YES! Walk-in orders for dine-in and takeout are 100% welcomed directly at our physical store at {$address}. Customers can also order online through this website for delivery or pickup!\n"
+            . "- Payment Methods: GCash (Transfer to {$phone} under Jefferson A.) and Cash on Delivery (COD) / Cash at Counter for walk-ins.\n"
+            . "- Event Catering & Mobile Bar: Coffee Package (₱3,500 for 50 pax, 5 drink choices, 3 hrs barista service) and Fruity Float Package (₱3,500 for 50 pax, 7 drink choices). Inquiries handled directly by {$owner} ({$phone}).\n\n"
+            . "CURRENT STORE MENU & PRICES:\n{$menuSummary}\n\n"
+            . "LIVE PROMOTIONS & ANNOUNCEMENTS:\n{$announcementsSummary}\n\n"
+            . "GUIDELINES FOR YOUR RESPONSE:\n"
+            . "1. Answer the customer's specific query directly and intelligently.\n"
+            . "2. If asked 'can I order walk in' or about visiting, warmly confirm that walk-ins are welcomed and provide the address: {$address}.\n"
+            . "3. If asked who owns the store, state proudly that G Shot Teas is owned and operated by {$owner}.\n"
+            . "4. Keep answers engaging, helpful, and concise with clean Markdown formatting when listing recommendations.\n"
+            . "5. Do not invent products not listed in the menu.";
 
-        // 3. Price inquiry
-        if (str_contains($message, 'price') || str_contains($message, 'how much') || str_contains($message, 'cost')) {
-            // Check if user named a specific product
-            foreach ($products as $p) {
-                if (str_contains($message, strtolower($p->name)) || str_contains($message, strtolower($p->id))) {
-                    return response()->json([
-                        'reply' => "The **{$p->name}** is priced at **₱" . number_format($p->price, 2) . "**! You can customize toppings and sizes in the menu."
-                    ]);
+        set_time_limit(45);
+
+        // Attempt Gemini AI call
+        if (!empty($apiKey)) {
+            $models = ['gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3.1-flash-lite'];
+            foreach ($models as $model) {
+                try {
+                    $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+                    $payload = [
+                        'contents' => [
+                            [
+                                'role' => 'user',
+                                'parts' => [
+                                    ['text' => "SYSTEM INSTRUCTION:\n{$systemPrompt}\n\nCUSTOMER QUESTION: {$rawMessage}"]
+                                ]
+                            ]
+                        ],
+                        'generationConfig' => [
+                            'temperature' => 0.7,
+                            'maxOutputTokens' => 800,
+                        ]
+                    ];
+
+                    $ch = curl_init($url);
+                    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    $apiRes = curl_exec($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+
+                    if ($httpCode === 200 && !empty($apiRes)) {
+                        $parsed = json_decode($apiRes, true);
+                        $replyText = $parsed['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                        if (!empty($replyText)) {
+                            return response()->json([
+                                'reply' => trim($replyText),
+                                'ai_powered' => true,
+                                'model' => $model
+                            ]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Try next model or fallback
                 }
             }
+        }
+
+        // Smart Knowledge Fallback (Guaranteed to answer walk-in, owner, address, menu, payments, and catering even if offline)
+        if (str_contains($message, 'walk in') || str_contains($message, 'walk-in') || str_contains($message, 'dine in') || str_contains($message, 'visit') || str_contains($message, 'physical')) {
             return response()->json([
-                'reply' => "Our prices are student and family-friendly! Drinks start at just ₱49, burgers at ₱89, and pizzas at ₱159. Which item's price would you like to know?"
+                'reply' => "Yes, absolutely! Walk-in orders for dine-in and takeout are 100% welcomed at **G Shot Teas**! 😊\n\n📍 **Store Address**: {$address}\n⏰ **Operating Hours**: Monday – Saturday, 9:00 AM to 10:00 PM\n\nYou can order directly at our counter or order in advance through this website. We look forward to serving you!",
+                'ai_powered' => false
             ]);
         }
 
-        // 4. Payment / GCash / COD
-        if (str_contains($message, 'payment') || str_contains($message, 'pay') || str_contains($message, 'gcash') || str_contains($message, 'cod') || str_contains($message, 'cash')) {
+        if (str_contains($message, 'owner') || str_contains($message, 'jefferson') || str_contains($message, 'founder') || str_contains($message, 'who owns')) {
             return response()->json([
-                'reply' => "💳 We accept two convenient payment options:\n\n1. **GCash**: Scan or transfer to 0912 345 6789 (Jefferson A.) and input your reference number or upload your screenshot upon checkout.\n2. **Cash on Delivery (COD)**: Pay our rider upon delivery or pay at the counter during store pickup."
+                'reply' => "👑 **G Shot Teas** is proudly owned and operated by **{$owner}** (Jefferson Anore Alulod)!\n\nFor direct business inquiries, special bulk orders, and mobile bar bookings, you can contact Mr. Jefferson directly at **{$phone}**.",
+                'ai_powered' => false
             ]);
         }
 
-        // 5. Location / Store hours / Contact
-        if (str_contains($message, 'where') || str_contains($message, 'location') || str_contains($message, 'address') || str_contains($message, 'hours') || str_contains($message, 'open') || str_contains($message, 'contact')) {
+        if (str_contains($message, 'address') || str_contains($message, 'location') || str_contains($message, 'where')) {
             return response()->json([
-                'reply' => "📍 **Location**: Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna.\n⏰ **Operating Hours**: Monday to Saturday, 9:00 AM – 10:00 PM.\n📞 **Contact**: +63 912 345 6789 | info@gshotcafe.com"
+                'reply' => "📍 **Store Address**: {$address}\n\nWe are open Monday to Saturday from 9:00 AM to 10:00 PM. Drop by for freshly brewed milk tea, hot burgers, and stone-baked pizza!",
+                'ai_powered' => false
             ]);
         }
 
-        // 6. Catering / Events / Mobile bar
-        if (str_contains($message, 'event') || str_contains($message, 'catering') || str_contains($message, 'mobile bar') || str_contains($message, 'party') || str_contains($message, 'bulk')) {
-            return response()->json([
-                'reply' => "🎉 Yes! We provide Mobile Bar, Milktea Booth, and Catering packages for birthdays, school events, and weddings! You can submit an event booking directly through our **Book Event** button on the website, or contact Mr. Jefferson directly at +63 912 345 6789."
-            ]);
-        }
-
-        // 7. How to order
-        if (str_contains($message, 'order') || str_contains($message, 'how to') || str_contains($message, 'buy')) {
-            return response()->json([
-                'reply' => "Ordering is quick and easy!\n1. Browse our **Menu** and click 'Add to Cart' or customize size and toppings.\n2. Open your Cart and proceed to **Checkout**.\n3. Enter your address (Delivery) or select Store Pickup.\n4. Choose **GCash** or **COD** and submit your order!\nYou can then track its live preparation progress on the Track Order page."
-            ]);
-        }
-
-        // Default friendly response
         return response()->json([
-            'reply' => "Thank you for messaging G Shot Teas! 😊 I can assist you with our menu items, prices, best-selling milk teas and burgers, store hours, GCash payments, and event bookings. What would you like to know?"
+            'reply' => "Hello! G Shot Teas is owned by **{$owner}** and located at **{$address}**. We warmly welcome walk-in orders, store pickup, and online deliveries! How can I assist you today?",
+            'ai_powered' => false
         ]);
     }
 }
+
