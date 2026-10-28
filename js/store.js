@@ -611,7 +611,7 @@ const useGShotStore = defineStore('gshot', {
         }
         return res.data;
       } catch (err) {
-        const msg = err.response?.data?.message || 'Google Sign-In failed.';
+        const msg = err.response?.data?.message || (err.message && err.message.includes('Network') ? 'Backend server unreachable. Please verify server is running on 127.0.0.1:8000.' : 'Google Sign-In failed.');
         this.notify(msg, 'error');
         throw err;
       }
@@ -759,6 +759,7 @@ const useGShotStore = defineStore('gshot', {
 });
 
 window.useGShotStore = useGShotStore;
+
 
 
 

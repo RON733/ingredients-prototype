@@ -322,10 +322,10 @@ const CheckoutView = {
     const proofFileName = Vue.ref('');
 
     const form = Vue.reactive({
-      customer_name: store.user?.name || 'Jane Doe',
-      customer_phone: store.user?.phone || '09989109529',
+      customer_name: store.user?.name || '',
+      customer_phone: store.user?.phone || '',
       order_type: 'Delivery',
-      delivery_address: store.user?.address || 'Phase 1 Mabuhay City, Cabuyao, Laguna',
+      delivery_address: store.user?.address || '',
       payment_method: 'GCash',
       gcash_ref: '',
       proof_image: '',
@@ -450,3 +450,4 @@ const CheckoutView = {
     };
   },
 };
+
