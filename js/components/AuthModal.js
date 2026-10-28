@@ -59,9 +59,6 @@ const AuthModal = {
             <span v-else>Continue with Google</span>
           </button>
 
-          
-          </div>
-
           <!-- Divider -->
           <div class="relative flex py-1 items-center">
             <div class="flex-grow border-t border-surface-800"></div>
@@ -279,5 +276,6 @@ const AuthModal = {
     };
   },
 };
+
 
 
