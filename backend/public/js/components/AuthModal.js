@@ -59,59 +59,7 @@ const AuthModal = {
             <span v-else>Continue with Google</span>
           </button>
 
-          <!-- Google Options & Live Client ID Config Drawer -->
-          <div 
-            v-if="showGoogleHelper" 
-            class="p-4 rounded-2xl bg-surface-800 border border-brand-500/30 text-left space-y-3 animate-fade-in">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-brand-400 flex items-center gap-1.5">
-                <i class="pi pi-google"></i> Google Authentication Setup
-              </span>
-              <button 
-                type="button" 
-                @click="showGoogleHelper = false" 
-                class="text-gray-400 hover:text-white text-xs">
-                ✕
-              </button>
-            </div>
-            
-            <p class="text-[11px] text-gray-300 leading-relaxed">
-              Google Sign-In is fully integrated! For live OAuth with your Google Cloud project, enter your Client ID below. You can also test the full authentication flow instantly using our 1-click test profile:
-            </p>
-
-            <div class="space-y-2 pt-1">
-              <!-- One-Click Instant Google Test -->
-              <button 
-                type="button" 
-                @click="handleGoogleDemoLogin('Jane Doe (Google)', 'janedoe.google@gmail.com')"
-                :disabled="googleLoading"
-                class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
-                <i v-if="googleLoading" class="pi pi-spin pi-spinner"></i>
-                <span v-else>🚀 Test Google Sign-In (Instant Demo Customer)</span>
-              </button>
-
-              <!-- Optional Live Client ID Input -->
-              <div class="pt-2 border-t border-surface-700/60">
-                <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">
-                  Google Cloud Client ID (Optional for Live OAuth):
-                </label>
-                <div class="flex items-center gap-2">
-                  <input 
-                    v-model="customClientId"
-                    type="text" 
-                    placeholder="e.g. 123456789-abc.apps.googleusercontent.com"
-                    class="flex-1 px-3 py-1.5 text-[11px] rounded-lg bg-surface-900 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
-                  />
-                  <button 
-                    type="button"
-                    @click="saveGoogleClientId"
-                    :disabled="savingClientId || !customClientId"
-                    class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[11px] font-bold transition-all disabled:opacity-50">
-                    {{ savingClientId ? 'Saving...' : 'Apply' }}
-                  </button>
-                </div>
-              </div>
-            </div>
+          
           </div>
 
           <!-- Divider -->
@@ -193,53 +141,16 @@ const AuthModal = {
           </p>
         </div>
 
-        <!-- 1-Click Demo Accounts -->
-        <div class="mt-5 pt-3 border-t border-surface-800/80">
-          <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center mb-2">
-            Quick 1-Click Demo Credentials:
-          </p>
-          <div class="grid grid-cols-2 gap-2">
-            <button 
-              type="button"
-              @click="fillDemo('superadmin@gshotteas.com')"
-              class="p-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-left border border-surface-700 text-[11px] text-gray-300 transition-colors">
-              <span class="block font-bold text-purple-400">Super Admin</span>
-              <span class="text-[10px] text-gray-500">Tyron Erick</span>
-            </button>
-            <button 
-              type="button"
-              @click="fillDemo('admin@gshotteas.com')"
-              class="p-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-left border border-surface-700 text-[11px] text-gray-300 transition-colors">
-              <span class="block font-bold text-amber-400">Admin (Owner)</span>
-              <span class="text-[10px] text-gray-500">Jefferson A.</span>
-            </button>
-            <button 
-              type="button"
-              @click="fillDemo('staff@gshotteas.com')"
-              class="p-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-left border border-surface-700 text-[11px] text-gray-300 transition-colors">
-              <span class="block font-bold text-sky-400">Staff / Barista</span>
-              <span class="text-[10px] text-gray-500">Mhar Anthony</span>
-            </button>
-            <button 
-              type="button"
-              @click="fillDemo('customer@gmail.com')"
-              class="p-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-left border border-surface-700 text-[11px] text-gray-300 transition-colors">
-              <span class="block font-bold text-emerald-400">Customer</span>
-              <span class="text-[10px] text-gray-500">Jane Doe</span>
-            </button>
-          </div>
         </div>
-
-      </div>
     </div>
   `,
   setup() {
     const store = useGShotStore();
     const loading = Vue.ref(false);
     const googleLoading = Vue.ref(false);
-    const showGoogleHelper = Vue.ref(false);
-    const customClientId = Vue.ref('');
-    const savingClientId = Vue.ref(false);
+    
+    
+    
 
     const form = Vue.reactive({
       name: '',
@@ -259,11 +170,7 @@ const AuthModal = {
       });
     };
 
-    const fillDemo = (email) => {
-      form.email = email;
-      form.password = 'password123';
-      store.authMode = 'login';
-    };
+    
 
     const initGoogleIdentity = () => {
       const clientId = store.googleConfig?.client_id || store.settings?.google_client_id;
@@ -305,42 +212,19 @@ const AuthModal = {
       }
     };
 
-    const handleContinueWithGoogle = () => {
+        const handleContinueWithGoogle = () => {
       if (isGoogleClientConfigured.value && window.google?.accounts?.id) {
-        // Try native Google GIS prompt
         try {
           window.google.accounts.id.prompt();
           return;
-        } catch (e) {
-          // fallback to helper
-        }
+        } catch (e) {}
       }
-      showGoogleHelper.value = !showGoogleHelper.value;
+      store.notify('Google Sign-In is being initialized. Please sign in with email and password below.', 'info');
     };
 
-    const handleGoogleDemoLogin = async (name, email) => {
-      googleLoading.value = true;
-      try {
-        await store.loginWithGoogle({
-          mock: true,
-          email: email || 'customer@gmail.com',
-          name: name || 'Google Customer',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-        });
-        showGoogleHelper.value = false;
-      } catch (err) {
-        // Handled in store
-      } finally {
-        googleLoading.value = false;
-      }
-    };
+    
 
-    const saveGoogleClientId = async () => {
-      if (!customClientId.value.trim()) return;
-      savingClientId.value = true;
-      try {
-        await GST_API.updateSettings({ google_client_id: customClientId.value.trim() });
-        store.googleConfig = { client_id: customClientId.value.trim(), configured: true };
+    
         store.settings.google_client_id = customClientId.value.trim();
         store.notify('Google Client ID updated! Initializing Google Sign-In...');
         showGoogleHelper.value = false;
@@ -393,16 +277,17 @@ const AuthModal = {
       form,
       loading,
       googleLoading,
-      showGoogleHelper,
-      customClientId,
-      savingClientId,
+      
+      
+      
       isGoogleClientConfigured,
       toggleAuthMode,
-      fillDemo,
+      
       handleContinueWithGoogle,
-      handleGoogleDemoLogin,
-      saveGoogleClientId,
+      
+      
       handleSubmit,
     };
   },
 };
+

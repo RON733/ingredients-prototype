@@ -125,40 +125,7 @@ var StaffPinModal = window.StaffPinModal = {
           <span>{{ submitting ? 'Verifying PIN...' : 'Verify PIN & Switch On Duty' }}</span>
         </button>
 
-        <!-- Capstone Demo Quick Presets -->
-        <div class="pt-2 border-t border-surface-800/80">
-          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center mb-1.5">
-            Quick Defense Demo Shortcuts:
-          </p>
-          <div class="flex items-center justify-center flex-wrap gap-1.5">
-            <button 
-              @click="quickFill('staff@gshotteas.com', '1234')"
-              type="button"
-              class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-surface-750 text-[10px] font-mono text-sky-300 border border-sky-500/30">
-              Mhar (1234)
-            </button>
-            <button 
-              @click="quickFill('barista2@gshotteas.com', '5678')"
-              type="button"
-              class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-surface-750 text-[10px] font-mono text-sky-300 border border-sky-500/30">
-              Sarah (5678)
-            </button>
-            <button 
-              @click="quickFill('admin@gshotteas.com', '2222')"
-              type="button"
-              class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-surface-750 text-[10px] font-mono text-amber-300 border border-amber-500/30">
-              Jefferson (2222)
-            </button>
-            <button 
-              @click="quickFill('superadmin@gshotteas.com', '1111')"
-              type="button"
-              class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-surface-750 text-[10px] font-mono text-purple-300 border border-purple-500/30">
-              Super Admin (1111)
-            </button>
-          </div>
         </div>
-
-      </div>
     </div>
   `,
   setup() {
@@ -268,12 +235,7 @@ var StaffPinModal = window.StaffPinModal = {
       }
     };
 
-    const quickFill = (email, demoPin) => {
-      const match = staffList.value.find(s => s.email === email);
-      if (match) selectedStaff.value = match;
-      pin.value = demoPin;
-      submitPin();
-    };
+    
 
     const closeModal = () => {
       store.staffPinModalOpen = false;
@@ -303,10 +265,11 @@ var StaffPinModal = window.StaffPinModal = {
       backspacePin,
       clearPin,
       submitPin,
-      quickFill,
+      
       closeModal,
       getRoleColor,
     };
   },
 };
 window.StaffPinModal = StaffPinModal;
+

@@ -12,7 +12,7 @@ set "PATH=%PHP_DIR%;%NODE_DIR%;%PATH%"
 
 cd /d "%~dp0backend"
 
-echo [1/2] Verifying SQLite database and migrations...
+echo [1/2] Verifying Supabase database and migrations...
 call php artisan migrate --graceful --ansi
 
 echo.
@@ -27,3 +27,4 @@ echo =========================================================
 echo.
 php artisan serve --host=127.0.0.1 --port=8000
 pause
+

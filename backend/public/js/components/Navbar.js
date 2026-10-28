@@ -66,7 +66,7 @@ const Navbar = {
         <!-- 3. Right: Staff Tools & Customer Actions -->
         <div class="flex items-center gap-3 xl:gap-4 flex-shrink-0">
           
-          <!-- Unified Staff & Demo Controls Capsule -->
+          <!-- Staff Controls Capsule -->
           <div class="hidden sm:flex items-center bg-surface-950/80 border border-surface-700/60 rounded-xl p-1 gap-1.5 shadow-inner">
             <!-- Store Open / Close Status Badge & Toggle (Desktop) -->
             <button 
@@ -90,17 +90,7 @@ const Navbar = {
               <span>{{ currentTime }}</span>
             </div>
 
-            <!-- Demo Role Switcher Dropdown -->
-            <select 
-              :value="store.user?.role || 'customer'"
-              @change="onRoleChange($event.target.value)"
-              class="text-xs font-semibold bg-surface-800 text-gray-300 border border-surface-700/80 rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-brand-500 focus:outline-none transition-all"
-              title="Switch user role for testing and presentation">
-              <option value="customer">Role: Customer</option>
-              <option value="staff">Role: Staff</option>
-              <option value="admin">Role: Admin</option>
-              <option value="super_admin">Role: Super Admin</option>
-            </select>
+            
 
             <!-- Portal Switcher Button if Staff or Admin -->
             <button 
@@ -411,9 +401,7 @@ const Navbar = {
       }
     };
 
-    const onRoleChange = (role) => {
-      store.switchRole(role);
-    };
+    
 
     const togglePortal = () => {
       mobileMenuOpen.value = false;
@@ -453,7 +441,7 @@ const Navbar = {
       mobileMenuOpen,
       goHome,
       navTo,
-      onRoleChange,
+      
       togglePortal,
       toggleProfileMenu,
       openAuthModal,
@@ -462,3 +450,5 @@ const Navbar = {
     };
   },
 };
+
+

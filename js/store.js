@@ -261,14 +261,7 @@ const DEFAULT_ANNOUNCEMENTS = [
 const useGShotStore = defineStore('gshot', {
   state: () => ({
     // User & Session
-    user: JSON.parse(localStorage.getItem('gst_user') || 'null') || {
-      id: 4,
-      name: 'Jane Doe',
-      email: 'customer@gmail.com',
-      role: 'customer',
-      phone: '09989109529',
-      address: 'Phase 1 Mabuhay City, Cabuyao, Laguna',
-    },
+    user: JSON.parse(localStorage.getItem('gst_user') || 'null'),
     token: localStorage.getItem('gst_auth_token') || '',
 
     // Navigation & Modals
@@ -521,54 +514,7 @@ const useGShotStore = defineStore('gshot', {
       localStorage.setItem('gst_cart', JSON.stringify(this.cart));
     },
 
-    // Quick Role Switcher for Demo & Defense Presentation!
-    switchRole(role) {
-      const demoUsers = {
-        customer: {
-          id: 4,
-          name: 'Jane Doe',
-          email: 'customer@gmail.com',
-          role: 'customer',
-          phone: '09989109529',
-          address: 'Phase 1 Mabuhay City, Cabuyao, Laguna',
-        },
-        staff: {
-          id: 3,
-          name: 'Mhar Anthony Lirio',
-          email: 'staff@gshotteas.com',
-          role: 'staff',
-          phone: '09497564031',
-          address: 'Purok 5 387, Brgy. Marinig, Cabuyao, Laguna',
-        },
-        admin: {
-          id: 2,
-          name: 'Jefferson Anore Alulod',
-          email: 'admin@gshotteas.com',
-          role: 'admin',
-          phone: '+63 912 345 6789',
-          address: 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna',
-        },
-        super_admin: {
-          id: 1,
-          name: 'Tyron Erick Rico',
-          email: 'superadmin@gshotteas.com',
-          role: 'super_admin',
-          phone: '09685002301',
-          address: 'BLK 6 LOT 22 BSRV1, Brgy. Pooc, Santa Rosa, Laguna',
-        },
-      };
-
-      this.user = demoUsers[role] || demoUsers.customer;
-      localStorage.setItem('gst_user', JSON.stringify(this.user));
-
-      if (['staff', 'admin', 'super_admin'].includes(role)) {
-        this.currentView = 'admin';
-      } else {
-        this.currentView = 'customer';
-      }
-
-      this.notify(`Switched session to ${this.user.name} (${role.toUpperCase()})`, 'info');
-    },
+    
 
     openStaffPinModal() {
       this.staffPinModalOpen = true;
@@ -813,3 +759,6 @@ const useGShotStore = defineStore('gshot', {
 });
 
 window.useGShotStore = useGShotStore;
+
+
+
