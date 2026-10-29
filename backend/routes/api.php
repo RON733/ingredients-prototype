@@ -42,6 +42,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::patch('/orders/{id}/verify-payment', [OrderController::class, 'verifyPayment']);
+    Route::patch('/orders/{id}/driver-location', [OrderController::class, 'updateDriverLocation']);
+    Route::patch('/orders/{id}/assign-driver', [OrderController::class, 'assignDriver']);
+    Route::get('/drivers', [OrderController::class, 'getDrivers']);
+    Route::patch('/driver/toggle-availability', [OrderController::class, 'toggleDriverAvailability']);
+    Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
+    Route::patch('/orders/{id}/driver-location', [OrderController::class, 'updateDriverLocation']);
+    Route::patch('/orders/{id}/assign-driver', [OrderController::class, 'assignDriver']);
 
     // Ingredients & Kitchen Inventory Management (Prototype)
     Route::post('/ingredients', [IngredientController::class, 'store']);
@@ -83,6 +90,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::patch('/orders/{id}/verify-payment', [OrderController::class, 'verifyPayment']);
+    Route::patch('/orders/{id}/driver-location', [OrderController::class, 'updateDriverLocation']);
+    Route::patch('/orders/{id}/assign-driver', [OrderController::class, 'assignDriver']);
+    Route::get('/drivers', [OrderController::class, 'getDrivers']);
+    Route::patch('/driver/toggle-availability', [OrderController::class, 'toggleDriverAvailability']);
+    Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
     Route::post('/ingredients', [IngredientController::class, 'store']);
     Route::put('/ingredients/{id}', [IngredientController::class, 'update']);
     Route::post('/ingredients/{id}/adjust', [IngredientController::class, 'quickAdjust']);

@@ -316,6 +316,7 @@ const useGShotStore = defineStore('gshot', {
     cartDeliveryFee: (state) => (state.cart.length > 0 ? 40 : 0),
     cartTotal: (state) => state.cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0) + (state.cart.length > 0 ? 40 : 0),
 
+    isDriver: (state) => state.user?.role === 'driver',
     isStaffOrAdmin: (state) => ['staff', 'admin', 'super_admin'].includes(state.user?.role),
     isAdminOrSuper: (state) => ['admin', 'super_admin'].includes(state.user?.role),
     isSuperAdmin: (state) => state.user?.role === 'super_admin',
@@ -336,6 +337,10 @@ const useGShotStore = defineStore('gshot', {
     lowStockAlerts: (state) => {
       return state.ingredients.filter(ing => ing.stock <= ing.low_threshold);
     },
+
+    gcashQrCode: (state) => state.settings?.gcash_qr_code || './assets/gcash-qr-default.png',
+    gcashAccountNumber: (state) => state.settings?.gcash_account_number || '0912 345 6789',
+    gcashAccountName: (state) => state.settings?.gcash_account_name || 'Jefferson A.',
   },
 
   actions: {
@@ -345,18 +350,30 @@ const useGShotStore = defineStore('gshot', {
       this.toasts.push({ id, msg, type });
       setTimeout(() => {
         this.toasts = this.toasts.filter(t => t.id !== id);
-      }, 3500);
+      }, 4000);
+    },
+
+    removeToast(id) {
+      this.toasts = this.toasts.filter(t => t.id !== id);
     },
 
     // Initialize Store
     async init() {
       await this.refreshAllData();
-      // Periodically refresh active order & inventory
-      setInterval(() => {
-        if (this.currentView === 'track' && this.activeOrder) {
-          this.refreshActiveOrder(this.activeOrder.id || this.activeOrder.order_number);
+      // Non-blocking single-flight periodic refresh for active order
+      let isPollInFlight = false;
+      setInterval(async () => {
+        if (this.currentView === 'track' && this.activeOrder && !isPollInFlight) {
+          isPollInFlight = true;
+          try {
+            await this.refreshActiveOrder(this.activeOrder.id || this.activeOrder.order_number);
+          } catch (e) {
+            // Silently ignore transient network drops
+          } finally {
+            isPollInFlight = false;
+          }
         }
-      }, 5000);
+      }, 7000);
     },
 
     async refreshAllData() {
@@ -425,19 +442,31 @@ const useGShotStore = defineStore('gshot', {
     async fetchUserActiveOrder() {
       try {
         const res = await GST_API.getActiveOrder(this.user?.id);
-        if (res.data) {
-          this.activeOrder = res.data;
+        const orderData = (res.data && res.data.data && Array.isArray(res.data.data)) ? null : (res.data?.order || res.data);
+        if (orderData && (orderData.id || orderData.order_number)) {
+          this.activeOrder = orderData;
+          localStorage.setItem('gst_active_order_id', orderData.id);
+          return;
         }
       } catch (err) {
         // quiet
       }
+      const cachedId = localStorage.getItem('gst_active_order_id');
+      if (cachedId) {
+        await this.refreshActiveOrder(cachedId);
+      }
     },
 
     async refreshActiveOrder(id) {
+      if (!id) return;
+      const cleanId = String(id).replace('#', '').trim();
+      if (!cleanId || cleanId === 'undefined' || cleanId === 'null') return;
       try {
-        const res = await GST_API.getOrder(id);
-        if (res.data) {
-          this.activeOrder = res.data;
+        const res = await GST_API.getOrder(cleanId);
+        const orderData = (res.data && res.data.data && Array.isArray(res.data.data)) ? null : (res.data?.order || res.data);
+        if (orderData && (orderData.id || orderData.order_number)) {
+          this.activeOrder = orderData;
+          localStorage.setItem('gst_active_order_id', orderData.id);
         }
       } catch (err) {
         // quiet
@@ -562,9 +591,12 @@ const useGShotStore = defineStore('gshot', {
         // "Customers are directed to the ordering module, while administrators are redirected to the administrative dashboard"
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
+        } else if (this.user.role === 'driver') {
+          this.currentView = 'driver';
         } else {
           this.currentView = 'customer';
         }
+        this.fetchUserActiveOrder();
       } catch (err) {
         const msg = err.response?.data?.message || 'Login failed. Please check credentials.';
         this.notify(msg, 'error');
@@ -606,9 +638,12 @@ const useGShotStore = defineStore('gshot', {
 
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
+        } else if (this.user.role === 'driver') {
+          this.currentView = 'driver';
         } else {
           this.currentView = 'customer';
         }
+        this.fetchUserActiveOrder();
         return res.data;
       } catch (err) {
         const msg = err.response?.data?.message || (err.message && err.message.includes('Network') ? 'Backend server unreachable. Please verify server is running on 127.0.0.1:8000.' : 'Google Sign-In failed.');
@@ -621,8 +656,10 @@ const useGShotStore = defineStore('gshot', {
       GST_API.logout().catch(() => {});
       this.user = null;
       this.token = '';
+      this.activeOrder = null;
       localStorage.removeItem('gst_user');
       localStorage.removeItem('gst_auth_token');
+      localStorage.removeItem('gst_active_order_id');
       this.currentView = 'customer';
       this.notify('Logged out successfully.');
     },
@@ -649,6 +686,24 @@ const useGShotStore = defineStore('gshot', {
         this.notify(isOpen ? '🟢 Store is now OPEN!' : '🔴 Store is now CLOSED.', isOpen ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status:', err);
+      }
+    },
+
+    async updateStoreSettings(newSettings) {
+      try {
+        const res = await GST_API.updateSettings(newSettings);
+        if (res.data?.settings) {
+          this.settings = { ...this.settings, ...res.data.settings };
+        } else {
+          this.settings = { ...this.settings, ...newSettings };
+        }
+        this.notify('Settings updated successfully!', 'success');
+        return true;
+      } catch (err) {
+        console.error('Failed to update settings:', err);
+        const msg = err.response?.data?.message || 'Failed to update settings.';
+        this.notify(msg, 'error');
+        throw err;
       }
     },
 

@@ -15,7 +15,7 @@ const App = {
       <div class="relative z-10 flex flex-col flex-1">
         
         <!-- Navigation Header (Customer Views) -->
-        <Navbar v-if="store.currentView !== 'admin'" />
+        <Navbar v-if="store.currentView !== 'admin' && store.currentView !== 'driver'" />
 
         <!-- Main Content Area -->
         <main class="flex-1">
@@ -49,10 +49,15 @@ const App = {
           <div v-else-if="store.currentView === 'admin'">
             <AdminDashboard />
           </div>
+
+          <!-- 6. Delivery Driver Mobile-First Portal -->
+          <div v-else-if="store.currentView === 'driver'">
+            <DriverView />
+          </div>
         </main>
 
         <!-- Footer (Customer Views) -->
-        <footer v-if="store.currentView !== 'admin'" class="py-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
+        <footer v-if="store.currentView !== 'admin' && store.currentView !== 'driver'" class="py-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
           <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <span class="font-extrabold text-white text-sm">G SHOT TEAS</span>
@@ -101,15 +106,26 @@ const App = {
           </div>
         </div>
 
-        <!-- Toast Notifications Overlay -->
-        <div class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
+        <!-- Toast Notifications Overlay (Bottom Center, Non-intrusive & Instantly Dismissible) -->
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-2 pointer-events-none w-full max-w-md px-4">
           <div 
             v-for="toast in store.toasts" 
             :key="toast.id"
-            class="px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold text-white flex items-center gap-3 backdrop-blur-md pointer-events-auto border animate-toast-in max-w-sm"
-            :class="getToastClass(toast.type)">
-            <i class="pi" :class="getToastIcon(toast.type)"></i>
-            <span>{{ toast.msg }}</span>
+            @click="store.removeToast(toast.id)"
+            class="w-full px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold text-white flex items-center justify-between gap-3 backdrop-blur-md pointer-events-auto border animate-toast-in cursor-pointer select-none transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]"
+            :class="getToastClass(toast.type)"
+            title="Click to dismiss immediately">
+            <div class="flex items-start gap-2.5 min-w-0 flex-1">
+              <i class="pi flex-shrink-0 mt-0.5 text-sm" :class="getToastIcon(toast.type)"></i>
+              <span class="break-words whitespace-pre-line leading-relaxed text-xs">{{ toast.msg }}</span>
+            </div>
+            <button 
+              type="button"
+              @click.stop="store.removeToast(toast.id)" 
+              class="w-6 h-6 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors shrink-0 ml-1"
+              title="Remove notification">
+              <i class="pi pi-times text-[10px]"></i>
+            </button>
           </div>
         </div>
 
@@ -125,13 +141,15 @@ const App = {
     });
 
     const getToastClass = (type) => {
-      if (type === 'error') return 'bg-rose-950/90 border-rose-600 text-rose-200';
-      if (type === 'info') return 'bg-sky-950/90 border-sky-600 text-sky-200';
-      return 'bg-emerald-950/90 border-emerald-600 text-emerald-200';
+      if (type === 'error') return 'bg-rose-950/95 border-rose-600 text-rose-100 shadow-rose-950/50';
+      if (type === 'warning') return 'bg-amber-950/95 border-amber-500 text-amber-100 shadow-amber-950/50';
+      if (type === 'info') return 'bg-sky-950/95 border-sky-600 text-sky-100 shadow-sky-950/50';
+      return 'bg-emerald-950/95 border-emerald-600 text-emerald-100 shadow-emerald-950/50';
     };
 
     const getToastIcon = (type) => {
       if (type === 'error') return 'pi-times-circle text-rose-400';
+      if (type === 'warning') return 'pi-exclamation-triangle text-amber-400';
       if (type === 'info') return 'pi-info-circle text-sky-400';
       return 'pi-check-circle text-emerald-400';
     };
@@ -178,8 +196,10 @@ app.component('AdminBookingsTab', AdminBookingsTab);
 app.component('AdminAnnouncementsTab', AdminAnnouncementsTab);
 app.component('AdminUsersTab', AdminUsersTab);
 app.component('AdminAuditTab', AdminAuditTab);
+app.component('AdminSettingsTab', AdminSettingsTab);
+app.component('DriverView', typeof DriverView !== 'undefined' ? DriverView : {});
 
 app.component('AnnouncementSection', AnnouncementSection);
 app.component('AnnouncementModal', AnnouncementModal);
 
-app.mount('#root');
+app.mount('#app');

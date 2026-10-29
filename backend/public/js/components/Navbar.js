@@ -92,6 +92,16 @@ const Navbar = {
 
             
 
+            <!-- Driver Hub Button if Driver -->
+            <button 
+              v-if="store.isDriver"
+              @click="store.currentView = store.currentView === 'driver' ? 'customer' : 'driver'"
+              class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 shadow-md"
+              :class="store.currentView === 'driver' ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30' : 'bg-surface-800 text-emerald-400 border-surface-700 hover:border-emerald-500/50'">
+              <i class="pi pi-compass text-[11px]"></i>
+              <span>{{ store.currentView === 'driver' ? 'Customer View' : 'Driver Portal' }}</span>
+            </button>
+
             <!-- Portal Switcher Button if Staff or Admin -->
             <button 
               v-if="store.isStaffOrAdmin"
@@ -178,7 +188,7 @@ const Navbar = {
                     <i class="pi pi-history text-brand-400"></i> Order History
                   </button>
                   <button 
-                    v-if="store.activeOrder"
+                    v-if="store.activeOrder || store.user"
                     @click="goToView('track')" 
                     class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors">
                     <i class="pi pi-map-marker text-emerald-400"></i> Track Active Order
@@ -312,6 +322,7 @@ const Navbar = {
               class="text-xs font-semibold bg-surface-800 text-gray-300 border border-surface-700 rounded-lg px-2.5 py-1.5 cursor-pointer">
               <option value="customer">Role: Customer</option>
               <option value="staff">Role: Staff</option>
+              <option value="driver">Role: Delivery Driver</option>
               <option value="admin">Role: Admin</option>
               <option value="super_admin">Role: Super Admin</option>
             </select>

@@ -50,6 +50,8 @@
   <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css" />
 
   <!-- Custom Stylesheet -->
+  <!-- Leaflet Map CSS (Free OpenStreetMap GPS & Navigation) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="./css/styles.css" />
 
   <!-- Core Frameworks (Document Specs: Vue 3, Pinia, Axios) -->
@@ -57,53 +59,61 @@
   <script src="https://unpkg.com/vue-demi"></script>
   <script src="https://unpkg.com/pinia/dist/pinia.iife.prod.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <!-- Leaflet Map JS (Free OpenStreetMap GPS & Navigation) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <!-- Google Identity Services (Sign In with Google) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Real-Time WebSockets (Pusher JS & Laravel Echo for Reverb) -->
+  <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+  <script src="./js/echo-setup.js"></script>
 </head>
 
 <body class="bg-surface-950 text-gray-100 antialiased selection:bg-brand-500 selection:text-white">
-  <div id="root"></div>
+  <div id="app"></div>
 
   <!-- API Client & Pinia Store -->
-  <script src="./js/api.js?v=1.9"></script>
-  <script src="./js/store.js?v=1.9"></script>
+  <script src="./js/api.js?v=2.6"></script>
+  <script src="./js/store.js?v=2.6"></script>
 
   <!-- Customer Side Components (Figures 1-13) -->
-  <script src="./js/components/Navbar.js?v=1.9"></script>
-  <script src="./js/components/LandingHero.js?v=1.9"></script>
-  <script src="./js/components/AnnouncementSection.js?v=1.9"></script>
-  <script src="./js/components/FeaturedSection.js?v=1.9"></script>
-  <script src="./js/components/MenuSection.js?v=1.9"></script>
-  <script src="./js/components/CustomizationModal.js?v=1.9"></script>
-  <script src="./js/components/CartDrawer.js?v=1.9"></script>
-  <script src="./js/components/CheckoutView.js?v=1.9"></script>
-  <script src="./js/components/OrderTracker.js?v=1.9"></script>
-  <script src="./js/components/OrderHistoryView.js?v=1.9"></script>
-  <script src="./js/components/ActiveOrderWidget.js?v=1.9"></script>
-  <script src="./js/components/ChatbotAssistant.js?v=1.9"></script>
-  <script src="./js/components/EventBookingModal.js?v=1.9"></script>
-  <script src="./js/components/AnnouncementModal.js?v=1.9"></script>
-  <script src="./js/components/AuthModal.js?v=1.9"></script>
-  <script src="./js/components/StaffPinModal.js?v=1.9"></script>
-  <script src="./js/components/AboutSection.js?v=1.9"></script>
-  <script src="./js/components/ContactSection.js?v=1.9"></script>
+  <script src="./js/components/Navbar.js?v=2.6"></script>
+  <script src="./js/components/LandingHero.js?v=2.6"></script>
+  <script src="./js/components/AnnouncementSection.js?v=2.6"></script>
+  <script src="./js/components/FeaturedSection.js?v=2.6"></script>
+  <script src="./js/components/MenuSection.js?v=2.6"></script>
+  <script src="./js/components/CustomizationModal.js?v=2.6"></script>
+  <script src="./js/components/CartDrawer.js?v=2.6"></script>
+  <script src="./js/components/CheckoutView.js?v=2.6"></script>
+  <script src="./js/components/OrderTracker.js?v=2.6"></script>
+  <script src="./js/components/OrderHistoryView.js?v=2.6"></script>
+  <script src="./js/components/ActiveOrderWidget.js?v=2.6"></script>
+  <script src="./js/components/ChatbotAssistant.js?v=2.6"></script>
+  <script src="./js/components/EventBookingModal.js?v=2.6"></script>
+  <script src="./js/components/AnnouncementModal.js?v=2.6"></script>
+  <script src="./js/components/AuthModal.js?v=2.6"></script>
+  <script src="./js/components/StaffPinModal.js?v=2.6"></script>
+  <script src="./js/components/AboutSection.js?v=2.6"></script>
+  <script src="./js/components/DriverView.js?v=2.6"></script>
+  <script src="./js/components/ContactSection.js?v=2.6"></script>
 
   <!-- Staff, Admin & Super Admin Components (Figures 14-17 + Ingredient Prototype) -->
-  <script src="./js/admin/AdminOrdersTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminAnalyticsTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminCompletedTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminProductsTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminInventoryTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminRecipesTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminBookingsTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminAnnouncementsTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminUsersTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminAuditTab.js?v=1.9"></script>
-  <script src="./js/admin/AdminDashboard.js?v=1.9"></script>
+  <script src="./js/admin/AdminOrdersTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminAnalyticsTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminCompletedTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminProductsTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminInventoryTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminRecipesTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminBookingsTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminAnnouncementsTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminUsersTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminAuditTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminSettingsTab.js?v=2.6"></script>
+  <script src="./js/admin/AdminDashboard.js?v=2.6"></script>
 
   <!-- Main Vue 3 Application Root -->
-  <script src="./js/App.js?v=1.9"></script>
+  <script src="./js/App.js?v=2.6"></script>
 </body>
 
 </html>

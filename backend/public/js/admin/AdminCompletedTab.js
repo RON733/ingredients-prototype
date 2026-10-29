@@ -61,7 +61,20 @@ const AdminCompletedTab = {
 
               <div class="flex justify-between text-xs text-gray-400 pt-2">
                 <span>Fulfillment & Payment:</span>
-                <span class="text-white font-bold">{{ order.order_type }} • {{ order.payment_method }}</span>
+                <span class="text-white font-bold">
+                  {{ order.order_type }} • {{ order.payment_method }}
+                  <span v-if="order.driver" class="text-sky-300 ml-1.5 font-semibold">🛵 {{ order.driver.name }}</span>
+                </span>
+              </div>
+              <div v-if="order.payment_method === 'GCash'" class="flex items-center justify-between text-xs pt-1">
+                <span class="text-sky-400 font-mono font-semibold">GCash Ref: {{ order.gcash_ref || 'N/A' }}</span>
+                <button 
+                  v-if="order.proof_image"
+                  type="button" 
+                  @click="selectedReceiptImage = order.proof_image" 
+                  class="text-[11px] font-bold text-sky-400 hover:text-sky-300 underline flex items-center gap-1 cursor-pointer">
+                  <i class="pi pi-image text-xs"></i> View Receipt
+                </button>
               </div>
 
               <div class="flex justify-between text-base font-black text-white pt-2 border-t border-surface-700">
@@ -81,11 +94,41 @@ const AdminCompletedTab = {
         <p class="text-xs text-gray-500 mt-1">Orders marked as completed in the kitchen will be preserved here.</p>
       </div>
 
+      <!-- Receipt Screenshot Lightbox Modal -->
+      <div 
+        v-if="selectedReceiptImage" 
+        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="selectedReceiptImage = null">
+        <div class="relative max-w-lg w-full bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up">
+          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="pi pi-receipt text-sky-400"></i> Customer GCash Receipt Screenshot
+            </h4>
+            <button 
+              @click="selectedReceiptImage = null" 
+              class="w-7 h-7 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
+              ✕
+            </button>
+          </div>
+          <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
+            <img :src="selectedReceiptImage" alt="Payment Receipt" class="max-h-[60vh] w-auto object-contain rounded-lg" />
+          </div>
+          <div class="text-right">
+            <button 
+              @click="selectedReceiptImage = null"
+              class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-white text-xs font-bold transition-colors cursor-pointer">
+              Close Preview
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   `,
   setup() {
     const store = useGShotStore();
     const loading = Vue.ref(false);
+    const selectedReceiptImage = Vue.ref(null);
 
     Vue.onMounted(() => {
       refresh();
@@ -118,6 +161,7 @@ const AdminCompletedTab = {
 
     return {
       store,
+      selectedReceiptImage,
       loading,
       completedOrders,
       formatDate,

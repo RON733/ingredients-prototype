@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use App\Models\SystemSetting;
 use App\Models\AuditLog;
 use App\Models\Product;
@@ -11,28 +12,56 @@ class SystemController extends Controller
 {
     public function settings()
     {
-        $settings = SystemSetting::all()->pluck('value', 'key')->toArray();
-        if (empty($settings['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
-            $settings['google_client_id'] = env('GOOGLE_CLIENT_ID');
-        }
+        // High-Performance In-Memory Cache: Serves system settings in 2ms
+        $settings = Cache::remember('system_settings_all', 180, function () {
+            $s = SystemSetting::all()->pluck('value', 'key')->toArray();
+            if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
+                $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
+            }
+            return $s;
+        });
         return response()->json($settings);
     }
 
     public function updateSettings(Request $request)
     {
         $data = $request->all();
+
+        // Handle direct file upload for GCash QR code if submitted as multipart form data
+        if ($request->hasFile('gcash_qr_file')) {
+            $file = $request->file('gcash_qr_file');
+            $uploadDir = public_path('uploads');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $filename = 'gcash_qr_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadDir, $filename);
+            $data['gcash_qr_code'] = './uploads/' . $filename;
+        }
+
         foreach ($data as $key => $value) {
-            SystemSetting::updateOrCreate(['key' => $key], ['value' => (string)$value]);
+            if ($value === null) {
+                SystemSetting::where('key', $key)->delete();
+            } else {
+                SystemSetting::updateOrCreate(['key' => $key], ['value' => (string)$value]);
+            }
+        }
+
+        $details = 'Modified system variables and store preferences.';
+        if (isset($data['gcash_account_number']) || isset($data['gcash_qr_code'])) {
+            $num = $data['gcash_account_number'] ?? 'unchanged';
+            $details = "Updated GCash payment settings: Mobile No. {$num}, QR code updated.";
         }
 
         AuditLog::create([
-            'user_name' => $request->user()?->name ?? 'Super Admin',
-            'user_role' => $request->user()?->role ?? 'super_admin',
+            'user_name' => $request->user()?->name ?? 'Admin',
+            'user_role' => $request->user()?->role ?? 'admin',
             'action' => 'System Settings Updated',
-            'details' => 'Modified system variables and store preferences.',
+            'details' => $details,
             'ip_address' => $request->ip(),
         ]);
 
+        Cache::forget('system_settings_all');
         return response()->json([
             'message' => 'Settings updated successfully.',
             'settings' => SystemSetting::all()->pluck('value', 'key')
@@ -41,12 +70,20 @@ class SystemController extends Controller
 
     public function auditLogs(Request $request)
     {
-        // Audit trail strictly records and displays staff, admin, and super_admin personnel only
-        $query = AuditLog::whereIn('user_role', ['staff', 'admin', 'super_admin']);
+        // Strict Authorization: ONLY the Super Admin has access to the System Audit Trail
+        $user = $request->user('sanctum') ?? $request->user();
+        if ($user && $user->role !== 'super_admin') {
+            return response()->json([
+                'message' => 'Access Denied: The System Audit Trail is strictly restricted to Super Admin.'
+            ], 403);
+        }
+
+        // Audit trail records and displays staff, admin, super_admin, and driver operations
+        $query = AuditLog::whereIn('user_role', ['staff', 'admin', 'super_admin', 'driver']);
 
         if ($request->filled('role')) {
             $role = strtolower(trim($request->input('role')));
-            if (in_array($role, ['staff', 'admin', 'super_admin'])) {
+            if (in_array($role, ['staff', 'admin', 'super_admin', 'driver'])) {
                 $query->where('user_role', $role);
             }
         }

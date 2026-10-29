@@ -327,6 +327,7 @@ const AdminUsersTab = {
                   required
                   class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500 cursor-pointer">
                   <option value="staff">Staff / Barista (Counter & Orders)</option>
+                  <option value="driver">Delivery Driver (Rider & GPS)</option>
                   <option value="admin">Admin (Store Owner / Manager)</option>
                   <option v-if="store.isSuperAdmin" value="super_admin">Super Admin (System Administrator)</option>
                 </select>
@@ -481,6 +482,7 @@ const AdminUsersTab = {
       if (role === 'super_admin') return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
       if (role === 'admin') return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
       if (role === 'staff') return 'bg-sky-500/20 text-sky-300 border border-sky-500/30';
+      if (role === 'driver') return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
       return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
     };
 
@@ -489,6 +491,7 @@ const AdminUsersTab = {
         case 'super_admin': return 'Super Admin';
         case 'admin': return 'Admin (Owner)';
         case 'staff': return 'Staff (Barista)';
+        case 'driver': return 'Delivery Driver';
         default: return 'Customer';
       }
     };

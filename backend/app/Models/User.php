@@ -22,6 +22,8 @@ class User extends Authenticatable
         'status',
         'google_id',
         'avatar',
+        'is_available',
+        'driver_status',
     ];
 
     protected $hidden = [
@@ -34,6 +36,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_available' => 'boolean',
         ];
     }
 

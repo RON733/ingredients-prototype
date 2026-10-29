@@ -1,20 +1,40 @@
 // G Shot Teas — System Audit Trail & Activity Log Tab (Exclusively Staff, Admin, and Super Admin)
 const AdminAuditTab = {
   template: `
-    <div class="space-y-6 animate-fade-in">
+    <!-- Unauthorized Fallback if non-Super Admin somehow navigates here -->
+    <div v-if="!store.isSuperAdmin" class="p-8 sm:p-12 rounded-3xl bg-surface-900 border border-rose-500/40 text-center space-y-4 shadow-2xl animate-fade-in">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center text-2xl">
+        <i class="pi pi-lock"></i>
+      </div>
+      <div class="space-y-1">
+        <h3 class="text-xl font-black text-white">Super Admin Exclusive Console</h3>
+        <p class="text-xs text-gray-400 max-w-md mx-auto">
+          The System Audit Trail contains sensitive personnel and security activity logs. Access is strictly restricted to the Super Admin.
+        </p>
+      </div>
+      <div>
+        <button 
+          @click="store.adminTab = 'orders'"
+          class="px-5 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-white text-xs font-bold transition-colors cursor-pointer">
+          Return to Orders
+        </button>
+      </div>
+    </div>
+
+    <div v-else class="space-y-6 animate-fade-in">
       
       <!-- Top Header & Role Stat Cards -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 mb-1.5">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-brand-500/10 text-brand-400 border border-brand-500/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>
-              Internal Personnel Accountability
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30">
+              <i class="pi pi-shield text-[10px]"></i>
+              Super Admin Exclusive Security Console
             </span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">System Audit Trail</h2>
           <p class="text-xs text-gray-400 mt-1 max-w-2xl">
-            Exclusively logging administrative actions, stock adjustments, order management, and system updates performed by authorized Staff, Admin, and Super Admin personnel.
+            Tamper-evident logs of administrative actions, stock modifications, orders, and system preferences. Strictly restricted to Super Admin.
           </p>
         </div>
 
@@ -31,7 +51,7 @@ const AdminAuditTab = {
       </div>
 
       <!-- Personnel Stat Summary Strip -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <!-- All Personnel -->
         <div 
           @click="selectedRole = 'all'"
@@ -44,7 +64,7 @@ const AdminAuditTab = {
             <i class="pi pi-history text-brand-400 text-xs"></i>
           </div>
           <div class="text-xl font-black text-white mt-1">{{ totalPersonnelCount }}</div>
-          <span class="text-[9px] text-gray-400">Staff, Admin & Super Admin</span>
+          <span class="text-[9px] text-gray-400">Staff, Admins & Drivers</span>
         </div>
 
         <!-- Super Admin Card -->
@@ -91,6 +111,21 @@ const AdminAuditTab = {
           <div class="text-xl font-black text-sky-300 mt-1">{{ staffCount }}</div>
           <span class="text-[9px] text-sky-400/80">POS & Inventory Operations</span>
         </div>
+
+        <!-- Driver Card -->
+        <div 
+          @click="selectedRole = 'driver'"
+          class="p-4 rounded-2xl border transition-all cursor-pointer"
+          :class="selectedRole === 'driver' 
+            ? 'bg-emerald-950/40 border-emerald-500/70 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-500/40' 
+            : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Drivers (Fleet)</span>
+            <i class="pi pi-compass text-emerald-400 text-xs"></i>
+          </div>
+          <div class="text-xl font-black text-emerald-300 mt-1">{{ driverCount }}</div>
+          <span class="text-[9px] text-emerald-400/80">Delivery Dispatches & Fulfillment</span>
+        </div>
       </div>
 
       <!-- Filter Controls Strip -->
@@ -130,6 +165,15 @@ const AdminAuditTab = {
             <i class="pi pi-user text-[10px]"></i>
             <span>Staff</span>
             <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-sky-950 text-sky-200 font-mono">{{ staffCount }}</span>
+          </button>
+
+          <button 
+            @click="selectedRole = 'driver'"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+            :class="selectedRole === 'driver' ? 'bg-emerald-600 text-white shadow-sm' : 'text-emerald-300/70 hover:text-emerald-200 hover:bg-emerald-950/40'">
+            <i class="pi pi-compass text-[10px]"></i>
+            <span>Drivers</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-emerald-950 text-emerald-200 font-mono">{{ driverCount }}</span>
           </button>
         </div>
 
@@ -227,6 +271,12 @@ const AdminAuditTab = {
                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-sky-500/20 text-sky-300 border border-sky-500/40">
                           <i class="pi pi-user text-[8px]"></i> Staff (Barista)
                         </span>
+                        <!-- Driver Badge -->
+                        <span 
+                          v-else-if="log.user_role === 'driver'" 
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                          <i class="pi pi-compass text-[8px]"></i> Driver (Rider)
+                        </span>
                         <!-- Fallback (if any) -->
                         <span 
                           v-else 
@@ -284,6 +334,11 @@ const AdminAuditTab = {
     const searchQuery = Vue.ref('');
 
     Vue.onMounted(() => {
+      if (!store.isSuperAdmin) {
+        store.notify('Access Denied: The Audit Trail is strictly reserved for Super Admin.', 'error');
+        store.adminTab = 'orders';
+        return;
+      }
       refresh();
     });
 
@@ -294,7 +349,7 @@ const AdminAuditTab = {
         const raw = res.data.data || res.data || [];
         // Strictly ensure only staff, admin, and super_admin are retained
         logs.value = Array.isArray(raw)
-          ? raw.filter(item => ['staff', 'admin', 'super_admin'].includes((item.user_role || '').toLowerCase()))
+          ? raw.filter(item => ['staff', 'admin', 'super_admin', 'driver'].includes((item.user_role || '').toLowerCase()))
           : [];
       } catch (err) {
         console.error('Failed to load audit logs:', err);
@@ -308,13 +363,14 @@ const AdminAuditTab = {
     const superAdminCount = Vue.computed(() => logs.value.filter(l => l.user_role === 'super_admin').length);
     const adminCount = Vue.computed(() => logs.value.filter(l => l.user_role === 'admin').length);
     const staffCount = Vue.computed(() => logs.value.filter(l => l.user_role === 'staff').length);
+    const driverCount = Vue.computed(() => logs.value.filter(l => l.user_role === 'driver').length);
 
     // Filtered by selected tab and search term
     const filteredLogs = Vue.computed(() => {
       return logs.value.filter(log => {
         // Enforce strictly staff, admin, and super_admin
         const role = (log.user_role || '').toLowerCase();
-        if (!['staff', 'admin', 'super_admin'].includes(role)) return false;
+        if (!['staff', 'admin', 'super_admin', 'driver'].includes(role)) return false;
 
         // Role tab filter
         if (selectedRole.value !== 'all' && role !== selectedRole.value) {
@@ -343,6 +399,7 @@ const AdminAuditTab = {
         case 'super_admin': return 'bg-purple-900/60 text-purple-300 border border-purple-500/50';
         case 'admin': return 'bg-amber-900/60 text-amber-300 border border-amber-500/50';
         case 'staff': return 'bg-sky-900/60 text-sky-300 border border-sky-500/50';
+        case 'driver': return 'bg-emerald-900/60 text-emerald-300 border border-emerald-500/50';
         default: return 'bg-surface-700 text-gray-300';
       }
     };
@@ -356,6 +413,9 @@ const AdminAuditTab = {
         return 'bg-amber-950/60 border-amber-700/60 text-amber-300';
       }
       if (act.includes('stock') || act.includes('ingredient') || act.includes('inventory')) {
+        return 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300';
+      }
+      if (act.includes('driver') || act.includes('deliver') || act.includes('dispatch')) {
         return 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300';
       }
       if (act.includes('payment') || act.includes('order')) {
@@ -387,6 +447,7 @@ const AdminAuditTab = {
       superAdminCount,
       adminCount,
       staffCount,
+      driverCount,
       filteredLogs,
       getRoleAvatarClass,
       getActionBadgeClass,

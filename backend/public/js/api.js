@@ -1,7 +1,7 @@
 // G Shot Teas — Axios API Client & Network Service
 (function () {
-  const isLaravelHost = window.location.port === '8000';
-  const API_BASE_URL = isLaravelHost ? '/api' : 'http://127.0.0.1:8000/api';
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const API_BASE_URL = window.GST_BACKEND_URL || (isLocal ? (window.location.port === '8000' ? '/api' : 'http://127.0.0.1:8000/api') : '/api');
 
   const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -9,7 +9,7 @@
       'Accept': 'application/json',
       'Content-Type': 'application/json',
     },
-    timeout: 10000,
+    timeout: 30000,
   });
 
   // Attach auth token if available
@@ -56,11 +56,16 @@
 
     // Orders
     getOrders: (params) => apiClient.get('/v1/orders', { params }),
-    getOrder: (id) => apiClient.get(`/orders/${id}`),
+    getOrder: (id) => apiClient.get(`/orders/${encodeURIComponent(String(id).replace('#', '').trim())}`),
     getActiveOrder: (userId) => apiClient.get('/orders/active', { params: { user_id: userId } }),
     placeOrder: (data) => apiClient.post('/orders', data),
     updateOrderStatus: (id, status) => apiClient.patch(`/v1/orders/${id}/status`, { status }),
     verifyPayment: (id) => apiClient.patch(`/v1/orders/${id}/verify-payment`),
+    updateDriverLocation: (id, coords) => apiClient.patch(`/v1/orders/${id}/driver-location`, coords),
+    assignDriver: (id, driverId) => apiClient.patch(`/v1/orders/${id}/assign-driver`, { driver_id: driverId }),
+    getDrivers: () => apiClient.get('/v1/drivers'),
+    toggleDriverAvailability: (isAvailable, driverId) => apiClient.patch('/v1/driver/toggle-availability', { is_available: isAvailable, driver_id: driverId }),
+    getDriverOrders: (params) => apiClient.get('/v1/driver/orders', { params }),
 
     // Bookings
     getBookings: () => apiClient.get('/v1/bookings'),

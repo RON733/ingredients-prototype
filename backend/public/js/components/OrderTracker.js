@@ -1,4 +1,4 @@
-// G Shot Teas — Order Tracker Component (Matches Figure 11)
+// G Shot Teas â€” Order Tracker Component with Free Leaflet GPS Tracking
 const OrderTracker = {
   template: `
     <div class="py-12 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 animate-fade-in">
@@ -11,7 +11,7 @@ const OrderTracker = {
         <span>Back to Store</span>
       </button>
 
-      <div v-if="order" class="bg-surface-800/90 rounded-3xl border border-surface-700 p-6 sm:p-10 space-y-8 shadow-2xl">
+      <div v-if="order && order.order_number" class="bg-surface-800/90 rounded-3xl border border-surface-700 p-6 sm:p-10 space-y-8 shadow-2xl">
         
         <!-- Order ID & Live Status Header -->
         <div class="border-b border-surface-700/60 pb-6">
@@ -57,11 +57,83 @@ const OrderTracker = {
           </p>
         </div>
 
+        <!-- Live GPS Delivery Tracker Map (Foodpanda-style Leaflet map) -->
+        <div v-if="order.order_type === 'Delivery'" class="rounded-3xl border border-surface-700/80 bg-surface-900/90 p-4 sm:p-6 space-y-4 shadow-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <span class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl shadow-lg">
+                ðŸ›µ
+              </span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="text-xs font-black text-white uppercase tracking-wider">Live Delivery GPS Tracker</h4>
+                  <span v-if="order.status === 'Out for Delivery'" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
+                    LIVE EN ROUTE
+                  </span>
+                </div>
+                <p class="text-[11px] text-gray-400">
+                  <span v-if="order.status === 'Out for Delivery'" class="text-emerald-400 font-semibold">Rider Juan is on the road heading to your address!</span>
+                  <span v-else-if="order.status === 'Completed'" class="text-emerald-400 font-semibold">Delivery completed! Enjoy your G Shot Teas!</span>
+                  <span v-else class="text-gray-400">GPS map activated. Delivery route mapped from Santa Rosa kitchen.</span>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-surface-800 text-gray-300 border border-surface-700">
+                Leaflet â€¢ OpenStreetMap
+              </span>
+            </div>
+          </div>
+
+          <!-- Leaflet Map Container -->
+          <div class="relative w-full h-72 sm:h-80 rounded-2xl overflow-hidden border border-surface-700 shadow-inner bg-surface-950">
+            <div id="order-tracker-map" class="w-full h-full"></div>
+            
+            <!-- Live GPS Status Badge Floating on Map -->
+            <div class="absolute bottom-3 left-3 right-3 sm:right-auto bg-surface-900/90 backdrop-blur-md border border-surface-700 rounded-xl px-3.5 py-2 shadow-2xl flex items-center justify-between sm:justify-start gap-3 z-[15]">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400" :class="order.status === 'Out for Delivery' ? 'animate-ping' : ''"></span>
+                <span class="text-[11px] font-bold text-white">
+                  {{ order.status === 'Out for Delivery' ? 'Rider In Transit' : 'Route & Waypoints Ready' }}
+                </span>
+              </div>
+              <button 
+                type="button"
+                @click="recenterMap" 
+                class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-surface-800 hover:bg-surface-700 text-brand-400 border border-surface-700 transition-colors">
+                <i class="pi pi-compass text-[9px] mr-1"></i> Recenter
+              </button>
+            </div>
+          </div>
+
+          <!-- Waypoint Destination Details -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+            <div class="p-3 rounded-2xl bg-surface-800/60 border border-surface-700/60 flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-sm shrink-0">
+                ðŸª
+              </div>
+              <div class="min-w-0">
+                <p class="font-bold text-white">Store Origin</p>
+                <p class="text-[11px] text-gray-400 truncate">G Shot Teas, Santa Rosa, Laguna</p>
+              </div>
+            </div>
+            <div class="p-3 rounded-2xl bg-surface-800/60 border border-surface-700/60 flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-sm shrink-0">
+                ðŸ 
+              </div>
+              <div class="min-w-0">
+                <p class="font-bold text-white">Delivery Destination</p>
+                <p class="text-[11px] text-gray-300 truncate" :title="order.delivery_address">{{ order.delivery_address || 'Santa Rosa, Laguna' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Customer & Delivery Info Card -->
         <div class="p-5 rounded-2xl bg-surface-900/60 border border-surface-700/60 text-xs space-y-2">
           <div class="flex justify-between">
             <span class="text-gray-400">Customer</span>
-            <span class="font-bold text-white">{{ order.customer_name }} ({{ order.customer_phone }})</span>
+            <span class="font-bold text-white">{{ order.customer_name || "Customer" }} ({{ order.customer_phone || "" }})</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-400">Fulfillment</span>
@@ -92,12 +164,12 @@ const OrderTracker = {
                 </p>
                 <p v-if="item.customization" class="text-[11px] text-gray-400">
                   <span v-if="item.customization.size">{{ item.customization.size }}</span>
-                  <span v-if="item.customization.sugar"> • {{ item.customization.sugar }}</span>
-                  <span v-if="item.customization.ice"> • {{ item.customization.ice }}</span>
+                  <span v-if="item.customization.sugar"> â€¢ {{ item.customization.sugar }}</span>
+                  <span v-if="item.customization.ice"> â€¢ {{ item.customization.ice }}</span>
                 </p>
               </div>
               <span class="font-black text-white">
-                ₱{{ Number(item.subtotal).toFixed(2) }}
+                â‚±{{ Number(item.subtotal).toFixed(2) }}
               </span>
             </div>
           </div>
@@ -118,19 +190,22 @@ const OrderTracker = {
             <span class="text-gray-400">GCash Ref No.</span>
             <span class="font-mono font-bold text-sky-400">{{ order.gcash_ref }}</span>
           </div>
-          <div v-if="order.proof_image && !order.gcash_ref" class="flex justify-between text-xs">
-            <span class="text-gray-400">Payment Verification</span>
-            <span class="font-bold text-emerald-400 flex items-center gap-1">
-              <i class="pi pi-check-circle text-[10px]"></i> Receipt Screenshot Attached
-            </span>
+          <div v-if="order.proof_image" class="flex justify-between text-xs items-center">
+            <span class="text-gray-400">GCash Receipt</span>
+            <button 
+              type="button" 
+              @click="previewReceipt = order.proof_image"
+              class="font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-[11px] underline cursor-pointer">
+              <i class="pi pi-check-circle text-[10px]"></i> View Attached Receipt
+            </button>
           </div>
           <div v-if="order.delivery_fee > 0" class="flex justify-between text-gray-400">
             <span>Delivery Fee</span>
-            <span class="font-medium text-white">₱{{ Number(order.delivery_fee).toFixed(2) }}</span>
+            <span class="font-medium text-white">â‚±{{ Number(order.delivery_fee).toFixed(2) }}</span>
           </div>
           <div class="flex justify-between text-xl font-black text-white pt-2">
             <span>Total</span>
-            <span class="text-brand-400">₱{{ Number(order.total_amount).toFixed(2) }}</span>
+            <span class="text-brand-400">â‚±{{ Number(order.total_amount).toFixed(2) }}</span>
           </div>
         </div>
 
@@ -157,7 +232,7 @@ const OrderTracker = {
 
       <!-- No Active Order State -->
       <div v-else class="text-center py-20 bg-surface-800/50 rounded-3xl border border-surface-700 p-8">
-        <div class="text-4xl mb-4">📦</div>
+        <div class="text-4xl mb-4">ðŸ“¦</div>
         <h3 class="text-lg font-bold text-white">No Active Order Selected</h3>
         <p class="text-xs text-gray-400 mt-1">Place an order or check your order history to track progress.</p>
         <button 
@@ -167,6 +242,34 @@ const OrderTracker = {
         </button>
       </div>
 
+      <!-- Receipt Lightbox Modal -->
+      <div 
+        v-if="previewReceipt" 
+        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="previewReceipt = null">
+        <div class="relative max-w-lg w-full bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up">
+          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
+            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="pi pi-receipt text-sky-400"></i> Your Uploaded GCash Receipt
+            </h4>
+            <button 
+              @click="previewReceipt = null" 
+              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
+              âœ•
+            </button>
+          </div>
+          <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
+            <img :src="previewReceipt" alt="Payment Receipt" class="max-h-[60vh] w-auto object-contain rounded-lg" />
+          </div>
+          <div class="text-right">
+            <button 
+              @click="previewReceipt = null" 
+              class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-white text-xs font-bold transition-colors cursor-pointer">
+              Close Preview
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   setup() {
@@ -244,9 +347,258 @@ const OrderTracker = {
       }
     };
 
+    const previewReceipt = Vue.ref(null);
+
+    // --- Leaflet Live GPS Tracking Map Implementation ---
+    let trackerMap = null;
+    let storeMarker = null;
+    let customerMarker = null;
+    let riderMarker = null;
+    let routeLine = null;
+
+    // Base store location: Santa Rosa, Laguna (near Sinalhan / Amira Townhomes)
+    const STORE_LAT = 14.3167;
+    const STORE_LNG = 121.1111;
+
+    const initOrUpdateMap = () => {
+      if (typeof window === 'undefined' || typeof window.L === 'undefined') return;
+      if (!order.value || order.value.order_type !== 'Delivery') return;
+
+      const mapEl = document.getElementById('order-tracker-map');
+      if (!mapEl) return;
+
+      // Customer Lat/Lng
+      const custLat = order.value.customer_lat ? Number(order.value.customer_lat) : 14.3218;
+      const custLng = order.value.customer_lng ? Number(order.value.customer_lng) : 121.1192;
+
+      // Rider Lat/Lng calculation
+      let riderLat = order.value.driver_lat ? Number(order.value.driver_lat) : null;
+      let riderLng = order.value.driver_lng ? Number(order.value.driver_lng) : null;
+      
+      if (!riderLat || !riderLng) {
+        if (order.value.status === 'Out for Delivery') {
+          // Simulated 65% progression along route toward customer
+          riderLat = STORE_LAT + (custLat - STORE_LAT) * 0.65;
+          riderLng = STORE_LNG + (custLng - STORE_LNG) * 0.65;
+        } else if (order.value.status === 'Completed') {
+          riderLat = custLat;
+          riderLng = custLng;
+        } else {
+          riderLat = STORE_LAT;
+          riderLng = STORE_LNG;
+        }
+      }
+
+      if (!trackerMap) {
+        trackerMap = L.map('order-tracker-map', {
+          zoomControl: true,
+          scrollWheelZoom: false,
+          attributionControl: true
+        }).setView([STORE_LAT, STORE_LNG], 14);
+
+        // Dark Matter map tiles (matches G Shot Teas dark theme)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+          maxZoom: 19,
+          className: 'dark-osm-tiles'
+        }).addTo(trackerMap);
+
+        // Store Pin Icon
+        const storeIcon = L.divIcon({
+          className: 'custom-store-pin',
+          html: `
+            <div class="relative flex items-center justify-center">
+              <div class="w-9 h-9 rounded-full bg-amber-500 border-2 border-white shadow-xl flex items-center justify-center text-sm font-bold">
+                ðŸª
+              </div>
+            </div>
+          `,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+
+        // Customer Destination Icon
+        const customerIcon = L.divIcon({
+          className: 'custom-customer-pin',
+          html: `
+            <div class="relative flex items-center justify-center">
+              <div class="w-9 h-9 rounded-full bg-emerald-500 border-2 border-white shadow-xl flex items-center justify-center text-sm font-bold">
+                ðŸ 
+              </div>
+            </div>
+          `,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+
+        // Rider Icon
+        const riderIcon = L.divIcon({
+          className: 'custom-rider-pin',
+          html: `
+            <div class="relative flex items-center justify-center">
+              <div class="rider-ping-ring"></div>
+              <div class="w-10 h-10 rounded-full bg-brand-500 border-2 border-white shadow-2xl flex items-center justify-center text-base z-10 animate-bounce-sm">
+                ðŸ›µ
+              </div>
+            </div>
+          `,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20]
+        });
+
+        storeMarker = L.marker([STORE_LAT, STORE_LNG], { icon: storeIcon })
+          .addTo(trackerMap)
+          .bindPopup('<b>G Shot Teas</b><br>Kitchen Store Origin');
+
+        customerMarker = L.marker([custLat, custLng], { icon: customerIcon })
+          .addTo(trackerMap)
+          .bindPopup(`<b>Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}`);
+
+        riderMarker = L.marker([riderLat, riderLng], { icon: riderIcon })
+          .addTo(trackerMap)
+          .bindPopup(`<b>G Shot Teas Delivery Rider</b><br>${order.value.status === 'Out for Delivery' ? 'En route to your doorstep!' : 'Awaiting dispatch'}`);
+
+        // Polyline connecting Store -> Rider -> Destination
+        routeLine = L.polyline([
+          [STORE_LAT, STORE_LNG],
+          [riderLat, riderLng],
+          [custLat, custLng]
+        ], {
+          color: '#f97316',
+          weight: 4,
+          opacity: 0.85,
+          dashArray: '8, 8'
+        }).addTo(trackerMap);
+
+        // Fit bounds with comfortable padding
+        const bounds = L.latLngBounds([
+          [STORE_LAT, STORE_LNG],
+          [custLat, custLng],
+          [riderLat, riderLng]
+        ]);
+        trackerMap.fitBounds(bounds, { padding: [45, 45] });
+
+        setTimeout(() => {
+          if (trackerMap) trackerMap.invalidateSize();
+        }, 250);
+
+      } else {
+        // Update marker and route line positions
+        if (customerMarker) customerMarker.setLatLng([custLat, custLng]);
+        if (riderMarker) riderMarker.setLatLng([riderLat, riderLng]);
+        if (routeLine) {
+          routeLine.setLatLngs([
+            [STORE_LAT, STORE_LNG],
+            [riderLat, riderLng],
+            [custLat, custLng]
+          ]);
+        }
+      }
+    };
+
+    const recenterMap = () => {
+      if (!trackerMap) return;
+      const custLat = order.value?.customer_lat ? Number(order.value.customer_lat) : 14.3218;
+      const custLng = order.value?.customer_lng ? Number(order.value.customer_lng) : 121.1192;
+      let riderLat = order.value?.driver_lat ? Number(order.value.driver_lat) : (STORE_LAT + (custLat - STORE_LAT) * 0.65);
+      let riderLng = order.value?.driver_lng ? Number(order.value.driver_lng) : (STORE_LNG + (custLng - STORE_LNG) * 0.65);
+
+      const bounds = L.latLngBounds([
+        [STORE_LAT, STORE_LNG],
+        [custLat, custLng],
+        [riderLat, riderLng]
+      ]);
+      trackerMap.fitBounds(bounds, { padding: [45, 45] });
+    };
+
+    let pollInterval = null;
+    let echoChannelSubscribed = null;
+
+    const subscribeToOrderEcho = (orderId) => {
+      if (!orderId || !window.Echo) return;
+      if (echoChannelSubscribed === orderId) return;
+      if (echoChannelSubscribed) {
+        try { window.Echo.leave(`orders.${echoChannelSubscribed}`); } catch (e) {}
+      }
+      echoChannelSubscribed = orderId;
+      console.log(`📡 [Reverb] Subscribing to live updates for order #${orderId}`);
+      window.Echo.channel(`orders.${orderId}`)
+        .listen('.DriverLocationUpdated', (e) => {
+          console.log('📍 [Reverb] Live Driver Location Received:', e);
+          if (order.value && Number(order.value.id) === Number(e.order_id)) {
+            order.value.driver_lat = e.driver_lat;
+            order.value.driver_lng = e.driver_lng;
+            if (e.driver_notes) order.value.driver_notes = e.driver_notes;
+
+            if (riderMarker) {
+              riderMarker.setLatLng([e.driver_lat, e.driver_lng]);
+            } else {
+              initOrUpdateMap();
+            }
+          }
+        })
+        .listen('.OrderStatusUpdated', (e) => {
+          console.log('⚡ [Reverb] Live Order Status Changed:', e);
+          if (order.value && Number(order.value.id) === Number(e.order_id)) {
+            order.value.status = e.status;
+            if (e.driver) order.value.driver = e.driver;
+            store.refreshActiveOrder(order.value.id);
+          }
+        });
+    };
+
+    Vue.onMounted(async () => {
+      if (!order.value || !order.value.order_number) {
+        await store.fetchUserActiveOrder();
+      }
+      Vue.nextTick(() => {
+        initOrUpdateMap();
+      });
+
+      if (order.value && order.value.id) {
+        subscribeToOrderEcho(order.value.id);
+      }
+
+      pollInterval = setInterval(async () => {
+        if (order.value && order.value.id) {
+          if (!echoChannelSubscribed) {
+            subscribeToOrderEcho(order.value.id);
+          }
+          await store.refreshActiveOrder(order.value.id);
+        } else if (store.user) {
+          await store.fetchUserActiveOrder();
+        }
+      }, 5000);
+    });
+
+    Vue.watch(() => order.value?.id, (newId) => {
+      if (newId) {
+        subscribeToOrderEcho(newId);
+      }
+    });
+
+    Vue.watch(() => order.value, () => {
+      Vue.nextTick(() => {
+        initOrUpdateMap();
+      });
+    }, { deep: true });
+
+    Vue.onBeforeUnmount(() => {
+      if (pollInterval) clearInterval(pollInterval);
+      if (echoChannelSubscribed && window.Echo) {
+        try { window.Echo.leave(`orders.${echoChannelSubscribed}`); } catch (e) {}
+        echoChannelSubscribed = null;
+      }
+      if (trackerMap) {
+        trackerMap.remove();
+        trackerMap = null;
+      }
+    });
+
     return {
       store,
       order,
+      previewReceipt,
       currentStepIndex,
       progressPercentage,
       statusBadgeClass,
@@ -255,6 +607,7 @@ const OrderTracker = {
       formatTime,
       backToHome,
       cancelOrder,
+      recenterMap,
     };
   },
 };

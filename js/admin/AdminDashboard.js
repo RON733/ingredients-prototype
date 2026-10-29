@@ -121,13 +121,23 @@ const AdminDashboard = {
           <span>Users</span>
         </button>
 
+        <!-- Audit Trail (Exclusively Super Admin Only) -->
         <button 
-          v-if="store.isStaffOrAdmin"
+          v-if="store.isSuperAdmin"
           @click="selectTab('audit')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'audit' ? 'bg-surface-700 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'audit' ? 'bg-purple-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-history text-[11px]"></i>
           <span>Audit</span>
+        </button>
+
+        <button 
+          v-if="store.isAdminOrSuper"
+          @click="selectTab('settings')" 
+          class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+          :class="store.adminTab === 'settings' ? 'bg-sky-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          <i class="pi pi-qrcode text-[11px]"></i>
+          <span>GCash & Settings</span>
         </button>
       </div>
 
@@ -287,14 +297,24 @@ const AdminDashboard = {
               <span>User & Roles</span>
             </button>
 
-            <!-- Audit Trail (Staff, Admin, Super Admin) -->
+            <!-- Audit Trail (Exclusively Super Admin Only) -->
             <button 
-              v-if="store.isStaffOrAdmin"
+              v-if="store.isSuperAdmin"
               @click="selectTab('audit')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'audit' ? 'bg-surface-700 text-white font-bold shadow-md' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'audit' ? 'bg-purple-600 text-white font-bold shadow-lg shadow-purple-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-history text-sm"></i>
               <span>Audit Trail</span>
+            </button>
+
+            <!-- Store & GCash Payment Settings (Admin & Super Admin) -->
+            <button 
+              v-if="store.isAdminOrSuper"
+              @click="selectTab('settings')"
+              class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
+              :class="store.adminTab === 'settings' ? 'bg-sky-600 text-white font-bold shadow-lg shadow-sky-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              <i class="pi pi-qrcode text-sm"></i>
+              <span>GCash & Settings</span>
             </button>
 
           </nav>
@@ -436,7 +456,8 @@ const AdminDashboard = {
         case 'bookings': return AdminBookingsTab;
         case 'announcements': return AdminAnnouncementsTab;
         case 'users': return AdminUsersTab;
-        case 'audit': return AdminAuditTab;
+        case 'audit': return store.isSuperAdmin ? AdminAuditTab : AdminOrdersTab;
+        case 'settings': return AdminSettingsTab;
         default: return AdminOrdersTab;
       }
     });

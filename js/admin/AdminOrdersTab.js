@@ -15,6 +15,14 @@ const AdminOrdersTab = {
 
         <div class="flex items-center gap-3">
           <button 
+            v-if="store.isAdminOrSuper"
+            @click="store.adminTab = 'settings'"
+            class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 transition-all flex items-center gap-2"
+            title="Manage Store GCash QR Code & Number">
+            <i class="pi pi-qrcode"></i>
+            <span class="hidden sm:inline">GCash QR & Settings</span>
+          </button>
+          <button 
             @click="openWalkInModal"
             class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2">
             <i class="pi pi-desktop"></i>
@@ -75,6 +83,9 @@ const AdminOrdersTab = {
               <span class="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase"
                 :class="order.order_type === 'Delivery' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
                 {{ order.order_type }}
+              </span>
+              <span v-if="order.driver" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                🛵 {{ order.driver.name }}
               </span>
               <span class="text-xs text-gray-400">
                 • {{ formatTime(order.created_at) }}
@@ -167,21 +178,39 @@ const AdminOrdersTab = {
               <span>Start Preparing</span>
             </button>
 
+            <!-- If Preparing: Delivery orders trigger Dispatch Modal; Store Pickup triggers Ready for Pickup -->
             <button 
-              v-if="order.status === 'Preparing'"
-              @click="updateStatus(order, order.order_type === 'Delivery' ? 'Out for Delivery' : 'Ready for Pickup')"
+              v-if="order.status === 'Preparing' && order.order_type === 'Delivery'"
+              @click="openDispatchModal(order)"
               class="px-4 py-2 rounded-xl text-xs font-black bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/30 transition-all flex items-center gap-1.5">
               <i class="pi pi-send"></i>
-              <span>{{ order.order_type === 'Delivery' ? 'Dispatch Rider' : 'Mark Ready for Pickup' }}</span>
+              <span>Dispatch Rider</span>
             </button>
 
             <button 
-              v-if="order.status === 'Preparing' || order.status === 'Ready for Pickup' || order.status === 'Out for Delivery'"
+              v-else-if="order.status === 'Preparing'"
+              @click="updateStatus(order, 'Ready for Pickup')"
+              class="px-4 py-2 rounded-xl text-xs font-black bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/30 transition-all flex items-center gap-1.5">
+              <i class="pi pi-check"></i>
+              <span>Mark Ready for Pickup</span>
+            </button>
+
+            <!-- Complete Order: ONLY for Store Pickup / Walk-in! -->
+            <button 
+              v-if="(order.status === 'Preparing' || order.status === 'Ready for Pickup') && order.order_type !== 'Delivery'"
               @click="updateStatus(order, 'Completed')"
               class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition-all flex items-center gap-1.5">
               <i class="pi pi-check-circle"></i>
               <span>Complete Order</span>
             </button>
+
+            <!-- When a Delivery order is Out for Delivery: locked for staff! Only the assigned rider can complete it! -->
+            <div 
+              v-if="order.order_type === 'Delivery' && order.status === 'Out for Delivery'"
+              class="px-3 py-1.5 rounded-xl bg-sky-950/60 border border-sky-500/30 text-sky-300 text-[11px] font-bold flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+              <span>🛵 Dispatched to {{ order.driver?.name || 'Rider' }} • Awaiting Rider Completion</span>
+            </div>
 
             <button 
               v-if="order.status !== 'Completed' && order.status !== 'Cancelled'"
@@ -268,6 +297,119 @@ const AdminOrdersTab = {
         </div>
       </div>
 
+
+      <!-- Dispatch Rider Selection Modal -->
+      <div 
+        v-if="dispatchModalOrder"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="dispatchModalOrder = null">
+        <div class="relative max-w-md w-full bg-surface-900 border border-surface-700 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-up">
+          
+          <!-- Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
+                🛵
+              </div>
+              <div>
+                <h3 class="text-sm font-black text-white">Dispatch Order {{ dispatchModalOrder.order_number }}</h3>
+                <p class="text-[11px] text-gray-400">Select an available rider for delivery</p>
+              </div>
+            </div>
+            <button 
+              @click="dispatchModalOrder = null" 
+              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors">
+              ✕
+            </button>
+          </div>
+
+          <!-- Order Summary Card -->
+          <div class="p-3 rounded-2xl bg-surface-950 border border-surface-800 text-xs space-y-1">
+            <p class="font-bold text-white flex items-center justify-between">
+              <span>Customer: {{ dispatchModalOrder.customer_name }}</span>
+              <span class="text-brand-400">₱{{ Number(dispatchModalOrder.total_amount).toFixed(2) }} ({{ dispatchModalOrder.payment_method }})</span>
+            </p>
+            <p class="text-[11px] text-gray-400 truncate" :title="dispatchModalOrder.delivery_address">
+              📍 {{ dispatchModalOrder.delivery_address || 'Santa Rosa, Laguna' }}
+            </p>
+          </div>
+
+          <!-- Auto-Assign Quick Action -->
+          <div class="flex justify-between items-center">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Fleet Riders</p>
+            <button 
+              type="button"
+              @click="autoAssignRider"
+              class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1 transition-all">
+              <i class="pi pi-bolt text-[10px]"></i> Auto-Assign First Available
+            </button>
+          </div>
+
+          <!-- Rider List -->
+          <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+            <div v-if="driversList.length === 0" class="text-center py-6 text-xs text-gray-400">
+              No delivery riders found in the system.
+            </div>
+
+            <div 
+              v-for="driver in driversList" 
+              :key="driver.id"
+              @click="driver.is_available ? selectedDriverId = driver.id : null"
+              class="p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3"
+              :class="[
+                !driver.is_available ? 'opacity-50 cursor-not-allowed bg-surface-950 border-surface-800' : 'cursor-pointer hover:border-brand-500/60',
+                selectedDriverId === driver.id ? 'bg-brand-600/20 border-brand-500 ring-2 ring-brand-500/30' : 'bg-surface-850 border-surface-700/80'
+              ]">
+              
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-md"
+                  :class="driver.is_available ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'">
+                  🛵
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="font-bold text-white text-xs truncate">{{ driver.name }}</p>
+                    <span 
+                      class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+                      :class="driver.is_available ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'">
+                      {{ driver.is_available ? (driver.active_deliveries_count > 0 ? 'Busy (' + driver.active_deliveries_count + ' active)' : 'Available') : 'Not Available (Break)' }}
+                    </span>
+                  </div>
+                  <p class="text-[10px] text-gray-400 mt-0.5">{{ driver.phone || driver.email }}</p>
+                </div>
+              </div>
+
+              <!-- Selection Radio Check -->
+              <div class="shrink-0">
+                <span 
+                  class="w-5 h-5 rounded-full border flex items-center justify-center text-[10px]"
+                  :class="selectedDriverId === driver.id ? 'bg-brand-500 border-white text-white' : 'border-surface-600'">
+                  <i v-if="selectedDriverId === driver.id" class="pi pi-check"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Action Buttons -->
+          <div class="pt-2 flex items-center justify-end gap-2 border-t border-surface-800">
+            <button 
+              type="button" 
+              @click="dispatchModalOrder = null"
+              class="px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold transition-colors">
+              Cancel
+            </button>
+            <button 
+              type="button" 
+              @click="confirmDispatch"
+              :disabled="!selectedDriverId || isDispatching"
+              class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-black shadow-lg shadow-sky-600/30 transition-all flex items-center gap-2">
+              <i class="pi pi-send"></i>
+              <span>{{ isDispatching ? 'Dispatching...' : 'Confirm & Dispatch Rider' }}</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
     </div>
   `,
   setup() {
@@ -291,12 +433,6 @@ const AdminOrdersTab = {
       { key: 'all', label: 'All Orders' },
     ];
 
-    Vue.onMounted(() => {
-      refresh();
-      const interval = setInterval(refresh, 6000);
-      Vue.onUnmounted(() => clearInterval(interval));
-    });
-
     const refresh = async () => {
       loading.value = true;
       try {
@@ -305,6 +441,12 @@ const AdminOrdersTab = {
         loading.value = false;
       }
     };
+
+    Vue.onMounted(() => {
+      refresh();
+      const interval = setInterval(refresh, 6000);
+      Vue.onUnmounted(() => clearInterval(interval));
+    });
 
     const activeOrders = Vue.computed(() => {
       return store.orders.filter(o => ['Pending', 'Preparing', 'Ready for Pickup', 'Out for Delivery'].includes(o.status));
@@ -346,25 +488,46 @@ const AdminOrdersTab = {
       return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
+    // Instant 0ms Optimistic UI Updates: UI responds instantaneously, syncs in background!
     const updateStatus = async (order, newStatus) => {
+      const prevStatus = order.status;
+
+      // 1. Instant 0ms Optimistic Update
+      order.status = newStatus;
+      const storeItem = store.orders.find(o => o.id === order.id);
+      if (storeItem) storeItem.status = newStatus;
+
+      store.notify(`Order ${order.order_number} moved to ${newStatus}`);
+
+      // 2. Background sync to cloud database
       try {
         await GST_API.updateOrderStatus(order.id, newStatus);
-        store.notify(`Order ${order.order_number} moved to ${newStatus}`);
-        refresh();
-        store.fetchIngredients();
-        store.fetchProducts();
       } catch (err) {
-        store.notify('Error updating order status.', 'error');
+        // Rollback on network failure
+        order.status = prevStatus;
+        if (storeItem) storeItem.status = prevStatus;
+        store.notify('Failed to update order status on server. Rolled back.', 'error');
       }
     };
 
+    // Instant 0ms Optimistic UI for GCash Payment Verification
     const verifyPayment = async (order) => {
+      const prevPaymentStatus = order.payment_status;
+
+      // 1. Instant 0ms Optimistic Update
+      order.payment_status = 'Verified';
+      const storeItem = store.orders.find(o => o.id === order.id);
+      if (storeItem) storeItem.payment_status = 'Verified';
+
+      store.notify(`GCash Payment verified for ${order.order_number}`);
+
+      // 2. Background sync to cloud database
       try {
         await GST_API.verifyPayment(order.id);
-        store.notify(`GCash Payment verified for ${order.order_number}`);
-        refresh();
       } catch (err) {
-        store.notify('Error verifying payment.', 'error');
+        order.payment_status = prevPaymentStatus;
+        if (storeItem) storeItem.payment_status = prevPaymentStatus;
+        store.notify('Error verifying payment on server. Rolled back.', 'error');
       }
     };
 
@@ -396,6 +559,63 @@ const AdminOrdersTab = {
       }
     };
 
+    // Rider Dispatch Modal State & Logic for Staff
+    const dispatchModalOrder = Vue.ref(null);
+    const driversList = Vue.ref([]);
+    const selectedDriverId = Vue.ref(null);
+    const isDispatching = Vue.ref(false);
+
+    const openDispatchModal = async (order) => {
+      dispatchModalOrder.value = order;
+      selectedDriverId.value = null;
+      try {
+        const res = await GST_API.getDrivers();
+        driversList.value = res.data;
+        const firstAvail = driversList.value.find(d => d.is_available);
+        if (firstAvail) selectedDriverId.value = firstAvail.id;
+      } catch (err) {
+        store.notify('Could not load fleet drivers.', 'error');
+      }
+    };
+
+    const autoAssignRider = () => {
+      const avail = driversList.value.filter(d => d.is_available);
+      if (avail.length > 0) {
+        avail.sort((a, b) => (a.active_deliveries_count || 0) - (b.active_deliveries_count || 0));
+        selectedDriverId.value = avail[0].id;
+        store.notify('Auto-selected least busy rider: ' + avail[0].name, 'info');
+      } else {
+        store.notify('No available riders on duty right now.', 'warning');
+      }
+    };
+
+    const confirmDispatch = async () => {
+      if (!dispatchModalOrder.value || !selectedDriverId.value) return;
+      isDispatching.value = true;
+      try {
+        const assignedDriver = driversList.value.find(d => d.id === selectedDriverId.value);
+        await GST_API.assignDriver(dispatchModalOrder.value.id, selectedDriverId.value);
+        
+        dispatchModalOrder.value.status = 'Out for Delivery';
+        dispatchModalOrder.value.driver_id = selectedDriverId.value;
+        dispatchModalOrder.value.driver = assignedDriver;
+
+        const storeItem = store.orders.find(o => o.id === dispatchModalOrder.value.id);
+        if (storeItem) {
+          storeItem.status = 'Out for Delivery';
+          storeItem.driver_id = selectedDriverId.value;
+          storeItem.driver = assignedDriver;
+        }
+
+        store.notify(`Order ${dispatchModalOrder.value.order_number} dispatched to ${assignedDriver?.name}!`, 'success');
+        dispatchModalOrder.value = null;
+      } catch (err) {
+        store.notify('Failed to dispatch rider.', 'error');
+      } finally {
+        isDispatching.value = false;
+      }
+    };
+
     return {
       store,
       loading,
@@ -416,6 +636,13 @@ const AdminOrdersTab = {
       openWalkInModal,
       submitWalkIn,
       selectedReceiptImage,
+      dispatchModalOrder,
+      driversList,
+      selectedDriverId,
+      isDispatching,
+      openDispatchModal,
+      autoAssignRider,
+      confirmDispatch,
     };
   },
 };

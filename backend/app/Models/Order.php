@@ -12,10 +12,16 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'user_id',
+        'driver_id',
         'customer_name',
         'customer_phone',
         'order_type',
         'delivery_address',
+        'customer_lat',
+        'customer_lng',
+        'driver_lat',
+        'driver_lng',
+        'driver_notes',
         'payment_method',
         'payment_status',
         'gcash_ref',
@@ -31,11 +37,20 @@ class Order extends Model
         'subtotal' => 'float',
         'delivery_fee' => 'float',
         'total_amount' => 'float',
+        'customer_lat' => 'float',
+        'customer_lng' => 'float',
+        'driver_lat' => 'float',
+        'driver_lng' => 'float',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(User::class, 'driver_id');
     }
 
     public function items()
