@@ -1,4 +1,4 @@
-﻿FROM php:8.3-fpm-alpine
+FROM php:8.3-fpm-alpine
 
 # Install system tools and PHP extensions required for Laravel & Reverb
 RUN apk add --no-cache \
@@ -28,12 +28,16 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# Strip any Windows CRLF endings and ensure executable permissions
+# Strip any Windows CRLF endings, remove any UTF-8 BOM, and set permissions
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
+    && sed -i 's/\r$//' /etc/nginx/nginx.conf \
+    && sed -i 's/\r$//' /etc/supervisor/conf.d/supervisord.conf \
+    && sed -i '1s/^\xEF\xBB\xBF//' /etc/supervisor/conf.d/supervisord.conf \
+    && sed -i '1s/^\xEF\xBB\xBF//' /etc/nginx/nginx.conf \
     && chmod +x /usr/local/bin/entrypoint.sh \
     && chown -R www-data:www-data /var/www/html/backend/storage /var/www/html/backend/bootstrap/cache \
     && chmod -R 775 /var/www/html/backend/storage /var/www/html/backend/bootstrap/cache
 
-EXPOSE 80 8080
+EXPOSE 80 8080 10000
 
 ENTRYPOINT ["/bin/sh", "/usr/local/bin/entrypoint.sh"]

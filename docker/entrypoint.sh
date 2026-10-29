@@ -1,8 +1,9 @@
 #!/bin/sh
 set -e
 
-PORT=""
-sed -i "s/listen 80;/listen ${PORT};/g" /etc/nginx/nginx.conf
+PORT="${PORT:-10000}"
+echo "==> Configuring Nginx port to ${PORT}..."
+sed -i "s/listen [0-9]\+;/listen ${PORT};/g" /etc/nginx/nginx.conf
 
 echo "==> Configuring Laravel environment..."
 cd /var/www/html/backend
