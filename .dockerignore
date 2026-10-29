@@ -1,0 +1,10 @@
+﻿.git
+.github
+.vscode
+backend/.env
+backend/storage/logs/*.log
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/vendor
+legacy_react_archive

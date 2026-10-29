@@ -1,0 +1,26 @@
+﻿services:
+  - type: web
+    name: g-shot-teas
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore
+    envVars:
+      - key: APP_NAME
+        value: "G Shot Teas"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: aws-0-ap-northeast-1.pooler.supabase.com
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_USERNAME
+        value: postgres.lwfwqyjjrblwwelfxbpg
+      - key: DB_SSLMODE
+        value: require
