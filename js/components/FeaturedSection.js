@@ -35,18 +35,40 @@ const FeaturedSection = {
                   </span>
                 </div>
 
-                <!-- Visual Media -->
-                <div class="relative h-44 rounded-2xl overflow-hidden bg-surface-950 mb-4 flex items-center justify-center">
+                <!-- Visual Media (Click to Enlarge Food / Drink Picture) -->
+                <div 
+                  @click="openImage(item)"
+                  class="relative h-44 rounded-2xl overflow-hidden bg-surface-950 mb-4 flex items-center justify-center cursor-pointer group/image select-none"
+                  title="Click to view whole enlarged picture">
                   <img 
                     :src="item.image" 
                     :alt="item.name"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    class="w-full h-full object-cover group-hover:scale-105 group-hover/image:scale-110 transition-transform duration-500"
                     onerror="this.src='./assets/hero-banner.png'"
                   />
-                  <div class="absolute inset-0 bg-gradient-to-t from-surface-900/90 via-transparent to-transparent"></div>
-                  <span class="absolute bottom-3 left-3 text-3xl drop-shadow-lg">
+                  <div class="absolute inset-0 bg-gradient-to-t from-surface-900/90 via-transparent to-transparent pointer-events-none"></div>
+
+                  <!-- Hover overlay indicator to enlarge -->
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                    <span class="px-3 py-1.5 rounded-xl bg-surface-950/90 text-white text-xs font-bold flex items-center gap-1.5 border border-white/20 shadow-xl backdrop-blur-md transform scale-95 group-hover/image:scale-100 transition-transform">
+                      <i class="pi pi-search-plus text-brand-400"></i>
+                      <span>Enlarge Photo</span>
+                    </span>
+                  </div>
+
+                  <span class="absolute bottom-3 left-3 text-3xl drop-shadow-lg pointer-events-none">
                     {{ item.emoji }}
                   </span>
+
+                  <!-- Quick Zoom Button -->
+                  <button 
+                    type="button"
+                    @click.stop="openImage(item)"
+                    aria-label="Enlarge food picture"
+                    class="absolute top-2.5 right-2.5 w-7 h-7 rounded-lg bg-surface-900/85 hover:bg-brand-600 text-gray-200 hover:text-white flex items-center justify-center text-[11px] border border-surface-700 shadow-md backdrop-blur-md transition-all hover:scale-110 z-10"
+                    title="View enlarged picture">
+                    <i class="pi pi-search-plus"></i>
+                  </button>
                 </div>
 
                 <!-- Details -->
@@ -543,6 +565,10 @@ const FeaturedSection = {
       store.viewFlyer(url);
     };
 
+    const openImage = (item) => {
+      store.openProductPreview(item);
+    };
+
     return {
       store,
       bestsellers,
@@ -550,6 +576,7 @@ const FeaturedSection = {
       handleOrder,
       bookPackage,
       viewFlyer,
+      openImage,
     };
   },
 };

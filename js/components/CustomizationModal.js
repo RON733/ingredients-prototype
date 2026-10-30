@@ -8,23 +8,37 @@ const CustomizationModal = {
       
       <div class="relative w-full max-w-lg bg-surface-800 rounded-3xl border border-surface-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
-        <!-- Header with Product Thumbnail -->
-        <div class="relative h-44 bg-surface-900 overflow-hidden flex items-end p-5">
+        <!-- Header with Product Thumbnail (Click to view full enlarged photo) -->
+        <div 
+          @click="store.openProductPreview(product)"
+          class="relative h-44 bg-surface-900 overflow-hidden flex items-end p-5 cursor-pointer group/hdr select-none"
+          title="Click to view whole enlarged picture">
           <img 
             :src="product.image || './assets/hero-banner.png'" 
             :alt="product.name" 
-            class="absolute inset-0 w-full h-full object-cover filter brightness-[0.4]"
+            class="absolute inset-0 w-full h-full object-cover filter brightness-[0.4] group-hover/hdr:brightness-[0.55] transition-all duration-300"
             onerror="this.src='./assets/hero-banner.png'"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-surface-800 via-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-surface-800 via-transparent pointer-events-none"></div>
           
+          <!-- Enlarge Button Badge -->
           <button 
-            @click="close"
-            class="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-900/80 text-gray-300 hover:text-white flex items-center justify-center border border-surface-700">
+            type="button"
+            @click.stop="store.openProductPreview(product)"
+            class="absolute top-4 left-4 px-2.5 py-1 rounded-lg bg-surface-900/80 hover:bg-brand-600 text-gray-200 hover:text-white text-[11px] font-bold flex items-center gap-1.5 border border-surface-700 transition-all shadow-md backdrop-blur-md z-10"
+            title="View whole enlarged picture">
+            <i class="pi pi-search-plus text-brand-400"></i>
+            <span>Enlarge Photo</span>
+          </button>
+
+          <button 
+            @click.stop="close"
+            class="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-900/80 hover:bg-surface-700 text-gray-300 hover:text-white flex items-center justify-center border border-surface-700 z-10"
+            title="Close">
             ✕
           </button>
 
-          <div class="relative z-10">
+          <div class="relative z-10 pointer-events-none">
             <span class="text-xs px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-400 font-bold uppercase tracking-wider">
               {{ product.category }}
             </span>

@@ -60,15 +60,26 @@ const AnnouncementSection = {
             v-if="item.image_url"
             class="h-full rounded-3xl bg-surface-900 border border-surface-700/80 hover:border-brand-500/40 shadow-xl hover:shadow-2xl hover:shadow-brand-500/5 transition-all overflow-hidden flex flex-col md:flex-row group relative">
             
-            <!-- Media Container with Dark Gradient Mask -->
-            <div class="w-full md:w-5/12 h-52 sm:h-60 md:h-auto min-h-[220px] md:min-h-[260px] relative overflow-hidden shrink-0 bg-surface-950">
+            <!-- Media Container with Dark Gradient Mask (Click to view full photo) -->
+            <div 
+              @click="store.openProductPreview({ name: item.title, image: item.image_url, description: item.content, category: 'Announcement' })"
+              class="w-full md:w-5/12 h-52 sm:h-60 md:h-auto min-h-[220px] md:min-h-[260px] relative overflow-hidden shrink-0 bg-surface-950 cursor-pointer group/image select-none"
+              title="Click to view whole enlarged picture">
               <img 
                 :src="item.image_url" 
                 :alt="item.title"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" 
+                class="w-full h-full object-cover group-hover:scale-105 group-hover/image:scale-110 transition-transform duration-500 ease-out" 
                 loading="lazy" />
               <!-- Gradient Overlay for smooth edge blend -->
               <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-surface-900 via-surface-900/30 to-transparent pointer-events-none"></div>
+
+              <!-- Hover overlay indicator to enlarge -->
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                <span class="px-3 py-1.5 rounded-xl bg-surface-950/90 text-white text-xs font-bold flex items-center gap-1.5 border border-white/20 shadow-xl backdrop-blur-md transform scale-95 group-hover/image:scale-100 transition-transform">
+                  <i class="pi pi-search-plus text-brand-400"></i>
+                  <span>Enlarge Photo</span>
+                </span>
+              </div>
               
               <!-- Floating Badge over Photo on Mobile -->
               <div class="absolute top-3 left-3 z-10 md:hidden">

@@ -70,28 +70,50 @@ const MenuSection = {
           :key="product.id"
           class="group rounded-2xl bg-surface-800/80 border border-surface-700/60 overflow-hidden flex flex-col justify-between hover:border-brand-500/50 hover:shadow-2xl hover:shadow-brand-500/10 transition-all duration-300 transform hover:-translate-y-1">
           
-          <!-- Image Container with Stock Badge -->
-          <div class="relative h-48 bg-surface-900 overflow-hidden flex items-center justify-center">
+          <!-- Image Container with Click to Enlarge -->
+          <div 
+            @click="openImage(product)"
+            class="relative h-48 bg-surface-900 overflow-hidden flex items-center justify-center cursor-pointer group/image select-none"
+            title="Click to view whole enlarged picture">
+            
             <img 
               :src="product.image || './assets/hero-banner.png'" 
               :alt="product.name"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter brightness-95"
+              class="w-full h-full object-cover group-hover:scale-105 group-hover/image:scale-110 transition-transform duration-500 filter brightness-95 group-hover/image:brightness-100"
               onerror="this.src='./assets/hero-banner.png'"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-surface-800 via-transparent to-black/30"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-surface-800 via-transparent to-black/30 pointer-events-none"></div>
+
+            <!-- Hover overlay indicator to enlarge -->
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+              <span class="px-3 py-1.5 rounded-xl bg-surface-950/90 text-white text-xs font-bold flex items-center gap-1.5 border border-white/20 shadow-xl backdrop-blur-md transform scale-95 group-hover/image:scale-100 transition-transform">
+                <i class="pi pi-search-plus text-brand-400"></i>
+                <span>Enlarge Photo</span>
+              </span>
+            </div>
 
             <!-- Emoji Icon Accent -->
-            <span class="absolute top-3 left-3 text-2xl drop-shadow-md">
+            <span class="absolute top-3 left-3 text-2xl drop-shadow-md pointer-events-none">
               {{ product.emoji || '🍽️' }}
             </span>
 
             <!-- Category Badge -->
-            <span class="absolute top-3 right-3 text-[11px] font-bold px-2.5 py-1 rounded-full bg-surface-900/80 backdrop-blur-md text-gray-200 border border-surface-700">
+            <span class="absolute top-3 right-3 text-[11px] font-bold px-2.5 py-1 rounded-full bg-surface-900/80 backdrop-blur-md text-gray-200 border border-surface-700 pointer-events-none">
               {{ product.category }}
             </span>
 
+            <!-- Quick Enlarge Zoom Button (visible on mobile / touch or hover) -->
+            <button 
+              type="button"
+              @click.stop="openImage(product)"
+              aria-label="Enlarge food picture"
+              class="absolute bottom-2.5 right-2.5 w-8 h-8 rounded-xl bg-surface-900/85 hover:bg-brand-600 text-gray-200 hover:text-white flex items-center justify-center text-xs border border-surface-700 shadow-lg backdrop-blur-md transition-all hover:scale-110 z-10"
+              title="View enlarged picture">
+              <i class="pi pi-search-plus"></i>
+            </button>
+
             <!-- Kitchen Stock Status Badge (Prototype Addition!) -->
-            <div class="absolute bottom-3 left-3">
+            <div class="absolute bottom-3 left-3 pointer-events-none">
               <span 
                 v-if="product.max_portions > 3"
                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/50 backdrop-blur-md">
@@ -218,6 +240,10 @@ const MenuSection = {
       store.customizeModalOpen = true;
     };
 
+    const openImage = (product) => {
+      store.openProductPreview(product);
+    };
+
     return {
       store,
       categories,
@@ -226,6 +252,7 @@ const MenuSection = {
       sortOrder,
       filteredProducts,
       openCustomize,
+      openImage,
     };
   },
 };

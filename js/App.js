@@ -72,6 +72,7 @@ const App = {
         <!-- Global Drawers & Modals -->
         <CartDrawer />
         <CustomizationModal />
+        <ProductImageModal />
         <EventBookingModal />
         <AnnouncementModal />
         <AuthModal />
@@ -173,6 +174,7 @@ app.component('LandingHero', LandingHero);
 app.component('FeaturedSection', FeaturedSection);
 app.component('MenuSection', MenuSection);
 app.component('CustomizationModal', CustomizationModal);
+app.component('ProductImageModal', typeof ProductImageModal !== 'undefined' ? ProductImageModal : (window.ProductImageModal || {}));
 app.component('CartDrawer', CartDrawer);
 app.component('CheckoutView', CheckoutView);
 app.component('OrderTracker', OrderTracker);

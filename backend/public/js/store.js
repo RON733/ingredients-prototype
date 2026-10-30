@@ -305,6 +305,9 @@ const useGShotStore = defineStore('gshot', {
     selectedBookingPackage: null,
     previewFlyerImage: null,
 
+    // Food & Drink Menu Item Photo Lightbox Preview
+    previewProduct: null,
+
     // Shared POS Terminal Quick Staff PIN Switcher
     staffPinModalOpen: false,
   }),
@@ -718,6 +721,42 @@ const useGShotStore = defineStore('gshot', {
 
     closeFlyer() {
       this.previewFlyerImage = null;
+    },
+
+    openProductPreview(item) {
+      if (!item) return;
+      if (typeof item === 'string') {
+        this.previewProduct = {
+          name: 'Menu Item',
+          image: item,
+          category: 'Menu',
+          price: null,
+          description: '',
+          emoji: '🍽️',
+          max_portions: 99,
+          recipes: [],
+        };
+        return;
+      }
+      const matched = this.products.find(p => p.id === item.id) || {};
+      this.previewProduct = {
+        id: item.id || matched.id,
+        name: item.name || matched.name || 'Menu Item',
+        category: item.category || matched.category || 'Menu',
+        price: item.price !== undefined ? item.price : (matched.price !== undefined ? matched.price : null),
+        description: item.description || item.desc || matched.description || '',
+        emoji: item.emoji || matched.emoji || '🍽️',
+        image: item.image || item.image_url || matched.image || './assets/hero-banner.png',
+        max_portions: matched.max_portions !== undefined ? matched.max_portions : (item.max_portions !== undefined ? item.max_portions : 99),
+        recipes: matched.recipes || item.recipes || [],
+        is_available: matched.is_available !== undefined ? matched.is_available : (item.is_available !== false),
+        badge: item.badge || null,
+        rating: item.rating || null,
+      };
+    },
+
+    closeProductPreview() {
+      this.previewProduct = null;
     },
 
     // Announcements Management
