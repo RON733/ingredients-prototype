@@ -80,21 +80,42 @@ const OrderTracker = {
               </div>
             </div>
 
-            <!-- Top Controls (Map Theme, Fine-tune Pin, Recenter, Google Maps) -->
+            <!-- Top Controls (Map Engine Switcher, Map Theme, Fine-tune Pin, Recenter, Google Maps) -->
             <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <!-- Switch between Grab Road Map and Google Maps -->
+              <div class="inline-flex rounded-xl p-0.5 bg-surface-900 border border-surface-700 shadow-sm">
+                <button 
+                  type="button"
+                  @click="setMapEngine('road')" 
+                  class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  :class="mapEngine === 'road' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'">
+                  <i class="pi pi-compass text-[9px]"></i>
+                  <span>Road Map</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="setMapEngine('google')" 
+                  class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  :class="mapEngine === 'google' ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'">
+                  <i class="pi pi-map text-[9px]"></i>
+                  <span>Google Maps Live</span>
+                </button>
+              </div>
+
               <a 
                 :href="googleMapsRouteUrl" 
                 target="_blank"
                 class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
                 title="Open live directions and traffic in Google Maps">
                 <i class="pi pi-external-link text-[9px]"></i>
-                <span>Google Maps Route</span>
+                <span>Open in Google Maps</span>
               </a>
               <button 
+                v-if="mapEngine === 'road'"
                 type="button"
                 @click="toggleMapTheme" 
                 class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
-                <span>{{ mapTheme === 'street' ? '\u{1F5FA}\u{FE0F} Street' : '\u{1F319} Night' }}</span>
+                <span>{{ mapTheme === 'street' ? '🗺️ Street' : '🌙 Night' }}</span>
               </button>
               <button 
                 type="button"
@@ -106,6 +127,7 @@ const OrderTracker = {
                 <span>Fine-tune My Pin</span>
               </button>
               <button 
+                v-if="mapEngine === 'road'"
                 type="button"
                 @click="recenterMap" 
                 class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-surface-800 hover:bg-surface-700 text-brand-400 border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
@@ -115,18 +137,54 @@ const OrderTracker = {
             </div>
           </div>
 
-          <!-- Rider's Live Google Maps Location Banner (if shared by rider) -->
+          <!-- Rider's Real-Time GPS Active Banner (when rider broadcasts GPS) -->
+          <div v-if="order.driver_lat && order.driver_lng" class="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-surface-900 to-teal-950/80 border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xl animate-fade-in">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-base shadow-inner shrink-0">
+                <i class="pi pi-send"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <p class="font-bold text-white">Rider's Real-Time GPS Active</p>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> LIVE
+                  </span>
+                </div>
+                <p class="text-[11px] text-emerald-200/80">
+                  Rider is broadcasting real-time coordinates. You can watch live below or open directly in Google Maps!
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <a 
+                :href="googleMapsLivePinUrl" 
+                target="_blank"
+                class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="pi pi-map-marker text-xs"></i>
+                <span>Track in Google Maps</span>
+              </a>
+              <a 
+                :href="googleMapsRouteUrl" 
+                target="_blank"
+                class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-emerald-400 border border-emerald-500/30 font-bold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="pi pi-compass text-xs"></i>
+                <span>Directions</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Rider's Personal Google Maps Live Location Banner (if shared by rider via link) -->
           <div v-if="riderSharedLiveLink" class="p-3.5 rounded-2xl bg-gradient-to-r from-sky-950/90 to-surface-900 border border-sky-400/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xl animate-fade-in">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400 text-base shadow-inner shrink-0">📍</div>
               <div>
                 <div class="flex items-center gap-2">
-                  <p class="font-bold text-white">Rider's Personal Google Maps Live Location</p>
+                  <p class="font-bold text-white">Rider's Personal Google Maps Live Trip</p>
                   <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> LIVE
                   </span>
                 </div>
-                <p class="text-[11px] text-sky-200/80">Rider shared their personal live location link. Tap to track their live dot directly in Google Maps.</p>
+                <p class="text-[11px] text-sky-200/80">Rider shared their native Google Maps trip link. Tap to track their moving dot directly in Google Maps.</p>
               </div>
             </div>
             <a 
@@ -151,7 +209,7 @@ const OrderTracker = {
                 type="button"
                 @click="saveAdjustedPin"
                 class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs shadow-md transition-all cursor-pointer">
-                ? Save New Pin
+                ✓ Save New Pin
               </button>
               <button 
                 type="button"
@@ -162,12 +220,32 @@ const OrderTracker = {
             </div>
           </div>
 
-          <!-- Leaflet Map Container -->
+          <!-- Map Container -->
           <div class="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-surface-700 shadow-2xl bg-surface-950">
-            <div id="order-tracker-map" class="w-full h-full"></div>
             
+            <!-- Leaflet Grab-Style Road Map -->
+            <div v-show="mapEngine === 'road'" id="order-tracker-map" class="w-full h-full"></div>
+
+            <!-- Google Maps Live Embedded Map -->
+            <div v-if="mapEngine === 'google'" class="w-full h-full relative">
+              <iframe 
+                :src="googleMapsEmbedUrl" 
+                class="w-full h-full border-0" 
+                loading="lazy" 
+                allowfullscreen
+                referrerpolicy="no-referrer-when-downgrade">
+              </iframe>
+
+              <!-- Overlay badge with 1-click open in Google Maps app -->
+              <div class="absolute bottom-3 right-3 bg-surface-900/90 backdrop-blur-md border border-surface-700 rounded-xl px-3 py-1.5 shadow-xl flex items-center gap-2 z-[10]">
+                <a :href="googleMapsLivePinUrl" target="_blank" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer">
+                  <i class="pi pi-external-link text-[10px]"></i> Open in Google Maps App
+                </a>
+              </div>
+            </div>
+
             <!-- Floating Navigation HUD Card (Distance, ETA, Heading, Direction) -->
-            <div class="absolute top-3 left-3 right-3 bg-surface-900/95 backdrop-blur-md border border-surface-700/90 rounded-2xl p-3.5 shadow-2xl z-[15] space-y-2">
+            <div v-show="mapEngine === 'road'" class="absolute top-3 left-3 right-3 bg-surface-900/95 backdrop-blur-md border border-surface-700/90 rounded-2xl p-3.5 shadow-2xl z-[15] space-y-2">
               <div class="flex items-center justify-between gap-3">
                 
                 <!-- Distance & ETA -->
@@ -175,25 +253,30 @@ const OrderTracker = {
                   <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg shadow-inner shrink-0">🛵</div>
                   <div>
                     <div class="flex items-center gap-2">
-                      <span class="text-base sm:text-lg font-black text-white font-mono tracking-tight">{{ riderDistanceText }}</span>
-                      <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        {{ riderEtaText }}
+                      <p class="text-sm font-black text-white tracking-tight">{{ riderDistanceText }}</p>
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
+                        ETA {{ riderEtaText }}
                       </span>
                     </div>
-                    <p class="text-[11px] text-gray-400 truncate max-w-[190px] sm:max-w-xs">
-                      {{ riderProximityStatus || 'Rider in transit along road network' }}
+                    <p class="text-[11px] text-gray-300 flex items-center gap-1 mt-0.5">
+                      <i class="pi pi-arrow-circle-right text-[10px] text-emerald-400"></i>
+                      <span>{{ riderDirectionText }}</span>
                     </p>
                   </div>
                 </div>
 
-                <!-- Compass & Direction Badge -->
+                <!-- Live Compass Bearing Indicator -->
                 <div class="text-right shrink-0">
-                  <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-surface-800 border border-surface-700 text-xs font-bold text-white shadow-sm">
-                    <i class="pi pi-compass text-sky-400 text-xs transition-transform duration-500" :style="{ transform: 'rotate(' + riderBearingDeg + 'deg)' }"></i>
-                    <span class="text-[11px]">{{ riderDirectionText }}</span>
+                  <div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-xl bg-surface-800 border border-surface-700 shadow-inner">
+                    <span 
+                      class="inline-block text-xs text-sky-400 transition-transform duration-500 font-bold"
+                      :style="{ transform: 'rotate(' + riderBearingDeg + 'deg)' }">
+                      ▲
+                    </span>
+                    <span class="text-[11px] font-black text-white font-mono">{{ riderBearingDeg }}°</span>
                   </div>
                   <p class="text-[10px] text-gray-400 mt-0.5 font-mono">
-                    Bearing {{ riderBearingDeg }}?
+                    Bearing {{ riderBearingDeg }}°
                   </p>
                 </div>
               </div>
@@ -210,9 +293,9 @@ const OrderTracker = {
             </div>
 
             <!-- Grab / Delivery Branding Badge (Bottom Left) -->
-            <div class="absolute bottom-3 left-3 bg-surface-900/90 backdrop-blur-md border border-surface-700 rounded-xl px-2.5 py-1 shadow-lg flex items-center gap-1.5 z-[15]">
+            <div v-show="mapEngine === 'road'" class="absolute bottom-3 left-3 bg-surface-900/90 backdrop-blur-md border border-surface-700 rounded-xl px-2.5 py-1 shadow-lg flex items-center gap-1.5 z-[15]">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span class="text-[10px] font-bold text-gray-200">G Shot Delivery ? Turn-by-Turn GPS</span>
+              <span class="text-[10px] font-bold text-gray-200">G Shot Delivery • Turn-by-Turn GPS</span>
             </div>
 
           </div>
@@ -243,7 +326,7 @@ const OrderTracker = {
                 </div>
                 <p class="text-[11px] text-gray-300 truncate" :title="order.delivery_address">{{ order.delivery_address || 'Santa Rosa, Laguna' }}</p>
                 <p v-if="order.customer_lat && order.customer_lng" class="text-[10px] text-emerald-400 font-mono mt-0.5">
-                <p v-if="order.customer_lat && order.customer_lng" class="text-[10px] text-emerald-400 font-mono mt-0.5">✓ Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}</p>
+                  ✓ Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}
                 </p>
               </div>
             </div>
@@ -256,17 +339,26 @@ const OrderTracker = {
                 🗺️
               </div>
               <div>
-                <p class="font-bold text-white">View in Google Maps App</p>
+                <p class="font-bold text-white">Live Route in Google Maps App</p>
                 <p class="text-[11px] text-gray-400">See turn-by-turn road direction lines, real-time traffic, and rider-to-doorstep navigation.</p>
               </div>
             </div>
-            <a 
-              :href="googleMapsRouteUrl" 
-              target="_blank"
-              class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors shadow-md shrink-0 cursor-pointer">
-              <i class="pi pi-external-link text-xs"></i>
-              <span>Open Direction Lines in Google Maps</span>
-            </a>
+            <div class="flex items-center gap-2">
+              <a 
+                :href="googleMapsLivePinUrl" 
+                target="_blank"
+                class="px-3.5 py-1.5 rounded-xl bg-surface-700 hover:bg-surface-600 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors shadow-md shrink-0 cursor-pointer">
+                <i class="pi pi-map-marker text-xs"></i>
+                <span>Live Rider Pin</span>
+              </a>
+              <a 
+                :href="googleMapsRouteUrl" 
+                target="_blank"
+                class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors shadow-md shrink-0 cursor-pointer">
+                <i class="pi pi-external-link text-xs"></i>
+                <span>Open Full Directions</span>
+              </a>
+            </div>
           </div>
 
         </div>
@@ -548,6 +640,20 @@ const OrderTracker = {
     const tempCustLat = Vue.ref(null);
     const tempCustLng = Vue.ref(null);
 
+    const mapEngine = Vue.ref('road'); // 'road' or 'google'
+    const setMapEngine = (engine) => {
+      mapEngine.value = engine;
+      if (engine === 'road') {
+        Vue.nextTick(() => {
+          if (trackerMap) {
+            trackerMap.invalidateSize();
+          } else {
+            initOrUpdateMap();
+          }
+        });
+      }
+    };
+
     // Google Maps Universal Directions URL connecting rider's exact GPS origin to customer's exact GPS destination
     const googleMapsRouteUrl = Vue.computed(() => {
       if (!order.value) return '#';
@@ -568,6 +674,44 @@ const OrderTracker = {
       }
 
       return `https://www.google.com/maps/dir/?api=1&origin=${Number(rLat).toFixed(6)},${Number(rLng).toFixed(6)}&destination=${Number(cLat).toFixed(6)},${Number(cLng).toFixed(6)}&travelmode=two_wheeler`;
+    });
+
+    // Direct Google Maps pin link to rider's live coordinates
+    const googleMapsLivePinUrl = Vue.computed(() => {
+      if (!order.value) return '#';
+      const cLat = order.value.customer_lat ? Number(order.value.customer_lat) : 14.3218;
+      const cLng = order.value.customer_lng ? Number(order.value.customer_lng) : 121.1192;
+      let rLat = order.value.driver_lat ? Number(order.value.driver_lat) : null;
+      let rLng = order.value.driver_lng ? Number(order.value.driver_lng) : null;
+      if (!rLat || !rLng) {
+        if (order.value.status === 'Out for Delivery') {
+          rLat = STORE_LAT + (cLat - STORE_LAT) * 0.65;
+          rLng = STORE_LNG + (cLng - STORE_LNG) * 0.65;
+        } else {
+          rLat = STORE_LAT;
+          rLng = STORE_LNG;
+        }
+      }
+      return `https://www.google.com/maps?q=${Number(rLat).toFixed(6)},${Number(rLng).toFixed(6)}&z=17`;
+    });
+
+    // Zero-API-key embedded Google Map iframe centered on rider
+    const googleMapsEmbedUrl = Vue.computed(() => {
+      if (!order.value) return '';
+      const cLat = order.value.customer_lat ? Number(order.value.customer_lat) : 14.3218;
+      const cLng = order.value.customer_lng ? Number(order.value.customer_lng) : 121.1192;
+      let rLat = order.value.driver_lat ? Number(order.value.driver_lat) : null;
+      let rLng = order.value.driver_lng ? Number(order.value.driver_lng) : null;
+      if (!rLat || !rLng) {
+        if (order.value.status === 'Out for Delivery') {
+          rLat = STORE_LAT + (cLat - STORE_LAT) * 0.65;
+          rLng = STORE_LNG + (cLng - STORE_LNG) * 0.65;
+        } else {
+          rLat = STORE_LAT;
+          rLng = STORE_LNG;
+        }
+      }
+      return `https://maps.google.com/maps?q=${Number(rLat).toFixed(6)},${Number(rLng).toFixed(6)}&hl=en&z=16&output=embed`;
     });
 
     // Rider's personal live Google Maps trip sharing link (if rider shared one via driver_notes)
@@ -1116,6 +1260,10 @@ const OrderTracker = {
       startPinAdjustment,
       saveAdjustedPin,
       cancelPinAdjustment,
+      mapEngine,
+      setMapEngine,
+      googleMapsLivePinUrl,
+      googleMapsEmbedUrl,
       googleMapsRouteUrl,
       riderSharedLiveLink,
     };

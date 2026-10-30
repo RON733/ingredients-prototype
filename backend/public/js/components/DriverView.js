@@ -184,12 +184,31 @@ const DriverView = {
               <div>
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Destination Address</p>
                 <p class="font-medium text-gray-200 line-clamp-2 mt-0.5" :title="order.delivery_address">
-                  ?? {{ order.delivery_address || 'Santa Rosa, Laguna' }}
+                  📍 {{ order.delivery_address || 'Santa Rosa, Laguna' }}
                 </p>
                 <p v-if="order.customer_lat && order.customer_lng" class="text-[11px] text-emerald-400 font-mono mt-1 flex items-center gap-1">
                   <i class="pi pi-check-circle text-[10px]"></i>
                   <span>Exact GPS Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}</span>
                 </p>
+              </div>
+
+              <!-- 1-Click Share Real-Time GPS Location Button -->
+              <div class="space-y-1.5">
+                <button 
+                  type="button" 
+                  @click="broadcastOrderGps(order)"
+                  class="w-full py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer border"
+                  :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/50' : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-transparent'">
+                  <span class="w-2.5 h-2.5 rounded-full" :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-400 animate-ping' : 'bg-white'"></span>
+                  <i class="pi pi-send text-xs"></i>
+                  <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? '🟢 Sharing Real-Time GPS (Tap to Refresh)' : '📡 Share My Location Real-Time with Customer' }}</span>
+                </button>
+                <div v-if="order.isBroadcastingGps || isGpsBroadcasting" class="flex items-center justify-between px-1 text-[10px] text-emerald-400 font-mono">
+                  <span>GPS: {{ order.driver_lat || 'Acquiring...' }}, {{ order.driver_lng || 'Acquiring...' }}</span>
+                  <button type="button" @click="stopOrderGps(order)" class="text-rose-400 hover:text-rose-300 underline font-sans font-bold cursor-pointer">
+                    Stop Sharing
+                  </button>
+                </div>
               </div>
 
               <!-- Quick Launch Navigation (Opens Google Maps App directly to exact pin) -->
@@ -357,6 +376,51 @@ const DriverView = {
 
     const getNavigationUrl = getGoogleMapsNavUrl;
 
+    const broadcastOrderGps = (order) => {
+      if (!navigator.geolocation) {
+        store.notify('Geolocation is not supported on this device.', 'error');
+        return;
+      }
+      order.isBroadcastingGps = true;
+      store.notify('Acquiring high-accuracy GPS to broadcast to customer...', 'info');
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = Number(pos.coords.latitude.toFixed(6));
+          const lng = Number(pos.coords.longitude.toFixed(6));
+          order.driver_lat = lat;
+          order.driver_lng = lng;
+
+          try {
+            await GST_API.updateDriverLocation(order.id, {
+              driver_lat: lat,
+              driver_lng: lng,
+              driver_notes: order.driver_notes || null
+            });
+            store.notify('✅ Real-time GPS shared! Customer can now track you live on Google Maps.', 'success');
+          } catch (err) {
+            console.warn('Driver location broadcast error:', err);
+          }
+
+          startGpsBroadcast();
+        },
+        (err) => {
+          order.isBroadcastingGps = false;
+          store.notify('Could not access GPS (' + (err.message || 'Check location permission') + ')', 'error');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    };
+
+    const stopOrderGps = (order) => {
+      order.isBroadcastingGps = false;
+      const stillBroadcasting = activeDeliveries.value.some(o => o.isBroadcastingGps);
+      if (!stillBroadcasting) {
+        stopGpsBroadcast();
+      }
+      store.notify('Stopped real-time GPS sharing.', 'info');
+    };
+
     const shareLiveTripLink = async (order) => {
       const link = (order.live_share_link || '').trim();
       if (!link) {
@@ -438,7 +502,9 @@ const DriverView = {
           const lng = Number(pos.coords.longitude.toFixed(6));
 
           activeDeliveries.value.forEach(order => {
-            if (order.status === 'Out for Delivery') {
+            if (order.status === 'Out for Delivery' || order.isBroadcastingGps) {
+              order.driver_lat = lat;
+              order.driver_lng = lng;
               GST_API.updateDriverLocation(order.id, {
                 driver_lat: lat,
                 driver_lng: lng
@@ -493,6 +559,8 @@ const DriverView = {
       getGoogleMapsNavUrl,
       getWazeNavUrl,
       shareLiveTripLink,
+      broadcastOrderGps,
+      stopOrderGps,
       completeDelivery,
       refreshOrders,
       handleLogout,
