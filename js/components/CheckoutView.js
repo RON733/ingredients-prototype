@@ -110,14 +110,21 @@ const CheckoutView = {
                 <i class="pi pi-map-marker text-[10px]"></i> Use Santa Rosa Store Address
               </button>
             </div>
-            <div class="flex items-center gap-2 mb-2">
-                <button 
-                  type="button"
-                  @click="locateUserGPS" 
-                  class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5 transition-all">
-                  <i class="pi pi-compass text-[11px]"></i> Use Device GPS
-                </button>
-              </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <button 
+                type="button"
+                @click="locateUserGPS" 
+                :disabled="isLocatingGPS"
+                class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                <i class="pi" :class="isLocatingGPS ? 'pi-spin pi-spinner text-emerald-300' : 'pi-compass text-emerald-400'"></i>
+                <span>{{ isLocatingGPS ? 'Requesting Device GPS...' : 'Use Device GPS' }}</span>
+              </button>
+
+              <span v-if="form.customer_lat && form.customer_lng" class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                <i class="pi pi-check-circle"></i> Pinned ({{ Number(form.customer_lat).toFixed(4) }}, {{ Number(form.customer_lng).toFixed(4) }})
+              </span>
+            </div>
+
             <textarea 
               v-model="form.delivery_address" 
               rows="2" 
@@ -134,14 +141,50 @@ const CheckoutView = {
             </p>
             
             <!-- Interactive Leaflet Delivery Pin Map in Checkout -->
-            <div class="mt-3 rounded-2xl border border-surface-700 bg-surface-950 overflow-hidden shadow-lg">
-              <div class="px-3.5 py-2 bg-surface-900/90 border-b border-surface-700 flex items-center justify-between text-xs">
+            <div class="mt-3 rounded-2xl border border-surface-700 bg-surface-950 overflow-hidden shadow-xl">
+              <div class="px-3.5 py-2.5 bg-surface-900 border-b border-surface-700 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <span class="font-bold text-gray-200 flex items-center gap-1.5">
-                  <span class="text-emerald-400">📍</span> Pin Delivery Location
+                  <span class="text-emerald-400">📍</span> Pin Exact Delivery Location
                 </span>
-                <span class="text-[10px] text-gray-400">Click map or drag pin</span>
+                <span class="text-[11px] text-gray-400 flex items-center gap-1">
+                  <i class="pi pi-info-circle text-brand-400 text-[10px]"></i> Tap map or drag pin to your house/gate
+                </span>
               </div>
-              <div id="checkout-pin-map" class="w-full h-44 sm:h-48"></div>
+
+              <!-- Map Container -->
+              <div id="checkout-pin-map" class="w-full h-56 sm:h-64 relative z-0"></div>
+
+              <!-- Map Sub-bar with Coordinates & Actions -->
+              <div class="p-3 bg-surface-900/95 border-t border-surface-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-2.5 h-2.5 rounded-full shrink-0" :class="form.customer_lat && form.customer_lng ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></div>
+                  <span v-if="form.customer_lat && form.customer_lng" class="text-gray-300 font-medium truncate text-[11px]">
+                    Pinned: <span class="text-emerald-400 font-mono font-bold">{{ Number(form.customer_lat).toFixed(5) }}, {{ Number(form.customer_lng).toFixed(5) }}</span>
+                    <span v-if="pinnedAddressPreview" class="text-gray-400 text-[10px] ml-1">({{ pinnedAddressPreview }})</span>
+                  </span>
+                  <span v-else class="text-gray-400 text-[11px]">
+                    No exact coordinates pinned. Click map or tap "Use Device GPS" above.
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                  <button 
+                    type="button" 
+                    @click="locateUserGPS" 
+                    :disabled="isLocatingGPS"
+                    class="px-2.5 py-1 rounded-lg bg-surface-800 hover:bg-surface-700 active:scale-95 text-emerald-400 hover:text-emerald-300 border border-surface-700 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer">
+                    <i class="pi" :class="isLocatingGPS ? 'pi-spin pi-spinner' : 'pi-compass'"></i>
+                    <span>{{ isLocatingGPS ? 'Locating...' : 'My GPS' }}</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    @click="resetPinToStore" 
+                    class="px-2.5 py-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 text-[11px] font-semibold transition-all cursor-pointer"
+                    title="Reset pin to Santa Rosa Store">
+                    Reset
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -617,6 +660,59 @@ const CheckoutView = {
         </div>
       </div>
 
+      <!-- Device GPS Permission & Instructions Modal -->
+      <div 
+        v-if="gpsPromptModalOpen"
+        class="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        @click.self="gpsPromptModalOpen = false">
+        <div class="relative max-w-md w-full bg-surface-900 border border-surface-700 rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-up text-center">
+          
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl mx-auto shadow-lg">
+            <i class="pi pi-compass text-2xl"></i>
+          </div>
+
+          <div>
+            <h3 class="text-lg font-black text-white">Enable Device GPS</h3>
+            <p class="text-xs text-gray-300 mt-1.5 leading-relaxed">
+              {{ gpsErrorMessage || 'Please turn on your device GPS / Location services and allow browser access to accurately detect your delivery spot.' }}
+            </p>
+          </div>
+
+          <!-- Step by Step instructions -->
+          <div class="p-4 rounded-2xl bg-surface-950 border border-surface-800 text-left space-y-3 text-xs text-gray-300">
+            <div class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
+              <span><strong>Turn ON GPS / Location</strong> in your phone's swipe-down quick settings or computer settings.</span>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
+              <span>When your browser prompts <em>"Allow this site to access your location"</em>, tap <strong>Allow</strong>.</span>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
+              <span>Your location will appear on the map. You can <strong>drag the pin or tap anywhere on the map</strong> to point to your exact door or gate!</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2 pt-2">
+            <button 
+              type="button"
+              @click="locateUserGPS(); gpsPromptModalOpen = false;"
+              class="flex-1 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+              <i class="pi pi-refresh"></i>
+              <span>Try GPS Again</span>
+            </button>
+            <button 
+              type="button"
+              @click="gpsPromptModalOpen = false"
+              class="py-2.5 px-4 rounded-xl font-semibold text-xs bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 transition-all cursor-pointer">
+              Pin Manually on Map
+            </button>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   `,
   setup() {
@@ -629,11 +725,24 @@ const CheckoutView = {
     const isReceiptLightboxOpen = Vue.ref(false);
     const isCopiedNumber = Vue.ref(false);
 
+    // Live GPS & Map Pin State
+    const isLocatingGPS = Vue.ref(false);
+    const gpsPromptModalOpen = Vue.ref(false);
+    const gpsErrorMessage = Vue.ref('');
+    const pinnedAddressPreview = Vue.ref('');
+    let checkoutMap = null;
+    let pinMarker = null;
+
+    const STORE_LAT = 14.3167;
+    const STORE_LNG = 121.1167;
+
     const form = Vue.reactive({
       customer_name: store.user?.name || '',
       customer_phone: store.user?.phone || '',
       order_type: 'Delivery',
       delivery_address: store.user?.address || '',
+      customer_lat: null,
+      customer_lng: null,
       payment_method: 'GCash',
       gcash_ref: '',
       proof_image: '',
@@ -776,10 +885,202 @@ const CheckoutView = {
       return reasons;
     });
 
-    const useCurrentLocation = () => {
-      form.delivery_address = 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna';
-      store.notify('Address set to Santa Rosa, Laguna', 'info');
+    const getPinIcon = () => {
+      if (typeof L === 'undefined') return null;
+      return L.divIcon({
+        className: 'custom-checkout-pin',
+        html: `
+          <div class="relative flex items-center justify-center">
+            <div class="w-10 h-10 rounded-full bg-emerald-500 border-2 border-white shadow-2xl flex items-center justify-center text-lg font-bold text-white transition-transform hover:scale-110">
+              📍
+            </div>
+            <div class="absolute -bottom-1 w-2.5 h-2.5 bg-emerald-600 rotate-45 border-r border-b border-white"></div>
+          </div>
+        `,
+        iconSize: [40, 44],
+        iconAnchor: [20, 42],
+        popupAnchor: [0, -42],
+      });
     };
+
+    const updatePinLocation = (lat, lng, doReverseGeocode = true) => {
+      form.customer_lat = Number(lat).toFixed(7);
+      form.customer_lng = Number(lng).toFixed(7);
+      if (pinMarker) {
+        pinMarker.setLatLng([lat, lng]);
+        pinMarker.setPopupContent(`<b>📍 Pinned Delivery Location</b><br>${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}<br><span class="text-[10px] text-gray-400">Drag to adjust exact door/gate</span>`);
+      }
+      if (doReverseGeocode) {
+        reverseGeocode(lat, lng);
+      }
+    };
+
+    const reverseGeocode = async (lat, lng) => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+          headers: { 'Accept-Language': 'en' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.display_name) {
+            const road = data.address?.road || data.address?.pedestrian || data.address?.suburb || '';
+            const brgy = data.address?.neighbourhood || data.address?.quarter || data.address?.village || '';
+            const city = data.address?.city || data.address?.town || 'Santa Rosa';
+            const shortAddr = [road, brgy, city].filter(Boolean).join(', ');
+
+            pinnedAddressPreview.value = shortAddr || data.display_name;
+
+            // If empty or default, populate delivery_address
+            if (!form.delivery_address || form.delivery_address.trim() === '' || form.delivery_address.includes('Amira Townhomes, Brgy. Sinalhan')) {
+              form.delivery_address = data.display_name;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Reverse geocode error:', err);
+      }
+    };
+
+    const initCheckoutMap = () => {
+      if (typeof L === 'undefined') return;
+      const mapEl = document.getElementById('checkout-pin-map');
+      if (!mapEl) return;
+
+      const initialLat = form.customer_lat ? Number(form.customer_lat) : STORE_LAT;
+      const initialLng = form.customer_lng ? Number(form.customer_lng) : STORE_LNG;
+      const initialZoom = (form.customer_lat && form.customer_lng) ? 17 : 14;
+
+      if (!checkoutMap) {
+        checkoutMap = L.map('checkout-pin-map', {
+          zoomControl: true,
+          scrollWheelZoom: false,
+          attributionControl: true
+        }).setView([initialLat, initialLng], initialZoom);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+          maxZoom: 19,
+          className: 'dark-osm-tiles'
+        }).addTo(checkoutMap);
+
+        const icon = getPinIcon();
+        pinMarker = L.marker([initialLat, initialLng], {
+          icon: icon,
+          draggable: true,
+        }).addTo(checkoutMap);
+
+        pinMarker.bindPopup("<b>📍 Delivery Pin</b><br>Drag this pin or tap anywhere on the map to set your exact gate/door.").openPopup();
+
+        // Drag marker event
+        pinMarker.on('dragend', (e) => {
+          const latlng = e.target.getLatLng();
+          updatePinLocation(latlng.lat, latlng.lng, true);
+        });
+
+        // Click map event
+        checkoutMap.on('click', (e) => {
+          updatePinLocation(e.latlng.lat, e.latlng.lng, true);
+        });
+      } else {
+        checkoutMap.invalidateSize();
+        if (form.customer_lat && form.customer_lng) {
+          checkoutMap.setView([initialLat, initialLng], initialZoom);
+          if (pinMarker) pinMarker.setLatLng([initialLat, initialLng]);
+        }
+      }
+
+      setTimeout(() => {
+        if (checkoutMap) checkoutMap.invalidateSize();
+      }, 300);
+    };
+
+    const resetPinToStore = () => {
+      updatePinLocation(STORE_LAT, STORE_LNG, false);
+      if (checkoutMap) {
+        checkoutMap.setView([STORE_LAT, STORE_LNG], 14);
+      }
+      form.delivery_address = 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna';
+      pinnedAddressPreview.value = 'Santa Rosa Store';
+      store.notify('Pin set to Santa Rosa Store coordinates.', 'info');
+    };
+
+    const useCurrentLocation = () => {
+      resetPinToStore();
+    };
+
+    const locateUserGPS = () => {
+      if (!navigator.geolocation) {
+        store.notify('Geolocation is not supported by your browser.', 'error');
+        return;
+      }
+
+      isLocatingGPS.value = true;
+      gpsErrorMessage.value = '';
+
+      store.notify('Detecting GPS location... Please turn ON your device GPS and tap Allow when prompted.', 'info');
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          isLocatingGPS.value = false;
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+
+          initCheckoutMap();
+
+          if (checkoutMap) {
+            checkoutMap.setView([lat, lng], 17);
+            updatePinLocation(lat, lng, true);
+            if (pinMarker) {
+              pinMarker.bindPopup("<b>📍 GPS Location Detected!</b><br>Drag this pin or tap the map to fine-tune your exact gate/door.").openPopup();
+            }
+            setTimeout(() => { if (checkoutMap) checkoutMap.invalidateSize(); }, 200);
+          }
+
+          store.notify('✓ GPS Location detected! Pin your exact house/gate on the map.', 'success');
+        },
+        (err) => {
+          isLocatingGPS.value = false;
+          let friendlyMsg = '';
+
+          if (err.code === 1) { // PERMISSION_DENIED
+            friendlyMsg = 'Location permission was denied. Please turn ON your device GPS / Location services and allow browser access so we can detect your delivery address.';
+          } else if (err.code === 2) { // POSITION_UNAVAILABLE
+            friendlyMsg = 'GPS location is unavailable. Please make sure your device GPS / Location is turned ON and try again.';
+          } else if (err.code === 3) { // TIMEOUT
+            friendlyMsg = 'GPS request timed out. Please check that device Location is enabled and tap "Use Device GPS" again.';
+          } else {
+            friendlyMsg = 'Could not retrieve GPS location. Please ensure your device GPS is ON, or simply tap on the map to pin your location.';
+          }
+
+          gpsErrorMessage.value = friendlyMsg;
+          gpsPromptModalOpen.value = true;
+          store.notify(friendlyMsg, 'warning');
+
+          initCheckoutMap();
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+    };
+
+    Vue.onMounted(() => {
+      if (form.order_type === 'Delivery') {
+        Vue.nextTick(() => {
+          initCheckoutMap();
+        });
+      }
+    });
+
+    Vue.watch(() => form.order_type, (newType) => {
+      if (newType === 'Delivery') {
+        Vue.nextTick(() => {
+          initCheckoutMap();
+        });
+      }
+    });
 
     // Client-side canvas compression for receipt image
     const compressImage = (file, maxDim = 1200, quality = 0.85) => {
@@ -869,6 +1170,8 @@ const CheckoutView = {
           customer_phone: form.customer_phone.trim(),
           order_type: form.order_type,
           delivery_address: form.delivery_address.trim(),
+          customer_lat: form.customer_lat ? Number(form.customer_lat) : null,
+          customer_lng: form.customer_lng ? Number(form.customer_lng) : null,
           payment_method: form.payment_method,
           gcash_ref: form.gcash_ref.trim(),
           proof_image: form.proof_image,
@@ -946,6 +1249,12 @@ const CheckoutView = {
       removeProofImage,
       backToMenu,
       submitOrder,
+      isLocatingGPS,
+      gpsPromptModalOpen,
+      gpsErrorMessage,
+      pinnedAddressPreview,
+      locateUserGPS,
+      resetPinToStore,
     };
   },
 };
