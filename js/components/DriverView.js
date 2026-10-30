@@ -237,36 +237,6 @@ const DriverView = {
                   <span>Waze</span>
                 </a>
               </div>
-
-              <!-- Google Maps Live Trip Sharing Link -->
-              <div class="pt-2 border-t border-surface-700/60 space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <label class="block text-[11px] font-bold text-gray-300">
-                    <i class="pi pi-share-alt text-brand-400 mr-1"></i>
-                    Share Google Maps Live Trip Link with Customer
-                  </label>
-                  <span v-if="order.driver_notes && order.driver_notes.includes('http')" class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                    <i class="pi pi-check"></i> Shared with customer
-                  </span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <input 
-                    v-model="order.live_share_link" 
-                    type="url"
-                    placeholder="Paste Google Maps 'Share Trip' link (e.g. https://maps.app.goo.gl/...)" 
-                    class="flex-1 px-3 py-2 rounded-xl bg-surface-900 border border-surface-700 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 font-mono text-[11px]"
-                  />
-                  <button 
-                    type="button" 
-                    @click="shareLiveTripLink(order)"
-                    class="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-md">
-                    Share Link
-                  </button>
-                </div>
-                <p class="text-[10px] text-gray-400">
-                  Tip: In Google Maps navigation, tap "Share trip progress" and paste the link here. Customer will see your live dot in Google Maps.
-                </p>
-              </div>
             </div>
 
           </div>
@@ -430,27 +400,6 @@ const DriverView = {
       store.notify('Stopped real-time GPS sharing.', 'info');
     };
 
-    const shareLiveTripLink = async (order) => {
-      const link = (order.live_share_link || '').trim();
-      if (!link) {
-        store.notify('Please paste your Google Maps share link first.', 'warning');
-        return;
-      }
-      try {
-        const rLat = order.driver_lat ? Number(order.driver_lat) : 14.3167;
-        const rLng = order.driver_lng ? Number(order.driver_lng) : 121.1111;
-        await GST_API.updateDriverLocation(order.id, {
-          driver_lat: rLat,
-          driver_lng: rLng,
-          driver_notes: link
-        });
-        order.driver_notes = link;
-        store.notify('? Live Google Maps trip link broadcasted to customer!', 'success');
-      } catch (err) {
-        store.notify('Failed to share Google Maps link.', 'error');
-      }
-    };
-
     // Rider Availability Toggle
     const toggleAvailability = async () => {
       const nextState = !isAvailable.value;
@@ -606,7 +555,6 @@ const DriverView = {
       getNavigationUrl,
       getGoogleMapsNavUrl,
       getWazeNavUrl,
-      shareLiveTripLink,
       broadcastOrderGps,
       stopOrderGps,
       completeDelivery,
