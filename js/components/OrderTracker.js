@@ -61,9 +61,7 @@ const OrderTracker = {
         <div v-if="order.order_type === 'Delivery'" class="rounded-3xl border border-surface-700/80 bg-surface-900/90 p-4 sm:p-6 space-y-4 shadow-xl">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div class="flex items-center gap-3">
-              <span class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl shadow-lg">
-                ??
-              </span>
+              <span class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl shadow-lg">🛵</span>
               <div>
                 <div class="flex items-center gap-2">
                   <h4 class="text-xs font-black text-white uppercase tracking-wider">Live Road GPS & Route Tracker</h4>
@@ -96,7 +94,7 @@ const OrderTracker = {
                 type="button"
                 @click="toggleMapTheme" 
                 class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
-                <span>{{ mapTheme === 'street' ? '??? Street' : '?? Night' }}</span>
+                <span>{{ mapTheme === 'street' ? '\u{1F5FA}\u{FE0F} Street' : '\u{1F319} Night' }}</span>
               </button>
               <button 
                 type="button"
@@ -120,9 +118,7 @@ const OrderTracker = {
           <!-- Rider's Live Google Maps Location Banner (if shared by rider) -->
           <div v-if="riderSharedLiveLink" class="p-3.5 rounded-2xl bg-gradient-to-r from-sky-950/90 to-surface-900 border border-sky-400/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xl animate-fade-in">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400 text-base shadow-inner shrink-0">
-                ??
-              </div>
+              <div class="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center text-sky-400 text-base shadow-inner shrink-0">📍</div>
               <div>
                 <div class="flex items-center gap-2">
                   <p class="font-bold text-white">Rider's Personal Google Maps Live Location</p>
@@ -144,8 +140,7 @@ const OrderTracker = {
 
           <!-- Fine-Tuning Pin Notice Banner (Active during pin drag) -->
           <div v-if="isAdjustingPin" class="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-fade-in shadow-xl">
-            <div class="flex items-center gap-2 text-emerald-300">
-              <span class="text-base">??</span>
+            <div class="flex items-center gap-2 text-emerald-300"><span class="text-base">📍</span>
               <div>
                 <p class="font-bold text-white">Adjusting Delivery Location</p>
                 <p class="text-[11px] text-emerald-300/80">Tap anywhere on the map or drag the red pin to your exact gate or doorstep.</p>
@@ -177,9 +172,7 @@ const OrderTracker = {
                 
                 <!-- Distance & ETA -->
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg shadow-inner shrink-0">
-                    ??
-                  </div>
+                  <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg shadow-inner shrink-0">🛵</div>
                   <div>
                     <div class="flex items-center gap-2">
                       <span class="text-base sm:text-lg font-black text-white font-mono tracking-tight">{{ riderDistanceText }}</span>
@@ -228,7 +221,7 @@ const OrderTracker = {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
             <div class="p-3 rounded-2xl bg-surface-800/60 border border-surface-700/60 flex items-start gap-3">
               <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center text-sm shrink-0">
-                ??
+                🏪
               </div>
               <div class="min-w-0">
                 <p class="font-bold text-white">Store Origin</p>
@@ -236,9 +229,7 @@ const OrderTracker = {
               </div>
             </div>
             <div class="p-3 rounded-2xl bg-surface-800/60 border border-surface-700/60 flex items-start gap-3">
-              <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-sm shrink-0">
-                ??
-              </div>
+              <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-sm shrink-0">📍</div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between">
                   <p class="font-bold text-white">Delivery Destination</p>
@@ -252,7 +243,7 @@ const OrderTracker = {
                 </div>
                 <p class="text-[11px] text-gray-300 truncate" :title="order.delivery_address">{{ order.delivery_address || 'Santa Rosa, Laguna' }}</p>
                 <p v-if="order.customer_lat && order.customer_lng" class="text-[10px] text-emerald-400 font-mono mt-0.5">
-                  ? Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}
+                <p v-if="order.customer_lat && order.customer_lng" class="text-[10px] text-emerald-400 font-mono mt-0.5">✓ Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}</p>
                 </p>
               </div>
             </div>
@@ -262,7 +253,7 @@ const OrderTracker = {
           <div class="p-3.5 rounded-2xl bg-surface-800/60 border border-surface-700/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-sm shrink-0">
-                ???
+                🗺️
               </div>
               <div>
                 <p class="font-bold text-white">View in Google Maps App</p>
@@ -690,7 +681,7 @@ const OrderTracker = {
         html: `
           <div class="relative flex items-center justify-center">
             <div class="w-9 h-9 rounded-full bg-amber-500 border-2 border-white shadow-xl flex items-center justify-center text-sm font-bold text-white">
-              ??
+              🏪
             </div>
           </div>
         `,
@@ -707,10 +698,10 @@ const OrderTracker = {
       }
       if (mapTheme.value === 'street') {
         // Clean pastel street tiles matching Grab / OpenStreetMap
-        tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
           maxZoom: 19,
-          subdomains: 'abcd',
+          subdomains: ['a', 'b', 'c'],
           className: 'grab-osm-tiles'
         }).addTo(trackerMap);
       } else {
@@ -754,9 +745,9 @@ const OrderTracker = {
         tripProgressPercent.value = Math.min(95, Math.max(15, Math.round((traveled / totalDist) * 100)));
 
         if (remainingDist <= 60) {
-          riderProximityStatus.value = '?? Rider has arrived right at your gate!';
+          riderProximityStatus.value = '\u{1F389} Rider has arrived right at your gate!';
         } else if (remainingDist <= 350) {
-          riderProximityStatus.value = '?? Rider is approaching your street! Please prepare.';
+          riderProximityStatus.value = '\u{1F6F5} Rider is approaching your street! Please prepare.';
         } else {
           riderProximityStatus.value = `Rider is on the road heading towards your address (${heading})`;
         }
@@ -831,14 +822,14 @@ const OrderTracker = {
         // 1. Store Marker
         storeMarker = L.marker([STORE_LAT, STORE_LNG], { icon: getStoreIcon() })
           .addTo(trackerMap)
-          .bindPopup('<b>?? G Shot Teas Hub</b><br>Store Kitchen Origin');
+          .bindPopup('<b>🏪 G Shot Teas Hub</b><br>Store Kitchen Origin');
 
         // 2. Customer Destination Marker (Red teardrop pin from user image)
         customerMarker = L.marker([custLat, custLng], { 
           icon: getDestinationIcon(),
           draggable: false
         }).addTo(trackerMap)
-          .bindPopup(`<b>?? Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}<br><span class="text-[10px] text-gray-400">Tap "Fine-tune My Pin" to adjust gate</span>`);
+          .bindPopup(`<b>📍 Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}<br><span class="text-[10px] text-gray-400">Tap "Fine-tune My Pin" to adjust gate</span>`);
 
         // Handle customer pin dragging during adjustment mode
         customerMarker.on('dragend', (e) => {
@@ -864,7 +855,7 @@ const OrderTracker = {
         const initialBearing = calcBearing(riderLat, riderLng, custLat, custLng);
         riderMarker = L.marker([riderLat, riderLng], { icon: getRiderIcon(initialBearing) })
           .addTo(trackerMap)
-          .bindPopup(`<b>?? G Shot Teas Delivery Rider</b><br>${order.value.status === 'Out for Delivery' ? 'En route to your doorstep!' : 'Awaiting dispatch'}`);
+          .bindPopup(`<b>🛵 G Shot Teas Delivery Rider</b><br>${order.value.status === 'Out for Delivery' ? 'En route to your doorstep!' : 'Awaiting dispatch'}`);
 
         // 4. Grab Green Route Line with White Contrast Casing
         routeLineCasing = L.polyline(roadPoints, {
@@ -930,7 +921,7 @@ const OrderTracker = {
       isAdjustingPin.value = true;
       if (customerMarker) {
         customerMarker.dragging.enable();
-        customerMarker.bindPopup("<b>?? Pin Adjustment Active</b><br>Drag this pin or tap map to place your exact gate.").openPopup();
+        customerMarker.bindPopup("<b>📍 Pin Adjustment Active</b><br>Drag this pin or tap map to place your exact gate.").openPopup();
       }
       store.notify('Pin adjustment active! Drag red pin or tap map to set exact gate.', 'info');
     };
@@ -947,9 +938,9 @@ const OrderTracker = {
         isAdjustingPin.value = false;
         if (customerMarker) {
           customerMarker.dragging.disable();
-          customerMarker.bindPopup(`<b>?? Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}`);
+          customerMarker.bindPopup(`<b>📍 Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}`);
         }
-        store.notify('? Delivery pin updated! Road route recalculated to your gate.', 'success');
+        store.notify('✓ Delivery pin updated! Road route recalculated to your gate.', 'success');
         initOrUpdateMap();
       } catch (err) {
         store.notify('Failed to save updated pin location.', 'error');
@@ -1023,10 +1014,10 @@ const OrderTracker = {
         try { window.Echo.leave(`orders.${echoChannelSubscribed}`); } catch (e) {}
       }
       echoChannelSubscribed = orderId;
-      console.log(`?? [Reverb] Subscribing to live updates for order #${orderId}`);
+      console.log(`📡 [Reverb] Subscribing to live updates for order #${orderId}`);
       window.Echo.channel(`orders.${orderId}`)
         .listen('.DriverLocationUpdated', (e) => {
-          console.log('?? [Reverb] Live Driver Location Received:', e);
+          console.log('📍 [Reverb] Live Driver Location Received:', e);
           if (order.value && Number(order.value.id) === Number(e.order_id)) {
             order.value.driver_lat = e.driver_lat;
             order.value.driver_lng = e.driver_lng;

@@ -170,7 +170,7 @@ const CheckoutView = {
                   type="button"
                   @click="jumpToChip(chip)"
                   class="px-2.5 py-0.5 rounded-full bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 shrink-0 transition-all font-medium text-[11px] cursor-pointer">
-                  ?? {{ chip.name }}
+                  <i class="pi pi-map-marker text-emerald-400 mr-1 text-[10px]"></i>{{ chip.name }}
                 </button>
               </div>
 
@@ -195,7 +195,7 @@ const CheckoutView = {
             <div class="mt-2 rounded-2xl border border-surface-700 bg-surface-950 overflow-hidden shadow-xl">
               <div class="px-3.5 py-2.5 bg-surface-900 border-b border-surface-700 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <span class="font-bold text-gray-200 flex items-center gap-1.5">
-                  <span class="text-emerald-400">??</span> Pin Exact Delivery Location
+                  <span class="text-emerald-400">📍</span> Pin Exact Delivery Location
                 </span>
                 <span class="text-[11px] text-gray-400 flex items-center gap-1">
                   <i class="pi pi-info-circle text-brand-400 text-[10px]"></i> Drag red pin or tap map to set exact gate
@@ -211,7 +211,7 @@ const CheckoutView = {
                   <div class="w-2.5 h-2.5 rounded-full shrink-0" :class="form.customer_lat && form.customer_lng ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></div>
                   <span v-if="form.customer_lat && form.customer_lng" class="text-gray-300 font-medium truncate text-[11px]">
                     Pinned: <span class="text-emerald-400 font-mono font-bold">{{ Number(form.customer_lat).toFixed(5) }}, {{ Number(form.customer_lng).toFixed(5) }}</span>
-                    <span v-if="gpsAccuracyMeters" class="text-emerald-400 text-[10px] font-semibold ml-1">? ?{{ gpsAccuracyMeters }}m precision</span>
+                    <span v-if="gpsAccuracyMeters" class="text-emerald-400 text-[10px] font-semibold ml-1">✓ ±{{ gpsAccuracyMeters }}m precision</span>
                     <span v-else-if="pinnedAddressPreview" class="text-gray-400 text-[10px] ml-1">({{ pinnedAddressPreview }})</span>
                   </span>
                   <span v-else class="text-gray-400 text-[11px]">
@@ -979,7 +979,7 @@ const CheckoutView = {
         checkoutMap.setView([chip.lat, chip.lng], 16);
         updatePinLocation(chip.lat, chip.lng, true);
         if (pinMarker) {
-          pinMarker.bindPopup(`<b>?? ${chip.name}</b><br>Drag red pin to your exact gate/door.`).openPopup();
+          pinMarker.bindPopup(`<b>📍 ${chip.name}</b><br>Drag red pin to your exact gate/door.`).openPopup();
         }
       }
       store.notify(`Map centered on ${chip.name}. Drag pin to your gate.`, 'info');
@@ -1034,7 +1034,7 @@ const CheckoutView = {
         form.delivery_address = item.display_name;
         pinnedAddressPreview.value = item.display_name.split(',')[0];
         if (pinMarker) {
-          pinMarker.bindPopup(`<b>?? ${item.display_name.split(',')[0]}</b><br>Drag pin to fine-tune exact gate/door.`).openPopup();
+          pinMarker.bindPopup(`<b>📍 ${item.display_name.split(',')[0]}</b><br>Drag pin to fine-tune exact gate/door.`).openPopup();
         }
       }
       geoSearchResults.value = [];
@@ -1096,10 +1096,10 @@ const CheckoutView = {
         }).setView([initialLat, initialLng], initialZoom);
 
         // Clean street tiles matching Grab / OpenStreetMap
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
           maxZoom: 19,
-          subdomains: 'abcd',
+          subdomains: ['a', 'b', 'c'],
           className: 'grab-osm-tiles'
         }).addTo(checkoutMap);
 
@@ -1186,7 +1186,7 @@ const CheckoutView = {
             }).addTo(checkoutMap);
 
             if (pinMarker) {
-              pinMarker.bindPopup(`<b>?? High-Accuracy GPS (?${accuracy}m)</b><br>Drag pin or tap map to fine-tune exact gate/door.`).openPopup();
+              pinMarker.bindPopup(`<b>📍 High-Accuracy GPS (±${accuracy}m)</b><br>Drag pin or tap map to fine-tune exact gate/door.`).openPopup();
             }
             setTimeout(() => { if (checkoutMap) checkoutMap.invalidateSize(); }, 200);
           }
