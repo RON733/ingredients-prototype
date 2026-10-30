@@ -150,29 +150,29 @@ const OrderTracker = {
             </div>
           </div>
 
-          <!-- Hero Real-Time Map Container -->
-          <div class="relative w-full h-80 sm:h-[420px] rounded-2xl overflow-hidden border border-surface-700 shadow-2xl bg-surface-950">
+          <!-- Hero Real-Time Map Container (Fully Responsive & Mobile-Optimized) -->
+          <div class="relative w-full h-[360px] sm:h-[440px] rounded-2xl overflow-hidden border border-surface-700 shadow-2xl bg-surface-950">
             <div id="order-tracker-map" class="w-full h-full"></div>
 
             <!-- Floating Navigation HUD Card (Grab-Style Real-Time telemetry) -->
-            <div class="absolute top-3 left-3 right-3 bg-surface-900/95 backdrop-blur-md border border-surface-700/90 rounded-2xl p-3.5 shadow-2xl z-[15] space-y-2 pointer-events-none">
-              <div class="flex items-center justify-between gap-3">
+            <div class="absolute top-2.5 left-2.5 right-2.5 bg-surface-900/95 backdrop-blur-md border border-surface-700/90 rounded-2xl p-2.5 sm:p-3.5 shadow-2xl z-[15] space-y-1.5 pointer-events-none">
+              <div class="flex items-center justify-between gap-2">
                 
                 <!-- Distance & ETA -->
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-lg shadow-inner shrink-0">🛵</div>
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <p class="text-sm font-black text-white tracking-tight">{{ riderDistanceText }}</p>
-                      <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
+                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-base sm:text-lg shadow-inner shrink-0">🛵</div>
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <p class="text-xs sm:text-sm font-black text-white tracking-tight truncate">{{ riderDistanceText }}</p>
+                      <span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
                         ETA {{ riderEtaText }}
                       </span>
-                      <span v-if="order.driver_lat && order.driver_lng" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-mono">
+                      <span v-if="order.driver_lat && order.driver_lng" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-mono">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> {{ gpsFreshnessText }}
                       </span>
                     </div>
-                    <p class="text-[11px] text-gray-300 flex items-center gap-1 mt-0.5">
-                      <i class="pi pi-arrow-circle-right text-[10px] text-emerald-400"></i>
+                    <p class="text-[10px] sm:text-[11px] text-gray-300 flex items-center gap-1 mt-0.5 truncate">
+                      <i class="pi pi-arrow-circle-right text-[9px] text-emerald-400"></i>
                       <span>{{ riderDirectionText }}</span>
                     </p>
                   </div>
@@ -180,22 +180,19 @@ const OrderTracker = {
 
                 <!-- Live Compass Bearing Indicator -->
                 <div class="text-right shrink-0">
-                  <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-surface-800 border border-surface-700 shadow-inner">
+                  <div class="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl bg-surface-800 border border-surface-700 shadow-inner">
                     <span 
-                      class="inline-block text-xs text-sky-400 transition-transform duration-500 font-bold"
+                      class="inline-block text-[10px] sm:text-xs text-sky-400 transition-transform duration-500 font-bold"
                       :style="{ transform: 'rotate(' + riderBearingDeg + 'deg)' }">
                       ▲
                     </span>
-                    <span class="text-[11px] font-black text-white font-mono">{{ riderBearingDeg }}°</span>
+                    <span class="text-[10px] sm:text-[11px] font-black text-white font-mono">{{ riderBearingDeg }}°</span>
                   </div>
-                  <p class="text-[10px] text-gray-400 mt-0.5 font-mono">
-                    Bearing {{ riderBearingDeg }}°
-                  </p>
                 </div>
               </div>
 
               <!-- Journey Progress Bar along Road Route -->
-              <div class="pt-1">
+              <div class="pt-0.5">
                 <div class="h-1.5 bg-surface-950 rounded-full overflow-hidden p-0.5 border border-surface-700/60 flex">
                   <div 
                     class="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-sky-500 via-emerald-400 to-emerald-500"
@@ -206,41 +203,33 @@ const OrderTracker = {
             </div>
 
             <!-- Bottom Left Live Tracker Status Badge -->
-            <div class="absolute bottom-3 left-3 bg-surface-900/90 backdrop-blur-md border border-surface-700/80 rounded-xl px-3 py-1.5 shadow-xl flex items-center gap-2 z-[10]">
+            <div class="absolute bottom-3 left-3 bg-surface-900/90 backdrop-blur-md border border-surface-700/80 rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5 shadow-xl flex items-center gap-1.5 sm:gap-2 z-[10]">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span class="text-[10px] font-bold text-gray-200">G Shot Real-Time Road GPS</span>
+              <span class="text-[9px] sm:text-[10px] font-bold text-gray-200">G Shot Real-Time Road GPS</span>
             </div>
           </div>
 
-          <!-- Waypoint Destination Details (Store Origin & Delivery Destination) -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
-            <div class="p-3.5 rounded-2xl bg-surface-800/60 border border-surface-700/60 flex items-start gap-3">
-              <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center text-sm shrink-0">
-                🏪
-              </div>
-              <div class="min-w-0">
-                <p class="font-bold text-white">Store Origin Hub</p>
-                <p class="text-[11px] text-gray-400 truncate">G Shot Teas, Santa Rosa, Laguna</p>
-              </div>
-            </div>
-            <div class="p-3.5 rounded-2xl bg-surface-800/60 border border-surface-700/60 flex items-start gap-3">
-              <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-sm shrink-0">📍</div>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center justify-between">
-                  <p class="font-bold text-white">Delivery Destination</p>
-                  <button 
-                    type="button" 
-                    @click="startPinAdjustment"
-                    v-if="!isAdjustingPin"
-                    class="text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold underline cursor-pointer">
-                    Adjust Gate Pin
-                  </button>
+          <!-- Delivery Destination Info Card (Store Removed as Requested) -->
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-800/70 border border-surface-700/80 flex items-start gap-3 text-xs shadow-md">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-base sm:text-lg shrink-0">📍</div>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                <div>
+                  <p class="font-black text-white text-xs sm:text-sm">Delivery Destination</p>
+                  <p class="text-xs text-gray-300 mt-0.5" :title="order.delivery_address">{{ order.delivery_address || 'Santa Rosa, Laguna' }}</p>
                 </div>
-                <p class="text-[11px] text-gray-300 truncate" :title="order.delivery_address">{{ order.delivery_address || 'Santa Rosa, Laguna' }}</p>
-                <p v-if="order.customer_lat && order.customer_lng" class="text-[10px] text-emerald-400 font-mono mt-0.5">
-                  ✓ Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}
-                </p>
+                <button 
+                  type="button" 
+                  @click="startPinAdjustment"
+                  v-if="!isAdjustingPin"
+                  class="self-start sm:self-auto px-2.5 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold text-[11px] sm:text-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1 active:scale-95">
+                  <i class="pi pi-map-marker text-[10px]"></i>
+                  <span>Adjust Gate Pin</span>
+                </button>
               </div>
+              <p v-if="order.customer_lat && order.customer_lng" class="text-[10px] sm:text-[11px] text-emerald-400 font-mono mt-1 flex items-center gap-1">
+                <span>✓ Exact Doorstep Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}</span>
+              </p>
             </div>
           </div>
 
@@ -758,7 +747,7 @@ const OrderTracker = {
       const mapEl = document.getElementById('order-tracker-map');
       if (!mapEl) return;
 
-      // Customer Lat/Lng (if missing, auto-geocode)
+      // 1. Customer Destination Lat/Lng (if missing, fallback)
       let custLat = order.value.customer_lat ? Number(order.value.customer_lat) : null;
       let custLng = order.value.customer_lng ? Number(order.value.customer_lng) : null;
 
@@ -771,33 +760,24 @@ const OrderTracker = {
       tempCustLat.value = custLat;
       tempCustLng.value = custLng;
 
-      // Fetch turn-by-turn road route
-      const roadData = await fetchRoadRoute(riderLat, riderLng, custLat, custLng);
-      const roadPoints = roadData.coordinates;
-
-      // Rider Lat/Lng calculation
+      // 2. Rider Lat/Lng Calculation (Computed BEFORE route fetching so no TDZ error occurs!)
       let riderLat = order.value.driver_lat ? Number(order.value.driver_lat) : null;
       let riderLng = order.value.driver_lng ? Number(order.value.driver_lng) : null;
-      
+
       if (!riderLat || !riderLng) {
-        if (order.value.status === 'Out for Delivery') {
-          // Follow actual road coordinates at ~65% progression
-          if (roadPoints && roadPoints.length > 2) {
-            const targetIdx = Math.floor(roadPoints.length * 0.65);
-            riderLat = roadPoints[targetIdx][0];
-            riderLng = roadPoints[targetIdx][1];
-          } else {
-            riderLat = STORE_LAT + (custLat - STORE_LAT) * 0.65;
-            riderLng = STORE_LNG + (custLng - STORE_LNG) * 0.65;
-          }
-        } else if (order.value.status === 'Completed') {
+        if (order.value.status === 'Completed') {
           riderLat = custLat;
           riderLng = custLng;
         } else {
+          // Santa Rosa Laguna rider origin
           riderLat = STORE_LAT;
           riderLng = STORE_LNG;
         }
       }
+
+      // 3. Fetch turn-by-turn road route between Rider and Customer
+      const roadData = await fetchRoadRoute(riderLat, riderLng, custLat, custLng);
+      const roadPoints = roadData.coordinates;
 
       if (!trackerMap) {
         trackerMap = L.map('order-tracker-map', {
@@ -863,9 +843,9 @@ const OrderTracker = {
         const bounds = L.latLngBounds([[custLat, custLng], [riderLat, riderLng]]);
         trackerMap.fitBounds(bounds, { padding: [55, 55] });
 
-        setTimeout(() => {
-          if (trackerMap) trackerMap.invalidateSize();
-        }, 250);
+        setTimeout(() => { if (trackerMap) trackerMap.invalidateSize(); }, 100);
+        setTimeout(() => { if (trackerMap) trackerMap.invalidateSize(); }, 350);
+        setTimeout(() => { if (trackerMap) trackerMap.invalidateSize(); }, 800);
 
       } else {
         // Update positions
@@ -874,11 +854,14 @@ const OrderTracker = {
         }
         if (riderMarker) {
           riderMarker.setLatLng([riderLat, riderLng]);
+          const currentBearing = calcBearing(riderLat, riderLng, custLat, custLng);
+          riderMarker.setIcon(getRiderIcon(currentBearing));
         }
         if (routeLineCasing && routeLineActive) {
           routeLineCasing.setLatLngs(roadPoints);
           routeLineActive.setLatLngs(roadPoints);
         }
+        if (trackerMap) trackerMap.invalidateSize();
       }
 
       // Update HUD metrics
@@ -886,13 +869,13 @@ const OrderTracker = {
     };
 
     const updateRouteToTempPin = async (tLat, tLng) => {
-      const roadData = await fetchRoadRoute(riderLat, riderLng, tLat, tLng);
-      if (routeLineCasing && routeLineActive) {
+      let rLat = order.value?.driver_lat ? Number(order.value.driver_lat) : (riderMarker ? riderMarker.getLatLng().lat : STORE_LAT);
+      let rLng = order.value?.driver_lng ? Number(order.value.driver_lng) : (riderMarker ? riderMarker.getLatLng().lng : STORE_LNG);
+      const roadData = await fetchRoadRoute(rLat, rLng, tLat, tLng);
+      if (routeLineCasing && routeLineActive && roadData.coordinates) {
         routeLineCasing.setLatLngs(roadData.coordinates);
         routeLineActive.setLatLngs(roadData.coordinates);
       }
-      let rLat = order.value?.driver_lat ? Number(order.value.driver_lat) : (roadData.coordinates[Math.floor(roadData.coordinates.length * 0.65)]?.[0] || STORE_LAT);
-      let rLng = order.value?.driver_lng ? Number(order.value.driver_lng) : (roadData.coordinates[Math.floor(roadData.coordinates.length * 0.65)]?.[1] || STORE_LNG);
       updateNavigationHUD(rLat, rLng, tLat, tLng, roadData.coordinates);
     };
 
@@ -1035,6 +1018,7 @@ const OrderTracker = {
       Vue.nextTick(() => {
         initOrUpdateMap();
       });
+      window.addEventListener('resize', onWindowResize);
 
       if (order.value && order.value.id) {
         subscribeToOrderEcho(order.value.id);
@@ -1071,7 +1055,12 @@ const OrderTracker = {
       });
     }, { deep: true });
 
+    const onWindowResize = () => {
+      if (trackerMap) trackerMap.invalidateSize();
+    };
+
     Vue.onBeforeUnmount(() => {
+      window.removeEventListener('resize', onWindowResize);
       if (pollInterval) clearInterval(pollInterval);
       if (clockInterval) clearInterval(clockInterval);
       if (echoChannelSubscribed && window.Echo) {

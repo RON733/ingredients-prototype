@@ -192,3 +192,38 @@ select option { background: #1e2130; color: white; }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+
+/* Leaflet & Live Navigation Map Mobile Optimization */
+#order-tracker-map,
+[id^="driver-map-"] {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 280px;
+  touch-action: pan-x pan-y;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* Ensure Leaflet controls sit cleanly on mobile and don't block HUD */
+@media (max-width: 640px) {
+  .leaflet-top.leaflet-left {
+    top: auto;
+    bottom: 12px;
+    left: 12px;
+  }
+  .leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+  }
+  .leaflet-control-zoom a {
+    background-color: rgba(24, 24, 27, 0.92) !important;
+    color: #ffffff !important;
+    border-color: rgba(63, 63, 70, 0.8) !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+  }
+}
