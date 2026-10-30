@@ -580,7 +580,6 @@ const OrderTracker = {
     // --- Leaflet Map & Layers ---
     let trackerMap = null;
     let tileLayer = null;
-    let storeMarker = null;
     let customerMarker = null;
     let riderMarker = null;
     let routeLineCasing = null;
@@ -673,22 +672,6 @@ const OrderTracker = {
       });
     };
 
-    const getStoreIcon = () => {
-      if (typeof L === 'undefined') return null;
-      return L.divIcon({
-        className: 'custom-store-pin',
-        html: `
-          <div class="relative flex items-center justify-center">
-            <div class="w-9 h-9 rounded-full bg-amber-500 border-2 border-white shadow-xl flex items-center justify-center text-sm font-bold text-white">
-              🏪
-            </div>
-          </div>
-        `,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18]
-      });
-    };
-
     // Apply or switch tile style
     const applyMapTiles = () => {
       if (!trackerMap) return;
@@ -739,7 +722,7 @@ const OrderTracker = {
         riderEtaText.value = 'Delivered';
         riderProximityStatus.value = '? Order delivered to your doorstep!';
       } else if (order.value?.status === 'Out for Delivery') {
-        const totalDist = fullRoadDistanceMeters > 0 ? fullRoadDistanceMeters : (calcDirectDistance(STORE_LAT, STORE_LNG, cLat, cLng) || 1);
+        const totalDist = fullRoadDistanceMeters > 0 ? fullRoadDistanceMeters : (calcDirectDistance(rLat, rLng, cLat, cLng) || 1);
         const traveled = Math.max(0, totalDist - remainingDist);
         tripProgressPercent.value = Math.min(95, Math.max(15, Math.round((traveled / totalDist) * 100)));
 
@@ -789,7 +772,7 @@ const OrderTracker = {
       tempCustLng.value = custLng;
 
       // Fetch turn-by-turn road route
-      const roadData = await fetchRoadRoute(STORE_LAT, STORE_LNG, custLat, custLng);
+      const roadData = await fetchRoadRoute(riderLat, riderLng, custLat, custLng);
       const roadPoints = roadData.coordinates;
 
       // Rider Lat/Lng calculation
@@ -821,14 +804,9 @@ const OrderTracker = {
           zoomControl: true,
           scrollWheelZoom: false,
           attributionControl: true
-        }).setView([STORE_LAT, STORE_LNG], 14);
+        }).setView([riderLat, riderLng], 15);
 
         applyMapTiles();
-
-        // 1. Store Marker
-        storeMarker = L.marker([STORE_LAT, STORE_LNG], { icon: getStoreIcon() })
-          .addTo(trackerMap)
-          .bindPopup('<b>🏪 G Shot Teas Hub</b><br>Store Kitchen Origin');
 
         // 2. Customer Destination Marker (Red teardrop pin from user image)
         customerMarker = L.marker([custLat, custLng], { 
@@ -882,11 +860,7 @@ const OrderTracker = {
         }).addTo(trackerMap);
 
         // Fit bounds with comfortable padding
-        const bounds = L.latLngBounds([
-          [STORE_LAT, STORE_LNG],
-          [custLat, custLng],
-          [riderLat, riderLng]
-        ]);
+        const bounds = L.latLngBounds([[custLat, custLng], [riderLat, riderLng]]);
         trackerMap.fitBounds(bounds, { padding: [55, 55] });
 
         setTimeout(() => {
@@ -912,7 +886,7 @@ const OrderTracker = {
     };
 
     const updateRouteToTempPin = async (tLat, tLng) => {
-      const roadData = await fetchRoadRoute(STORE_LAT, STORE_LNG, tLat, tLng);
+      const roadData = await fetchRoadRoute(riderLat, riderLng, tLat, tLng);
       if (routeLineCasing && routeLineActive) {
         routeLineCasing.setLatLngs(roadData.coordinates);
         routeLineActive.setLatLngs(roadData.coordinates);
@@ -1002,11 +976,7 @@ const OrderTracker = {
       let riderLat = order.value?.driver_lat ? Number(order.value.driver_lat) : (STORE_LAT + (custLat - STORE_LAT) * 0.65);
       let riderLng = order.value?.driver_lng ? Number(order.value.driver_lng) : (STORE_LNG + (custLng - STORE_LNG) * 0.65);
 
-      const bounds = L.latLngBounds([
-        [STORE_LAT, STORE_LNG],
-        [custLat, custLng],
-        [riderLat, riderLng]
-      ]);
+      const bounds = L.latLngBounds([[custLat, custLng], [riderLat, riderLng]]);
       trackerMap.fitBounds(bounds, { padding: [55, 55] });
     };
 
@@ -1036,6 +1006,13 @@ const OrderTracker = {
               const custLat = order.value.customer_lat ? Number(order.value.customer_lat) : 14.3218;
               const custLng = order.value.customer_lng ? Number(order.value.customer_lng) : 121.1192;
               updateNavigationHUD(e.driver_lat, e.driver_lng, custLat, custLng, fullRoadRouteCoordinates);
+              // Dynamically update the route polyline from rider's live position to customer
+              fetchRoadRoute(e.driver_lat, e.driver_lng, custLat, custLng).then(newRoad => {
+                if (routeLineCasing && routeLineActive && newRoad.coordinates) {
+                  routeLineCasing.setLatLngs(newRoad.coordinates);
+                  routeLineActive.setLatLngs(newRoad.coordinates);
+                }
+              }).catch(() => {});
             } else {
               initOrUpdateMap();
             }
