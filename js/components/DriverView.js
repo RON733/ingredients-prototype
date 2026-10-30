@@ -35,6 +35,15 @@ const DriverView = {
             <span>{{ isAvailable ? 'Available for Orders' : 'On Break / Offline' }}</span>
           </button>
 
+          <!-- Screen Wake Lock Status Badge -->
+          <span 
+            v-if="isWakeLockActive" 
+            title="Screen Wake Lock is active. Phone display will stay awake during deliveries."
+            class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span>⚡ Screen Awake</span>
+          </span>
+
           <!-- GPS Broadcast Toggle Button -->
           <button 
             type="button"
@@ -492,10 +501,46 @@ const DriverView = {
       store.currentView = 'customer';
     };
 
+    // Screen Wake Lock API (keeps mobile display awake on handlebar mounts during active deliveries)
+    let wakeLockSentinel = null;
+    const isWakeLockActive = Vue.ref(false);
+
+    const acquireScreenWakeLock = async () => {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+          isWakeLockActive.value = true;
+          wakeLockSentinel.addEventListener('release', () => {
+            isWakeLockActive.value = false;
+          });
+          console.log('🔋 [WakeLock] Screen Wake Lock acquired for delivery rider.');
+        } catch (err) {
+          console.warn('⚠️ [WakeLock] Could not acquire screen wake lock:', err);
+        }
+      }
+    };
+
+    const releaseScreenWakeLock = async () => {
+      if (wakeLockSentinel !== null) {
+        try {
+          await wakeLockSentinel.release();
+          wakeLockSentinel = null;
+        } catch (e) {}
+      }
+      isWakeLockActive.value = false;
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isGpsBroadcasting.value) {
+        acquireScreenWakeLock();
+      }
+    };
+
     // GPS Broadcasting Loop
     const startGpsBroadcast = () => {
       if (!navigator.geolocation) return;
       isGpsBroadcasting.value = true;
+      acquireScreenWakeLock();
       gpsWatchId = navigator.geolocation.watchPosition(
         (pos) => {
           const lat = Number(pos.coords.latitude.toFixed(6));
@@ -525,6 +570,7 @@ const DriverView = {
         gpsWatchId = null;
       }
       isGpsBroadcasting.value = false;
+      releaseScreenWakeLock();
     };
 
     const toggleGpsTracking = () => {
@@ -540,10 +586,12 @@ const DriverView = {
     Vue.onMounted(() => {
       store.fetchOrders();
       startGpsBroadcast();
+      document.addEventListener('visibilitychange', handleVisibilityChange);
     });
 
     Vue.onBeforeUnmount(() => {
       stopGpsBroadcast();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     });
 
     return {
@@ -566,6 +614,7 @@ const DriverView = {
       handleLogout,
       toggleAvailability,
       toggleGpsTracking,
+      isWakeLockActive,
     };
   },
 };

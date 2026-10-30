@@ -1,4 +1,4 @@
-// G Shot Teas â€” Order Tracker Component with Free Leaflet GPS Tracking
+// G Shot Teas — Order Tracker Component with Free Leaflet GPS Tracking
 const OrderTracker = {
   template: `
     <div class="py-12 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 animate-fade-in">
@@ -147,7 +147,7 @@ const OrderTracker = {
                 <div class="flex items-center gap-2">
                   <p class="font-bold text-white">Rider's Real-Time GPS Active</p>
                   <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> LIVE
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> {{ gpsFreshnessText }}
                   </span>
                 </div>
                 <p class="text-[11px] text-emerald-200/80">
@@ -398,12 +398,12 @@ const OrderTracker = {
                 </p>
                 <p v-if="item.customization" class="text-[11px] text-gray-400">
                   <span v-if="item.customization.size">{{ item.customization.size }}</span>
-                  <span v-if="item.customization.sugar"> â€¢ {{ item.customization.sugar }}</span>
-                  <span v-if="item.customization.ice"> â€¢ {{ item.customization.ice }}</span>
+                  <span v-if="item.customization.sugar"> • {{ item.customization.sugar }}</span>
+                  <span v-if="item.customization.ice"> • {{ item.customization.ice }}</span>
                 </p>
               </div>
               <span class="font-black text-white">
-                â‚±{{ Number(item.subtotal).toFixed(2) }}
+                ₱{{ Number(item.subtotal).toFixed(2) }}
               </span>
             </div>
           </div>
@@ -435,11 +435,11 @@ const OrderTracker = {
           </div>
           <div v-if="order.delivery_fee > 0" class="flex justify-between text-gray-400">
             <span>Delivery Fee</span>
-            <span class="font-medium text-white">â‚±{{ Number(order.delivery_fee).toFixed(2) }}</span>
+            <span class="font-medium text-white">₱{{ Number(order.delivery_fee).toFixed(2) }}</span>
           </div>
           <div class="flex justify-between text-xl font-black text-white pt-2">
             <span>Total</span>
-            <span class="text-brand-400">â‚±{{ Number(order.total_amount).toFixed(2) }}</span>
+            <span class="text-brand-400">₱{{ Number(order.total_amount).toFixed(2) }}</span>
           </div>
         </div>
 
@@ -466,7 +466,7 @@ const OrderTracker = {
 
       <!-- No Active Order State -->
       <div v-else class="text-center py-20 bg-surface-800/50 rounded-3xl border border-surface-700 p-8">
-        <div class="text-4xl mb-4">ðŸ“¦</div>
+        <div class="text-4xl mb-4">📦</div>
         <h3 class="text-lg font-bold text-white">No Active Order Selected</h3>
         <p class="text-xs text-gray-400 mt-1">Place an order or check your order history to track progress.</p>
         <button 
@@ -489,7 +489,7 @@ const OrderTracker = {
             <button 
               @click="previewReceipt = null" 
               class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
-              âœ•
+              ✕
             </button>
           </div>
           <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
@@ -635,6 +635,60 @@ const OrderTracker = {
     const riderBearingDeg = Vue.ref(55);
     const tripProgressPercent = Vue.ref(65);
     const riderProximityStatus = Vue.ref('');
+
+    // Real-Time GPS Freshness & Proximity Geofencing
+    const lastGpsTimestamp = Vue.ref(Date.now());
+    const currentTimeSec = Vue.ref(Math.floor(Date.now() / 1000));
+    const isRiderArrivedNear = Vue.ref(false);
+    let hasChimedArrival = false;
+
+    const gpsFreshnessText = Vue.computed(() => {
+      if (!lastGpsTimestamp.value) return 'LIVE';
+      const sec = Math.max(0, currentTimeSec.value - Math.floor(lastGpsTimestamp.value / 1000));
+      if (sec < 4) return 'LIVE • Just now';
+      if (sec < 60) return `LIVE • ${sec}s ago`;
+      const min = Math.floor(sec / 60);
+      return `Updated ${min}m ago`;
+    });
+
+    const playArrivalChime = () => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+        
+        // Two-tone cheerful doorbell chime: D5 -> A5
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, now);
+        gain1.gain.setValueAtTime(0.25, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.4);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, now + 0.15);
+        gain2.gain.setValueAtTime(0.3, now + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.15);
+        osc2.stop(now + 0.8);
+
+        if ('vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200]);
+        }
+      } catch (e) {
+        console.warn('Arrival chime notice:', e);
+      }
+    };
 
     const isAdjustingPin = Vue.ref(false);
     const tempCustLat = Vue.ref(null);
@@ -888,11 +942,18 @@ const OrderTracker = {
         const traveled = Math.max(0, totalDist - remainingDist);
         tripProgressPercent.value = Math.min(95, Math.max(15, Math.round((traveled / totalDist) * 100)));
 
-        if (remainingDist <= 60) {
-          riderProximityStatus.value = '\u{1F389} Rider has arrived right at your gate!';
+        if (remainingDist <= 100) {
+          isRiderArrivedNear.value = true;
+          if (!hasChimedArrival) {
+            hasChimedArrival = true;
+            playArrivalChime();
+          }
+          riderProximityStatus.value = '🎉 Rider has arrived right at your doorstep/gate!';
         } else if (remainingDist <= 350) {
-          riderProximityStatus.value = '\u{1F6F5} Rider is approaching your street! Please prepare.';
+          isRiderArrivedNear.value = false;
+          riderProximityStatus.value = '🛵 Rider is approaching your street! Please prepare.';
         } else {
+          isRiderArrivedNear.value = false;
           riderProximityStatus.value = `Rider is on the road heading towards your address (${heading})`;
         }
       } else {
@@ -1150,6 +1211,7 @@ const OrderTracker = {
 
     let pollInterval = null;
     let echoChannelSubscribed = null;
+    let clockInterval = null;
 
     const subscribeToOrderEcho = (orderId) => {
       if (!orderId || !window.Echo) return;
@@ -1165,6 +1227,7 @@ const OrderTracker = {
           if (order.value && Number(order.value.id) === Number(e.order_id)) {
             order.value.driver_lat = e.driver_lat;
             order.value.driver_lng = e.driver_lng;
+            lastGpsTimestamp.value = Date.now();
             if (e.driver_notes) order.value.driver_notes = e.driver_notes;
 
             if (riderMarker) {
@@ -1197,7 +1260,14 @@ const OrderTracker = {
 
       if (order.value && order.value.id) {
         subscribeToOrderEcho(order.value.id);
+        if (order.value.driver_lat && order.value.driver_lng) {
+          lastGpsTimestamp.value = Date.now();
+        }
       }
+
+      clockInterval = setInterval(() => {
+        currentTimeSec.value = Math.floor(Date.now() / 1000);
+      }, 2000);
 
       pollInterval = setInterval(async () => {
         if (order.value && order.value.id) {
@@ -1225,6 +1295,7 @@ const OrderTracker = {
 
     Vue.onBeforeUnmount(() => {
       if (pollInterval) clearInterval(pollInterval);
+      if (clockInterval) clearInterval(clockInterval);
       if (echoChannelSubscribed && window.Echo) {
         try { window.Echo.leave(`orders.${echoChannelSubscribed}`); } catch (e) {}
         echoChannelSubscribed = null;
@@ -1266,6 +1337,9 @@ const OrderTracker = {
       googleMapsEmbedUrl,
       googleMapsRouteUrl,
       riderSharedLiveLink,
+      isRiderArrivedNear,
+      gpsFreshnessText,
+      playArrivalChime,
     };
   },
 };

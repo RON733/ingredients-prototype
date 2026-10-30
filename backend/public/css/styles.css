@@ -106,11 +106,16 @@ select option { background: #1e2130; color: white; }
   filter: contrast(102%) saturate(108%);
 }
 
-/* Custom Grab-Style Blue Circle Rider Pin */
+/* Custom Grab-Style Blue Circle Rider Pin with Smooth Gliding Animation */
 .custom-grab-rider-pin {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+.leaflet-marker-icon.custom-grab-rider-pin {
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
 .grab-rider-disc {
