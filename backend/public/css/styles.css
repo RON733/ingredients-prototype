@@ -99,3 +99,91 @@ select option { background: #1e2130; color: white; }
 .dark-osm-tiles {
   filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%);
 }
+
+
+/* Grab / OpenStreetMap Clean Street Tiles (Matches Delivery Apps) */
+.grab-osm-tiles {
+  filter: contrast(102%) saturate(108%);
+}
+
+/* Custom Grab-Style Blue Circle Rider Pin */
+.custom-grab-rider-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grab-rider-disc {
+  width: 38px;
+  height: 38px;
+  border-radius: 9999px;
+  background-color: #0284c7;
+  border: 3.5px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.grab-rider-inner-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+}
+
+/* Rotating Directional Heading Pointer */
+.rider-heading-cone {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform-origin: 50% 31px;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+
+.rider-heading-cone svg {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Pulsing Wave Around Rider */
+.grab-rider-pulse {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  background-color: rgba(2, 132, 199, 0.25);
+  animation: grabPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes grabPulse {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Custom Red Teardrop Destination Pin */
+.custom-grab-destination-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-grab-destination-pin svg {
+  filter: drop-shadow(0 4px 10px rgba(225, 29, 72, 0.45));
+  transition: transform 0.2s ease;
+}
+
+.custom-grab-destination-pin:hover svg {
+  transform: scale(1.1);
+}
+
+/* Map Route Glow / Dash Effect */
+.grab-route-active {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

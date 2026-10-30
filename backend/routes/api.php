@@ -25,6 +25,7 @@ Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/orders/active', [OrderController::class, 'activeOrder']);
 Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::post('/orders', [OrderController::class, 'store']);
+Route::patch('/orders/{id}/customer-location', [OrderController::class, 'updateCustomerLocation']);
 
 Route::get('/ingredients', [IngredientController::class, 'index']);
 Route::get('/settings', [SystemController::class, 'settings']);
@@ -91,6 +92,7 @@ Route::prefix('v1')->group(function () {
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::patch('/orders/{id}/verify-payment', [OrderController::class, 'verifyPayment']);
     Route::patch('/orders/{id}/driver-location', [OrderController::class, 'updateDriverLocation']);
+    Route::patch('/orders/{id}/customer-location', [OrderController::class, 'updateCustomerLocation']);
     Route::patch('/orders/{id}/assign-driver', [OrderController::class, 'assignDriver']);
     Route::get('/drivers', [OrderController::class, 'getDrivers']);
     Route::patch('/driver/toggle-availability', [OrderController::class, 'toggleDriverAvailability']);

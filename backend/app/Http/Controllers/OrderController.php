@@ -461,6 +461,28 @@ class OrderController extends Controller
         ]);
     }
 
+    public function updateCustomerLocation(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'customer_lat' => 'required|numeric',
+            'customer_lng' => 'required|numeric',
+            'delivery_address' => 'nullable|string',
+        ]);
+
+        $order = Order::findOrFail($id);
+        $order->customer_lat = $validated['customer_lat'];
+        $order->customer_lng = $validated['customer_lng'];
+        if (!empty($validated['delivery_address'])) {
+            $order->delivery_address = $validated['delivery_address'];
+        }
+        $order->save();
+
+        return response()->json([
+            'message' => 'Delivery location updated successfully.',
+            'order' => $order,
+        ]);
+    }
+
     public function assignDriver(Request $request, $id)
     {
         $validated = $request->validate([

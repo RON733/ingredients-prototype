@@ -140,19 +140,70 @@ const CheckoutView = {
               Currently delivering across Santa Rosa, Laguna and nearby subdivisions.
             </p>
             
+            <!-- Search & High Accuracy Location Controls -->
+            <div class="mt-3 space-y-2">
+              <div class="relative flex items-center">
+                <input 
+                  v-model="geoSearchQuery" 
+                  @keydown.enter.prevent="searchAddressOnMap"
+                  type="text" 
+                  placeholder="Search subdivision, street, or landmark in Santa Rosa (e.g. Balibago, Golden City)..."
+                  class="w-full pl-9 pr-24 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-all shadow-inner"
+                />
+                <i class="pi pi-search absolute left-3 text-gray-500 text-xs"></i>
+                <button 
+                  type="button" 
+                  @click="searchAddressOnMap"
+                  :disabled="isGeoSearching"
+                  class="absolute right-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold transition-all disabled:opacity-50 flex items-center gap-1 shadow-sm cursor-pointer">
+                  <i class="pi" :class="isGeoSearching ? 'pi-spin pi-spinner' : 'pi-map-marker'"></i>
+                  <span>{{ isGeoSearching ? 'Searching...' : 'Locate' }}</span>
+                </button>
+              </div>
+
+              <!-- Quick Santa Rosa Area Chips -->
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-[11px]">
+                <span class="text-gray-500 shrink-0 text-[10px] font-bold uppercase tracking-wider">Quick Jump:</span>
+                <button 
+                  v-for="chip in santaRosaChips" 
+                  :key="chip.name"
+                  type="button"
+                  @click="jumpToChip(chip)"
+                  class="px-2.5 py-0.5 rounded-full bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 shrink-0 transition-all font-medium text-[11px] cursor-pointer">
+                  ?? {{ chip.name }}
+                </button>
+              </div>
+
+              <!-- Geocoding Search Suggestions Dropdown -->
+              <div v-if="geoSearchResults && geoSearchResults.length > 0" class="rounded-xl bg-surface-900 border border-emerald-500/50 p-2 space-y-1 shadow-2xl animate-fade-in z-20">
+                <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider px-2">Select matching location:</p>
+                <div 
+                  v-for="result in geoSearchResults" 
+                  :key="result.place_id"
+                  @click="selectGeoResult(result)"
+                  class="p-2 rounded-lg hover:bg-surface-800 cursor-pointer text-xs text-gray-200 transition-colors flex items-start gap-2">
+                  <i class="pi pi-map-marker text-emerald-400 mt-0.5 shrink-0"></i>
+                  <div class="min-w-0">
+                    <p class="font-bold truncate text-white">{{ result.display_name.split(',')[0] }}</p>
+                    <p class="text-[10px] text-gray-400 truncate">{{ result.display_name }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Interactive Leaflet Delivery Pin Map in Checkout -->
-            <div class="mt-3 rounded-2xl border border-surface-700 bg-surface-950 overflow-hidden shadow-xl">
+            <div class="mt-2 rounded-2xl border border-surface-700 bg-surface-950 overflow-hidden shadow-xl">
               <div class="px-3.5 py-2.5 bg-surface-900 border-b border-surface-700 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <span class="font-bold text-gray-200 flex items-center gap-1.5">
-                  <span class="text-emerald-400">📍</span> Pin Exact Delivery Location
+                  <span class="text-emerald-400">??</span> Pin Exact Delivery Location
                 </span>
                 <span class="text-[11px] text-gray-400 flex items-center gap-1">
-                  <i class="pi pi-info-circle text-brand-400 text-[10px]"></i> Tap map or drag pin to your house/gate
+                  <i class="pi pi-info-circle text-brand-400 text-[10px]"></i> Drag red pin or tap map to set exact gate
                 </span>
               </div>
 
-              <!-- Map Container -->
-              <div id="checkout-pin-map" class="w-full h-56 sm:h-64 relative z-0"></div>
+              <!-- Map Container with Clean Street Style -->
+              <div id="checkout-pin-map" class="w-full h-64 sm:h-72 relative z-0"></div>
 
               <!-- Map Sub-bar with Coordinates & Actions -->
               <div class="p-3 bg-surface-900/95 border-t border-surface-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
@@ -160,7 +211,8 @@ const CheckoutView = {
                   <div class="w-2.5 h-2.5 rounded-full shrink-0" :class="form.customer_lat && form.customer_lng ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></div>
                   <span v-if="form.customer_lat && form.customer_lng" class="text-gray-300 font-medium truncate text-[11px]">
                     Pinned: <span class="text-emerald-400 font-mono font-bold">{{ Number(form.customer_lat).toFixed(5) }}, {{ Number(form.customer_lng).toFixed(5) }}</span>
-                    <span v-if="pinnedAddressPreview" class="text-gray-400 text-[10px] ml-1">({{ pinnedAddressPreview }})</span>
+                    <span v-if="gpsAccuracyMeters" class="text-emerald-400 text-[10px] font-semibold ml-1">? ?{{ gpsAccuracyMeters }}m precision</span>
+                    <span v-else-if="pinnedAddressPreview" class="text-gray-400 text-[10px] ml-1">({{ pinnedAddressPreview }})</span>
                   </span>
                   <span v-else class="text-gray-400 text-[11px]">
                     No exact coordinates pinned. Click map or tap "Use Device GPS" above.
@@ -174,7 +226,7 @@ const CheckoutView = {
                     :disabled="isLocatingGPS"
                     class="px-2.5 py-1 rounded-lg bg-surface-800 hover:bg-surface-700 active:scale-95 text-emerald-400 hover:text-emerald-300 border border-surface-700 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer">
                     <i class="pi" :class="isLocatingGPS ? 'pi-spin pi-spinner' : 'pi-compass'"></i>
-                    <span>{{ isLocatingGPS ? 'Locating...' : 'My GPS' }}</span>
+                    <span>{{ isLocatingGPS ? 'Locating...' : 'High-Accuracy GPS' }}</span>
                   </button>
                   <button 
                     type="button" 
@@ -887,20 +939,106 @@ const CheckoutView = {
 
     const getPinIcon = () => {
       if (typeof L === 'undefined') return null;
+      // Red teardrop pin matching Grab and modern delivery apps
       return L.divIcon({
-        className: 'custom-checkout-pin',
+        className: 'custom-grab-destination-pin',
         html: `
-          <div class="relative flex items-center justify-center">
-            <div class="w-10 h-10 rounded-full bg-emerald-500 border-2 border-white shadow-2xl flex items-center justify-center text-lg font-bold text-white transition-transform hover:scale-110">
-              📍
-            </div>
-            <div class="absolute -bottom-1 w-2.5 h-2.5 bg-emerald-600 rotate-45 border-r border-b border-white"></div>
+          <div class="relative flex items-center justify-center -translate-y-4 cursor-pointer">
+            <svg viewBox="0 0 32 42" width="34" height="44" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-xl">
+              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#EF4444"/>
+              <circle cx="16" cy="15" r="5.5" fill="#FFFFFF"/>
+            </svg>
           </div>
         `,
-        iconSize: [40, 44],
-        iconAnchor: [20, 42],
-        popupAnchor: [0, -42],
+        iconSize: [34, 44],
+        iconAnchor: [17, 44],
+        popupAnchor: [0, -44],
       });
+    };
+
+    const geoSearchQuery = Vue.ref('');
+    const isGeoSearching = Vue.ref(false);
+    const geoSearchResults = Vue.ref([]);
+    const gpsAccuracyMeters = Vue.ref(null);
+    let accuracyCircle = null;
+
+    const santaRosaChips = [
+      { name: 'Sinalhan (Store)', lat: 14.3167, lng: 121.1111 },
+      { name: 'Balibago / Complex', lat: 14.2934, lng: 121.1082 },
+      { name: 'Tagapo / SM City', lat: 14.3101, lng: 121.1035 },
+      { name: 'Nuvali / Don Jose', lat: 14.2415, lng: 121.0583 },
+      { name: 'Caingin', lat: 14.3262, lng: 121.1172 },
+      { name: 'Dila', lat: 14.3005, lng: 121.1070 },
+      { name: 'Macabling', lat: 14.3023, lng: 121.0965 },
+      { name: 'Poblacion', lat: 14.3140, lng: 121.1130 },
+    ];
+
+    const jumpToChip = (chip) => {
+      initCheckoutMap();
+      if (checkoutMap) {
+        checkoutMap.setView([chip.lat, chip.lng], 16);
+        updatePinLocation(chip.lat, chip.lng, true);
+        if (pinMarker) {
+          pinMarker.bindPopup(`<b>?? ${chip.name}</b><br>Drag red pin to your exact gate/door.`).openPopup();
+        }
+      }
+      store.notify(`Map centered on ${chip.name}. Drag pin to your gate.`, 'info');
+    };
+
+    const searchAddressOnMap = async () => {
+      const q = (geoSearchQuery.value || form.delivery_address || '').trim();
+      if (!q) {
+        store.notify('Please enter a subdivision, street, or landmark to search.', 'warning');
+        return;
+      }
+      isGeoSearching.value = true;
+      geoSearchResults.value = [];
+      try {
+        const queryWithContext = q.toLowerCase().includes('santa rosa') ? q : `${q}, Santa Rosa, Laguna`;
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryWithContext)}&addressdetails=1&limit=5`, {
+          headers: { 'Accept-Language': 'en' }
+        });
+        if (res.ok) {
+          const list = await res.json();
+          if (list && list.length > 0) {
+            geoSearchResults.value = list;
+            selectGeoResult(list[0]);
+          } else {
+            const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`, {
+              headers: { 'Accept-Language': 'en' }
+            });
+            const list2 = await res2.json();
+            if (list2 && list2.length > 0) {
+              geoSearchResults.value = list2;
+              selectGeoResult(list2[0]);
+            } else {
+              store.notify('No exact match found. Try typing your barangay or subdivision name.', 'warning');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Geocoding search failed:', err);
+        store.notify('Search request failed. Please check network.', 'error');
+      } finally {
+        isGeoSearching.value = false;
+      }
+    };
+
+    const selectGeoResult = (item) => {
+      const lat = parseFloat(item.lat);
+      const lng = parseFloat(item.lon);
+      initCheckoutMap();
+      if (checkoutMap) {
+        checkoutMap.setView([lat, lng], 17);
+        updatePinLocation(lat, lng, false);
+        form.delivery_address = item.display_name;
+        pinnedAddressPreview.value = item.display_name.split(',')[0];
+        if (pinMarker) {
+          pinMarker.bindPopup(`<b>?? ${item.display_name.split(',')[0]}</b><br>Drag pin to fine-tune exact gate/door.`).openPopup();
+        }
+      }
+      geoSearchResults.value = [];
+      store.notify(`Delivery pin placed at ${item.display_name.split(',')[0]}!`, 'success');
     };
 
     const updatePinLocation = (lat, lng, doReverseGeocode = true) => {
@@ -957,10 +1095,12 @@ const CheckoutView = {
           attributionControl: true
         }).setView([initialLat, initialLng], initialZoom);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Clean street tiles matching Grab / OpenStreetMap
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
           maxZoom: 19,
-          className: 'dark-osm-tiles'
+          subdomains: 'abcd',
+          className: 'grab-osm-tiles'
         }).addTo(checkoutMap);
 
         const icon = getPinIcon();
@@ -1017,26 +1157,41 @@ const CheckoutView = {
       isLocatingGPS.value = true;
       gpsErrorMessage.value = '';
 
-      store.notify('Detecting GPS location... Please turn ON your device GPS and tap Allow when prompted.', 'info');
+      store.notify('Detecting high-precision GPS location... Tap Allow when prompted.', 'info');
 
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           isLocatingGPS.value = false;
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
+          const accuracy = Math.round(pos.coords.accuracy || 0);
+          gpsAccuracyMeters.value = accuracy;
 
           initCheckoutMap();
 
           if (checkoutMap) {
             checkoutMap.setView([lat, lng], 17);
             updatePinLocation(lat, lng, true);
+
+            // Draw accuracy circle
+            if (accuracyCircle) {
+              checkoutMap.removeLayer(accuracyCircle);
+            }
+            accuracyCircle = L.circle([lat, lng], {
+              radius: accuracy,
+              color: '#10b981',
+              weight: 1.5,
+              fillColor: '#10b981',
+              fillOpacity: 0.12
+            }).addTo(checkoutMap);
+
             if (pinMarker) {
-              pinMarker.bindPopup("<b>📍 GPS Location Detected!</b><br>Drag this pin or tap the map to fine-tune your exact gate/door.").openPopup();
+              pinMarker.bindPopup(`<b>?? High-Accuracy GPS (?${accuracy}m)</b><br>Drag pin or tap map to fine-tune exact gate/door.`).openPopup();
             }
             setTimeout(() => { if (checkoutMap) checkoutMap.invalidateSize(); }, 200);
           }
 
-          store.notify('✓ GPS Location detected! Pin your exact house/gate on the map.', 'success');
+          store.notify(`? GPS Detected! Accurate within ?${accuracy}m. Fine-tune your gate on the map.`, 'success');
         },
         (err) => {
           isLocatingGPS.value = false;
@@ -1047,20 +1202,19 @@ const CheckoutView = {
           } else if (err.code === 2) { // POSITION_UNAVAILABLE
             friendlyMsg = 'GPS location is unavailable. Please make sure your device GPS / Location is turned ON and try again.';
           } else if (err.code === 3) { // TIMEOUT
-            friendlyMsg = 'GPS request timed out. Please check that device Location is enabled and tap "Use Device GPS" again.';
+            friendlyMsg = 'GPS request timed out. Please check that device Location is enabled and tap "High-Accuracy GPS" again.';
           } else {
-            friendlyMsg = 'Could not retrieve GPS location. Please ensure your device GPS is ON, or simply tap on the map to pin your location.';
+            friendlyMsg = 'Could not access device GPS (' + (err.message || 'Unknown error') + '). You can still drag the pin or search your address.';
           }
 
           gpsErrorMessage.value = friendlyMsg;
           gpsPromptModalOpen.value = true;
           store.notify(friendlyMsg, 'warning');
-
           initCheckoutMap();
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: 15000,
           maximumAge: 0
         }
       );
@@ -1259,6 +1413,14 @@ const CheckoutView = {
       pinnedAddressPreview,
       locateUserGPS,
       resetPinToStore,
+      geoSearchQuery,
+      isGeoSearching,
+      geoSearchResults,
+      gpsAccuracyMeters,
+      santaRosaChips,
+      jumpToChip,
+      searchAddressOnMap,
+      selectGeoResult,
     };
   },
 };
