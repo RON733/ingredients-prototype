@@ -258,10 +258,18 @@ class OrderController extends Controller
             $deliveryFee = ($validated['order_type'] === 'Delivery') ? 40.00 : 0.00;
             $totalAmount = $subtotal + $deliveryFee;
 
-            // Generate order number
-            $lastOrder = Order::latest('id')->first();
-            $nextNum = $lastOrder ? ($lastOrder->id + 1) : 31;
-            $orderNumber = '#' . $nextNum;
+            // Generate unique order number (prevents duplicate key collisions with existing / seeded orders)
+            $existingNumbers = Order::pluck('order_number')->map(function ($num) {
+                return preg_match('/(\d+)/', (string)$num, $m) ? (int)$m[1] : 0;
+            })->filter()->all();
+
+            $maxExisting = !empty($existingNumbers) ? max($existingNumbers) : 0;
+            $nextNum = max($maxExisting + 1, 31);
+
+            do {
+                $orderNumber = '#' . $nextNum;
+                $nextNum++;
+            } while (Order::where('order_number', $orderNumber)->exists());
 
             // 5. Create Order
             $order = Order::create([

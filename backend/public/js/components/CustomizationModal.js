@@ -61,7 +61,7 @@ const CustomizationModal = {
                 @click="customization.size = 'Regular'"
                 class="p-3 rounded-xl border text-left flex items-center justify-between transition-all"
                 :class="customization.size === 'Regular' ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
-                <span>Regular (16 oz)</span>
+                <span>Regular <span v-if="isDrink" class="text-xs text-gray-400 font-normal">(16 oz)</span></span>
                 <span class="text-xs text-gray-400">Base</span>
               </button>
               <button 
@@ -69,7 +69,7 @@ const CustomizationModal = {
                 @click="customization.size = 'Large'"
                 class="p-3 rounded-xl border text-left flex items-center justify-between transition-all"
                 :class="customization.size === 'Large' ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
-                <span>Large (22 oz)</span>
+                <span>Large <span v-if="isDrink" class="text-xs text-gray-400 font-normal">(22 oz)</span></span>
                 <span class="text-xs font-bold text-brand-400">+₱20.00</span>
               </button>
             </div>
@@ -177,6 +177,11 @@ const CustomizationModal = {
     const store = useGShotStore();
     const product = Vue.computed(() => store.selectedProductForCustomize);
 
+    const isDrink = Vue.computed(() => {
+      const cat = product.value?.category;
+      return cat === 'Drinks' || cat === 'Coffee';
+    });
+
     const sugarLevels = ['0%', '25%', '50%', '75%', '100%'];
     const iceLevels = ['No Ice', 'Less Ice', 'Regular Ice'];
     const availableToppings = [
@@ -223,13 +228,27 @@ const CustomizationModal = {
 
     const confirmAdd = () => {
       if (!product.value) return;
-      store.addToCart(product.value, { ...customization });
+      const cleanCustomization = {
+        size: customization.size || 'Regular',
+      };
+      if (isDrink.value) {
+        cleanCustomization.sugar = customization.sugar || '75%';
+        cleanCustomization.ice = customization.ice || 'Regular Ice';
+        if (customization.toppings && customization.toppings.length) {
+          cleanCustomization.toppings = [...customization.toppings];
+        }
+      }
+      if (customization.notes && customization.notes.trim()) {
+        cleanCustomization.notes = customization.notes.trim();
+      }
+      store.addToCart(product.value, cleanCustomization);
       close();
     };
 
     return {
       store,
       product,
+      isDrink,
       sugarLevels,
       iceLevels,
       availableToppings,

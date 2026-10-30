@@ -1184,13 +1184,17 @@ const CheckoutView = {
         };
 
         const res = await GST_API.placeOrder(payload);
-        const createdOrder = res.data.order;
+        const createdOrder = res?.data?.order;
 
-        // Clear cart & set active order
+        if (!createdOrder || !createdOrder.id) {
+          throw new Error(res?.data?.message || 'Server did not return a valid order confirmation. Please try again.');
+        }
+
+        // Clear cart & set active order ONLY after confirming createdOrder exists!
         store.clearCart();
         store.activeOrder = createdOrder;
         localStorage.setItem('gst_active_order_id', createdOrder.id);
-        store.notify(`Order ${createdOrder.order_number} confirmed! Ingredients deducted.`, 'success');
+        store.notify(`Order ${createdOrder.order_number || ''} confirmed! Ingredients deducted.`, 'success');
 
         // Immediately refresh ingredients & products inventory in background
         store.fetchIngredients();
@@ -1202,15 +1206,15 @@ const CheckoutView = {
       } catch (err) {
         let msg = 'Failed to place order.';
         if (err.response?.data?.insufficient_ingredients?.length) {
-          msg = 'Cannot place order: Insufficient kitchen stock for:\n• ' + err.response.data.insufficient_ingredients.join('\n• ');
+          msg = 'Cannot place order: Insufficient kitchen stock for:\n\u2022 ' + err.response.data.insufficient_ingredients.join('\n\u2022 ');
         } else if (err.response?.data?.message) {
           msg = err.response.data.message;
         } else if (err.response?.data?.errors) {
           msg = Object.values(err.response.data.errors).flat().join(' ');
         } else if (err.code === 'ECONNABORTED' || (err.message && err.message.includes('timeout'))) {
-          msg = 'Cloud database connection timed out while processing order. Please try again.';
+          msg = 'Order request timed out while connecting to the server. Please tap Confirm & Place Order to try again.';
         } else if (err.message && err.message.includes('Network')) {
-          msg = 'Backend server unreachable. Please verify server is running on 127.0.0.1:8000.';
+          msg = 'Backend server unreachable. Please check your network connection and try again.';
         } else if (err.message) {
           msg = err.message;
         }
