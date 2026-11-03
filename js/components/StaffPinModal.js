@@ -120,7 +120,7 @@ var StaffPinModal = window.StaffPinModal = {
         <button 
           @click="submitPin"
           :disabled="pin.length !== 4 || submitting"
-          class="w-full py-3 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white font-extrabold text-sm shadow-xl shadow-brand-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+          class="w-full py-3 rounded-2xl bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black text-sm shadow-xl shadow-yellow-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
           <i class="pi pi-check-circle" :class="{ 'pi-spin': submitting }"></i>
           <span>{{ submitting ? 'Verifying PIN...' : 'Verify PIN & Switch On Duty' }}</span>
         </button>

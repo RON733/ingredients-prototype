@@ -365,7 +365,7 @@ const AdminSettingsTab = {
             type="button"
             @click="saveGeneralSettings"
             :disabled="isSavingStore"
-            class="px-6 py-3 rounded-xl font-bold text-xs bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
+            class="px-6 py-3 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black font-black shadow-lg shadow-yellow-500/25 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
             <i v-if="isSavingStore" class="pi pi-spin pi-spinner"></i>
             <i v-else class="pi pi-save"></i>
             <span>Save Store Preferences</span>

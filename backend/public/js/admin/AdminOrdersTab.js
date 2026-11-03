@@ -173,7 +173,7 @@ const AdminOrdersTab = {
             <button 
               v-if="order.status === 'Pending'"
               @click="updateStatus(order, 'Preparing')"
-              class="px-4 py-2 rounded-xl text-xs font-black bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-600/30 transition-all flex items-center gap-1.5">
+              class="px-4 py-2 rounded-xl text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-black shadow-md shadow-yellow-500/25 transition-all flex items-center gap-1.5">
               <i class="pi pi-play"></i>
               <span>Start Preparing</span>
             </button>

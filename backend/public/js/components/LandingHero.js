@@ -32,7 +32,7 @@ const LandingHero = {
 
         <!-- Main Headline (Satisfy Yourself) -->
         <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white mb-4 sm:mb-6 drop-shadow-2xl leading-tight">
-          <span class="bg-gradient-to-r from-orange-400 via-amber-300 to-rose-500 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-400 bg-clip-text text-transparent">
             Satisfy Yourself
           </span>
         </h1>
@@ -53,7 +53,7 @@ const LandingHero = {
           
           <button 
             @click="orderNow"
-            class="w-full sm:w-auto px-7 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base bg-gradient-to-r from-brand-600 via-orange-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white transition-all hover:scale-105 shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 cursor-pointer">
+            class="w-full sm:w-auto px-7 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black transition-all hover:scale-105 shadow-xl shadow-yellow-500/25 flex items-center justify-center gap-2 cursor-pointer">
             <i class="pi pi-bolt"></i>
             <span>Order Now</span>
           </button>

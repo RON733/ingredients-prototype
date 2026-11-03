@@ -246,7 +246,7 @@ const DEFAULT_ANNOUNCEMENTS = [
     id: 2,
     title: 'Weekend Fiesta: Free Loaded Fries on Orders ₱350+',
     badge: 'Limited Promo',
-    badge_color: 'orange',
+    badge_color: 'yellow',
     description: 'Celebrate this weekend with G Shot Teas! Spend a minimum of ₱350 on any milk tea and burgers to automatically receive a complimentary box of warm Crispy Loaded Cheese Fries.',
     image_url: null, // Photo optional! Automatically morphs into rich typographic glass card layout
     cta_text: 'Browse Menu & Claim',

@@ -6,7 +6,7 @@ const AdminDashboard = {
       <!-- Mobile & Tablet Admin Top Bar (< 1024px) -->
       <header class="lg:hidden bg-surface-900 border-b border-surface-800 p-4 sticky top-0 z-40 flex items-center justify-between gap-3 shadow-lg">
         <div class="flex items-center gap-2.5 cursor-pointer" @click="goToCustomerSite">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-amber-500 p-0.5 flex items-center justify-center">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 flex items-center justify-center">
             <div class="w-full h-full bg-surface-900 rounded-[6px] flex items-center justify-center">
               <span class="text-sm font-black text-brand-500">G'</span>
             </div>
@@ -43,7 +43,7 @@ const AdminDashboard = {
           v-if="store.isAdminOrSuper"
           @click="selectTab('analytics')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'analytics' ? 'bg-brand-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'analytics' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-chart-line text-[11px]"></i>
           <span>Analytics</span>
         </button>
@@ -51,7 +51,7 @@ const AdminDashboard = {
         <button 
           @click="selectTab('orders')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'orders' ? 'bg-brand-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'orders' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-list text-[11px]"></i>
           <span>Orders</span>
           <span v-if="activeOrdersCount > 0" class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-brand-400 text-surface-950">
@@ -62,7 +62,7 @@ const AdminDashboard = {
         <button 
           @click="selectTab('completed')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'completed' ? 'bg-brand-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'completed' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-check-circle text-[11px]"></i>
           <span>Completed</span>
         </button>
@@ -70,7 +70,7 @@ const AdminDashboard = {
         <button 
           @click="selectTab('inventory')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'inventory' ? 'bg-amber-500 text-surface-950 font-black shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'inventory' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-server text-[11px]"></i>
           <span>Inventory</span>
         </button>
@@ -79,7 +79,7 @@ const AdminDashboard = {
           v-if="store.isAdminOrSuper"
           @click="selectTab('products')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'products' ? 'bg-brand-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'products' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-box text-[11px]"></i>
           <span>Products</span>
         </button>
@@ -88,7 +88,7 @@ const AdminDashboard = {
           v-if="store.isAdminOrSuper"
           @click="selectTab('recipes')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'recipes' ? 'bg-amber-500 text-surface-950 font-black shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'recipes' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-book text-[11px]"></i>
           <span>Recipes</span>
         </button>
@@ -96,7 +96,7 @@ const AdminDashboard = {
         <button 
           @click="selectTab('bookings')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'bookings' ? 'bg-brand-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'bookings' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-calendar text-[11px]"></i>
           <span>Bookings</span>
         </button>
@@ -104,7 +104,7 @@ const AdminDashboard = {
         <button 
           @click="selectTab('announcements')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'announcements' ? 'bg-brand-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'announcements' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-megaphone text-[11px]"></i>
           <span>Announcements</span>
           <span class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-brand-400 text-surface-950">
@@ -116,7 +116,7 @@ const AdminDashboard = {
           v-if="store.isAdminOrSuper"
           @click="selectTab('users')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'users' ? 'bg-purple-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'users' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-users text-[11px]"></i>
           <span>Users</span>
         </button>
@@ -126,7 +126,7 @@ const AdminDashboard = {
           v-if="store.isSuperAdmin"
           @click="selectTab('audit')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'audit' ? 'bg-purple-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'audit' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-history text-[11px]"></i>
           <span>Audit</span>
         </button>
@@ -135,7 +135,7 @@ const AdminDashboard = {
           v-if="store.isAdminOrSuper"
           @click="selectTab('settings')" 
           class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
-          :class="store.adminTab === 'settings' ? 'bg-sky-600 text-white shadow-md' : 'bg-surface-850 text-gray-400 hover:text-white'">
+          :class="store.adminTab === 'settings' ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' : 'bg-surface-850 text-gray-400 hover:text-white'">
           <i class="pi pi-qrcode text-[11px]"></i>
           <span>GCash & Settings</span>
         </button>
@@ -150,7 +150,7 @@ const AdminDashboard = {
           <!-- Brand Logo & Header -->
           <div class="flex items-center justify-between mb-8 cursor-pointer" @click="goToCustomerSite">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 p-0.5 flex items-center justify-center">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 flex items-center justify-center">
                 <div class="w-full h-full bg-surface-900 rounded-[10px] flex items-center justify-center">
                   <span class="text-xl font-black text-brand-500">G'</span>
                 </div>
@@ -170,7 +170,7 @@ const AdminDashboard = {
           <!-- Current User Profile Pill & PIN Switcher -->
           <div class="p-3.5 rounded-2xl bg-surface-800/80 border border-surface-700/60 mb-6">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center font-black text-white text-sm shrink-0">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 flex items-center justify-center font-black text-white text-sm shrink-0">
                 {{ (store.user?.name || 'A').charAt(0) }}
               </div>
               <div class="min-w-0 flex-1">
@@ -202,7 +202,7 @@ const AdminDashboard = {
               v-if="store.isAdminOrSuper"
               @click="selectTab('analytics')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'analytics' ? 'bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'analytics' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-chart-line text-sm"></i>
               <span>Sales Analytics</span>
             </button>
@@ -211,7 +211,7 @@ const AdminDashboard = {
             <button 
               @click="selectTab('orders')"
               class="w-full px-4 py-3 rounded-2xl flex items-center justify-between transition-all"
-              :class="store.adminTab === 'orders' ? 'bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'orders' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <div class="flex items-center gap-3">
                 <i class="pi pi-list text-sm"></i>
                 <span>Active Orders</span>
@@ -225,7 +225,7 @@ const AdminDashboard = {
             <button 
               @click="selectTab('completed')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'completed' ? 'bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'completed' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-check-circle text-sm"></i>
               <span>Completed Orders</span>
             </button>
@@ -235,7 +235,7 @@ const AdminDashboard = {
               v-if="store.isAdminOrSuper"
               @click="selectTab('products')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'products' ? 'bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'products' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-box text-sm"></i>
               <span>Product Menu</span>
             </button>
@@ -244,7 +244,7 @@ const AdminDashboard = {
             <button 
               @click="selectTab('inventory')"
               class="w-full px-4 py-3 rounded-2xl flex items-center justify-between transition-all"
-              :class="store.adminTab === 'inventory' ? 'bg-amber-500 text-surface-950 font-black shadow-lg shadow-amber-500/20' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'inventory' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <div class="flex items-center gap-3">
                 <i class="pi pi-server text-sm"></i>
                 <span>Kitchen Inventory</span>
@@ -259,7 +259,7 @@ const AdminDashboard = {
               v-if="store.isAdminOrSuper"
               @click="selectTab('recipes')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'recipes' ? 'bg-amber-500 text-surface-950 font-black shadow-lg shadow-amber-500/20' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'recipes' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-book text-sm"></i>
               <span>Recipes & Portions</span>
             </button>
@@ -268,7 +268,7 @@ const AdminDashboard = {
             <button 
               @click="selectTab('bookings')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'bookings' ? 'bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'bookings' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-calendar text-sm"></i>
               <span>Event Bookings</span>
             </button>
@@ -277,7 +277,7 @@ const AdminDashboard = {
             <button 
               @click="selectTab('announcements')"
               class="w-full px-4 py-3 rounded-2xl flex items-center justify-between transition-all"
-              :class="store.adminTab === 'announcements' ? 'bg-brand-600 text-white font-bold shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'announcements' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <div class="flex items-center gap-3">
                 <i class="pi pi-megaphone text-sm"></i>
                 <span>Announcements</span>
@@ -292,7 +292,7 @@ const AdminDashboard = {
               v-if="store.isAdminOrSuper"
               @click="selectTab('users')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'users' ? 'bg-purple-600 text-white font-bold shadow-lg shadow-purple-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'users' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-users text-sm"></i>
               <span>User & Roles</span>
             </button>
@@ -302,7 +302,7 @@ const AdminDashboard = {
               v-if="store.isSuperAdmin"
               @click="selectTab('audit')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'audit' ? 'bg-purple-600 text-white font-bold shadow-lg shadow-purple-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'audit' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-history text-sm"></i>
               <span>Audit Trail</span>
             </button>
@@ -312,7 +312,7 @@ const AdminDashboard = {
               v-if="store.isAdminOrSuper"
               @click="selectTab('settings')"
               class="w-full px-4 py-3 rounded-2xl flex items-center gap-3 transition-all"
-              :class="store.adminTab === 'settings' ? 'bg-sky-600 text-white font-bold shadow-lg shadow-sky-600/30' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
+              :class="store.adminTab === 'settings' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-500/25' : 'text-gray-400 hover:bg-surface-800 hover:text-white'">
               <i class="pi pi-qrcode text-sm"></i>
               <span>GCash & Settings</span>
             </button>

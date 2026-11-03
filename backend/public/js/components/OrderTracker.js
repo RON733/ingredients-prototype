@@ -48,7 +48,7 @@ const OrderTracker = {
           <!-- Progress Bar Track -->
           <div class="h-2.5 bg-surface-900 rounded-full overflow-hidden p-0.5 border border-surface-700 flex">
             <div 
-              class="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-amber-500 via-brand-500 to-emerald-500 shadow-md shadow-brand-500/30"
+              class="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-yellow-500 via-yellow-400 to-white shadow-md shadow-yellow-400/30"
               :style="{ width: progressPercentage + '%' }">
             </div>
           </div>
@@ -343,7 +343,7 @@ const OrderTracker = {
         <p class="text-xs text-gray-400 mt-1">Place an order or check your order history to track progress.</p>
         <button 
           @click="backToHome"
-          class="mt-6 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-500 transition-all">
+          class="mt-6 px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black shadow-lg shadow-yellow-500/20 transition-all">
           Explore Menu
         </button>
       </div>
@@ -627,7 +627,7 @@ const OrderTracker = {
             <!-- Rotating Direction Heading Cone/Arrow -->
             <div class="rider-heading-cone" style="transform: rotate(${Math.round(bearing || 0)}deg)">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <polygon points="12,2 18,14 12,10 6,14" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />
+                <polygon points="12,2 18,14 12,10 6,14" fill="#facc15" stroke="#000000" stroke-width="1.5" />
               </svg>
             </div>
 
@@ -650,8 +650,8 @@ const OrderTracker = {
         html: `
           <div class="relative flex items-center justify-center -translate-y-4 cursor-pointer">
             <svg viewBox="0 0 32 42" width="34" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#EF4444"/>
-              <circle cx="16" cy="15" r="5.5" fill="#FFFFFF"/>
+              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#facc15"/>
+              <circle cx="16" cy="15" r="5.5" fill="#000000"/>
             </svg>
           </div>
         `,
@@ -831,7 +831,7 @@ const OrderTracker = {
         }).addTo(trackerMap);
 
         routeLineActive = L.polyline(roadPoints, {
-          color: '#00B14F', // Grab Signature Green
+          color: '#facc15', // Vibrant Yellow Route
           weight: 5,
           opacity: 1,
           lineJoin: 'round',

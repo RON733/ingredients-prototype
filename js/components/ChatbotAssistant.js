@@ -6,7 +6,7 @@ const ChatbotAssistant = {
       <button 
         v-if="!isOpen" 
         @click="isOpen = true"
-        class="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-gradient-to-tr from-brand-600 to-amber-500 text-white shadow-2xl shadow-brand-500/40 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group"
+        class="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 text-black font-black shadow-2xl shadow-yellow-500/40 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group"
         aria-label="Open AI Assistant">
         <i class="pi pi-comments text-xl"></i>
         <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-surface-900 rounded-full animate-pulse"></span>
@@ -20,7 +20,7 @@ const ChatbotAssistant = {
         <!-- Header -->
         <div class="p-4 bg-surface-800 border-b border-surface-700 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-amber-400 p-0.5 flex items-center justify-center text-surface-900 font-black text-lg shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 flex items-center justify-center text-surface-900 font-black text-lg shrink-0">
               🧋
             </div>
             <div>
@@ -100,7 +100,7 @@ const ChatbotAssistant = {
           <button 
             type="submit"
             :disabled="!inputMessage.trim() || isTyping"
-            class="p-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white text-xs disabled:opacity-40 transition-all shadow-md">
+            class="p-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black text-xs disabled:opacity-40 transition-all shadow-md shadow-yellow-500/20">
             <i class="pi pi-send text-xs"></i>
           </button>
         </form>

@@ -18,7 +18,7 @@ const AdminAnnouncementsTab = {
 
         <button 
           @click="store.openCreateAnnouncementModal()"
-          class="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0">
+          class="px-5 py-3 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] shrink-0">
           <i class="pi pi-plus text-xs"></i>
           <span>Create New Announcement</span>
         </button>

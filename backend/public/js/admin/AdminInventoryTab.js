@@ -18,7 +18,7 @@ const AdminInventoryTab = {
         <div class="flex items-center gap-3">
           <button 
             @click="openAddModal"
-            class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-surface-950 shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2">
+            class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-lg shadow-yellow-500/25 transition-all flex items-center gap-2">
             <i class="pi pi-plus"></i>
             <span>Add Raw Ingredient</span>
           </button>

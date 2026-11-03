@@ -503,7 +503,7 @@ const DriverView = {
             <div class="grab-rider-pulse"></div>
             <div class="rider-heading-cone" style="transform: rotate(${Math.round(bearing || 0)}deg)">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <polygon points="12,2 18,14 12,10 6,14" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />
+                <polygon points="12,2 18,14 12,10 6,14" fill="#facc15" stroke="#000000" stroke-width="1.5" />
               </svg>
             </div>
             <div class="grab-rider-disc" style="width:34px;height:34px;">
@@ -523,8 +523,8 @@ const DriverView = {
         html: `
           <div class="relative flex items-center justify-center -translate-y-4">
             <svg viewBox="0 0 32 42" width="30" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#EF4444"/>
-              <circle cx="16" cy="15" r="5" fill="#FFFFFF"/>
+              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#facc15"/>
+              <circle cx="16" cy="15" r="5" fill="#000000"/>
             </svg>
           </div>
         `,
@@ -599,7 +599,7 @@ const DriverView = {
       }).addTo(map);
 
       const routeLine = L.polyline(points, {
-        color: '#00B14F', // Grab Signature Green
+        color: '#facc15', // Vibrant Yellow Route
         weight: 4.5,
         opacity: 1,
         lineJoin: 'round',

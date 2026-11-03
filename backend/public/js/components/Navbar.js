@@ -6,7 +6,7 @@ const Navbar = {
         
         <!-- 1. Left: Brand Logo & Identity -->
         <div class="flex items-center gap-2 sm:gap-3.5 cursor-pointer group flex-shrink-0" @click="goHome">
-          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 p-0.5 shadow-lg shadow-brand-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 shadow-lg shadow-yellow-500/25 group-hover:scale-105 transition-transform flex items-center justify-center">
             <div class="w-full h-full bg-surface-900 rounded-[8px] sm:rounded-[10px] flex items-center justify-center">
               <span class="text-lg sm:text-2xl font-black text-brand-500">G'</span>
             </div>
@@ -58,7 +58,7 @@ const Navbar = {
           <!-- Catering / Event Booking Button -->
           <button 
             @click="store.bookingModalOpen = true"
-            class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5 transition-all shadow-sm hover:scale-[1.02]">
+            class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 flex items-center gap-1.5 transition-all shadow-sm hover:scale-[1.02]">
             <span>🎉</span> Book Event
           </button>
         </nav>
@@ -108,7 +108,7 @@ const Navbar = {
               @click="togglePortal"
               class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
               :class="store.currentView === 'admin' 
-                ? 'bg-gradient-to-r from-brand-600 to-rose-600 text-white shadow-md shadow-brand-600/30' 
+                ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black shadow-md shadow-yellow-500/25' 
                 : 'bg-surface-800 hover:bg-surface-700 text-gray-200'">
               <i class="pi pi-shield text-[11px]"></i>
               <span>{{ store.currentView === 'admin' ? 'Customer Site' : 'Admin Panel' }}</span>
@@ -137,7 +137,7 @@ const Navbar = {
               <i class="pi pi-shopping-cart text-sm sm:text-lg"></i>
               <span 
                 v-if="store.cartCount > 0"
-                class="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-r from-brand-600 to-rose-600 text-white text-[10px] sm:text-[11px] font-bold rounded-full flex items-center justify-center animate-bounce-sm shadow-md">
+                class="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-yellow-400 text-black font-black text-[10px] sm:text-[11px] rounded-full flex items-center justify-center animate-bounce-sm shadow-md">
                 {{ store.cartCount }}
               </span>
             </button>
@@ -291,7 +291,7 @@ const Navbar = {
         <!-- Book Event Call to Action -->
         <button 
           @click="store.bookingModalOpen = true; mobileMenuOpen = false" 
-          class="w-full py-3 rounded-xl font-black text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-surface-950 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer">
+          class="w-full py-3 rounded-xl font-black text-xs bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/25 cursor-pointer">
           <span>🎉 Book Catering & Mobile Bar</span>
         </button>
 
@@ -333,7 +333,7 @@ const Navbar = {
             @click="togglePortal(); mobileMenuOpen = false"
             class="w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
             :class="store.currentView === 'admin' 
-              ? 'bg-gradient-to-r from-brand-600 to-rose-600 text-white shadow-md' 
+              ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black shadow-md shadow-yellow-500/25' 
               : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
             <i class="pi pi-shield"></i>
             <span>{{ store.currentView === 'admin' ? 'Switch to Customer Site' : 'Open Admin Panel' }}</span>

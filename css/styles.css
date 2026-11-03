@@ -1,4 +1,4 @@
-/* G Shot Teas — Custom Styles */
+﻿/* G Shot Teas — Custom Styles (Black, White & Yellow Palette) */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 html, body { 
@@ -7,29 +7,31 @@ html, body {
   width: 100%; 
   max-width: 100vw; 
   overflow-x: clip; 
-  background: #090a0f; 
+  background: #000000; 
+  color: #f4f4f5;
   font-family: 'Inter', system-ui, sans-serif; 
   -webkit-tap-highlight-color: transparent;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #1e2130; }
-::-webkit-scrollbar-thumb { background: #404660; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #f97316; }
+::-webkit-scrollbar-track { background: #09090b; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #facc15; }
 
 .glass {
-  background: rgba(30,33,48,0.75);
+  background: rgba(10, 10, 12, 0.85);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .glass-card {
-  background: rgba(37,42,58,0.65);
+  background: rgba(18, 18, 20, 0.75);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.glow-orange { box-shadow: 0 0 24px rgba(249,115,22,0.25); }
-.glow-green  { box-shadow: 0 0 16px rgba(34,197,94,0.2); }
+.glow-orange, .glow-yellow { box-shadow: 0 0 24px rgba(250, 204, 21, 0.35); }
+.glow-white  { box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+.glow-green  { box-shadow: 0 0 16px rgba(34, 197, 94, 0.2); }
 .no-scroll   { overflow: hidden; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -37,12 +39,12 @@ html, body {
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { opacity: 1; }
 
-select option { background: #1e2130; color: white; }
+select option { background: #121215; color: #ffffff; }
 
-/* --- Leaflet Live GPS Map Theme & Styling --- */
+/* --- Leaflet Live GPS Map Theme & Styling (Black & Yellow High Contrast) --- */
 .leaflet-container {
   font-family: inherit;
-  background-color: #090a0f !important;
+  background-color: #000000 !important;
 }
 .leaflet-pane {
   z-index: 10 !important;
@@ -51,14 +53,14 @@ select option { background: #1e2130; color: white; }
   z-index: 20 !important;
 }
 .leaflet-popup-content-wrapper {
-  background: #181b23 !important;
-  color: #f3f4f6 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: #121215 !important;
+  color: #f4f4f5 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 14px !important;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.9) !important;
 }
 .leaflet-popup-tip {
-  background: #181b23 !important;
+  background: #121215 !important;
 }
 .leaflet-popup-content {
   margin: 10px 14px !important;
@@ -66,21 +68,21 @@ select option { background: #1e2130; color: white; }
   line-height: 1.4 !important;
 }
 .leaflet-control-zoom a {
-  background-color: #181b23 !important;
-  color: #f3f4f6 !important;
-  border-color: #2d3348 !important;
+  background-color: #18181b !important;
+  color: #ffffff !important;
+  border-color: #27272a !important;
 }
 .leaflet-control-zoom a:hover {
-  background-color: #252a3a !important;
-  color: #f97316 !important;
+  background-color: #27272a !important;
+  color: #facc15 !important;
 }
 .leaflet-control-attribution {
-  background: rgba(9, 10, 15, 0.8) !important;
-  color: #6b7280 !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  color: #71717a !important;
   font-size: 9px !important;
 }
 .leaflet-control-attribution a {
-  color: #9ca3af !important;
+  color: #a1a1aa !important;
 }
 
 /* Pulsing Rider Ring */
@@ -91,7 +93,7 @@ select option { background: #1e2130; color: white; }
   width: 44px;
   height: 44px;
   border-radius: 9999px;
-  background-color: rgba(249, 115, 22, 0.35);
+  background-color: rgba(250, 204, 21, 0.4);
   animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
@@ -100,13 +102,12 @@ select option { background: #1e2130; color: white; }
   filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%);
 }
 
-
 /* Grab / OpenStreetMap Clean Street Tiles (Matches Delivery Apps) */
 .grab-osm-tiles {
   filter: contrast(102%) saturate(108%);
 }
 
-/* Custom Grab-Style Blue Circle Rider Pin with Smooth Gliding Animation */
+/* Custom Yellow & Black Rider Pin with Smooth Gliding Animation */
 .custom-grab-rider-pin {
   display: flex;
   align-items: center;
@@ -122,13 +123,13 @@ select option { background: #1e2130; color: white; }
   width: 38px;
   height: 38px;
   border-radius: 9999px;
-  background-color: #0284c7;
-  border: 3.5px solid #ffffff;
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+  background-color: #facc15;
+  border: 3.5px solid #000000;
+  box-shadow: 0 4px 14px rgba(250, 204, 21, 0.5), 0 2px 6px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: #000000;
   position: relative;
   transition: transform 0.3s ease;
 }
@@ -137,7 +138,7 @@ select option { background: #1e2130; color: white; }
   width: 12px;
   height: 12px;
   border-radius: 9999px;
-  background-color: #ffffff;
+  background-color: #000000;
 }
 
 /* Rotating Directional Heading Pointer */
@@ -152,7 +153,7 @@ select option { background: #1e2130; color: white; }
 }
 
 .rider-heading-cone svg {
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
 /* Pulsing Wave Around Rider */
@@ -161,7 +162,7 @@ select option { background: #1e2130; color: white; }
   width: 52px;
   height: 52px;
   border-radius: 9999px;
-  background-color: rgba(2, 132, 199, 0.25);
+  background-color: rgba(250, 204, 21, 0.3);
   animation: grabPulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
   pointer-events: none;
 }
@@ -171,7 +172,7 @@ select option { background: #1e2130; color: white; }
   100% { transform: scale(1.6); opacity: 0; }
 }
 
-/* Custom Red Teardrop Destination Pin */
+/* Custom Yellow & Black Teardrop Destination Pin */
 .custom-grab-destination-pin {
   display: flex;
   align-items: center;
@@ -179,7 +180,7 @@ select option { background: #1e2130; color: white; }
 }
 
 .custom-grab-destination-pin svg {
-  filter: drop-shadow(0 4px 10px rgba(225, 29, 72, 0.45));
+  filter: drop-shadow(0 4px 10px rgba(250, 204, 21, 0.5));
   transition: transform 0.2s ease;
 }
 
@@ -192,7 +193,6 @@ select option { background: #1e2130; color: white; }
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-
 
 /* Leaflet & Live Navigation Map Mobile Optimization */
 #order-tracker-map,
@@ -214,12 +214,12 @@ select option { background: #1e2130; color: white; }
   }
   .leaflet-control-zoom {
     border: none !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
     border-radius: 12px !important;
     overflow: hidden;
   }
   .leaflet-control-zoom a {
-    background-color: rgba(24, 24, 27, 0.92) !important;
+    background-color: rgba(24, 24, 27, 0.95) !important;
     color: #ffffff !important;
     border-color: rgba(63, 63, 70, 0.8) !important;
     width: 32px !important;

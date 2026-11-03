@@ -21,7 +21,7 @@ const AdminUsersTab = {
           <!-- Create New Personnel Button (Admin & Super Admin) -->
           <button 
             @click="openCreateModal"
-            class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white font-extrabold text-xs shadow-lg shadow-brand-600/30 transition-all flex items-center gap-2 cursor-pointer active:scale-95">
+            class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black text-xs shadow-lg shadow-yellow-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-95">
             <i class="pi pi-user-plus text-xs"></i>
             <span>Create Staff / Admin</span>
           </button>
@@ -404,7 +404,7 @@ const AdminUsersTab = {
               <button 
                 type="submit" 
                 :disabled="savingUser"
-                class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-black shadow-lg shadow-brand-600/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
+                class="px-5 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black shadow-lg shadow-yellow-500/25 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
                 <i class="pi pi-check" :class="{ 'pi-spin pi-spinner': savingUser }"></i>
                 <span>{{ savingUser ? 'Provisioning...' : 'Create Account' }}</span>
               </button>

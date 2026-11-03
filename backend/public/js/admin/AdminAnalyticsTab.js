@@ -88,15 +88,15 @@ const AdminAnalyticsTab = {
           <div class="w-full h-48 relative">
             <svg class="w-full h-full overflow-visible" viewBox="0 0 700 180" preserveAspectRatio="none">
               <!-- Grid lines -->
-              <line x1="0" y1="45" x2="700" y2="45" stroke="#252a3a" stroke-dasharray="4" />
-              <line x1="0" y1="90" x2="700" y2="90" stroke="#252a3a" stroke-dasharray="4" />
-              <line x1="0" y1="135" x2="700" y2="135" stroke="#252a3a" stroke-dasharray="4" />
+              <line x1="0" y1="45" x2="700" y2="45" stroke="#27272a" stroke-dasharray="4" />
+              <line x1="0" y1="90" x2="700" y2="90" stroke="#27272a" stroke-dasharray="4" />
+              <line x1="0" y1="135" x2="700" y2="135" stroke="#27272a" stroke-dasharray="4" />
 
               <!-- Area Fill Gradient -->
               <defs>
                 <linearGradient id="salesGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#ea580c" stop-opacity="0.4" />
-                  <stop offset="100%" stop-color="#ea580c" stop-opacity="0.0" />
+                  <stop offset="0%" stop-color="#facc15" stop-opacity="0.4" />
+                  <stop offset="100%" stop-color="#facc15" stop-opacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -107,11 +107,11 @@ const AdminAnalyticsTab = {
               <path 
                 :d="chartPath" 
                 fill="none" 
-                stroke="#ff3b30" 
+                stroke="#facc15" 
                 stroke-width="3.5" 
                 stroke-linecap="round" 
                 stroke-linejoin="round"
-                class="filter drop-shadow-[0_0_10px_rgba(255,59,48,0.6)]"
+                class="filter drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]"
               />
 
               <!-- Data Dots -->
@@ -122,7 +122,7 @@ const AdminAnalyticsTab = {
                 :cy="pt.y" 
                 r="4.5" 
                 fill="#ffffff" 
-                stroke="#ff3b30" 
+                stroke="#facc15" 
                 stroke-width="2.5"
                 class="hover:scale-150 transition-transform cursor-pointer"
               />

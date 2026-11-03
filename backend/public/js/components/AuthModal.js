@@ -18,7 +18,7 @@ const AuthModal = {
 
         <!-- Brand Icon -->
         <div class="text-center mb-5">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-amber-500 p-0.5 mx-auto mb-3 shadow-lg shadow-brand-500/20 flex items-center justify-center">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 mx-auto mb-3 shadow-lg shadow-yellow-500/25 flex items-center justify-center">
             <div class="w-full h-full bg-surface-900 rounded-[14px] flex items-center justify-center">
               <span class="text-2xl font-black text-brand-500">G'</span>
             </div>
@@ -118,7 +118,7 @@ const AuthModal = {
           <button 
             type="submit"
             :disabled="loading"
-            class="w-full py-3.5 rounded-xl font-black text-sm bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-500 hover:to-rose-500 text-white shadow-xl shadow-brand-600/30 transition-all flex items-center justify-center gap-2 mt-2">
+            class="w-full py-3.5 rounded-xl font-black text-sm bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black shadow-xl shadow-yellow-500/25 transition-all flex items-center justify-center gap-2 mt-2">
             <i v-if="loading" class="pi pi-spin pi-spinner"></i>
             <span v-else>{{ store.authMode === 'login' ? 'Sign In' : 'Register' }}</span>
           </button>

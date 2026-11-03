@@ -11,7 +11,7 @@ const FeaturedSection = {
               🔥 Customer Favorites
             </span>
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-3 tracking-tight">
-              Santa Rosa's <span class="bg-gradient-to-r from-orange-400 to-amber-300 bg-clip-text text-transparent">Top Cravings</span>
+              Santa Rosa's <span class="bg-gradient-to-r from-yellow-300 to-amber-300 bg-clip-text text-transparent">Top Cravings</span>
             </h2>
             <p class="text-sm sm:text-base text-gray-400 mt-3 max-w-xl mx-auto">
               Our most-loved milk teas, comfort burgers, and stone-baked pizzas freshly prepared to order.
@@ -89,7 +89,7 @@ const FeaturedSection = {
 
                 <button 
                   @click="handleOrder(item)"
-                  class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-500 hover:to-rose-500 text-white shadow-md shadow-brand-600/20 flex items-center gap-1.5 transition-all">
+                  class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-md shadow-yellow-500/20 flex items-center gap-1.5 transition-all">
                   <i class="pi pi-plus text-[10px]"></i>
                   <span>{{ item.category === 'Drinks' ? 'Customize' : 'Add' }}</span>
                 </button>
@@ -168,7 +168,7 @@ const FeaturedSection = {
               🎉 Official Booking Services & Mobile Bar
             </span>
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-3 tracking-tight">
-              Event Catering & <span class="bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 bg-clip-text text-transparent">Mobile Bar Packages</span>
+              Event Catering & <span class="bg-gradient-to-r from-yellow-300 via-yellow-400 to-white bg-clip-text text-transparent">Mobile Bar Packages</span>
             </h2>
             <p class="text-sm sm:text-base text-gray-300 mt-3 max-w-2xl mx-auto">
               Elevate your celebration in Laguna with our live drink booth, trained barista staff, and freshly prepared premium beverages.
@@ -269,7 +269,7 @@ const FeaturedSection = {
               <div class="p-6 sm:p-8 pt-0">
                 <button 
                   @click="bookPackage('Coffee Package')"
-                  class="w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-surface-950 shadow-xl shadow-amber-500/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer">
+                  class="w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-xl shadow-yellow-500/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer">
                   <i class="pi pi-calendar-plus text-xs"></i>
                   <span>Book Coffee Package (₱3,500)</span>
                 </button>
@@ -367,7 +367,7 @@ const FeaturedSection = {
               <div class="p-6 sm:p-8 pt-0">
                 <button 
                   @click="bookPackage('Fruity Float Package')"
-                  class="w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white shadow-xl shadow-rose-500/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer">
+                  class="w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-xl shadow-yellow-500/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer">
                   <i class="pi pi-calendar-plus text-xs"></i>
                   <span>Book Fruity Float Package (₱3,500)</span>
                 </button>
@@ -422,7 +422,7 @@ const FeaturedSection = {
               </div>
 
               <div class="flex items-center gap-3 pt-4 mt-4 border-t border-surface-800">
-                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white font-bold text-xs">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 flex items-center justify-center text-black font-black text-xs">
                   {{ rev.name.charAt(0) }}
                 </div>
                 <div>

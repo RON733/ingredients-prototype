@@ -3,13 +3,13 @@ const { createApp, onMounted } = Vue;
 
 const App = {
   template: `
-    <div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-brand-500 selection:text-white">
+    <div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-yellow-400 selection:text-black">
       
       <!-- Ambient Lighting Orbs for modern aesthetic -->
       <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
-        <div class="absolute -top-40 -left-40 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-amber-600/8 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-20 left-1/3 w-80 h-80 bg-rose-600/8 rounded-full blur-3xl"></div>
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-yellow-500/8 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 left-1/3 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
       </div>
 
       <div class="relative z-10 flex flex-col flex-1">
@@ -61,7 +61,7 @@ const App = {
           <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <span class="font-extrabold text-white text-sm">G SHOT TEAS</span>
-              <span class="text-brand-500 font-bold">•</span>
+              <span class="text-yellow-400 font-bold">•</span>
               <span class="text-gray-400">Web-Based Ordering & Sales Management System</span>
             </div>
             <p>STI College Santa Rosa — Capstone Project by Tyron Erick Rico, Mhar Anthony Lirio, Kurt Xyler Munoz, Raymond Barajas</p>

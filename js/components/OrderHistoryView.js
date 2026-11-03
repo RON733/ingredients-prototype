@@ -81,7 +81,7 @@ const OrderHistoryView = {
           <div class="flex items-center justify-end gap-3 pt-2">
             <button 
               @click="reorder(order)"
-              class="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600/20 hover:bg-brand-600 text-brand-400 hover:text-white border border-brand-500/40 transition-all flex items-center gap-1.5">
+              class="px-4 py-2 rounded-xl text-xs font-bold bg-yellow-400/10 hover:bg-yellow-400 text-yellow-400 hover:text-black font-bold border border-yellow-400/40 transition-all flex items-center gap-1.5">
               <i class="pi pi-replay"></i>
               <span>Reorder Items</span>
             </button>
@@ -97,7 +97,7 @@ const OrderHistoryView = {
         <p class="text-xs text-gray-500 mt-1">Start placing delicious orders from our menu!</p>
         <button 
           @click="backToHome"
-          class="mt-4 px-5 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold">
+          class="mt-4 px-5 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black shadow-md shadow-yellow-500/20">
           Explore Menu
         </button>
       </div>

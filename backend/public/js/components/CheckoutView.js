@@ -615,7 +615,7 @@ const CheckoutView = {
           <button 
             @click="submitOrder"
             :disabled="isSubmitting || store.cart.length === 0"
-            class="w-full py-4 rounded-xl text-base font-black bg-gradient-to-r from-brand-600 via-orange-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white shadow-xl shadow-brand-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            class="w-full py-4 rounded-xl text-base font-black bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black shadow-xl shadow-yellow-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
             <span v-else>Confirm & Place Order</span>
           </button>
@@ -945,8 +945,8 @@ const CheckoutView = {
         html: `
           <div class="relative flex items-center justify-center -translate-y-4 cursor-pointer">
             <svg viewBox="0 0 32 42" width="34" height="44" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-xl">
-              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#EF4444"/>
-              <circle cx="16" cy="15" r="5.5" fill="#FFFFFF"/>
+              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#facc15"/>
+              <circle cx="16" cy="15" r="5.5" fill="#000000"/>
             </svg>
           </div>
         `,
