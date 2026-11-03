@@ -28,6 +28,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'loyverse' => [
+        'token' => env('LOYVERSE_API_TOKEN', '547c40b21fe547b385220c3609a55d6c'),
+        'store_id' => env('LOYVERSE_STORE_ID', 'f8bbd4a6-96c5-48f1-929e-fef388325796'),
+        'api_url' => env('LOYVERSE_API_URL', 'https://api.loyverse.com/v1.0'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

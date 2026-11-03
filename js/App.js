@@ -1,4 +1,4 @@
-// G Shot Teas — Vue 3 Main Application Root
+﻿// G Shot Teas — Vue 3 Main Application Root
 const { createApp, onMounted } = Vue;
 
 const App = {

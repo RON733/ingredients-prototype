@@ -1,4 +1,4 @@
-// G Shot Teas — Fast 4-Digit Staff PIN Switcher Modal for Shared POS Terminal
+﻿// G Shot Teas — Fast 4-Digit Staff PIN Switcher Modal for Shared POS Terminal
 var StaffPinModal = window.StaffPinModal = {
   template: `
     <div 
@@ -134,11 +134,10 @@ var StaffPinModal = window.StaffPinModal = {
     const submitting = Vue.ref(false);
     const hasError = Vue.ref(false);
     const errorMessage = Vue.ref('');
+    // Switch active operator is strictly for on-duty counter and kitchen staff
     const staffList = Vue.ref([
       { id: 3, name: 'Mhar Anthony Lirio', email: 'staff@gshotteas.com', role: 'staff' },
-      { id: 9, name: 'Sarah Mae Santos', email: 'barista2@gshotteas.com', role: 'staff' },
-      { id: 2, name: 'Jefferson Anore Alulod', email: 'admin@gshotteas.com', role: 'admin' },
-      { id: 1, name: 'Tyron Erick Rico', email: 'superadmin@gshotteas.com', role: 'super_admin' },
+      { id: 4, name: 'Sarah Mae Santos', email: 'barista2@gshotteas.com', role: 'staff' },
     ]);
     const selectedStaff = Vue.ref(staffList.value[0]);
 
@@ -146,7 +145,9 @@ var StaffPinModal = window.StaffPinModal = {
       try {
         const res = await GST_API.getStaffList();
         if (Array.isArray(res.data) && res.data.length > 0) {
-          staffList.value = res.data;
+          // Strictly filter for staff members only
+          const onlyStaff = res.data.filter(s => s.role === 'staff');
+          staffList.value = onlyStaff.length > 0 ? onlyStaff : res.data;
           // Default selection to current user if staff, or first staff
           const match = staffList.value.find(s => s.id === store.user?.id);
           selectedStaff.value = match || staffList.value[0];

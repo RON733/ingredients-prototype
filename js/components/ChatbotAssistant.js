@@ -150,7 +150,7 @@ const ChatbotAssistant = {
 
       // Convert **bold** to <strong>bold</strong> (including multiline)
       formatted = formatted.replace(/\*\*([\s\S]*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>');
-
+      
       // Convert * bullets or - bullets
       formatted = formatted.replace(/(^|\n)[\*\-]\s+/g, '$1• ');
       return formatted;
@@ -168,8 +168,8 @@ const ChatbotAssistant = {
       try {
         const res = await GST_API.sendChatbot(text);
         const reply = res.data?.reply || 'Sorry, I am having trouble connecting to the store server.';
-        messages.push({
-          sender: 'bot',
+        messages.push({ 
+          sender: 'bot', 
           text: reply,
           ai_powered: res.data?.ai_powered ?? true,
           model: res.data?.model ?? 'gemini-3.5-flash'

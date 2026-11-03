@@ -1,4 +1,4 @@
-// G Shot Teas — Pinia Central Store
+﻿// G Shot Teas � Pinia Central Store
 const { defineStore } = Pinia;
 
 const DEFAULT_PRODUCTS = [
@@ -8,7 +8,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 89,
     description: 'Juicy grilled beef patty, golden brioche bun, fresh lettuce, and melted rich cheddar cheese.',
-    emoji: '🍔',
+    emoji: '??',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 23,
@@ -26,7 +26,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 149,
     description: 'Double-stacked beef smash patties with double layers of cheddar and toasted brioche.',
-    emoji: '🍔',
+    emoji: '??',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 21,
@@ -43,7 +43,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 169,
     description: 'Loaded with savory pepperoni cuts, premium mozzarella cheese blend, and signature Italian sauce.',
-    emoji: '🍕',
+    emoji: '??',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -61,7 +61,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 159,
     description: 'A cheesy paradise featuring melted mozzarella and cheddar cheese over seasoned tomato sauce.',
-    emoji: '🍕',
+    emoji: '??',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -79,7 +79,7 @@ const DEFAULT_PRODUCTS = [
     category: 'RiceMeals',
     price: 129,
     description: 'Crispy flavorful glazed chicken wings served with fragrant steamed rice and dipping sauce.',
-    emoji: '🍗',
+    emoji: '??',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 12,
@@ -95,7 +95,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 79,
     description: 'Crispy golden fries generously topped with warm melted cheddar cheese sauce.',
-    emoji: '🍟',
+    emoji: '??',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 24,
@@ -111,7 +111,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 49,
     description: 'Timeless brewed black tea infused with creamy milk and loaded with chewy brown sugar tapioca pearls.',
-    emoji: '🧋',
+    emoji: '??',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 44,
@@ -128,7 +128,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Warm tiger-striped brown sugar drizzle, fresh dairy milk, and slow-cooked boba pearls.',
-    emoji: '🧋',
+    emoji: '??',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 34,
@@ -145,7 +145,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 79,
     description: 'Fine Japanese ceremonial matcha layered over cold fresh milk and sweet pearls.',
-    emoji: '🍵',
+    emoji: '??',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -162,7 +162,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Rich velvety purple taro with tea essence, creamy dairy, and bouncy pearls.',
-    emoji: '🧋',
+    emoji: '??',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -180,7 +180,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Coffee',
     price: 89,
     description: 'Freshly extracted espresso shot combined with vanilla-infused milk and buttery caramel drizzle.',
-    emoji: '☕',
+    emoji: '?',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 40,
@@ -196,7 +196,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 99,
     description: 'Filipino shaved ice delicacy loaded with sweet jellies, leche flan, ube, and rich milk.',
-    emoji: '🍧',
+    emoji: '??',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 30,
@@ -244,10 +244,10 @@ const DEFAULT_ANNOUNCEMENTS = [
   },
   {
     id: 2,
-    title: 'Weekend Fiesta: Free Loaded Fries on Orders ₱350+',
+    title: 'Weekend Fiesta: Free Loaded Fries on Orders ?350+',
     badge: 'Limited Promo',
     badge_color: 'yellow',
-    description: 'Celebrate this weekend with G Shot Teas! Spend a minimum of ₱350 on any milk tea and burgers to automatically receive a complimentary box of warm Crispy Loaded Cheese Fries.',
+    description: 'Celebrate this weekend with G Shot Teas! Spend a minimum of ?350 on any milk tea and burgers to automatically receive a complimentary box of warm Crispy Loaded Cheese Fries.',
     image_url: null, // Photo optional! Automatically morphs into rich typographic glass card layout
     cta_text: 'Browse Menu & Claim',
     cta_action: 'menu',
@@ -265,7 +265,7 @@ const useGShotStore = defineStore('gshot', {
     token: localStorage.getItem('gst_auth_token') || '',
 
     // Navigation & Modals
-    currentView: 'customer', // 'customer' | 'admin' | 'checkout' | 'track' | 'history'
+    currentView: (typeof window !== 'undefined' && (window.location.pathname.includes('admin') || window.location.pathname.includes('staff') || window.location.pathname.includes('superadmin') || window.location.pathname.includes('super-admin') || window.location.pathname.includes('dashboard'))) ? 'admin' : 'customer', // 'customer' | 'admin' | 'checkout' | 'track' | 'history'
     activeSection: 'home',   // 'home' | 'menu' | 'about' | 'contact'
     adminTab: 'orders',      // 'orders' | 'analytics' | 'products' | 'inventory' | 'recipes' | 'bookings' | 'users' | 'audit'
     cartOpen: false,
@@ -320,6 +320,7 @@ const useGShotStore = defineStore('gshot', {
     cartTotal: (state) => state.cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0) + (state.cart.length > 0 ? 40 : 0),
 
     isDriver: (state) => state.user?.role === 'driver',
+    isStaffOnly: (state) => state.user?.role === 'staff',
     isStaffOrAdmin: (state) => ['staff', 'admin', 'super_admin'].includes(state.user?.role),
     isAdminOrSuper: (state) => ['admin', 'super_admin'].includes(state.user?.role),
     isSuperAdmin: (state) => state.user?.role === 'super_admin',
@@ -377,6 +378,17 @@ const useGShotStore = defineStore('gshot', {
           }
         }
       }, 7000);
+
+      // Periodic automatic background synchronization with Loyverse POS
+      setInterval(async () => {
+        if (this.currentView === 'admin' || this.isStaffOrAdmin) {
+          try {
+            await GST_API.syncLoyverse();
+          } catch (e) {
+            // silent background sync
+          }
+        }
+      }, 30000);
     },
 
     async refreshAllData() {
@@ -549,7 +561,9 @@ const useGShotStore = defineStore('gshot', {
     
 
     openStaffPinModal() {
-      this.staffPinModalOpen = true;
+      if (this.isStaffOnly) {
+        this.staffPinModalOpen = true;
+      }
     },
     closeStaffPinModal() {
       this.staffPinModalOpen = false;
@@ -569,6 +583,9 @@ const useGShotStore = defineStore('gshot', {
         this.notify(`Operator on duty: ${this.user.name} (${this.user.role.toUpperCase()})`, 'success');
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
+          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard')) {
+            window.location.href = '/admin';
+          }
         }
         return this.user;
       } catch (err) {
@@ -594,6 +611,10 @@ const useGShotStore = defineStore('gshot', {
         // "Customers are directed to the ordering module, while administrators are redirected to the administrative dashboard"
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
+          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard')) {
+            window.location.href = '/admin';
+            return;
+          }
         } else if (this.user.role === 'driver') {
           this.currentView = 'driver';
         } else {
@@ -641,6 +662,10 @@ const useGShotStore = defineStore('gshot', {
 
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
+          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard')) {
+            window.location.href = '/admin';
+            return;
+          }
         } else if (this.user.role === 'driver') {
           this.currentView = 'driver';
         } else {
@@ -663,7 +688,9 @@ const useGShotStore = defineStore('gshot', {
       localStorage.removeItem('gst_user');
       localStorage.removeItem('gst_auth_token');
       localStorage.removeItem('gst_active_order_id');
-      this.currentView = 'customer';
+      sessionStorage.removeItem('gst_admin_unlocked');
+      const isAdminRoute = typeof window !== 'undefined' && (window.location.pathname.includes('admin') || window.location.pathname.includes('staff') || window.location.pathname.includes('superadmin') || window.location.pathname.includes('super-admin') || window.location.pathname.includes('dashboard'));
+      this.currentView = isAdminRoute ? 'admin' : 'customer';
       this.notify('Logged out successfully.');
     },
 
@@ -674,7 +701,7 @@ const useGShotStore = defineStore('gshot', {
       this.settings.store_open = valStr;
       try {
         await GST_API.updateSettings({ store_open: valStr });
-        this.notify(next ? '🟢 Store is now OPEN for customer orders!' : '🔴 Store is now CLOSED. Ordering paused.', next ? 'success' : 'info');
+        this.notify(next ? '?? Store is now OPEN for customer orders!' : '?? Store is now CLOSED. Ordering paused.', next ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status on backend:', err);
         this.notify(next ? 'Store opened locally.' : 'Store closed locally.', 'info');
@@ -686,7 +713,7 @@ const useGShotStore = defineStore('gshot', {
       this.settings.store_open = valStr;
       try {
         await GST_API.updateSettings({ store_open: valStr });
-        this.notify(isOpen ? '🟢 Store is now OPEN!' : '🔴 Store is now CLOSED.', isOpen ? 'success' : 'info');
+        this.notify(isOpen ? '?? Store is now OPEN!' : '?? Store is now CLOSED.', isOpen ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status:', err);
       }
@@ -732,7 +759,7 @@ const useGShotStore = defineStore('gshot', {
           category: 'Menu',
           price: null,
           description: '',
-          emoji: '🍽️',
+          emoji: '???',
           max_portions: 99,
           recipes: [],
         };
@@ -745,7 +772,7 @@ const useGShotStore = defineStore('gshot', {
         category: item.category || matched.category || 'Menu',
         price: item.price !== undefined ? item.price : (matched.price !== undefined ? matched.price : null),
         description: item.description || item.desc || matched.description || '',
-        emoji: item.emoji || matched.emoji || '🍽️',
+        emoji: item.emoji || matched.emoji || '???',
         image: item.image || item.image_url || matched.image || './assets/hero-banner.png',
         max_portions: matched.max_portions !== undefined ? matched.max_portions : (item.max_portions !== undefined ? item.max_portions : 99),
         recipes: matched.recipes || item.recipes || [],
@@ -847,6 +874,58 @@ const useGShotStore = defineStore('gshot', {
       } catch (err) {
         console.error('Failed to delete announcement via API:', err);
         this.notify('Announcement removed locally.', 'info');
+      }
+    },
+
+    // Loyverse POS Integration Actions
+    async getLoyverseStatus() {
+      try {
+        const res = await GST_API.getLoyverseStatus();
+        return res.data;
+      } catch (err) {
+        console.error('Failed to get Loyverse status:', err);
+        return { connected: false, error: err.message };
+      }
+    },
+
+    async syncLoyverseSales() {
+      this.loading = true;
+      try {
+        const res = await GST_API.syncLoyverse();
+        const count = res.data?.results?.synced ?? 0;
+        await Promise.all([
+          this.fetchOrders(),
+          this.fetchIngredients(),
+          this.fetchProducts(),
+        ]);
+        if (count > 0) {
+          this.notify(`⚡ Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
+        } else {
+          this.notify('Loyverse POS is up to date. No new un-synced sales.', 'info');
+        }
+        return res.data;
+      } catch (err) {
+        console.error('Loyverse sync failed:', err);
+        this.notify(err.response?.data?.message || 'Failed to sync with Loyverse POS.', 'error');
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async exportMenuToLoyverse() {
+      this.loading = true;
+      try {
+        const res = await GST_API.exportMenuToLoyverse();
+        const total = res.data?.results?.total ?? 0;
+        this.notify(`📤 Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Loyverse export failed:', err);
+        this.notify(err.response?.data?.message || 'Failed to export menu to Loyverse.', 'error');
+        throw err;
+      } finally {
+        this.loading = false;
       }
     },
   },

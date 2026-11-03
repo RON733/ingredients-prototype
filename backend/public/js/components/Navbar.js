@@ -99,16 +99,13 @@ const Navbar = {
             </button>
 
             <!-- Portal Switcher Button if Staff or Admin -->
-            <button 
+            <a 
               v-if="store.isStaffOrAdmin"
-              @click="togglePortal"
-              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
-              :class="store.currentView === 'admin' 
-                ? 'bg-yellow-400 hover:bg-yellow-300 text-black font-bold' 
-                : 'bg-surface-800 hover:bg-surface-700 text-gray-200'">
+              href="/admin"
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black shadow-md transition-all">
               <i class="pi pi-shield text-[11px]"></i>
-              <span>{{ store.currentView === 'admin' ? 'Customer Site' : 'Admin Panel' }}</span>
-            </button>
+              <span>Operations Portal</span>
+            </a>
           </div>
 
           <!-- Customer Action Buttons Group -->
@@ -189,14 +186,14 @@ const Navbar = {
                     class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors">
                     <i class="pi pi-map-marker text-emerald-400"></i> Track Active Order
                   </button>
-                  <button 
+                  <a 
                     v-if="store.isStaffOrAdmin"
-                    @click="goToView('admin')" 
-                    class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors">
-                    <i class="pi pi-th-large text-purple-400"></i> Management Dashboard
-                  </button>
+                    href="/admin"
+                    class="w-full text-left px-4 py-2 text-xs text-yellow-400 hover:bg-surface-700/70 hover:text-yellow-300 flex items-center gap-2.5 transition-colors font-bold">
+                    <i class="pi pi-th-large text-yellow-400"></i> Management Dashboard
+                  </a>
                   <button 
-                    v-if="store.isStaffOrAdmin"
+                    v-if="store.isStaffOnly"
                     @click="showUserMenu = false; store.staffPinModalOpen = true" 
                     class="w-full text-left px-4 py-2 text-xs text-sky-300 hover:bg-surface-700/70 hover:text-sky-200 flex items-center justify-between transition-colors">
                     <span class="flex items-center gap-2.5">
@@ -324,16 +321,13 @@ const Navbar = {
             </select>
           </div>
 
-          <button 
+          <a 
             v-if="store.isStaffOrAdmin"
-            @click="togglePortal(); mobileMenuOpen = false"
-            class="w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
-            :class="store.currentView === 'admin' 
-              ? 'bg-yellow-400 hover:bg-yellow-300 text-black font-bold' 
-              : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
+            href="/admin"
+            class="w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 bg-yellow-400 text-black shadow-md">
             <i class="pi pi-shield"></i>
-            <span>{{ store.currentView === 'admin' ? 'Switch to Customer Site' : 'Open Admin Panel' }}</span>
-          </button>
+            <span>Open Management Console</span>
+          </a>
         </div>
 
         <!-- Account quick actions -->
@@ -412,7 +406,7 @@ const Navbar = {
 
     const togglePortal = () => {
       mobileMenuOpen.value = false;
-      store.currentView = store.currentView === 'admin' ? 'customer' : 'admin';
+      window.location.href = '/admin';
     };
 
     const toggleProfileMenu = () => {

@@ -291,7 +291,8 @@ class AuthController extends Controller
 
     public function listStaff(Request $request)
     {
-        $staff = User::whereIn('role', ['staff', 'admin', 'super_admin', 'driver'])
+        $roles = $request->query('all') ? ['staff', 'admin', 'super_admin', 'driver'] : ['staff'];
+        $staff = User::whereIn('role', $roles)
             ->where('status', 'active')
             ->select('id', 'name', 'email', 'role', 'avatar')
             ->orderBy('name')
@@ -355,15 +356,25 @@ class AuthController extends Controller
             'pin' => 'required|string',
         ]);
 
-        $query = User::where('pin', trim($validated['pin']))
-            ->whereIn('role', ['staff', 'admin', 'super_admin', 'driver'])
-            ->where('status', 'active');
+        $pin = trim($validated['pin']);
 
+        // Check if user_id was provided and PIN matches
+        $user = null;
         if (!empty($validated['user_id'])) {
-            $query->where('id', $validated['user_id']);
+            $user = User::where('id', $validated['user_id'])
+                ->where('pin', $pin)
+                ->where('status', 'active')
+                ->whereIn('role', ['staff', 'admin', 'super_admin'])
+                ->first();
         }
 
-        $user = $query->first();
+        // If not found by user_id, locate directly by PIN across personnel
+        if (!$user) {
+            $user = User::where('pin', $pin)
+                ->where('status', 'active')
+                ->whereIn('role', ['staff', 'admin', 'super_admin'])
+                ->first();
+        }
 
         if (!$user) {
             return response()->json([

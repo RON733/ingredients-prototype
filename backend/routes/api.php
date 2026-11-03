@@ -10,6 +10,7 @@ use App\Http\Controllers\EventBookingController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\LoyverseController;
 
 // --- Public Endpoints ---
 Route::post('/auth/login', [AuthController::class, 'login'])->name('login');
@@ -32,6 +33,13 @@ Route::get('/settings', [SystemController::class, 'settings']);
 Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
+
+// Loyverse POS Integration
+Route::get('/loyverse/status', [LoyverseController::class, 'status']);
+Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
+Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
+Route::post('/loyverse/register-webhook', [LoyverseController::class, 'registerWebhook']);
+Route::post('/loyverse/webhook', [LoyverseController::class, 'webhook']);
 
 // --- Authenticated & Operational Endpoints ---
 Route::middleware('auth:sanctum')->group(function () {
@@ -80,8 +88,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [AuthController::class, 'listUsers']);
     Route::post('/users', [AuthController::class, 'createUser']);
     Route::patch('/users/{id}', [AuthController::class, 'updateUserRole']);
-    Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
-    Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
     Route::post('/settings', [SystemController::class, 'updateSettings']);
     Route::get('/audit-logs', [SystemController::class, 'auditLogs']);
 });
@@ -112,7 +118,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/users', [AuthController::class, 'createUser']);
     Route::patch('/users/{id}', [AuthController::class, 'updateUserRole']);
     Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
+    Route::get('/staff-list', [AuthController::class, 'listStaff']);
     Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
+    Route::post('/pin-switch', [AuthController::class, 'quickPinLogin']);
     Route::post('/settings', [SystemController::class, 'updateSettings']);
     Route::get('/audit-logs', [SystemController::class, 'auditLogs']);
 
@@ -121,5 +129,12 @@ Route::prefix('v1')->group(function () {
     Route::post('/announcements', [AnnouncementController::class, 'store']);
     Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
     Route::patch('/announcements/{id}/toggle', [AnnouncementController::class, 'toggleActive']);
-    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
+        Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
+
+    // Loyverse POS Integration
+    Route::get('/loyverse/status', [LoyverseController::class, 'status']);
+    Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
+    Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
+    Route::post('/loyverse/register-webhook', [LoyverseController::class, 'registerWebhook']);
+    Route::post('/loyverse/webhook', [LoyverseController::class, 'webhook']);
 });

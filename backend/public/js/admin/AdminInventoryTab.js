@@ -17,6 +17,14 @@ const AdminInventoryTab = {
 
         <div class="flex items-center gap-3">
           <button 
+            @click="handleSyncLoyverse"
+            :disabled="isSyncingLoyverse"
+            class="px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+            title="Sync latest POS sales and update ingredient stock">
+            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner' : 'pi-sync'"></i>
+            <span>{{ isSyncingLoyverse ? 'Syncing...' : 'Sync POS Sales' }}</span>
+          </button>
+          <button 
             @click="openAddModal"
             class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
             <i class="pi pi-plus"></i>
@@ -241,6 +249,16 @@ const AdminInventoryTab = {
   setup() {
     const store = useGShotStore();
     const loading = Vue.ref(false);
+    const isSyncingLoyverse = Vue.ref(false);
+
+    const handleSyncLoyverse = async () => {
+      isSyncingLoyverse.value = true;
+      try {
+        await store.syncLoyverseSales();
+      } finally {
+        isSyncingLoyverse.value = false;
+      }
+    };
     const selectedCategory = Vue.ref('All');
     const searchQuery = Vue.ref('');
 
@@ -402,6 +420,8 @@ const AdminInventoryTab = {
       saveIngredient,
       deleteIngredient,
       refresh,
+      isSyncingLoyverse,
+      handleSyncLoyverse,
     };
   },
 };

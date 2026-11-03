@@ -42,7 +42,7 @@ const AdminAuditTab = {
           <button 
             @click="refresh"
             :disabled="loading"
-            class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 hover:text-white border border-surface-700 text-xs font-bold transition-all flex items-center gap-2 shadow-lg active:scale-95 disabled:opacity-50"
+            class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 hover:text-white border border-surface-700 text-xs font-bold transition-all flex items-center gap-2 shadow-lg active:scale-95 disabled:opacity-50 cursor-pointer"
             title="Refresh Audit Logs">
             <i class="pi pi-refresh" :class="{ 'pi-spin': loading }"></i>
             <span>Refresh</span>
@@ -134,7 +134,7 @@ const AdminAuditTab = {
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           <button 
             @click="selectedRole = 'all'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
             :class="selectedRole === 'all' ? 'bg-surface-700 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-surface-800'">
             <span>All Personnel</span>
             <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-surface-900 text-gray-300 font-mono">{{ totalPersonnelCount }}</span>
@@ -142,7 +142,7 @@ const AdminAuditTab = {
 
           <button 
             @click="selectedRole = 'super_admin'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
             :class="selectedRole === 'super_admin' ? 'bg-purple-600 text-white shadow-sm' : 'text-purple-300/70 hover:text-purple-200 hover:bg-purple-950/40'">
             <i class="pi pi-crown text-[10px]"></i>
             <span>Super Admin</span>
@@ -151,7 +151,7 @@ const AdminAuditTab = {
 
           <button 
             @click="selectedRole = 'admin'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
             :class="selectedRole === 'admin' ? 'bg-amber-600 text-white shadow-sm' : 'text-amber-300/70 hover:text-amber-200 hover:bg-amber-950/40'">
             <i class="pi pi-shield text-[10px]"></i>
             <span>Admin</span>
@@ -160,7 +160,7 @@ const AdminAuditTab = {
 
           <button 
             @click="selectedRole = 'staff'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
             :class="selectedRole === 'staff' ? 'bg-sky-600 text-white shadow-sm' : 'text-sky-300/70 hover:text-sky-200 hover:bg-sky-950/40'">
             <i class="pi pi-user text-[10px]"></i>
             <span>Staff</span>
@@ -169,7 +169,7 @@ const AdminAuditTab = {
 
           <button 
             @click="selectedRole = 'driver'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
             :class="selectedRole === 'driver' ? 'bg-emerald-600 text-white shadow-sm' : 'text-emerald-300/70 hover:text-emerald-200 hover:bg-emerald-950/40'">
             <i class="pi pi-compass text-[10px]"></i>
             <span>Drivers</span>
@@ -188,7 +188,7 @@ const AdminAuditTab = {
           <button 
             v-if="searchQuery" 
             @click="searchQuery = ''" 
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs">
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer">
             <i class="pi pi-times"></i>
           </button>
         </div>
@@ -204,14 +204,13 @@ const AdminAuditTab = {
                 <th class="px-6 py-4">Authorized Personnel</th>
                 <th class="px-6 py-4">Action</th>
                 <th class="px-6 py-4">Activity Details</th>
-                <th class="px-6 py-4 text-right">IP Address</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-surface-700/50">
               
               <!-- Loading Skeleton -->
               <tr v-if="loading && filteredLogs.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                <td colspan="4" class="px-6 py-12 text-center text-gray-400">
                   <i class="pi pi-spin pi-spinner text-2xl text-brand-400 mb-2"></i>
                   <p class="text-xs">Loading personnel audit trail...</p>
                 </td>
@@ -219,7 +218,7 @@ const AdminAuditTab = {
 
               <!-- Empty State -->
               <tr v-else-if="filteredLogs.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                <td colspan="4" class="px-6 py-12 text-center text-gray-400">
                   <div class="w-12 h-12 rounded-2xl bg-surface-900 border border-surface-700 flex items-center justify-center mx-auto mb-3 text-gray-500">
                     <i class="pi pi-history text-lg"></i>
                   </div>
@@ -230,10 +229,10 @@ const AdminAuditTab = {
                 </td>
               </tr>
 
-              <!-- Log Rows -->
+              <!-- Log Rows (10 per page) -->
               <tr 
                 v-else
-                v-for="log in filteredLogs" 
+                v-for="log in paginatedLogs" 
                 :key="log.id"
                 class="hover:bg-surface-700/30 transition-colors">
                 
@@ -302,24 +301,50 @@ const AdminAuditTab = {
                   {{ log.details }}
                 </td>
 
-                <!-- IP Address -->
-                <td class="px-6 py-4 font-mono text-gray-500 text-right text-[11px] whitespace-nowrap">
-                  {{ log.ip_address || '127.0.0.1' }}
-                </td>
-
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Footer Strip -->
-        <div class="px-6 py-3.5 bg-surface-900/60 border-t border-surface-700/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-400">
-          <div class="flex items-center gap-2">
-            <i class="pi pi-lock text-[10px] text-brand-400"></i>
-            <span>Tamper-evident audit log strictly restricted to Staff, Admin, and Super Admin records.</span>
+        <!-- Pagination & Footer Strip -->
+        <div class="px-6 py-4 bg-surface-900/90 border-t border-surface-700/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div class="flex items-center gap-2 text-gray-400">
+            <i class="pi pi-shield text-xs text-brand-400"></i>
+            <span v-if="filteredLogs.length > 0">
+              Showing <strong class="text-white">{{ (currentPage - 1) * pageSize + 1 }}</strong> to <strong class="text-white">{{ Math.min(currentPage * pageSize, filteredLogs.length) }}</strong> of <strong class="text-white">{{ filteredLogs.length }}</strong> personnel activities
+            </span>
+            <span v-else>No activity logs to display</span>
           </div>
-          <div class="font-mono text-gray-400">
-            Showing {{ filteredLogs.length }} of {{ totalPersonnelCount }} recorded actions
+
+          <!-- Pagination Controls (10 items per page) -->
+          <div v-if="totalPages > 1" class="flex items-center gap-1.5 select-none">
+            <button 
+              type="button"
+              @click="prevPage" 
+              :disabled="currentPage === 1"
+              class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer">
+              <i class="pi pi-chevron-left text-[10px]"></i>
+              <span>Prev</span>
+            </button>
+
+            <button 
+              v-for="page in visiblePages" 
+              :key="page"
+              type="button"
+              @click="goToPage(page)"
+              class="w-8 h-8 rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer border"
+              :class="currentPage === page ? 'bg-yellow-400 text-black border-yellow-400 font-black shadow-lg shadow-yellow-400/20' : 'bg-surface-800 text-gray-300 border-surface-700 hover:bg-surface-700 hover:text-white'">
+              {{ page }}
+            </button>
+
+            <button 
+              type="button"
+              @click="nextPage" 
+              :disabled="currentPage === totalPages"
+              class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer">
+              <span>Next</span>
+              <i class="pi pi-chevron-right text-[10px]"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -332,6 +357,8 @@ const AdminAuditTab = {
     const logs = Vue.ref([]);
     const selectedRole = Vue.ref('all');
     const searchQuery = Vue.ref('');
+    const currentPage = Vue.ref(1);
+    const pageSize = 10;
 
     Vue.onMounted(() => {
       if (!store.isSuperAdmin) {
@@ -345,9 +372,9 @@ const AdminAuditTab = {
     const refresh = async () => {
       loading.value = true;
       try {
-        const res = await GST_API.getAuditLogs();
+        const res = await GST_API.getAuditLogs({ per_page: 200 });
         const raw = res.data.data || res.data || [];
-        // Strictly ensure only staff, admin, and super_admin are retained
+        // Strictly ensure only staff, admin, super_admin, and driver are retained
         logs.value = Array.isArray(raw)
           ? raw.filter(item => ['staff', 'admin', 'super_admin', 'driver'].includes((item.user_role || '').toLowerCase()))
           : [];
@@ -368,7 +395,6 @@ const AdminAuditTab = {
     // Filtered by selected tab and search term
     const filteredLogs = Vue.computed(() => {
       return logs.value.filter(log => {
-        // Enforce strictly staff, admin, and super_admin
         const role = (log.user_role || '').toLowerCase();
         if (!['staff', 'admin', 'super_admin', 'driver'].includes(role)) return false;
 
@@ -377,15 +403,14 @@ const AdminAuditTab = {
           return false;
         }
 
-        // Search query filter
+        // Search query filter (IP match removed)
         if (searchQuery.value.trim()) {
           const q = searchQuery.value.toLowerCase().trim();
           const matchesName = (log.user_name || '').toLowerCase().includes(q);
           const matchesAction = (log.action || '').toLowerCase().includes(q);
           const matchesDetails = (log.details || '').toLowerCase().includes(q);
           const matchesRole = role.includes(q);
-          const matchesIp = (log.ip_address || '').toLowerCase().includes(q);
-          if (!matchesName && !matchesAction && !matchesDetails && !matchesRole && !matchesIp) {
+          if (!matchesName && !matchesAction && !matchesDetails && !matchesRole) {
             return false;
           }
         }
@@ -393,6 +418,53 @@ const AdminAuditTab = {
         return true;
       });
     });
+
+    // Reset pagination to page 1 on filter or search change
+    Vue.watch([selectedRole, searchQuery], () => {
+      currentPage.value = 1;
+    });
+
+    // Pagination calculations (10 items per page)
+    const totalPages = Vue.computed(() => Math.max(1, Math.ceil(filteredLogs.value.length / pageSize)));
+
+    const paginatedLogs = Vue.computed(() => {
+      const start = (currentPage.value - 1) * pageSize;
+      return filteredLogs.value.slice(start, start + pageSize);
+    });
+
+    const visiblePages = Vue.computed(() => {
+      const pages = [];
+      const total = totalPages.value;
+      const cur = currentPage.value;
+
+      let start = Math.max(1, cur - 2);
+      let end = Math.min(total, start + 4);
+      if (end - start < 4) {
+        start = Math.max(1, end - 4);
+      }
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      return pages;
+    });
+
+    const prevPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--;
+      }
+    };
+
+    const nextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+      }
+    };
+
+    const goToPage = (p) => {
+      if (p >= 1 && p <= totalPages.value) {
+        currentPage.value = p;
+      }
+    };
 
     const getRoleAvatarClass = (role) => {
       switch (role) {
@@ -443,6 +515,14 @@ const AdminAuditTab = {
       logs,
       selectedRole,
       searchQuery,
+      currentPage,
+      pageSize,
+      totalPages,
+      visiblePages,
+      paginatedLogs,
+      prevPage,
+      nextPage,
+      goToPage,
       totalPersonnelCount,
       superAdminCount,
       adminCount,

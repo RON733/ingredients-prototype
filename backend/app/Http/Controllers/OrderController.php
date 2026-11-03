@@ -294,6 +294,13 @@ class OrderController extends Controller
 
             $order->items()->createMany($itemsData);
 
+            // Automatically push order to Loyverse POS to update Sales Summary in Back Office
+            try {
+                app(\App\Services\LoyverseService::class)->pushOrderToLoyverse($order);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Loyverse auto-sync warning: " . $e->getMessage());
+            }
+
             $placingRole = $request->user()?->role;
             if ($placingRole && in_array($placingRole, ['staff', 'admin', 'super_admin'])) {
                 AuditLog::create([

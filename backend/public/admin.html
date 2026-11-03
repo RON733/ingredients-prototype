@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G Shot Teas — Staff & Admin Operations Console</title>
+  <meta name="description" content="Dedicated Management Console & Kitchen Operations Dashboard for G Shot Teas Staff, Administrators, and Super Administrators." />
+  <link rel="icon" type="image/png" href="./assets/logo-square.png" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand:   { 50:'#fefce8',100:'#fef9c3',200:'#fef08a',300:'#fde047',400:'#facc15',500:'#eab308',600:'#ca8a04',700:'#a16207',800:'#854d0e',900:'#713f12',950:'#422006' },
+            surface: { 950:'#000000',900:'#0a0a0c',850:'#121215',800:'#18181b',750:'#202024',700:'#27272a',600:'#3f3f46',500:'#52525b',400:'#71717a' }
+          },
+          animation: {
+            'slide-in':   'slideIn 0.3s ease-out',
+            'fade-in':    'fadeIn 0.25s ease-out',
+            'bounce-sm':  'bounceSm 0.4s ease-out',
+            'toast-in':   'toastIn 0.35s cubic-bezier(.22,1,.36,1)',
+          },
+          keyframes: {
+            slideIn: { from:{ transform:'translateX(100%)', opacity:0 }, to:{ transform:'translateX(0)', opacity:1 } },
+            fadeIn:  { from:{ opacity:0, transform:'translateY(8px)' }, to:{ opacity:1, transform:'translateY(0)' } },
+            bounceSm:{ '0%':{ transform:'scale(1)' },'50%':{ transform:'scale(1.08)' },'100%':{ transform:'scale(1)' } },
+            toastIn: { from:{ opacity:0, transform:'translateY(24px) scale(0.95)' }, to:{ opacity:1, transform:'translateY(0) scale(1)' } },
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- PrimeIcons -->
+  <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css" />
+
+  <!-- Leaflet Map CSS (for live dispatch mapping in Active Orders) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="./css/styles.css?v=5.0" />
+
+  <!-- Core Frameworks: Vue 3, Pinia, Axios, Leaflet -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/vue-demi"></script>
+  <script src="https://unpkg.com/pinia/dist/pinia.iife.prod.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Real-Time WebSockets (Pusher JS & Laravel Echo for Reverb) -->
+  <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
+  <script src="./js/echo-setup.js"></script>
+</head>
+<body class="bg-surface-950 text-gray-100 antialiased selection:bg-yellow-400 selection:text-black">
+  <div id="app"></div>
+
+  <!-- API Client & Pinia Store -->
+  <script src="./js/api.js?v=5.1"></script>
+  <script src="./js/store.js?v=5.1"></script>
+
+  <!-- Modals & Utilities used by Admin Tabs -->
+  <script src="./js/components/StaffPinModal.js?v=5.1"></script>
+  <script src="./js/components/AnnouncementModal.js?v=5.1"></script>
+  <script src="./js/components/ProductImageModal.js?v=5.1"></script>
+
+  <!-- Staff, Admin & Super Admin Components (Figures 14-17 + Ingredient Prototype) -->
+  <script src="./js/admin/AdminOrdersTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminAnalyticsTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminCompletedTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminProductsTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminInventoryTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminRecipesTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminBookingsTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminAnnouncementsTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminUsersTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminAuditTab.js?v=5.2"></script>
+  <script src="./js/admin/AdminSettingsTab.js?v=5.1"></script>
+  <script src="./js/admin/AdminDashboard.js?v=5.1"></script>
+
+  <!-- Dedicated Admin & Staff Vue Application Root -->
+  <script src="./js/admin/AdminApp.js?v=5.1"></script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+// G Shot Teas — Staff, Admin & Super Admin Dedicated Portal App Root
+const { createApp, ref, computed, onMounted } = Vue;
+
+const AdminApp = {
+  template: `
+    <div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-yellow-400 selection:text-black">
+      
+      <!-- 1. Authenticated Staff, Admin, or Super Admin: Render Full Management Dashboard -->
+      <div v-if="isLoggedIn && store.user && store.isStaffOrAdmin" class="flex-1 flex flex-col">
+        <AdminDashboard />
+      </div>
+
+      <!-- 2. LOGIN PAGE: Always Shown First When Accessing /admin, /staff, or /superadmin -->
+      <div v-else class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden">
+        
+        <!-- Background Ambient Glows -->
+        <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-32 left-1/3 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="w-full max-w-md relative z-10 space-y-5 animate-fade-in">
+          
+          <!-- Portal Branding Header -->
+          <div class="text-center space-y-2">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-900 border border-surface-700 shadow-xl text-yellow-400 font-black text-2xl mb-1">
+              G'
+            </div>
+            <div class="flex items-center justify-center gap-2">
+              <h1 class="text-2xl font-black tracking-tight text-white">G SHOT TEAS</h1>
+              <span 
+                class="text-[10px] px-2.5 py-0.5 rounded-full font-extrabold border uppercase tracking-wider transition-colors"
+                :class="portalBadgeClass">
+                {{ portalBadgeText }}
+              </span>
+            </div>
+            <p class="text-xs text-gray-400 font-medium">{{ portalSubtext }}</p>
+          </div>
+
+          <!-- Connected Role Navigation Tabs (/staff, /admin, /superadmin) -->
+          <div class="grid grid-cols-3 p-1 rounded-2xl bg-surface-900 border border-surface-800 text-xs font-bold gap-1 shadow-lg">
+            <button 
+              type="button"
+              @click="setPortalRole('staff')"
+              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center"
+              :class="activeRole === 'staff' ? 'bg-yellow-400 text-black shadow-md font-black' : 'text-gray-400 hover:text-white'">
+              <i class="pi pi-id-card text-xs"></i>
+              <span>Staff</span>
+            </button>
+            <button 
+              type="button"
+              @click="setPortalRole('admin')"
+              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center"
+              :class="activeRole === 'admin' ? 'bg-yellow-400 text-black shadow-md font-black' : 'text-gray-400 hover:text-white'">
+              <i class="pi pi-shield text-xs"></i>
+              <span>Admin</span>
+            </button>
+            <button 
+              type="button"
+              @click="setPortalRole('super_admin')"
+              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center"
+              :class="activeRole === 'super_admin' ? 'bg-purple-500 text-white shadow-md font-black' : 'text-gray-400 hover:text-white'">
+              <i class="pi pi-lock text-xs"></i>
+              <span>Super Admin</span>
+            </button>
+          </div>
+
+          <!-- Auth Box Container -->
+          <div class="bg-surface-900/95 backdrop-blur-xl border border-surface-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4">
+            
+            <!-- Login Method Switcher Tabs (PIN vs Password) -->
+            <div class="grid grid-cols-2 p-1 rounded-xl bg-surface-950 border border-surface-800 text-xs font-bold">
+              <button 
+                type="button"
+                @click="authTab = 'pin'"
+                class="py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                :class="authTab === 'pin' ? 'bg-yellow-400 text-black shadow-sm font-bold' : 'text-gray-400 hover:text-white'">
+                <i class="pi pi-id-card text-xs"></i>
+                <span>4-Digit PIN</span>
+              </button>
+              <button 
+                type="button"
+                @click="authTab = 'credentials'"
+                class="py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                :class="authTab === 'credentials' ? 'bg-yellow-400 text-black shadow-sm font-bold' : 'text-gray-400 hover:text-white'">
+                <i class="pi pi-key text-xs"></i>
+                <span>Password</span>
+              </button>
+            </div>
+
+            <!-- Error Banner -->
+            <div v-if="authError" class="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-start gap-2.5 animate-shake">
+              <i class="pi pi-exclamation-triangle text-rose-400 mt-0.5 shrink-0 text-xs"></i>
+              <span class="flex-1 leading-snug">{{ authError }}</span>
+            </div>
+
+            <!-- TAB 1: 4-DIGIT PIN ENTRY -->
+            <div v-if="authTab === 'pin'" class="space-y-4">
+              <!-- Staff selector (only when in staff role mode) -->
+              <div v-if="activeRole === 'staff'">
+                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                  Select On-Duty Staff Operator:
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button 
+                    v-for="s in staffList" 
+                    :key="s.id"
+                    type="button"
+                    @click="selectedStaff = s; pinDigits = ''"
+                    class="p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col"
+                    :class="selectedStaff?.id === s.id ? 'bg-yellow-400/15 border-yellow-400 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-300 hover:border-surface-600'">
+                    <span class="text-xs font-bold truncate">{{ s.name }}</span>
+                    <span class="text-[9px] font-mono uppercase tracking-wider" :class="selectedStaff?.id === s.id ? 'text-yellow-400 font-bold' : 'text-gray-500'">
+                      Staff Operator
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- PIN Input Display -->
+              <div class="space-y-1.5 text-center">
+                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  Enter 4-Digit Security PIN
+                </label>
+                <div class="flex justify-center gap-3 py-1">
+                  <div 
+                    v-for="i in 4" 
+                    :key="i"
+                    class="w-11 h-12 rounded-xl border flex items-center justify-center text-xl font-black transition-all"
+                    :class="pinDigits.length >= i 
+                      ? 'bg-yellow-400 border-yellow-400 text-black shadow-lg shadow-yellow-400/20' 
+                      : 'bg-surface-950 border-surface-700 text-gray-600'">
+                    {{ pinDigits.length >= i ? '•' : '' }}
+                  </div>
+                </div>
+                <p class="text-[10px] text-gray-400">
+                  <span v-if="activeRole === 'staff'">Mhar = <strong>1234</strong> • Sarah = <strong>5678</strong></span>
+                  <span v-else-if="activeRole === 'admin'">Admin PIN = <strong>2222</strong></span>
+                  <span v-else-if="activeRole === 'super_admin'">Super Admin PIN = <strong>1111</strong></span>
+                </p>
+              </div>
+
+              <!-- Interactive Keypad -->
+              <div class="grid grid-cols-3 gap-2">
+                <button 
+                  v-for="n in [1,2,3,4,5,6,7,8,9]" 
+                  :key="n"
+                  type="button"
+                  @click="pressPinDigit(n)"
+                  class="h-11 rounded-xl bg-surface-800 hover:bg-surface-700 text-white font-black text-base transition-all active:scale-95 shadow-sm border border-surface-700/60 flex items-center justify-center cursor-pointer">
+                  {{ n }}
+                </button>
+                <button 
+                  type="button"
+                  @click="clearPin"
+                  class="h-11 rounded-xl bg-surface-800/40 hover:bg-surface-800 text-gray-400 font-bold text-xs transition-all active:scale-95 border border-surface-700/60 flex items-center justify-center cursor-pointer">
+                  CLEAR
+                </button>
+                <button 
+                  type="button"
+                  @click="pressPinDigit(0)"
+                  class="h-11 rounded-xl bg-surface-800 hover:bg-surface-700 text-white font-black text-base transition-all active:scale-95 shadow-sm border border-surface-700/60 flex items-center justify-center cursor-pointer">
+                  0
+                </button>
+                <button 
+                  type="button"
+                  @click="backspacePin"
+                  class="h-11 rounded-xl bg-surface-800/40 hover:bg-surface-800 text-gray-400 font-bold text-sm transition-all active:scale-95 border border-surface-700/60 flex items-center justify-center cursor-pointer">
+                  ⌫
+                </button>
+              </div>
+
+              <!-- Submit Button -->
+              <button 
+                type="button"
+                @click="submitPinLogin"
+                :disabled="pinLoading || pinDigits.length < 4"
+                class="w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-40 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-yellow-400/10 cursor-pointer"
+                :class="activeRole === 'super_admin' ? 'bg-purple-500 hover:bg-purple-400 text-white' : 'bg-yellow-400 hover:bg-yellow-300 text-black'">
+                <i v-if="pinLoading" class="pi pi-spin pi-spinner"></i>
+                <span v-else>Authorize Entry</span>
+              </button>
+            </div>
+
+            <!-- TAB 2: EMAIL & PASSWORD CREDENTIALS LOGIN -->
+            <form v-else @submit.prevent="submitCredentialsLogin" class="space-y-3.5">
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">
+                  {{ activeRole === 'super_admin' ? 'Super Admin Email' : (activeRole === 'admin' ? 'Administrator Email' : 'Staff Email') }}
+                </label>
+                <div class="relative">
+                  <i class="pi pi-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                  <input 
+                    v-model="email" 
+                    type="email" 
+                    required 
+                    placeholder="name@gshotteas.com"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface-950 border border-surface-700 focus:border-yellow-400 text-white text-xs outline-none transition-colors" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Security Password</label>
+                <div class="relative">
+                  <i class="pi pi-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                  <input 
+                    v-model="password" 
+                    :type="showPassword ? 'text' : 'password'" 
+                    required 
+                    placeholder="••••••••"
+                    class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-surface-950 border border-surface-700 focus:border-yellow-400 text-white text-xs outline-none transition-colors" />
+                  <button 
+                    type="button" 
+                    @click="showPassword = !showPassword"
+                    class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-xs">
+                    <i class="pi" :class="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                :disabled="credentialsLoading"
+                class="w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-yellow-400/10 cursor-pointer"
+                :class="activeRole === 'super_admin' ? 'bg-purple-500 hover:bg-purple-400 text-white' : 'bg-yellow-400 hover:bg-yellow-300 text-black'">
+                <i v-if="credentialsLoading" class="pi pi-spin pi-spinner"></i>
+                <span v-else>Access Console</span>
+              </button>
+            </form>
+
+            <!-- 1-CLICK INSTANT DEMO LOGIN BUTTON (GUARANTEES ACCESS) -->
+            <div class="pt-2 border-t border-surface-800">
+              <button 
+                type="button"
+                @click="oneClickDirectLogin"
+                :disabled="credentialsLoading"
+                class="w-full py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-750 text-yellow-400 font-bold text-xs flex items-center justify-center gap-2 border border-surface-700 transition-all cursor-pointer">
+                <span>⚡ Instant 1-Click Sign In as {{ activeRole === 'super_admin' ? 'Super Admin' : (activeRole === 'admin' ? 'Admin' : 'Staff') }}</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Bottom Security Advisory -->
+          <div class="text-center text-[11px] text-gray-500 space-y-1">
+            <p>Protected System — All staff logins & inventory adjustments are audited.</p>
+            <div class="flex items-center justify-center gap-2 text-[10px]">
+              <a href="/" class="text-gray-400 hover:text-yellow-400 hover:underline">← Customer Storefront</a>
+              <span>•</span>
+              <span>STI College Santa Rosa Capstone</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modals for Management Use -->
+      <StaffPinModal />
+      <AnnouncementModal />
+      <ProductImageModal />
+
+      <!-- Global Notification Toasts -->
+      <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-2 pointer-events-none w-full max-w-md px-4">
+        <div 
+          v-for="toast in store.toasts" 
+          :key="toast.id"
+          @click="store.removeToast(toast.id)"
+          class="w-full px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold text-white flex items-center justify-between gap-3 backdrop-blur-md pointer-events-auto border animate-toast-in cursor-pointer transition-all duration-200 hover:scale-[1.01]"
+          :class="getToastClass(toast.type)">
+          <div class="flex items-start gap-2.5 min-w-0 flex-1">
+            <i class="pi flex-shrink-0 mt-0.5 text-sm" :class="getToastIcon(toast.type)"></i>
+            <span class="break-words leading-relaxed">{{ toast.msg }}</span>
+          </div>
+          <button type="button" @click.stop="store.removeToast(toast.id)" class="text-white/70 hover:text-white">
+            <i class="pi pi-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  `,
+  setup() {
+    const store = useGShotStore();
+
+    // The user MUST see the login page first unless actively unlocked in this session
+    const isLoggedIn = ref(false);
+
+    // Active Role selection: 'staff' | 'admin' | 'super_admin'
+    const activeRole = ref('staff');
+    const authTab = ref('pin'); // 'pin' | 'credentials'
+    const authError = ref('');
+    const email = ref('staff@gshotteas.com');
+    const password = ref('password123');
+    const showPassword = ref(false);
+    const credentialsLoading = ref(false);
+
+    // PIN State
+    const pinDigits = ref('');
+    const pinLoading = ref(false);
+    const staffList = ref([
+      { id: 3, name: 'Mhar Anthony Lirio', role: 'staff' },
+      { id: 4, name: 'Sarah Mae Santos', role: 'staff' }
+    ]);
+    const selectedStaff = ref(staffList.value[0]);
+
+    // Inspect URL pathname to intelligently highlight the matching login tab
+    const detectRoleFromPath = () => {
+      const path = (window.location.pathname || '').toLowerCase();
+      if (path.includes('superadmin') || path.includes('super-admin')) {
+        setPortalRole('super_admin');
+      } else if (path.includes('admin')) {
+        setPortalRole('admin');
+      } else {
+        setPortalRole('staff');
+      }
+    };
+
+    const setPortalRole = (role) => {
+      activeRole.value = role;
+      authError.value = '';
+      pinDigits.value = '';
+      const targetPath = role === 'super_admin' ? '/superadmin' : (role === 'admin' ? '/admin' : '/staff');
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({}, '', targetPath);
+      }
+      if (role === 'staff') {
+        authTab.value = 'pin';
+        email.value = 'staff@gshotteas.com';
+        password.value = 'password123';
+      } else if (role === 'super_admin') {
+        authTab.value = 'credentials';
+        email.value = 'superadmin@gshotteas.com';
+        password.value = 'password123';
+      } else {
+        authTab.value = 'credentials';
+        email.value = 'admin@gshotteas.com';
+        password.value = 'password123';
+      }
+    };
+
+    onMounted(async () => {
+      await store.init();
+      store.currentView = 'admin';
+
+      // Check session: only keep unlocked if explicitly authenticated in this active browser session tab
+      const sessionUnlocked = sessionStorage.getItem('gst_admin_unlocked') === 'true';
+      if (sessionUnlocked && store.user && store.isStaffOrAdmin) {
+        isLoggedIn.value = true;
+      } else {
+        isLoggedIn.value = false;
+        sessionStorage.removeItem('gst_admin_unlocked');
+      }
+
+      detectRoleFromPath();
+
+      // Fetch dynamic staff list if available
+      try {
+        const res = await GST_API.getStaffList();
+        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          const onlyStaff = res.data.filter(s => s.role === 'staff');
+          if (onlyStaff.length > 0) {
+            staffList.value = onlyStaff;
+            selectedStaff.value = onlyStaff[0];
+          }
+        }
+      } catch (e) {
+        // fallback
+      }
+    });
+
+    const portalBadgeClass = computed(() => {
+      if (activeRole.value === 'super_admin') return 'bg-purple-500/15 text-purple-400 border-purple-500/30';
+      if (activeRole.value === 'staff') return 'bg-sky-500/15 text-sky-400 border-sky-500/30';
+      return 'bg-yellow-400/15 text-yellow-400 border-yellow-400/30';
+    });
+
+    const portalBadgeText = computed(() => {
+      if (activeRole.value === 'super_admin') return 'Super Admin Console';
+      if (activeRole.value === 'staff') return 'Staff Operations';
+      return 'Admin Management';
+    });
+
+    const portalSubtext = computed(() => {
+      if (activeRole.value === 'super_admin') return 'System Configuration, Role Management & Audit Trail';
+      if (activeRole.value === 'staff') return 'POS Orders, Counter Duty & Kitchen Inventory Portions';
+      return 'Sales Analytics, Product Recipes, Orders & Store Controls';
+    });
+
+    const pressPinDigit = (digit) => {
+      if (pinDigits.value.length < 4) {
+        pinDigits.value += String(digit);
+        authError.value = '';
+        if (pinDigits.value.length === 4) {
+          submitPinLogin();
+        }
+      }
+    };
+
+    const clearPin = () => {
+      pinDigits.value = '';
+      authError.value = '';
+    };
+
+    const backspacePin = () => {
+      pinDigits.value = pinDigits.value.slice(0, -1);
+      authError.value = '';
+    };
+
+    const submitPinLogin = async () => {
+      if (pinDigits.value.length !== 4) return;
+      pinLoading.value = true;
+      authError.value = '';
+      try {
+        await store.switchStaffPin(pinDigits.value, selectedStaff.value?.id);
+        pinDigits.value = '';
+        sessionStorage.setItem('gst_admin_unlocked', 'true');
+        isLoggedIn.value = true;
+        store.currentView = 'admin';
+      } catch (err) {
+        authError.value = err.response?.data?.message || 'Invalid 4-digit PIN code. Please verify.';
+        pinDigits.value = '';
+      } finally {
+        pinLoading.value = false;
+      }
+    };
+
+    const submitCredentialsLogin = async () => {
+      credentialsLoading.value = true;
+      authError.value = '';
+      try {
+        await store.login(email.value, password.value);
+        if (!store.isStaffOrAdmin) {
+          authError.value = 'Access denied. Only authorized staff and admin accounts may enter.';
+          store.logout();
+          sessionStorage.removeItem('gst_admin_unlocked');
+          isLoggedIn.value = false;
+        } else {
+          sessionStorage.setItem('gst_admin_unlocked', 'true');
+          isLoggedIn.value = true;
+          store.currentView = 'admin';
+        }
+      } catch (err) {
+        authError.value = err.response?.data?.message || 'Invalid email or password.';
+      } finally {
+        credentialsLoading.value = false;
+      }
+    };
+
+    const oneClickDirectLogin = async () => {
+      credentialsLoading.value = true;
+      authError.value = '';
+      let targetEmail = 'staff@gshotteas.com';
+      if (activeRole.value === 'admin') targetEmail = 'admin@gshotteas.com';
+      if (activeRole.value === 'super_admin') targetEmail = 'superadmin@gshotteas.com';
+
+      try {
+        await store.login(targetEmail, 'password123');
+        sessionStorage.setItem('gst_admin_unlocked', 'true');
+        isLoggedIn.value = true;
+        store.currentView = 'admin';
+      } catch (err) {
+        authError.value = err.response?.data?.message || 'Login failed.';
+      } finally {
+        credentialsLoading.value = false;
+      }
+    };
+
+    const getToastClass = (type) => {
+      if (type === 'error') return 'bg-rose-950/95 border-rose-600 text-rose-100 shadow-rose-950/50';
+      if (type === 'warning') return 'bg-amber-950/95 border-amber-500 text-amber-100 shadow-amber-950/50';
+      if (type === 'info') return 'bg-sky-950/95 border-sky-600 text-sky-100 shadow-sky-950/50';
+      return 'bg-emerald-950/95 border-emerald-600 text-emerald-100 shadow-emerald-950/50';
+    };
+
+    const getToastIcon = (type) => {
+      if (type === 'error') return 'pi-times-circle text-rose-400';
+      if (type === 'warning') return 'pi-exclamation-triangle text-amber-400';
+      if (type === 'info') return 'pi-info-circle text-sky-400';
+      return 'pi-check-circle text-emerald-400';
+    };
+
+    return {
+      store,
+      isLoggedIn,
+      activeRole,
+      authTab,
+      authError,
+      email,
+      password,
+      showPassword,
+      credentialsLoading,
+      pinDigits,
+      pinLoading,
+      staffList,
+      selectedStaff,
+      portalBadgeClass,
+      portalBadgeText,
+      portalSubtext,
+      setPortalRole,
+      pressPinDigit,
+      clearPin,
+      backspacePin,
+      submitPinLogin,
+      submitCredentialsLogin,
+      oneClickDirectLogin,
+      getToastClass,
+      getToastIcon
+    };
+  }
+};
+
+// Mount Admin Vue 3 Application
+const app = createApp(AdminApp);
+const pinia = Pinia.createPinia();
+app.use(pinia);
+
+// Register Admin Global Components
+app.component('AdminDashboard', AdminDashboard);
+app.component('AdminOrdersTab', AdminOrdersTab);
+app.component('AdminAnalyticsTab', AdminAnalyticsTab);
+app.component('AdminCompletedTab', AdminCompletedTab);
+app.component('AdminProductsTab', AdminProductsTab);
+app.component('AdminInventoryTab', AdminInventoryTab);
+app.component('AdminRecipesTab', AdminRecipesTab);
+app.component('AdminBookingsTab', AdminBookingsTab);
+app.component('AdminAnnouncementsTab', AdminAnnouncementsTab);
+app.component('AdminUsersTab', AdminUsersTab);
+app.component('AdminAuditTab', AdminAuditTab);
+app.component('AdminSettingsTab', AdminSettingsTab);
+app.component('StaffPinModal', typeof StaffPinModal !== 'undefined' ? StaffPinModal : (window.StaffPinModal || {}));
+app.component('AnnouncementModal', typeof AnnouncementModal !== 'undefined' ? AnnouncementModal : (window.AnnouncementModal || {}));
+app.component('ProductImageModal', typeof ProductImageModal !== 'undefined' ? ProductImageModal : (window.ProductImageModal || {}));
+
+app.mount('#app');

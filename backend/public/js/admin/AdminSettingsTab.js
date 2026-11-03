@@ -527,6 +527,86 @@ const AdminSettingsTab = {
       }
     };
 
+    // Loyverse Integration State
+    const loyverseConnected = Vue.ref(true);
+    const isSyncingLoyverse = Vue.ref(false);
+    const isExportingLoyverse = Vue.ref(false);
+    const isRegisteringWebhook = Vue.ref(false);
+    const loyverseInfo = Vue.reactive({
+      store_name: 'GSHOT',
+      store_id: 'f8bbd4a6-96c5-48f1-929e-fef388325796',
+      items_count: 12,
+    });
+
+    const loyverseWebhookUrl = Vue.computed(() => {
+      const origin = window.location.origin;
+      return origin + '/api/loyverse/webhook';
+    });
+
+    const checkLoyverse = async () => {
+      try {
+        const res = await GST_API.getLoyverseStatus();
+        if (res.data?.success) {
+          loyverseConnected.value = true;
+          if (res.data.active_store) {
+            loyverseInfo.store_name = res.data.active_store.name;
+            loyverseInfo.store_id = res.data.active_store.id;
+          }
+          if (res.data.items_count !== undefined) {
+            loyverseInfo.items_count = res.data.items_count;
+          }
+        }
+      } catch (err) {
+        console.warn('Loyverse status check:', err);
+      }
+    };
+
+    const handleSyncLoyverse = async () => {
+      isSyncingLoyverse.value = true;
+      try {
+        await store.syncLoyverseSales();
+        await checkLoyverse();
+      } catch (err) {
+        // notification already handled in store
+      } finally {
+        isSyncingLoyverse.value = false;
+      }
+    };
+
+    const handleExportMenu = async () => {
+      isExportingLoyverse.value = true;
+      try {
+        await store.exportMenuToLoyverse();
+        await checkLoyverse();
+      } catch (err) {
+        // notification handled in store
+      } finally {
+        isExportingLoyverse.value = false;
+      }
+    };
+
+    const handleRegisterWebhook = async () => {
+      isRegisteringWebhook.value = true;
+      try {
+        const url = loyverseWebhookUrl.value;
+        const res = await GST_API.registerLoyverseWebhook(url);
+        store.notify('Webhook registered successfully with Loyverse API!', 'success');
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Could not register webhook automatically. You can paste the URL into Loyverse Back Office > Settings > Webhooks.', 'info');
+      } finally {
+        isRegisteringWebhook.value = false;
+      }
+    };
+
+    const copyWebhookUrl = () => {
+      navigator.clipboard.writeText(loyverseWebhookUrl.value);
+      store.notify('Webhook URL copied to clipboard!', 'info');
+    };
+
+    Vue.onMounted(() => {
+      checkLoyverse();
+    });
+
     const reloadSettings = async () => {
       isLoading.value = true;
       try {
@@ -552,6 +632,16 @@ const AdminSettingsTab = {
       saveGcashSettings,
       saveGeneralSettings,
       reloadSettings,
+      loyverseConnected,
+      isSyncingLoyverse,
+      isExportingLoyverse,
+      isRegisteringWebhook,
+      loyverseInfo,
+      loyverseWebhookUrl,
+      handleSyncLoyverse,
+      handleExportMenu,
+      handleRegisterWebhook,
+      copyWebhookUrl,
     };
   },
 };

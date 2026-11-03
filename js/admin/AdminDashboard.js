@@ -1,26 +1,25 @@
-// G Shot Teas — Admin & Staff Dashboard Shell (Matches Figures 14–17 + Prototype Tabs)
+﻿// G Shot Teas — Admin & Staff Dashboard Shell (Matches Figures 14–17 + Prototype Tabs)
 const AdminDashboard = {
   template: `
     <div class="min-h-screen bg-surface-950 flex flex-col lg:flex-row">
       
       <!-- Mobile & Tablet Admin Top Bar (< 1024px) -->
       <header class="lg:hidden bg-surface-900 border-b border-surface-800 p-4 sticky top-0 z-40 flex items-center justify-between gap-3 shadow-lg">
-        <div class="flex items-center gap-2.5 cursor-pointer" @click="goToCustomerSite">
+        <div class="flex items-center gap-2.5 cursor-pointer" @click="selectTab(store.isAdminOrSuper ? 'analytics' : 'orders')">
           <div class="w-8 h-8 rounded-lg bg-surface-800 border border-surface-700 flex items-center justify-center font-bold text-sm text-yellow-400">G'</div>
           <div>
             <h1 class="text-sm font-black text-white leading-none">G SHOT TEAS</h1>
-            <p class="text-[9px] text-brand-400 font-bold uppercase mt-0.5">Management</p>
+            <p class="text-[9px] text-brand-400 font-bold uppercase mt-0.5">{{ (store.user?.role || "operations").toUpperCase() }}</p>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
-          <!-- Quick Customer Site Return -->
-          <button 
-            @click="goToCustomerSite"
-            class="px-2.5 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold flex items-center gap-1.5 border border-surface-700">
-            <i class="pi pi-external-link text-[10px]"></i>
-            <span class="hidden sm:inline">Customer Site</span>
-          </button>
+          <!-- Live Store Status Badge -->
+          <div class="px-2.5 py-1.5 rounded-lg text-[10px] font-bold border flex items-center gap-1.5"
+            :class="store.isStoreOpen ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'">
+            <span class="w-1.5 h-1.5 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
+            <span>{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
+          </div>
 
           <!-- Mobile Sidebar Drawer Toggle -->
           <button 
@@ -144,7 +143,7 @@ const AdminDashboard = {
         
         <div>
           <!-- Brand Logo & Header -->
-          <div class="flex items-center justify-between mb-8 cursor-pointer" @click="goToCustomerSite">
+          <div class="flex items-center justify-between mb-8 cursor-pointer" @click="selectTab(store.isAdminOrSuper ? 'analytics' : 'orders')">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center font-black text-base text-yellow-400">G'</div>
               <div>
@@ -173,8 +172,9 @@ const AdminDashboard = {
               </div>
             </div>
 
-            <!-- Fast Staff PIN Switcher Trigger -->
+            <!-- Fast Staff PIN Switcher Trigger (Staff Only) -->
             <button 
+              v-if="store.isStaffOnly"
               @click="store.openStaffPinModal()"
               class="w-full mt-2.5 py-1.5 px-3 rounded-xl bg-surface-700/60 hover:bg-surface-700 text-sky-300 hover:text-white border border-sky-500/30 text-[11px] font-bold flex items-center justify-between transition-colors shadow-sm cursor-pointer"
               title="Fast 4-digit PIN operator switch">
@@ -314,12 +314,7 @@ const AdminDashboard = {
 
         <!-- Bottom Actions (Matches Figure 14: Logout button) -->
         <div class="pt-6 border-t border-surface-800 space-y-2 text-xs">
-          <button 
-            @click="goToCustomerSite"
-            class="w-full py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white font-semibold flex items-center justify-center gap-2 transition-colors">
-            <i class="pi pi-external-link text-xs"></i>
-            <span>View Customer Site</span>
-          </button>
+          
 
           <button 
             @click="handleLogout"
@@ -371,8 +366,9 @@ const AdminDashboard = {
 
           <!-- Store Status Flag Toggle & Operator Pin Switch -->
           <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 self-stretch sm:self-auto flex-wrap">
-            <!-- Active Operator PIN Chip on Shared Laptop -->
+            <!-- Active Staff Operator PIN Chip on Shared Counter Laptop (Staff Only) -->
             <button 
+              v-if="store.isStaffOnly"
               @click="store.openStaffPinModal()"
               class="px-3 py-2 rounded-xl bg-surface-950/70 hover:bg-surface-800 text-xs text-gray-200 border border-surface-700/80 transition-all flex items-center gap-2 cursor-pointer shadow-md active:scale-95"
               title="Shared laptop terminal: Click to switch active staff operator via 4-digit PIN">
@@ -381,6 +377,14 @@ const AdminDashboard = {
               <span class="font-bold text-white text-xs truncate max-w-[120px]">{{ store.user?.name || 'Staff' }}</span>
               <span class="text-[9px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono font-bold">SWITCH PIN</span>
             </button>
+            <div 
+              v-else
+              class="px-3 py-2 rounded-xl bg-surface-950/70 border border-surface-700/60 text-xs text-gray-300 flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-amber-400"></div>
+              <span class="text-gray-400 text-[11px] hidden sm:inline">Session:</span>
+              <span class="font-bold text-white text-xs truncate max-w-[140px]">{{ store.user?.name }}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold uppercase">{{ store.user?.role }}</span>
+            </div>
 
             <!-- Live Clock in Admin Console -->
             <div class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-950/70 border border-surface-800 text-xs font-mono text-gray-300" title="Live Store Clock">
@@ -452,9 +456,7 @@ const AdminDashboard = {
       }
     });
 
-    const goToCustomerSite = () => {
-      store.currentView = 'customer';
-    };
+    
 
     const handleLogout = () => {
       store.logout();
@@ -467,9 +469,9 @@ const AdminDashboard = {
       currentTime,
       activeOrdersCount,
       activeTabComponent,
-      goToCustomerSite,
       handleLogout,
     };
   },
 };
+
 
