@@ -191,51 +191,21 @@ const CheckoutView = {
               </div>
             </div>
 
-            <!-- Interactive Leaflet Delivery Pin Map in Checkout -->
-            <div class="mt-2 rounded-2xl border border-surface-700 bg-surface-950 overflow-hidden shadow-xl">
-              <div class="px-3.5 py-2.5 bg-surface-900 border-b border-surface-700 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <span class="font-bold text-gray-200 flex items-center gap-1.5">
-                  <span class="text-emerald-400">📍</span> Pin Exact Delivery Location
-                </span>
-                <span class="text-[11px] text-gray-400 flex items-center gap-1">
-                  <i class="pi pi-info-circle text-brand-400 text-[10px]"></i> Drag red pin or tap map to set exact gate
-                </span>
+            <!-- Estimated Delivery Time Card (Customer View) -->
+            <div class="mt-3 p-4 rounded-2xl bg-surface-900 border border-surface-700/80 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-300 flex items-center justify-center text-xl shrink-0">
+                  ⏱️
+                </div>
+                <div>
+                  <p class="text-xs font-black text-white uppercase tracking-wider">Estimated Delivery Time</p>
+                  <p class="text-[11px] text-gray-400 mt-0.5">Freshly brewed & dispatched across Santa Rosa, Laguna</p>
+                </div>
               </div>
-
-              <!-- Map Container with Clean Street Style -->
-              <div id="checkout-pin-map" class="w-full h-64 sm:h-72 relative z-0"></div>
-
-              <!-- Map Sub-bar with Coordinates & Actions -->
-              <div class="p-3 bg-surface-900/95 border-t border-surface-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-2 min-w-0">
-                  <div class="w-2.5 h-2.5 rounded-full shrink-0" :class="form.customer_lat && form.customer_lng ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></div>
-                  <span v-if="form.customer_lat && form.customer_lng" class="text-gray-300 font-medium truncate text-[11px]">
-                    Pinned: <span class="text-emerald-400 font-mono font-bold">{{ Number(form.customer_lat).toFixed(5) }}, {{ Number(form.customer_lng).toFixed(5) }}</span>
-                    <span v-if="gpsAccuracyMeters" class="text-emerald-400 text-[10px] font-semibold ml-1">✓ ±{{ gpsAccuracyMeters }}m precision</span>
-                    <span v-else-if="pinnedAddressPreview" class="text-gray-400 text-[10px] ml-1">({{ pinnedAddressPreview }})</span>
-                  </span>
-                  <span v-else class="text-gray-400 text-[11px]">
-                    No exact coordinates pinned. Click map or tap "Use Device GPS" above.
-                  </span>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                  <button 
-                    type="button" 
-                    @click="locateUserGPS" 
-                    :disabled="isLocatingGPS"
-                    class="px-2.5 py-1 rounded-lg bg-surface-800 hover:bg-surface-700 active:scale-95 text-emerald-400 hover:text-emerald-300 border border-surface-700 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer">
-                    <i class="pi" :class="isLocatingGPS ? 'pi-spin pi-spinner' : 'pi-compass'"></i>
-                    <span>{{ isLocatingGPS ? 'Locating...' : 'High-Accuracy GPS' }}</span>
-                  </button>
-                  <button 
-                    type="button" 
-                    @click="resetPinToStore" 
-                    class="px-2.5 py-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 text-[11px] font-semibold transition-all cursor-pointer"
-                    title="Reset pin to Santa Rosa Store">
-                    Reset
-                  </button>
-                </div>
+              <div class="flex items-center gap-2 self-start sm:self-auto">
+                <span class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-400/20 text-amber-300 border border-amber-400/40 font-mono shadow-sm">
+                  30–45 Mins
+                </span>
               </div>
             </div>
           </div>

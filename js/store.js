@@ -310,6 +310,11 @@ const useGShotStore = defineStore('gshot', {
 
     // Shared POS Terminal Quick Staff PIN Switcher
     staffPinModalOpen: false,
+
+    // Terminal & Staff Security Lock State
+    isTerminalLocked: localStorage.getItem("gst_terminal_locked") === "true",
+    lockedUser: JSON.parse(localStorage.getItem("gst_locked_user") || "null"),
+    lockedStaffIds: JSON.parse(localStorage.getItem("gst_locked_staff_ids") || "[]"),
   }),
 
   getters: {
@@ -572,6 +577,7 @@ const useGShotStore = defineStore('gshot', {
     // Fast 4-Digit PIN Switcher for Shared POS Terminal
     async switchStaffPin(pin, userId) {
       try {
+        const previousStaffId = (this.user && this.user.role === 'staff' && Number(this.user.id) !== Number(userId)) ? Number(this.user.id) : null;
         const res = await GST_API.quickPinLogin(pin, userId);
         this.user = res.data.user;
         this.token = res.data.token;
@@ -579,6 +585,12 @@ const useGShotStore = defineStore('gshot', {
         if (this.token) {
           localStorage.setItem('gst_auth_token', this.token);
         }
+
+        // Auto-lock previous staff account upon PIN handoff
+        if (previousStaffId) {
+          this.lockStaffAccount(previousStaffId);
+        }
+
         this.staffPinModalOpen = false;
         this.notify(`Operator on duty: ${this.user.name} (${this.user.role.toUpperCase()})`, 'success');
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
@@ -592,6 +604,95 @@ const useGShotStore = defineStore('gshot', {
         const msg = err.response?.data?.message || 'Invalid 4-digit PIN code. Please try again.';
         this.notify(msg, 'error');
         throw err;
+      }
+    },
+
+    // Terminal Lock & Unlock Actions
+    lockTerminal() {
+      if (!this.user) return;
+      this.isTerminalLocked = true;
+      this.lockedUser = { ...this.user };
+      localStorage.setItem('gst_terminal_locked', 'true');
+      localStorage.setItem('gst_locked_user', JSON.stringify(this.lockedUser));
+      this.notify(`Terminal locked for ${this.user.name}. Password required to unlock.`, 'info');
+    },
+
+    async unlockTerminal(password) {
+      const targetUser = this.lockedUser || this.user;
+      if (!targetUser) {
+        this.isTerminalLocked = false;
+        localStorage.removeItem('gst_terminal_locked');
+        localStorage.removeItem('gst_locked_user');
+        return;
+      }
+      try {
+        const res = await GST_API.verifyPassword({
+          user_id: targetUser.id,
+          email: targetUser.email,
+          password: password,
+        });
+        this.user = res.data.user;
+        if (res.data.token) {
+          this.token = res.data.token;
+          localStorage.setItem('gst_auth_token', this.token);
+        }
+        localStorage.setItem('gst_user', JSON.stringify(this.user));
+        this.isTerminalLocked = false;
+        this.lockedUser = null;
+        localStorage.removeItem('gst_terminal_locked');
+        localStorage.removeItem('gst_locked_user');
+        this.notify(`Terminal unlocked. Welcome back, ${this.user.name}!`, 'success');
+        return res.data;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Incorrect password. Only the true account owner can unlock this terminal.';
+        this.notify(msg, 'error');
+        throw new Error(msg);
+      }
+    },
+
+    // Staff Account Auto-Lock & Password Unlock
+    lockStaffAccount(userId) {
+      if (!userId) return;
+      const numId = Number(userId);
+      if (!this.lockedStaffIds.includes(numId)) {
+        this.lockedStaffIds.push(numId);
+        localStorage.setItem('gst_locked_staff_ids', JSON.stringify(this.lockedStaffIds));
+      }
+    },
+
+    isStaffAccountLocked(userId) {
+      if (!userId) return false;
+      return this.lockedStaffIds.includes(Number(userId));
+    },
+
+    async unlockStaffAccount(userId, password) {
+      try {
+        const res = await GST_API.verifyPassword({
+          user_id: userId,
+          password: password,
+        });
+        const numId = Number(userId);
+        this.lockedStaffIds = this.lockedStaffIds.filter(id => id !== numId);
+        localStorage.setItem('gst_locked_staff_ids', JSON.stringify(this.lockedStaffIds));
+
+        // Shift handoff: If previous operator was another staff, lock that previous staff
+        if (this.user && this.user.role === 'staff' && Number(this.user.id) !== numId) {
+          this.lockStaffAccount(this.user.id);
+        }
+
+        this.user = res.data.user;
+        if (res.data.token) {
+          this.token = res.data.token;
+          localStorage.setItem('gst_auth_token', this.token);
+        }
+        localStorage.setItem('gst_user', JSON.stringify(this.user));
+        this.staffPinModalOpen = false;
+        this.notify(`Account unlocked! Operator on duty: ${this.user.name}`, 'success');
+        return res.data;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Incorrect password. Only the true account owner can unlock this staff account.';
+        this.notify(msg, 'error');
+        throw new Error(msg);
       }
     },
 

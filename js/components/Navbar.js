@@ -351,6 +351,8 @@ const Navbar = {
           </button>
         </div>
 
+      </div>
+
     </header>
 
     <!-- Document Flow Height Spacer for Fixed Header -->

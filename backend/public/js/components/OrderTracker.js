@@ -57,179 +57,89 @@ const OrderTracker = {
           </p>
         </div>
 
-        <!-- Live GPS Delivery Tracker Map (Grab / Foodpanda Real-Time Style) -->
-        <div v-if="order.order_type === 'Delivery'" class="rounded-3xl border border-surface-700/80 bg-surface-900/90 p-4 sm:p-6 space-y-4 shadow-xl">
+        <!-- Estimated Delivery Time & Fulfillment Card (No Map on Customer Side) -->
+        <div v-if="order.order_type === 'Delivery'" class="rounded-3xl border border-surface-700/80 bg-surface-900/90 p-5 sm:p-7 space-y-6 shadow-xl">
           
-          <!-- Clean Header with Order Delivery Status and Minimal Action Buttons -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-800">
-            <div class="flex items-center gap-3">
-              <span class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl shadow-lg shrink-0">🛵</span>
+          <!-- Header: Estimated Delivery Time -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-surface-800">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-300 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                🛵
+              </div>
               <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="text-sm font-black text-white uppercase tracking-wider">Live Road GPS & Route Tracker</h4>
-                  <span v-if="order.status === 'Out for Delivery'" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 animate-pulse">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    LIVE EN ROUTE
-                  </span>
-                  <span v-else-if="order.status === 'Completed'" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    DELIVERED
-                  </span>
-                </div>
-                <p class="text-xs text-gray-400 mt-0.5">
-                  <span v-if="order.status === 'Out for Delivery'" class="text-emerald-400 font-semibold">{{ riderProximityStatus || 'Rider is on the road heading to your address!' }}</span>
-                  <span v-else-if="order.status === 'Completed'" class="text-emerald-400 font-semibold">Delivery completed! Enjoy your G Shot Teas!</span>
-                  <span v-else class="text-gray-400">Road route mapped from Santa Rosa kitchen hub.</span>
-                </p>
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  Doorstep Delivery
+                </span>
+                <h3 class="text-lg sm:text-xl font-black text-white tracking-tight mt-0.5">Estimated Delivery Time</h3>
               </div>
             </div>
 
-            <!-- Clean Minimal Map Action Pills -->
-            <div class="flex items-center gap-2 self-start sm:self-auto shrink-0">
-              <button 
-                type="button"
-                @click="recenterMap" 
-                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-brand-400 hover:text-brand-300 border border-surface-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
-                <i class="pi pi-compass text-xs"></i>
-                <span>Recenter</span>
-              </button>
-              <button 
-                type="button"
-                @click="startPinAdjustment"
-                v-if="!isAdjustingPin"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                title="Adjust pin to your exact gate or doorway">
-                <i class="pi pi-map-marker text-xs"></i>
-                <span>Adjust Gate Pin</span>
-              </button>
-              <button 
-                type="button"
-                @click="toggleMapTheme" 
-                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm">
-                <span>{{ mapTheme === 'street' ? '🗺️ Street' : '🌙 Night' }}</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Proximity Arrival Alert (Within 100 Meters) -->
-          <div v-if="order.status === 'Out for Delivery' && isRiderArrivedNear" 
-               class="p-4 rounded-2xl bg-surface-900 border border-yellow-400 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <span class="text-3xl">🛵🎉</span>
-              <div>
-                <p class="font-black text-sm uppercase tracking-wider">Your Rider Has Arrived!</p>
-                <p class="text-xs text-emerald-100">Rider is within 100 meters of your doorstep. Please meet your rider outside.</p>
+            <!-- Big ETA Badge -->
+            <div class="text-left sm:text-right">
+              <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-surface-800 border border-surface-700 shadow-md">
+                <i class="pi pi-clock text-amber-400 text-sm"></i>
+                <span class="text-base sm:text-lg font-black text-white font-mono">{{ estimatedDeliveryRange }}</span>
               </div>
-            </div>
-            <div v-if="order.payment_method === 'Cash'" class="bg-black/30 px-3.5 py-1.5 rounded-xl text-xs font-bold shrink-0 self-start sm:self-auto border border-white/20">
-              Prepare ₱{{ Number(order.total_amount).toFixed(2) }} COD
-            </div>
-          </div>
-
-          <!-- Fine-Tuning Pin Notice Banner (Active during pin drag) -->
-          <div v-if="isAdjustingPin" class="p-3.5 rounded-2xl bg-emerald-950/80 border border-emerald-500/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-fade-in shadow-xl">
-            <div class="flex items-center gap-2.5 text-emerald-300">
-              <span class="text-lg">📍</span>
-              <div>
-                <p class="font-bold text-white">Adjusting Delivery Location</p>
-                <p class="text-[11px] text-emerald-300/80">Tap anywhere on the map or drag the red pin to your exact gate or doorstep.</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <button 
-                type="button"
-                @click="saveAdjustedPin"
-                class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs shadow-md transition-all cursor-pointer">
-                ✓ Save Gate Pin
-              </button>
-              <button 
-                type="button"
-                @click="cancelPinAdjustment"
-                class="px-3.5 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold transition-all cursor-pointer">
-                Cancel
-              </button>
-            </div>
-          </div>
-
-          <!-- Hero Real-Time Map Container (Fully Responsive & Mobile-Optimized) -->
-          <div class="relative w-full h-[360px] sm:h-[440px] rounded-2xl overflow-hidden border border-surface-700 shadow-2xl bg-surface-950">
-            <div id="order-tracker-map" class="w-full h-full"></div>
-
-            <!-- Floating Navigation HUD Card (Grab-Style Real-Time telemetry) -->
-            <div class="absolute top-2.5 left-2.5 right-2.5 bg-surface-900/95 backdrop-blur-md border border-surface-700/90 rounded-2xl p-2.5 sm:p-3.5 shadow-2xl z-[15] space-y-1.5 pointer-events-none">
-              <div class="flex items-center justify-between gap-2">
-                
-                <!-- Distance & ETA -->
-                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-base sm:text-lg shadow-inner shrink-0">🛵</div>
-                  <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-1.5">
-                      <p class="text-xs sm:text-sm font-black text-white tracking-tight truncate">{{ riderDistanceText }}</p>
-                      <span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
-                        ETA {{ riderEtaText }}
-                      </span>
-                      <span v-if="order.driver_lat && order.driver_lng" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-mono">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> {{ gpsFreshnessText }}
-                      </span>
-                    </div>
-                    <p class="text-[10px] sm:text-[11px] text-gray-300 flex items-center gap-1 mt-0.5 truncate">
-                      <i class="pi pi-arrow-circle-right text-[9px] text-emerald-400"></i>
-                      <span>{{ riderDirectionText }}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Live Compass Bearing Indicator -->
-                <div class="text-right shrink-0">
-                  <div class="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl bg-surface-800 border border-surface-700 shadow-inner">
-                    <span 
-                      class="inline-block text-[10px] sm:text-xs text-sky-400 transition-transform duration-500 font-bold"
-                      :style="{ transform: 'rotate(' + riderBearingDeg + 'deg)' }">
-                      ▲
-                    </span>
-                    <span class="text-[10px] sm:text-[11px] font-black text-white font-mono">{{ riderBearingDeg }}°</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Journey Progress Bar along Road Route -->
-              <div class="pt-0.5">
-                <div class="h-1.5 bg-surface-950 rounded-full overflow-hidden p-0.5 border border-surface-700/60 flex">
-                  <div 
-                    class="h-full rounded-full transition-all duration-700 ease-out bg-yellow-400"
-                    :style="{ width: tripProgressPercent + '%' }">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bottom Left Live Tracker Status Badge -->
-            <div class="absolute bottom-3 left-3 bg-surface-900/90 backdrop-blur-md border border-surface-700/80 rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5 shadow-xl flex items-center gap-1.5 sm:gap-2 z-[10]">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span class="text-[9px] sm:text-[10px] font-bold text-gray-200">G Shot Real-Time Road GPS</span>
-            </div>
-          </div>
-
-          <!-- Delivery Destination Info Card (Store Removed as Requested) -->
-          <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-800/70 border border-surface-700/80 flex items-start gap-3 text-xs shadow-md">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-base sm:text-lg shrink-0">📍</div>
-            <div class="min-w-0 flex-1">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
-                <div>
-                  <p class="font-black text-white text-xs sm:text-sm">Delivery Destination</p>
-                  <p class="text-xs text-gray-300 mt-0.5" :title="order.delivery_address">{{ order.delivery_address || 'Santa Rosa, Laguna' }}</p>
-                </div>
-                <button 
-                  type="button" 
-                  @click="startPinAdjustment"
-                  v-if="!isAdjustingPin"
-                  class="self-start sm:self-auto px-2.5 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold text-[11px] sm:text-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1 active:scale-95">
-                  <i class="pi pi-map-marker text-[10px]"></i>
-                  <span>Adjust Gate Pin</span>
-                </button>
-              </div>
-              <p v-if="order.customer_lat && order.customer_lng" class="text-[10px] sm:text-[11px] text-emerald-400 font-mono mt-1 flex items-center gap-1">
-                <span>✓ Exact Doorstep Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}</span>
+              <p class="text-[11px] text-gray-400 mt-1">
+                {{ etaStatusSubtitle }}
               </p>
+            </div>
+          </div>
+
+          <!-- Real-Time Delivery State Banner -->
+          <div class="p-4 rounded-2xl border transition-all"
+            :class="order.status === 'Out for Delivery' 
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200' 
+              : order.status === 'Preparing' 
+              ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+              : order.status === 'Completed'
+              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+              : 'bg-surface-800/80 border-surface-700 text-gray-300'">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl shrink-0">
+                {{ order.status === 'Out for Delivery' ? '🚀' : order.status === 'Preparing' ? '🧋' : order.status === 'Completed' ? '🎉' : '⏳' }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-sm text-white">{{ currentDeliveryStateTitle }}</p>
+                <p class="text-xs text-gray-300 mt-0.5">{{ currentDeliveryStateDesc }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Destination & Dispatch Info Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Destination Address -->
+            <div class="p-4 rounded-2xl bg-surface-800/60 border border-surface-700/70 space-y-1.5">
+              <div class="flex items-center gap-2 text-rose-400 text-xs font-bold uppercase tracking-wider">
+                <i class="pi pi-map-marker text-xs"></i>
+                <span>Delivery Address</span>
+              </div>
+              <p class="text-xs sm:text-sm font-bold text-white leading-relaxed">
+                {{ order.delivery_address || 'Santa Rosa, Laguna' }}
+              </p>
+              <p v-if="order.notes" class="text-[11px] text-gray-400 italic">
+                Note: "{{ order.notes }}"
+              </p>
+            </div>
+
+            <!-- Rider / Dispatch Hub -->
+            <div class="p-4 rounded-2xl bg-surface-800/60 border border-surface-700/70 space-y-1.5">
+              <div class="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
+                <i class="pi pi-user text-xs"></i>
+                <span>{{ order.driver_name ? 'Assigned Courier' : 'Dispatch Hub' }}</span>
+              </div>
+              <p class="text-xs sm:text-sm font-bold text-white">
+                {{ order.driver_name || 'G Shot Delivery Partner' }}
+              </p>
+              <p class="text-[11px] text-gray-400">
+                Dispatched from: <span class="text-gray-300 font-medium">Santa Rosa Hub, Laguna</span>
+              </p>
+              <div v-if="order.driver_phone" class="pt-1">
+                <a :href="'tel:' + order.driver_phone" class="inline-flex items-center gap-1.5 text-xs text-brand-400 font-bold hover:underline">
+                  <i class="pi pi-phone text-[10px]"></i> {{ order.driver_phone }}
+                </a>
+              </div>
             </div>
           </div>
 
@@ -492,6 +402,72 @@ const OrderTracker = {
       }
       return Math.round(meters) + ' m away';
     };
+
+    const estimatedDeliveryRange = Vue.computed(() => {
+      if (!order.value) return '30–45 mins';
+      switch (order.value.status) {
+        case 'Pending':
+          return '35–45 mins';
+        case 'Preparing':
+          return '25–35 mins';
+        case 'Out for Delivery':
+          return riderEtaText.value ? `${riderEtaText.value}` : '10–15 mins';
+        case 'Completed':
+          return 'Delivered';
+        case 'Cancelled':
+          return 'Cancelled';
+        default:
+          return '30–45 mins';
+      }
+    });
+
+    const etaStatusSubtitle = Vue.computed(() => {
+      if (!order.value) return 'Estimated delivery window';
+      switch (order.value.status) {
+        case 'Pending':
+          return 'Waiting for store confirmation';
+        case 'Preparing':
+          return 'Freshly brewing in kitchen';
+        case 'Out for Delivery':
+          return 'Rider heading to your address';
+        case 'Completed':
+          return 'Order delivered successfully';
+        default:
+          return 'Estimated delivery window';
+      }
+    });
+
+    const currentDeliveryStateTitle = Vue.computed(() => {
+      if (!order.value) return 'Delivery in progress';
+      switch (order.value.status) {
+        case 'Pending':
+          return 'Order Placed & Awaiting Confirmation';
+        case 'Preparing':
+          return 'Kitchen Brewing & Packing Drinks';
+        case 'Out for Delivery':
+          return 'Rider On The Way To Your Doorstep';
+        case 'Completed':
+          return 'Order Delivered';
+        default:
+          return 'Processing Order';
+      }
+    });
+
+    const currentDeliveryStateDesc = Vue.computed(() => {
+      if (!order.value) return '';
+      switch (order.value.status) {
+        case 'Pending':
+          return 'Your order has been transmitted to G Shot Teas kitchen. We will start preparing shortly.';
+        case 'Preparing':
+          return 'Our baristas are preparing your tea drinks with exact sweetness and ice levels.';
+        case 'Out for Delivery':
+          return 'Your drinks have been safely packed and handed to our rider. Please keep your phone available for delivery arrival.';
+        case 'Completed':
+          return 'Delivered to your address! Thank you for ordering at G Shot Teas!';
+        default:
+          return '';
+      }
+    });
 
     const formatEta = (seconds) => {
       if (!seconds || seconds <= 60) return '~1 min ETA';
@@ -1075,6 +1051,10 @@ const OrderTracker = {
 
     return {
       store,
+      estimatedDeliveryRange,
+      etaStatusSubtitle,
+      currentDeliveryStateTitle,
+      currentDeliveryStateDesc,
       order,
       previewReceipt,
       currentStepIndex,

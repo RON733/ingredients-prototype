@@ -1,4 +1,4 @@
-// G Shot Teas — Axios API Client & Network Service
+// G Shot Teas â€” Axios API Client & Network Service
 (function () {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const API_BASE_URL = window.GST_BACKEND_URL || (isLocal ? (window.location.port === '8000' ? '/api' : 'http://127.0.0.1:8000/api') : '/api');
@@ -38,6 +38,7 @@
     updateUser: (id, data) => apiClient.patch(`/v1/users/${id}`, data),
     getStaffList: () => apiClient.get('/auth/staff-list'),
     quickPinLogin: (pin, userId) => apiClient.post('/auth/pin-switch', { pin, user_id: userId }),
+    verifyPassword: (data) => apiClient.post('/auth/verify-password', data),
 
     // Products & Menu
     getProducts: (params) => apiClient.get('/products', { params }),

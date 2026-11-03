@@ -14,3 +14,7 @@ backend/.env
 backend/.env.backup
 backend/.env.production
 backend/storage/*.key
+
+# Frontend dependencies
+frontend/node_modules/
+frontend/dist/

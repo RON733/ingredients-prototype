@@ -21,6 +21,22 @@ const AdminDashboard = {
             <span>{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
           </div>
 
+          <!-- Mobile Quick Lock Button -->
+          <button 
+            @click="handleLockTerminal"
+            class="p-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs flex items-center justify-center cursor-pointer transition-colors"
+            title="Lock Terminal">
+            <i class="pi pi-lock text-xs"></i>
+          </button>
+
+          <!-- Mobile Quick Logout Button -->
+          <button 
+            @click="handleLogout"
+            class="p-2 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs flex items-center justify-center cursor-pointer transition-colors"
+            title="Logout">
+            <i class="pi pi-sign-out text-xs"></i>
+          </button>
+
           <!-- Mobile Sidebar Drawer Toggle -->
           <button 
             @click="mobileNavOpen = !mobileNavOpen"
@@ -317,8 +333,15 @@ const AdminDashboard = {
           
 
           <button 
+            @click="handleLockTerminal"
+            class="w-full py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center gap-2 transition-colors border border-amber-500/20 cursor-pointer">
+            <i class="pi pi-lock text-xs"></i>
+            <span>Lock Terminal</span>
+          </button>
+
+          <button 
             @click="handleLogout"
-            class="w-full py-2.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold flex items-center justify-center gap-2 transition-colors">
+            class="w-full py-2.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 font-bold flex items-center justify-center gap-2 transition-colors border border-rose-600/20 cursor-pointer">
             <i class="pi pi-sign-out text-xs"></i>
             <span>Logout</span>
           </button>
@@ -336,8 +359,7 @@ const AdminDashboard = {
       <main class="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto space-y-6">
         
         <!-- Store Operations & Status Control Header (Staff, Admin, Super Admin) -->
-        <div class="p-4 sm:p-5 rounded-2xl border transition-all duration-300 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4"
-          class="p-4 sm:p-5 rounded-2xl border border-surface-700 bg-surface-900 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-700 bg-surface-900 transition-all duration-300 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           <!-- Status Info & Description -->
           <div class="flex items-center gap-3.5 sm:gap-4">
@@ -402,6 +424,26 @@ const AdminDashboard = {
               <i :class="store.isStoreOpen ? 'pi pi-power-off' : 'pi pi-check-circle'"></i>
               <span>{{ store.isStoreOpen ? 'Flag as CLOSED' : 'Flag as OPEN' }}</span>
             </button>
+
+            <!-- Terminal Lock Button (Staff, Admin, Super Admin) -->
+            <button 
+              @click="handleLockTerminal"
+              type="button"
+              class="w-full sm:w-auto px-3.5 sm:px-4 py-2.5 rounded-xl font-bold text-xs bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 border border-amber-500/30 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              title="Lock Terminal: Prevents unauthorized use until true account password is entered">
+              <i class="pi pi-lock text-xs"></i>
+              <span>Lock Terminal</span>
+            </button>
+
+            <!-- Explicit Logout Button (Staff, Admin, Super Admin) -->
+            <button 
+              @click="handleLogout"
+              type="button"
+              class="w-full sm:w-auto px-3.5 sm:px-4 py-2.5 rounded-xl font-bold text-xs bg-rose-600/15 hover:bg-rose-600/25 active:bg-rose-600/35 text-rose-300 border border-rose-600/30 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              title="Sign out of system">
+              <i class="pi pi-sign-out text-xs"></i>
+              <span>Logout</span>
+            </button>
           </div>
 
         </div>
@@ -410,6 +452,98 @@ const AdminDashboard = {
         <component :is="activeTabComponent"></component>
       </main>
 
+
+      <!-- ================= FULLSCREEN TERMINAL LOCK SCREEN OVERLAY ================= -->
+      <div 
+        v-if="store.isTerminalLocked" 
+        class="fixed inset-0 z-[9999] bg-surface-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-fade-in select-none">
+        
+        <div class="w-full max-w-md bg-surface-900 border border-surface-700/90 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 relative overflow-hidden">
+          
+          <!-- Ambient Glow behind Lock Icon -->
+          <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-500/15 rounded-full blur-2xl pointer-events-none"></div>
+
+          <!-- Lock Icon with pulsating badge -->
+          <div class="relative mx-auto w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-inner">
+            <i class="pi pi-lock text-3xl text-amber-400 animate-pulse"></i>
+          </div>
+
+          <!-- Title & Operator Details -->
+          <div class="space-y-1.5">
+            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+              Terminal Security Locked
+            </span>
+            <h2 class="text-2xl font-black text-white tracking-tight">Dashboard Is Locked</h2>
+            <p class="text-xs text-gray-400 max-w-xs mx-auto">
+              This terminal is locked to protect orders, inventory, and operations. Password required to resume.
+            </p>
+          </div>
+
+          <!-- Locked Operator Card -->
+          <div class="p-3.5 rounded-2xl bg-surface-800/80 border border-surface-700/80 flex items-center gap-3 text-left">
+            <div class="w-10 h-10 rounded-xl bg-surface-700 text-yellow-400 font-bold flex items-center justify-center shrink-0">
+              {{ (store.lockedUser?.name || store.user?.name || 'U').charAt(0) }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold text-white truncate">{{ store.lockedUser?.name || store.user?.name || 'Authorized Operator' }}</p>
+              <p class="text-[10px] text-gray-400 truncate">{{ store.lockedUser?.email || store.user?.email }}</p>
+            </div>
+            <span class="text-[9px] px-2 py-0.5 rounded font-mono font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              {{ (store.lockedUser?.role || store.user?.role || 'staff').toUpperCase() }}
+            </span>
+          </div>
+
+          <!-- Password Unlock Form -->
+          <form @submit.prevent="handleUnlockTerminal" class="space-y-4">
+            <div class="text-left space-y-1.5">
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-300">
+                Enter Account Password to Unlock
+              </label>
+              <div class="relative">
+                <input 
+                  :type="showUnlockPassword ? 'text' : 'password'" 
+                  v-model="unlockPassword" 
+                  placeholder="Enter password"
+                  autofocus
+                  class="w-full pl-4 pr-11 py-3 rounded-xl bg-surface-950 border border-surface-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-amber-400 transition-colors"
+                  required />
+                <button 
+                  type="button" 
+                  @click="showUnlockPassword = !showUnlockPassword"
+                  class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer p-1">
+                  <i class="pi" :class="showUnlockPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+                </button>
+              </div>
+              <p v-if="unlockError" class="text-xs text-rose-400 font-bold flex items-center gap-1.5 pt-1 animate-fade-in">
+                <i class="pi pi-exclamation-circle text-xs"></i>
+                {{ unlockError }}
+              </p>
+            </div>
+
+            <button 
+              type="submit" 
+              :disabled="unlocking || !unlockPassword"
+              class="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-black font-extrabold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-amber-400/20">
+              <i class="pi" :class="unlocking ? 'pi-spin pi-spinner' : 'pi-lock-open'"></i>
+              <span>{{ unlocking ? 'Verifying Password...' : 'Unlock Terminal' }}</span>
+            </button>
+          </form>
+
+          <!-- Fallback / Switch Account -->
+          <div class="pt-2 border-t border-surface-800 flex items-center justify-between text-xs">
+            <span class="text-gray-400 text-[11px]">Not your shift?</span>
+            <button 
+              @click="confirmLogoutFromLock"
+              type="button" 
+              class="text-rose-400 hover:text-rose-300 font-bold transition-colors cursor-pointer flex items-center gap-1">
+              <i class="pi pi-sign-out text-xs"></i>
+              <span>Switch Account / Logout</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
       <!-- Fast 4-Digit Staff PIN Switcher for POS Terminal -->
       <StaffPinModal />
 
@@ -458,8 +592,42 @@ const AdminDashboard = {
 
     
 
+    // Terminal Lock State & Actions
+    const showUnlockPassword = Vue.ref(false);
+    const unlockPassword = Vue.ref('');
+    const unlocking = Vue.ref(false);
+    const unlockError = Vue.ref('');
+
+    const handleLockTerminal = () => {
+      store.lockTerminal();
+      unlockPassword.value = '';
+      unlockError.value = '';
+    };
+
+    const handleUnlockTerminal = async () => {
+      if (!unlockPassword.value || unlocking.value) return;
+      unlocking.value = true;
+      unlockError.value = '';
+      try {
+        await store.unlockTerminal(unlockPassword.value);
+        unlockPassword.value = '';
+      } catch (err) {
+        unlockError.value = err.message || 'Incorrect password. Only the true account owner can unlock this terminal.';
+      } finally {
+        unlocking.value = false;
+      }
+    };
+
+    const confirmLogoutFromLock = () => {
+      if (confirm('Are you sure you want to log out and switch to another account?')) {
+        store.logout();
+      }
+    };
+
     const handleLogout = () => {
-      store.logout();
+      if (confirm('Are you sure you want to log out?')) {
+        store.logout();
+      }
     };
 
     return {
@@ -470,6 +638,13 @@ const AdminDashboard = {
       activeOrdersCount,
       activeTabComponent,
       handleLogout,
+      showUnlockPassword,
+      unlockPassword,
+      unlocking,
+      unlockError,
+      handleLockTerminal,
+      handleUnlockTerminal,
+      confirmLogoutFromLock,
     };
   },
 };

@@ -48,84 +48,138 @@ var StaffPinModal = window.StaffPinModal = {
                 {{ (s.name || 'S').charAt(0) }}
               </div>
               <div class="min-w-0 flex-1">
-                <p class="text-xs font-bold text-white truncate">{{ s.name || 'Staff' }}</p>
+                <div class="flex items-center justify-between gap-1">
+                  <p class="text-xs font-bold text-white truncate">{{ s.name || 'Staff' }}</p>
+                  <span v-if="store.isStaffAccountLocked(s.id)" class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-0.5 shrink-0" title="Account locked. True owner password required.">
+                    <i class="pi pi-lock text-[8px]"></i> LOCKED
+                  </span>
+                </div>
                 <span class="text-[9px] uppercase font-bold text-brand-400 block tracking-wider">{{ s.role }}</span>
               </div>
             </button>
           </div>
         </div>
 
-        <!-- 4-Digit PIN Display -->
-        <div class="text-center space-y-2">
-          <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">
-            2. Enter 4-Digit Staff PIN
-          </label>
-          <div 
-            class="flex items-center justify-center gap-3 py-2"
-            :class="{ 'animate-shake': hasError }">
-            <div 
-              v-for="i in 4" 
-              :key="i"
-              class="w-12 h-12 rounded-2xl border-2 flex items-center justify-center text-xl font-mono font-black transition-all"
-              :class="pin.length >= i 
-                ? 'border-brand-500 bg-brand-500/20 text-brand-400 shadow-lg shadow-brand-500/20 scale-105' 
-                : 'border-surface-700 bg-surface-950/70 text-gray-600'">
-              {{ pin.length >= i ? '●' : '○' }}
+        <!-- LOCKED STAFF CHALLENGE: When selected staff is locked, require true owner password -->
+        <div v-if="isCurrentSelectedLocked" class="space-y-4 pt-1 animate-fade-in">
+          <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-1.5 text-left">
+            <div class="flex items-center gap-2 text-rose-400 font-bold text-xs">
+              <i class="pi pi-lock text-xs"></i>
+              <span>Account Locked on Shift Handoff</span>
             </div>
+            <p class="text-[11px] text-gray-300 leading-relaxed">
+              This staff account was locked when shift was handed over. For security, PIN entry is disabled. Only <strong>{{ selectedStaff?.name }}</strong>'s true account password can unlock and take active duty.
+            </p>
           </div>
-          <p v-if="errorMessage" class="text-xs text-rose-400 font-bold animate-fade-in flex items-center justify-center gap-1">
-            <i class="pi pi-exclamation-triangle text-xs"></i>
-            {{ errorMessage }}
-          </p>
-        </div>
 
-        <!-- Touchscreen & Clickable Numpad -->
-        <div class="grid grid-cols-3 gap-2 max-w-[280px] mx-auto">
-          <button 
-            v-for="digit in [1, 2, 3, 4, 5, 6, 7, 8, 9]" 
-            :key="digit"
-            @click="appendDigit(digit)"
-            type="button"
-            class="h-12 rounded-2xl bg-surface-800 hover:bg-surface-700 active:bg-brand-600 text-lg font-bold text-white border border-surface-700/80 transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer">
-            {{ digit }}
-          </button>
-          
-          <!-- Clear Button -->
-          <button 
-            @click="clearPin"
-            type="button"
-            class="h-12 rounded-2xl bg-surface-850 hover:bg-surface-800 active:bg-rose-900/40 text-xs font-bold text-rose-400 border border-surface-700 transition-all flex items-center justify-center cursor-pointer">
-            CLEAR
-          </button>
+          <div class="space-y-2 text-left">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-300">
+              Account Password for {{ selectedStaff?.name }}
+            </label>
+            <div class="relative">
+              <input 
+                :type="showStaffPassword ? 'text' : 'password'"
+                v-model="staffPassword"
+                placeholder="Enter account password"
+                @keydown.enter="submitUnlockStaff"
+                class="w-full pl-4 pr-11 py-3 rounded-xl bg-surface-950 border border-surface-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-yellow-400 transition-colors"
+                autofocus />
+              <button 
+                type="button" 
+                @click="showStaffPassword = !showStaffPassword"
+                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 cursor-pointer">
+                <i class="pi" :class="showStaffPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+              </button>
+            </div>
+            <p v-if="errorMessage" class="text-xs text-rose-400 font-bold flex items-center gap-1.5 pt-1 animate-fade-in">
+              <i class="pi pi-exclamation-triangle text-xs"></i>
+              {{ errorMessage }}
+            </p>
+          </div>
 
-          <!-- Zero -->
           <button 
-            @click="appendDigit(0)"
+            @click="submitUnlockStaff"
+            :disabled="!staffPassword || submitting"
             type="button"
-            class="h-12 rounded-2xl bg-surface-800 hover:bg-surface-700 active:bg-brand-600 text-lg font-bold text-white border border-surface-700/80 transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer">
-            0
-          </button>
-
-          <!-- Backspace -->
-          <button 
-            @click="backspacePin"
-            type="button"
-            class="h-12 rounded-2xl bg-surface-850 hover:bg-surface-800 active:bg-surface-700 text-sm font-bold text-gray-300 border border-surface-700 transition-all flex items-center justify-center cursor-pointer"
-            title="Backspace">
-            <i class="pi pi-arrow-left text-sm"></i>
+            class="w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 active:bg-yellow-500 text-black font-extrabold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-yellow-400/20">
+            <i class="pi" :class="submitting ? 'pi-spin pi-spinner' : 'pi-unlock'"></i>
+            <span>{{ submitting ? 'Verifying Password...' : 'Unlock Account & Take Duty' }}</span>
           </button>
         </div>
 
-        <!-- Submit Button -->
-        <button 
-          @click="submitPin"
-          :disabled="pin.length !== 4 || submitting"
-          class="w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-          <i class="pi pi-check-circle" :class="{ 'pi-spin': submitting }"></i>
-          <span>{{ submitting ? 'Verifying PIN...' : 'Verify PIN & Switch On Duty' }}</span>
-        </button>
+        <!-- NORMAL 4-DIGIT PIN ENTRY: Shown when selected staff is NOT locked -->
+        <div v-else class="space-y-4 animate-fade-in">
+          <!-- 4-Digit PIN Display -->
+          <div class="text-center space-y-2">
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-400">
+              2. Enter 4-Digit Staff PIN
+            </label>
+            <div 
+              class="flex items-center justify-center gap-3 py-2"
+              :class="{ 'animate-shake': hasError }">
+              <div 
+                v-for="i in 4" 
+                :key="i"
+                class="w-12 h-12 rounded-2xl border-2 flex items-center justify-center text-xl font-mono font-black transition-all"
+                :class="pin.length >= i 
+                  ? 'border-brand-500 bg-brand-500/20 text-brand-400 shadow-lg shadow-brand-500/20 scale-105' 
+                  : 'border-surface-700 bg-surface-950/70 text-gray-600'">
+                {{ pin.length >= i ? '●' : '○' }}
+              </div>
+            </div>
+            <p v-if="errorMessage" class="text-xs text-rose-400 font-bold animate-fade-in flex items-center justify-center gap-1">
+              <i class="pi pi-exclamation-triangle text-xs"></i>
+              {{ errorMessage }}
+            </p>
+          </div>
 
+          <!-- Touchscreen & Clickable Numpad -->
+          <div class="grid grid-cols-3 gap-2 max-w-[280px] mx-auto">
+            <button 
+              v-for="digit in [1, 2, 3, 4, 5, 6, 7, 8, 9]" 
+              :key="digit"
+              @click="appendDigit(digit)"
+              type="button"
+              class="h-12 rounded-2xl bg-surface-800 hover:bg-surface-700 active:bg-brand-600 text-lg font-bold text-white border border-surface-700/80 transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer">
+              {{ digit }}
+            </button>
+            
+            <!-- Clear Button -->
+            <button 
+              @click="clearPin"
+              type="button"
+              class="h-12 rounded-2xl bg-surface-850 hover:bg-surface-800 active:bg-rose-900/40 text-xs font-bold text-rose-400 border border-surface-700 transition-all flex items-center justify-center cursor-pointer">
+              CLEAR
+            </button>
+
+            <!-- Zero -->
+            <button 
+              @click="appendDigit(0)"
+              type="button"
+              class="h-12 rounded-2xl bg-surface-800 hover:bg-surface-700 active:bg-brand-600 text-lg font-bold text-white border border-surface-700/80 transition-all flex items-center justify-center shadow-md active:scale-95 cursor-pointer">
+              0
+            </button>
+
+            <!-- Backspace -->
+            <button 
+              @click="backspacePin"
+              type="button"
+              class="h-12 rounded-2xl bg-surface-850 hover:bg-surface-800 active:bg-surface-700 text-sm font-bold text-gray-300 border border-surface-700 transition-all flex items-center justify-center cursor-pointer"
+              title="Backspace">
+              <i class="pi pi-arrow-left text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Submit Button -->
+          <button 
+            @click="submitPin"
+            :disabled="pin.length !== 4 || submitting"
+            class="w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="pi pi-check-circle" :class="{ 'pi-spin': submitting }"></i>
+            <span>{{ submitting ? 'Verifying PIN...' : 'Verify PIN & Switch On Duty' }}</span>
+          </button>
         </div>
+      </div>
     </div>
   `,
   setup() {
@@ -134,6 +188,28 @@ var StaffPinModal = window.StaffPinModal = {
     const submitting = Vue.ref(false);
     const hasError = Vue.ref(false);
     const errorMessage = Vue.ref('');
+    const staffPassword = Vue.ref('');
+    const showStaffPassword = Vue.ref(false);
+
+    const isCurrentSelectedLocked = Vue.computed(() => {
+      return selectedStaff.value ? store.isStaffAccountLocked(selectedStaff.value.id) : false;
+    });
+
+    const submitUnlockStaff = async () => {
+      if (!staffPassword.value || submitting.value || !selectedStaff.value) return;
+      submitting.value = true;
+      errorMessage.value = '';
+      hasError.value = false;
+      try {
+        await store.unlockStaffAccount(selectedStaff.value.id, staffPassword.value);
+        staffPassword.value = '';
+      } catch (err) {
+        hasError.value = true;
+        errorMessage.value = err.message || 'Incorrect password for this staff account.';
+      } finally {
+        submitting.value = false;
+      }
+    };
     // Switch active operator is strictly for on-duty counter and kitchen staff
     const staffList = Vue.ref([
       { id: 3, name: 'Mhar Anthony Lirio', email: 'staff@gshotteas.com', role: 'staff' },
@@ -170,6 +246,7 @@ var StaffPinModal = window.StaffPinModal = {
     Vue.watch(() => store.staffPinModalOpen, (isOpen) => {
       if (isOpen) {
         pin.value = '';
+        staffPassword.value = '';
         errorMessage.value = '';
         hasError.value = false;
         fetchStaffList();
@@ -192,6 +269,7 @@ var StaffPinModal = window.StaffPinModal = {
     const selectStaff = (staff) => {
       selectedStaff.value = staff;
       pin.value = '';
+      staffPassword.value = '';
       errorMessage.value = '';
     };
 
@@ -266,7 +344,10 @@ var StaffPinModal = window.StaffPinModal = {
       backspacePin,
       clearPin,
       submitPin,
-      
+      staffPassword,
+      showStaffPassword,
+      isCurrentSelectedLocked,
+      submitUnlockStaff,
       closeModal,
       getRoleColor,
     };

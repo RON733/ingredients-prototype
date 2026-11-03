@@ -445,5 +445,51 @@ class AuthController extends Controller
             'user' => $user,
         ]);
     }
-}
+    public function verifyPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'password' => 'required|string',
+            'user_id' => 'sometimes|nullable|integer',
+            'email' => 'sometimes|nullable|email',
+        ]);
 
+        $user = null;
+        if (!empty($validated['user_id'])) {
+            $user = User::find($validated['user_id']);
+        } elseif (!empty($validated['email'])) {
+            $user = User::where('email', $validated['email'])->first();
+        } else {
+            $user = $request->user('sanctum') ?? $request->user();
+        }
+
+        if (!$user) {
+            return response()->json(['message' => 'User account not found.'], 404);
+        }
+
+        if ($user->status === 'deactivated') {
+            return response()->json(['message' => 'This account has been deactivated. Please contact Super Admin.'], 403);
+        }
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            return response()->json(['message' => 'Incorrect password. Access denied.'], 401);
+        }
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_role' => $user->role,
+            'action' => 'Terminal Unlocked / Password Verified',
+            'details' => "Operator {$user->name} ({$user->role}) entered account password to unlock terminal.",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password verified successfully.',
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+}

@@ -19,6 +19,7 @@ Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::get('/auth/google/config', [AuthController::class, 'googleConfig']);
 Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
 Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
+Route::post('/auth/verify-password', [AuthController::class, 'verifyPassword']);
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -120,7 +121,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
     Route::get('/staff-list', [AuthController::class, 'listStaff']);
     Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
+Route::post('/auth/verify-password', [AuthController::class, 'verifyPassword']);
     Route::post('/pin-switch', [AuthController::class, 'quickPinLogin']);
+    Route::post('/auth/verify-password', [AuthController::class, 'verifyPassword']);
+    Route::post('/verify-password', [AuthController::class, 'verifyPassword']);
     Route::post('/settings', [SystemController::class, 'updateSettings']);
     Route::get('/audit-logs', [SystemController::class, 'auditLogs']);
 
