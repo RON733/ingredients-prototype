@@ -162,7 +162,7 @@ const CustomizationModal = {
             </button>
             <button 
               @click="confirmAdd"
-              class="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-lg shadow-yellow-500/25 transition-all flex items-center gap-2">
+              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
               <i class="pi pi-shopping-cart"></i>
               <span>Add to Cart</span>
             </button>

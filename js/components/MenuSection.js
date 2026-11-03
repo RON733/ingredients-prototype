@@ -172,7 +172,7 @@ const MenuSection = {
               <button 
                 v-if="product.max_portions > 0"
                 @click="openCustomize(product)"
-                class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black transition-all shadow-md shadow-yellow-500/20 flex items-center justify-center gap-2 group-hover:scale-[1.02]">
+                class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
                 <i class="pi pi-plus text-xs"></i>
                 <span>{{ product.category === 'Drinks' ? 'Customize & Add' : 'Add to Cart' }}</span>
               </button>

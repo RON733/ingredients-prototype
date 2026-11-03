@@ -6,15 +6,11 @@ const Navbar = {
         
         <!-- 1. Left: Brand Logo & Identity -->
         <div class="flex items-center gap-2 sm:gap-3.5 cursor-pointer group flex-shrink-0" @click="goHome">
-          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 shadow-lg shadow-yellow-500/25 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <div class="w-full h-full bg-surface-900 rounded-[8px] sm:rounded-[10px] flex items-center justify-center">
-              <span class="text-lg sm:text-2xl font-black text-brand-500">G'</span>
-            </div>
-          </div>
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center font-black text-base sm:text-lg text-yellow-400">G'</div>
           <div>
             <div class="flex items-center gap-1 sm:gap-1.5">
               <span class="text-base sm:text-xl font-extrabold tracking-tight text-white group-hover:text-brand-400 transition-colors">G SHOT</span>
-              <span class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-400 font-bold tracking-wider">TEAS</span>
+              <span class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-surface-800 text-yellow-400 font-bold border border-surface-700 tracking-wider">TEAS</span>
             </div>
             <p class="hidden sm:block text-[10px] text-gray-400 uppercase tracking-widest font-medium">Santa Rosa • Laguna</p>
           </div>
@@ -26,7 +22,7 @@ const Navbar = {
             @click="navTo('home')" 
             class="px-3.5 py-2 rounded-xl transition-all"
             :class="[store.activeSection === 'home' && store.currentView === 'customer' 
-              ? 'text-brand-400 bg-brand-500/10 font-bold' 
+              ? 'text-yellow-400 font-bold' 
               : 'text-gray-300 hover:text-white hover:bg-surface-800/60']">
             HOME
           </button>
@@ -34,7 +30,7 @@ const Navbar = {
             @click="navTo('menu')" 
             class="px-3.5 py-2 rounded-xl transition-all"
             :class="[store.activeSection === 'menu' && store.currentView === 'customer' 
-              ? 'text-brand-400 bg-brand-500/10 font-bold' 
+              ? 'text-yellow-400 font-bold' 
               : 'text-gray-300 hover:text-white hover:bg-surface-800/60']">
             MENU
           </button>
@@ -42,7 +38,7 @@ const Navbar = {
             @click="navTo('about')" 
             class="px-3.5 py-2 rounded-xl transition-all"
             :class="[store.activeSection === 'about' && store.currentView === 'customer' 
-              ? 'text-brand-400 bg-brand-500/10 font-bold' 
+              ? 'text-yellow-400 font-bold' 
               : 'text-gray-300 hover:text-white hover:bg-surface-800/60']">
             ABOUT
           </button>
@@ -50,7 +46,7 @@ const Navbar = {
             @click="navTo('contact')" 
             class="px-3.5 py-2 rounded-xl transition-all"
             :class="[store.activeSection === 'contact' && store.currentView === 'customer' 
-              ? 'text-brand-400 bg-brand-500/10 font-bold' 
+              ? 'text-yellow-400 font-bold' 
               : 'text-gray-300 hover:text-white hover:bg-surface-800/60']">
             CONTACT
           </button>
@@ -58,7 +54,7 @@ const Navbar = {
           <!-- Catering / Event Booking Button -->
           <button 
             @click="store.bookingModalOpen = true"
-            class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 border border-yellow-400/30 flex items-center gap-1.5 transition-all shadow-sm hover:scale-[1.02]">
+            class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-yellow-400 border border-surface-700 flex items-center gap-1.5 transition-all">
             <span>🎉</span> Book Event
           </button>
         </nav>
@@ -108,7 +104,7 @@ const Navbar = {
               @click="togglePortal"
               class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
               :class="store.currentView === 'admin' 
-                ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black shadow-md shadow-yellow-500/25' 
+                ? 'bg-yellow-400 hover:bg-yellow-300 text-black font-bold' 
                 : 'bg-surface-800 hover:bg-surface-700 text-gray-200'">
               <i class="pi pi-shield text-[11px]"></i>
               <span>{{ store.currentView === 'admin' ? 'Customer Site' : 'Admin Panel' }}</span>
@@ -243,7 +239,7 @@ const Navbar = {
       <!-- Store Closed Announcement Banner (Integrated into Fixed Header) -->
       <div 
         v-if="store.currentView === 'customer' && !store.isStoreOpen"
-        class="bg-gradient-to-r from-rose-950/95 via-surface-900 to-rose-950/95 border-t border-b border-rose-500/30 text-rose-300 text-[11px] sm:text-xs py-2 px-4 text-center font-semibold flex items-center justify-center gap-2 animate-fade-in shadow-inner">
+        class="bg-surface-900 border-t border-b border-surface-700 text-gray-300 text-[11px] sm:text-xs py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
         <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
         <span>Notice: G Shot Teas is currently <strong>CLOSED for live ordering</strong> (Hours: 9:00 AM – 10:00 PM). You can still browse our menu, customize ingredients, and book catering packages!</span>
       </div>
@@ -291,7 +287,7 @@ const Navbar = {
         <!-- Book Event Call to Action -->
         <button 
           @click="store.bookingModalOpen = true; mobileMenuOpen = false" 
-          class="w-full py-3 rounded-xl font-black text-xs bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/25 cursor-pointer">
+          class="w-full py-2.5 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
           <span>🎉 Book Catering & Mobile Bar</span>
         </button>
 
@@ -333,7 +329,7 @@ const Navbar = {
             @click="togglePortal(); mobileMenuOpen = false"
             class="w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
             :class="store.currentView === 'admin' 
-              ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black shadow-md shadow-yellow-500/25' 
+              ? 'bg-yellow-400 hover:bg-yellow-300 text-black font-bold' 
               : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
             <i class="pi pi-shield"></i>
             <span>{{ store.currentView === 'admin' ? 'Switch to Customer Site' : 'Open Admin Panel' }}</span>

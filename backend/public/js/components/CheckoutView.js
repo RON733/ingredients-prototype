@@ -276,13 +276,13 @@ const CheckoutView = {
             </div>
 
             <!-- GCash Payment & Scan-to-Pay Card -->
-            <div v-if="form.payment_method === 'GCash'" class="p-5 sm:p-6 rounded-3xl bg-sky-950/40 border border-sky-500/50 space-y-5 animate-fade-in shadow-2xl relative overflow-hidden">
+            <div v-if="form.payment_method === 'GCash'" class="p-5 sm:p-6 rounded-3xl bg-surface-900 border border-surface-700 space-y-5 relative overflow-hidden">
               
               <!-- Background blue glow -->
-              <div class="absolute -right-16 -top-16 w-48 h-48 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
+              
 
               <!-- Merchant Header & Mobile Number -->
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-sky-800/50">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
                 <div class="flex items-center gap-3">
                   <div class="w-11 h-11 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center font-black text-sky-400 text-base shadow-inner">
                     G
@@ -312,7 +312,7 @@ const CheckoutView = {
               </div>
 
               <!-- GCash Scan-to-Pay QR Code Box -->
-              <div class="p-4 rounded-2xl bg-surface-950/80 border border-sky-500/30 text-center space-y-3">
+              <div class="p-4 rounded-2xl bg-surface-950/80 border border-surface-700 text-center space-y-3">
                 <div class="flex items-center justify-between px-2">
                   <span class="text-[11px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
                     <i class="pi pi-qrcode text-sky-400"></i>
@@ -615,7 +615,7 @@ const CheckoutView = {
           <button 
             @click="submitOrder"
             :disabled="isSubmitting || store.cart.length === 0"
-            class="w-full py-4 rounded-xl text-base font-black bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black shadow-xl shadow-yellow-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            class="w-full py-3.5 rounded-xl text-sm sm:text-base font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
             <span v-else>Confirm & Place Order</span>
           </button>

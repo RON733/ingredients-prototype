@@ -25,7 +25,7 @@ const AnnouncementSection = {
         <div v-if="store.isStaffOrAdmin" class="flex items-center gap-2.5 shrink-0">
           <button 
             @click="store.openCreateAnnouncementModal()"
-            class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-2 shadow-lg shadow-yellow-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            class="px-4 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
             <i class="pi pi-megaphone text-sm"></i>
             <span>+ New Announcement</span>
           </button>
@@ -118,7 +118,7 @@ const AnnouncementSection = {
                 <button 
                   v-if="item.cta_text"
                   @click="handleCta(item)"
-                  class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-2 shadow-md hover:shadow-yellow-500/25 transition-all hover:translate-x-0.5">
+                  class="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
                   <span>{{ item.cta_text }}</span>
                   <i class="pi pi-arrow-right text-[10px]"></i>
                 </button>
@@ -151,10 +151,10 @@ const AnnouncementSection = {
           <!-- OPTION B: WITHOUT PHOTO (Optimized Typographic Glassmorphism Card with Glowing Accent) -->
           <article 
             v-else
-            class="h-full rounded-3xl bg-gradient-to-br from-surface-850 via-surface-900 to-surface-950 border border-brand-500/30 hover:border-brand-500/50 shadow-xl hover:shadow-2xl hover:shadow-brand-500/5 transition-all p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden group">
+            class="h-full rounded-3xl bg-surface-900 border border-surface-800 hover:border-yellow-400/50 transition-all p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden group">
             
             <!-- Left Accent Strip -->
-            <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-yellow-400 via-yellow-500 to-amber-400 rounded-l-3xl"></div>
+            <div class="absolute left-0 top-0 bottom-0 w-2 bg-yellow-400 rounded-l-3xl"></div>
 
             <!-- Background Decorative Watermark (Fills the space beautifully without an image) -->
             <div class="absolute -right-3 -bottom-4 text-7xl sm:text-8xl opacity-[0.06] group-hover:opacity-[0.10] text-brand-400 pointer-events-none select-none font-black transition-opacity duration-300">
@@ -188,7 +188,7 @@ const AnnouncementSection = {
               <button 
                 v-if="item.cta_text"
                 @click="handleCta(item)"
-                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-2 shadow-md hover:shadow-yellow-500/25 transition-all hover:translate-x-0.5">
+                class="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
                 <span>{{ item.cta_text }}</span>
                 <i class="pi pi-arrow-right text-[10px]"></i>
               </button>

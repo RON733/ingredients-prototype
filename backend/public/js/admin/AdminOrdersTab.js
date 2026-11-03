@@ -24,7 +24,7 @@ const AdminOrdersTab = {
           </button>
           <button 
             @click="openWalkInModal"
-            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2">
+            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
             <i class="pi pi-desktop"></i>
             <span>Encode Walk-in Order (POS)</span>
           </button>
@@ -173,7 +173,7 @@ const AdminOrdersTab = {
             <button 
               v-if="order.status === 'Pending'"
               @click="updateStatus(order, 'Preparing')"
-              class="px-4 py-2 rounded-xl text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-black shadow-md shadow-yellow-500/25 transition-all flex items-center gap-1.5">
+              class="px-4 py-2 rounded-xl text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all flex items-center gap-1.5">
               <i class="pi pi-play"></i>
               <span>Start Preparing</span>
             </button>

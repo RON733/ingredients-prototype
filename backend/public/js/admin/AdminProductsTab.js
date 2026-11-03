@@ -15,7 +15,7 @@ const AdminProductsTab = {
 
         <button 
           @click="openAddModal"
-          class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-lg shadow-yellow-500/25 transition-all flex items-center gap-2 self-start sm:self-auto">
+          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 self-start sm:self-auto cursor-pointer">
           <i class="pi pi-plus"></i>
           <span>Add Product</span>
         </button>
@@ -32,7 +32,7 @@ const AdminProductsTab = {
             @click="selectedCategory = cat"
             class="px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
             :class="selectedCategory === cat 
-              ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-500/25' 
+              ? 'bg-yellow-400 text-black font-bold' 
               : 'bg-surface-800 text-gray-400 hover:text-white border border-surface-700/60'">
             {{ cat }}
           </button>
@@ -181,7 +181,7 @@ const AdminProductsTab = {
 
           <div class="flex justify-end gap-3 pt-3 border-t border-surface-700">
             <button @click="modalOpen = false" class="px-4 py-2 text-xs text-gray-400">Cancel</button>
-            <button @click="saveProduct" class="px-5 py-2 text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-xl shadow-md shadow-yellow-500/25">
+            <button @click="saveProduct" class="px-4 py-2 text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black rounded-xl cursor-pointer">
               {{ isEditing ? 'Save Changes' : 'Create Product' }}
             </button>
           </div>

@@ -207,7 +207,7 @@ const DriverView = {
                   type="button" 
                   @click="broadcastOrderGps(order)"
                   class="w-full py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer border"
-                  :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/50' : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-transparent'">
+                  :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/50' : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
                   <span class="w-2.5 h-2.5 rounded-full" :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-400 animate-ping' : 'bg-white'"></span>
                   <i class="pi pi-send text-xs"></i>
                   <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? '🟢 Sharing Real-Time GPS (Tap to Refresh)' : '📡 Share My Location Real-Time with Customer' }}</span>

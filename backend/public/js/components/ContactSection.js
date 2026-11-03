@@ -122,7 +122,7 @@ const ContactSection = {
 
               <button 
                 type="submit"
-                class="w-full py-3.5 rounded-xl text-sm font-black bg-gradient-to-r from-brand-600 to-rose-600 hover:from-brand-500 hover:to-rose-500 text-white shadow-xl shadow-brand-600/30 transition-all flex items-center justify-center gap-2">
+                class="w-full py-3 rounded-xl text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer">
                 <i class="pi pi-send text-xs"></i>
                 <span>Send Message</span>
               </button>

@@ -7,7 +7,7 @@ const AdminSettingsTab = {
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-surface-800">
         <div>
           <h2 class="text-2xl font-black text-white flex items-center gap-3">
-            <span class="w-10 h-10 rounded-2xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center text-lg">
+            <span class="w-10 h-10 rounded-2xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center text-lg">
               <i class="pi pi-qrcode"></i>
             </span>
             <span>Store & Payment Settings</span>
@@ -29,21 +29,20 @@ const AdminSettingsTab = {
       </div>
 
       <!-- MAIN SECTION 1: GCash Online Payment & Scan-to-Pay Settings -->
-      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-sky-500/30 shadow-2xl relative overflow-hidden space-y-6">
+      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-700 shadow-xl relative overflow-hidden space-y-6">
         
-        <!-- Glow accent in background -->
-        <div class="absolute -right-20 -top-20 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        
 
         <!-- Section Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
           <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center font-black text-sky-400 text-lg">
+            <div class="w-11 h-11 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center font-black text-yellow-400 text-lg">
               G
             </div>
             <div>
               <h3 class="text-lg font-black text-white flex items-center gap-2">
                 <span>GCash Payment Configuration</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-400/30">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-yellow-400/10 text-yellow-400 border border-yellow-400/20">
                   Online Checkout
                 </span>
               </h3>
@@ -59,7 +58,7 @@ const AdminSettingsTab = {
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Custom Uploaded QR Code Active</span>
             </span>
-            <span v-else class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+            <span v-else class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center gap-1.5">
               <i class="pi pi-info-circle text-xs"></i>
               <span>Default System QR Active</span>
             </span>
@@ -83,7 +82,7 @@ const AdminSettingsTab = {
                   v-model="gcashForm.gcash_account_name" 
                   type="text" 
                   placeholder="e.g. Jefferson A. or G Shot Teas"
-                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 transition-colors font-medium"
+                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 transition-colors font-medium"
                 />
               </div>
               <p class="text-[11px] text-gray-500 mt-1.5">
@@ -97,7 +96,7 @@ const AdminSettingsTab = {
                 <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
                   GCash Mobile Number <span class="text-rose-500">*</span>
                 </label>
-                <span class="text-[11px] font-mono text-sky-400 font-bold">
+                <span class="text-[11px] font-mono text-yellow-400 font-bold">
                   {{ gcashForm.gcash_account_number || 'None' }}
                 </span>
               </div>
@@ -107,7 +106,7 @@ const AdminSettingsTab = {
                   v-model="gcashForm.gcash_account_number" 
                   type="text" 
                   placeholder="0912 345 6789"
-                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-sky-500 transition-colors font-mono tracking-wider font-bold"
+                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 transition-colors font-mono tracking-wider font-bold"
                 />
               </div>
               <p class="text-[11px] text-gray-500 mt-1.5">
@@ -135,12 +134,12 @@ const AdminSettingsTab = {
                 />
                 <label 
                   for="admin_gcash_qr_input"
-                  class="w-full p-6 rounded-2xl border-2 border-dashed border-sky-500/40 hover:border-sky-400 bg-sky-950/15 hover:bg-sky-950/30 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 group">
-                  <div class="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                  class="w-full p-6 rounded-2xl border-2 border-dashed border-surface-700 hover:border-yellow-400 bg-surface-950 hover:bg-surface-850 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 group">
+                  <div class="w-12 h-12 rounded-xl bg-sky-500/20 text-yellow-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
                     <i class="pi pi-cloud-upload"></i>
                   </div>
                   <div>
-                    <p class="text-xs font-bold text-white group-hover:text-sky-300">
+                    <p class="text-xs font-bold text-white group-hover:text-yellow-400">
                       {{ qrFileName ? 'Change Selected QR: ' + qrFileName : 'Click to select or upload a new GCash QR Code' }}
                     </p>
                     <p class="text-[11px] text-gray-400 mt-1">
@@ -177,7 +176,7 @@ const AdminSettingsTab = {
                 type="button"
                 @click="saveGcashSettings"
                 :disabled="isSavingGcash"
-                class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-sm bg-sky-600 hover:bg-sky-500 text-white shadow-xl shadow-sky-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+                class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-sm bg-yellow-400 hover:bg-yellow-300 text-black font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
                 <i v-if="isSavingGcash" class="pi pi-spin pi-spinner"></i>
                 <i v-else class="pi pi-check"></i>
                 <span>Save GCash Payment Settings</span>
@@ -187,55 +186,55 @@ const AdminSettingsTab = {
           </div>
 
           <!-- Right Column: Live Customer Checkout Preview (lg:col-span-5) -->
-          <div class="lg:col-span-5 bg-surface-950 rounded-2xl border border-sky-500/40 p-5 space-y-4 shadow-xl">
+          <div class="lg:col-span-5 bg-surface-950 rounded-2xl border border-surface-700 p-5 space-y-4 shadow-xl">
             <div class="flex items-center justify-between pb-3 border-b border-surface-800">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="text-xs font-black uppercase tracking-wider text-sky-400">Checkout Preview</span>
+                <span class="text-xs font-black uppercase tracking-wider text-yellow-400">Checkout Preview</span>
               </div>
               <span class="text-[10px] text-gray-400 font-mono">Customer Perspective</span>
             </div>
 
             <!-- The Mini Checkout Card -->
-            <div class="p-4 rounded-2xl bg-sky-950/40 border border-sky-600/50 space-y-3.5">
+            <div class="p-4 rounded-2xl bg-surface-900 border border-surface-700 space-y-3.5">
               
               <!-- Card Header -->
-              <div class="flex items-center justify-between pb-2.5 border-b border-sky-800/40">
+              <div class="flex items-center justify-between pb-2.5 border-b border-surface-800">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center font-black text-sky-400 text-xs">
+                  <div class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center font-black text-yellow-400 text-xs">
                     G
                   </div>
                   <div>
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-sky-300">Official Store GCash</p>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Official Store GCash</p>
                     <p class="text-xs font-black text-white font-mono">
                       {{ gcashForm.gcash_account_number || '0912 345 6789' }}
                     </p>
                   </div>
                 </div>
-                <span class="text-[9px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-bold border border-sky-400/30">
+                <span class="text-[9px] px-2 py-0.5 rounded-full bg-sky-500/20 text-gray-400 font-bold border border-sky-400/30">
                   {{ gcashForm.gcash_account_name || 'Jefferson A.' }}
                 </span>
               </div>
 
               <!-- The QR Code Image Box -->
               <div class="text-center space-y-2">
-                <div class="w-44 h-44 mx-auto rounded-xl bg-white p-2 border border-sky-300 shadow-md flex items-center justify-center overflow-hidden">
+                <div class="w-44 h-44 mx-auto rounded-xl bg-white p-2 border border-surface-700 shadow-md flex items-center justify-center overflow-hidden">
                   <img 
                     :src="activeQrPreview" 
                     alt="GCash QR Code Preview" 
                     class="w-full h-full object-contain"
                   />
                 </div>
-                <p class="text-[10px] font-semibold text-sky-300 flex items-center justify-center gap-1">
+                <p class="text-[10px] font-semibold text-gray-400 flex items-center justify-center gap-1">
                   <i class="pi pi-camera text-[9px]"></i>
                   <span>Customers scan this with GCash app</span>
                 </p>
               </div>
 
               <!-- Both Required Notice -->
-              <div class="p-2.5 rounded-xl bg-sky-900/40 border border-sky-500/30 space-y-1 text-[11px]">
-                <p class="font-bold text-sky-200 flex items-center gap-1">
-                  <i class="pi pi-shield text-xs text-sky-400"></i>
+              <div class="p-2.5 rounded-xl bg-surface-950 border border-surface-800 space-y-1 text-[11px]">
+                <p class="font-bold text-gray-300 flex items-center gap-1">
+                  <i class="pi pi-shield text-xs text-yellow-400"></i>
                   <span>Strict Requirements Enforced:</span>
                 </p>
                 <div class="text-[10px] text-gray-300 space-y-0.5 pl-4">
@@ -260,7 +259,7 @@ const AdminSettingsTab = {
         
         <div class="pb-4 border-b border-surface-800">
           <h3 class="text-lg font-black text-white flex items-center gap-2">
-            <i class="pi pi-sliders-h text-brand-400"></i>
+            <i class="pi pi-sliders-h text-yellow-400"></i>
             <span>General Store & Operations Preferences</span>
           </h3>
           <p class="text-xs text-gray-400 mt-1">
@@ -278,7 +277,7 @@ const AdminSettingsTab = {
             <input 
               v-model="storeForm.store_name" 
               type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-brand-500"
+              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
             />
           </div>
 
@@ -290,7 +289,7 @@ const AdminSettingsTab = {
             <input 
               v-model="storeForm.store_tagline" 
               type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-brand-500"
+              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
             />
           </div>
 
@@ -305,7 +304,7 @@ const AdminSettingsTab = {
                 v-model="storeForm.delivery_fee" 
                 type="number" 
                 step="5"
-                class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-brand-500 font-mono font-bold"
+                class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono font-bold"
               />
             </div>
           </div>
@@ -318,7 +317,7 @@ const AdminSettingsTab = {
             <input 
               v-model="storeForm.store_phone" 
               type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-brand-500 font-mono"
+              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono"
             />
           </div>
 
@@ -330,7 +329,7 @@ const AdminSettingsTab = {
             <input 
               v-model="storeForm.store_email" 
               type="email" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-brand-500"
+              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
             />
           </div>
 
@@ -342,7 +341,7 @@ const AdminSettingsTab = {
             <input 
               v-model="storeForm.business_hours" 
               type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-brand-500"
+              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
             />
           </div>
 
@@ -354,7 +353,7 @@ const AdminSettingsTab = {
             <input 
               v-model="storeForm.store_address" 
               type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-brand-500"
+              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
             />
           </div>
 
@@ -365,7 +364,7 @@ const AdminSettingsTab = {
             type="button"
             @click="saveGeneralSettings"
             :disabled="isSavingStore"
-            class="px-6 py-3 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black font-black shadow-lg shadow-yellow-500/25 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
+            class="px-5 py-2.5 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
             <i v-if="isSavingStore" class="pi pi-spin pi-spinner"></i>
             <i v-else class="pi pi-save"></i>
             <span>Save Store Preferences</span>

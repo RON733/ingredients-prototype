@@ -8,7 +8,7 @@ const EventBookingModal = {
            <div class="relative w-full max-w-xl bg-surface-900 border border-surface-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         
         <!-- Header -->
-        <div class="p-4 sm:p-6 bg-gradient-to-r from-surface-800 to-surface-900 border-b border-surface-700 flex items-center justify-between shrink-0">
+        <div class="p-4 sm:p-6 bg-surface-850 border-b border-surface-700 flex items-center justify-between shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold shrink-0">
               🎉
@@ -192,7 +192,7 @@ const EventBookingModal = {
             <button 
               type="submit"
               :disabled="loading"
-              class="px-6 py-2.5 rounded-xl font-black bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-lg shadow-yellow-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+              class="px-5 py-2.5 rounded-xl font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer">
               <i v-if="loading" class="pi pi-spin pi-spinner"></i>
               <span v-else>Submit Booking Request</span>
             </button>

@@ -120,7 +120,7 @@ const CartDrawer = {
 
           <button 
             @click="proceedToCheckout"
-            class="w-full py-3.5 rounded-xl text-sm font-black bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black shadow-xl shadow-yellow-500/25 transition-all flex items-center justify-center gap-2">
+            class="w-full py-3.5 rounded-xl text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer">
             <span>Checkout</span>
             <i class="pi pi-arrow-right text-xs"></i>
           </button>

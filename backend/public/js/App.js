@@ -5,12 +5,7 @@ const App = {
   template: `
     <div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-yellow-400 selection:text-black">
       
-      <!-- Ambient Lighting Orbs for modern aesthetic -->
-      <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
-        <div class="absolute -top-40 -left-40 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-yellow-500/8 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-20 left-1/3 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-      </div>
+      
 
       <div class="relative z-10 flex flex-col flex-1">
         
@@ -100,7 +95,7 @@ const App = {
               <span class="text-[11px] sm:text-xs text-gray-300 font-medium truncate text-center sm:text-left">Direct: Jefferson Alulod • 0993.700.5426</span>
               <button 
                 @click="store.closeFlyer(); store.openBookingWithPackage(store.previewFlyerImage.includes('coffee') ? 'Coffee Package' : 'Fruity Float Package')"
-                class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-surface-950 transition-all shrink-0 text-center">
+                class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all shrink-0 text-center">
                 Book This Package
               </button>
             </div>

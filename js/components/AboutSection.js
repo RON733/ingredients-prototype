@@ -50,7 +50,7 @@ const AboutSection = {
         <!-- Store Leadership & Location Banner -->
         <div class="p-6 rounded-3xl bg-surface-850 border border-surface-700/80 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3.5">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-yellow-400 font-bold text-lg shrink-0">
               <div class="w-full h-full bg-surface-900 rounded-[14px] flex items-center justify-center text-brand-400 font-black text-lg">
                 👑
               </div>

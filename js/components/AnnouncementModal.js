@@ -11,7 +11,7 @@ const AnnouncementModal = {
         <!-- Modal Header -->
         <div class="p-5 sm:p-6 bg-surface-850 border-b border-surface-700/80 flex items-center justify-between shrink-0">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-yellow-400 text-lg shrink-0">
               <div class="w-full h-full bg-surface-900 rounded-[10px] flex items-center justify-center text-brand-400">
                 <i class="pi pi-megaphone text-lg"></i>
               </div>
@@ -258,8 +258,8 @@ const AnnouncementModal = {
                 <!-- PREVIEW B: WITHOUT PHOTO -->
                 <div 
                   v-else
-                  class="rounded-2xl bg-gradient-to-br from-surface-850 via-surface-900 to-surface-950 border border-brand-500/30 p-4 relative overflow-hidden flex flex-col justify-between">
-                  <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-yellow-400 to-amber-500"></div>
+                  class="rounded-2xl bg-surface-900 border border-surface-800 p-4 relative overflow-hidden flex flex-col justify-between">
+                  <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-yellow-400"></div>
                   <div class="absolute -right-2 -bottom-3 text-6xl opacity-10 text-brand-400 pointer-events-none select-none font-black">📢</div>
                   <div class="relative z-10 pl-1.5">
                     <div class="flex items-center justify-between mb-2">
@@ -308,7 +308,7 @@ const AnnouncementModal = {
             type="button" 
             @click="handleSubmit"
             :disabled="!form.title || !form.description || store.loading"
-            class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 disabled:opacity-50 text-black font-black text-xs flex items-center gap-2 shadow-lg shadow-yellow-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            class="px-6 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-black font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
             <i class="pi" :class="store.loading ? 'pi-spin pi-spinner' : 'pi-check'"></i>
             <span>{{ isEditing ? 'Update Announcement' : 'Publish Announcement' }}</span>
           </button>

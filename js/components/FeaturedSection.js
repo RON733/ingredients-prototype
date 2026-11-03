@@ -7,11 +7,11 @@ const FeaturedSection = {
         <!-- 1. Bestsellers Showcase -->
         <div>
           <div class="text-center max-w-3xl mx-auto mb-12">
-            <span class="text-xs font-bold px-3.5 py-1 rounded-full bg-brand-500/15 text-brand-400 uppercase tracking-widest border border-brand-500/30">
+            <span class="text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
               🔥 Customer Favorites
             </span>
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-3 tracking-tight">
-              Santa Rosa's <span class="bg-gradient-to-r from-yellow-300 to-amber-300 bg-clip-text text-transparent">Top Cravings</span>
+              Santa Rosa's <span class="text-yellow-400">Top Cravings</span>
             </h2>
             <p class="text-sm sm:text-base text-gray-400 mt-3 max-w-xl mx-auto">
               Our most-loved milk teas, comfort burgers, and stone-baked pizzas freshly prepared to order.
@@ -89,7 +89,7 @@ const FeaturedSection = {
 
                 <button 
                   @click="handleOrder(item)"
-                  class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-md shadow-yellow-500/20 flex items-center gap-1.5 transition-all">
+                  class="px-4 py-2 rounded-xl text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black font-bold flex items-center gap-1.5 transition-all">
                   <i class="pi pi-plus text-[10px]"></i>
                   <span>{{ item.category === 'Drinks' ? 'Customize' : 'Add' }}</span>
                 </button>
@@ -100,8 +100,8 @@ const FeaturedSection = {
         </div>
 
         <!-- 2. The G Shot Quality Standard (Craftsmanship Story) -->
-        <div class="relative rounded-3xl bg-gradient-to-br from-surface-900 to-surface-950 border border-surface-800 p-8 sm:p-12 overflow-hidden shadow-2xl">
-          <div class="absolute -right-20 -top-20 w-80 h-80 bg-brand-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative rounded-3xl bg-surface-900 border border-surface-800 p-8 sm:p-12 overflow-hidden">
+          
 
           <div class="max-w-2xl mb-12">
             <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">
@@ -164,11 +164,11 @@ const FeaturedSection = {
         <div id="booking-services" class="space-y-8">
           
           <div class="text-center max-w-3xl mx-auto">
-            <span class="text-xs font-bold px-3.5 py-1 rounded-full bg-amber-500/15 text-amber-400 uppercase tracking-widest border border-amber-500/30">
+            <span class="text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
               🎉 Official Booking Services & Mobile Bar
             </span>
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-3 tracking-tight">
-              Event Catering & <span class="bg-gradient-to-r from-yellow-300 via-yellow-400 to-white bg-clip-text text-transparent">Mobile Bar Packages</span>
+              Event Catering & <span class="text-yellow-400">Mobile Bar Packages</span>
             </h2>
             <p class="text-sm sm:text-base text-gray-300 mt-3 max-w-2xl mx-auto">
               Elevate your celebration in Laguna with our live drink booth, trained barista staff, and freshly prepared premium beverages.
@@ -269,7 +269,7 @@ const FeaturedSection = {
               <div class="p-6 sm:p-8 pt-0">
                 <button 
                   @click="bookPackage('Coffee Package')"
-                  class="w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-xl shadow-yellow-500/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer">
+                  class="w-full py-3 rounded-xl font-bold text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
                   <i class="pi pi-calendar-plus text-xs"></i>
                   <span>Book Coffee Package (₱3,500)</span>
                 </button>
@@ -367,7 +367,7 @@ const FeaturedSection = {
               <div class="p-6 sm:p-8 pt-0">
                 <button 
                   @click="bookPackage('Fruity Float Package')"
-                  class="w-full py-3.5 rounded-2xl font-black text-sm bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-black font-black shadow-xl shadow-yellow-500/20 transition-all hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer">
+                  class="w-full py-3 rounded-xl font-bold text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
                   <i class="pi pi-calendar-plus text-xs"></i>
                   <span>Book Fruity Float Package (₱3,500)</span>
                 </button>
@@ -377,7 +377,7 @@ const FeaturedSection = {
           </div>
 
           <!-- Custom Setup Banner -->
-          <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-surface-900 via-surface-850 to-surface-900 border border-surface-700/80 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-800 flex flex-col md:flex-row items-center justify-between gap-6">
             <div class="space-y-1 text-center md:text-left">
               <h4 class="text-lg font-black text-white">Need a Custom Event Package or Milktea Booth?</h4>
               <p class="text-xs text-gray-400">We also cater 100 to 500+ cups, custom milk tea bars, and party food packs across Laguna.</p>
@@ -422,7 +422,7 @@ const FeaturedSection = {
               </div>
 
               <div class="flex items-center gap-3 pt-4 mt-4 border-t border-surface-800">
-                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 flex items-center justify-center text-black font-black text-xs">
+                <div class="w-9 h-9 rounded-full bg-surface-800 border border-surface-700 flex items-center justify-center text-yellow-400 font-bold text-xs">
                   {{ rev.name.charAt(0) }}
                 </div>
                 <div>

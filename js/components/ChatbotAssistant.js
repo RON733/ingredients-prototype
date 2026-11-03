@@ -6,7 +6,7 @@ const ChatbotAssistant = {
       <button 
         v-if="!isOpen" 
         @click="isOpen = true"
-        class="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 text-black font-black shadow-2xl shadow-yellow-500/40 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group"
+        class="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-yellow-400 hover:bg-yellow-300 text-black shadow-lg flex items-center justify-center transition-all cursor-pointer"
         aria-label="Open AI Assistant">
         <i class="pi pi-comments text-xl"></i>
         <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-surface-900 rounded-full animate-pulse"></span>
@@ -20,7 +20,7 @@ const ChatbotAssistant = {
         <!-- Header -->
         <div class="p-4 bg-surface-800 border-b border-surface-700 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 p-0.5 flex items-center justify-center text-surface-900 font-black text-lg shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-sm shrink-0">
               🧋
             </div>
             <div>
@@ -54,7 +54,7 @@ const ChatbotAssistant = {
             <div 
               class="max-w-[88%] p-3.5 rounded-2xl leading-relaxed whitespace-pre-line shadow-md"
               :class="msg.sender === 'user' 
-                ? 'bg-gradient-to-r from-brand-600 to-amber-600 text-white rounded-br-xs' 
+                ? 'bg-yellow-400 text-black font-medium rounded-br-xs' 
                 : 'bg-surface-800 text-gray-100 border border-surface-700/80 rounded-bl-xs'">
               <div v-html="formatMessage(msg.text)"></div>
             </div>
@@ -100,7 +100,7 @@ const ChatbotAssistant = {
           <button 
             type="submit"
             :disabled="!inputMessage.trim() || isTyping"
-            class="p-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-yellow-400 text-black font-black text-xs disabled:opacity-40 transition-all shadow-md shadow-yellow-500/20">
+            class="p-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-bold disabled:opacity-40 transition-all cursor-pointer">
             <i class="pi pi-send text-xs"></i>
           </button>
         </form>

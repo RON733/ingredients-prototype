@@ -48,7 +48,7 @@ const OrderTracker = {
           <!-- Progress Bar Track -->
           <div class="h-2.5 bg-surface-900 rounded-full overflow-hidden p-0.5 border border-surface-700 flex">
             <div 
-              class="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-yellow-500 via-yellow-400 to-white shadow-md shadow-yellow-400/30"
+              class="h-full rounded-full transition-all duration-700 ease-out bg-yellow-400"
               :style="{ width: progressPercentage + '%' }">
             </div>
           </div>
@@ -112,7 +112,7 @@ const OrderTracker = {
 
           <!-- Proximity Arrival Alert (Within 100 Meters) -->
           <div v-if="order.status === 'Out for Delivery' && isRiderArrivedNear" 
-               class="p-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white shadow-2xl border-2 border-emerald-300 animate-pulse flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-emerald-900/40">
+               class="p-4 rounded-2xl bg-surface-900 border border-yellow-400 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <span class="text-3xl">🛵🎉</span>
               <div>
@@ -195,7 +195,7 @@ const OrderTracker = {
               <div class="pt-0.5">
                 <div class="h-1.5 bg-surface-950 rounded-full overflow-hidden p-0.5 border border-surface-700/60 flex">
                   <div 
-                    class="h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r from-sky-500 via-emerald-400 to-emerald-500"
+                    class="h-full rounded-full transition-all duration-700 ease-out bg-yellow-400"
                     :style="{ width: tripProgressPercent + '%' }">
                   </div>
                 </div>
