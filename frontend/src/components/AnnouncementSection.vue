@@ -272,15 +272,9 @@ export default {
     const handleCta = (item) => {
       const action = item.cta_action || 'menu';
       if (action === 'menu') {
-        const el = document.getElementById('menu');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          store.currentView = 'customer';
-          setTimeout(() => {
-            document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
-          }, 150);
-        }
+        store.currentView = 'menu';
+        store.activeSection = 'menu';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (action === 'booking') {
         store.bookingModalOpen = true;
       } else if (action.startsWith('http')) {

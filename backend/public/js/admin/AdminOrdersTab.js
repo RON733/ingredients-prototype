@@ -4,76 +4,115 @@ const AdminOrdersTab = {
     <div class="space-y-8 animate-fade-in">
       
       <!-- Top Header & Walk-in Cashier Mode Button -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> LIVE ORDERS FEED
-          </span>
-          <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">Active Orders</h2>
-          <p class="text-xs text-gray-400">Monitor and manage incoming store and delivery orders in real time.</p>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Live Orders Feed</span>
+          </div>
+          <h2 class="text-2xl font-black text-white tracking-tight">Active Orders</h2>
+          <p class="text-xs text-neutral-400 mt-0.5">Monitor and manage incoming store and delivery orders in real time.</p>
         </div>
 
-        <div class="flex items-center gap-3">
-          <button 
-            v-if="store.isAdminOrSuper"
-            @click="store.adminTab = 'settings'"
-            class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 transition-all flex items-center gap-2"
-            title="Manage Store GCash QR Code & Number">
-            <i class="pi pi-qrcode"></i>
-            <span class="hidden sm:inline">GCash QR & Settings</span>
-          </button>
+        <div class="flex items-center gap-2.5 flex-wrap">
           <button 
             @click="handleSyncLoyverse"
             :disabled="isSyncingLoyverse"
-            class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+            class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
             title="Sync latest sales and receipts from Loyverse POS tablet">
-            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner' : 'pi-sync'"></i>
+            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner text-amber-400' : 'pi-sync text-emerald-400'"></i>
             <span>{{ isSyncingLoyverse ? 'Syncing...' : 'Sync Loyverse' }}</span>
           </button>
+
+          <button 
+            v-if="store.isAdminOrSuper"
+            @click="store.adminTab = 'settings'"
+            class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
+            title="Manage Store GCash QR Code & Number">
+            <i class="pi pi-qrcode text-sky-400"></i>
+            <span class="hidden sm:inline">GCash QR</span>
+          </button>
+
           <button 
             @click="openWalkInModal"
-            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
-            <i class="pi pi-desktop"></i>
+            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
+            <i class="pi pi-desktop text-xs"></i>
             <span>Encode Walk-in Order (POS)</span>
           </button>
+
           <button 
             @click="refresh"
-            class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 text-xs transition-colors"
+            class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-300 hover:text-white border border-surface-700 text-xs transition-colors cursor-pointer"
             title="Refresh Orders">
             <i class="pi pi-refresh" :class="{ 'pi-spin': loading }"></i>
           </button>
         </div>
       </div>
 
-      <!-- KPI Summary Cards (Matches Figure 14: Total Orders, Pending, Completed) -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total Active Orders</p>
-          <p class="text-3xl font-black text-white mt-1.5">{{ activeOrders.length }}</p>
+      <!-- KPI Summary Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Total Active</p>
+            <div class="w-8 h-8 rounded-xl bg-surface-800 border border-surface-700/60 flex items-center justify-center text-neutral-300">
+              <i class="pi pi-list text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-white mt-2">{{ activeOrders.length }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Orders in progress</p>
         </div>
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Pending Orders</p>
-          <p class="text-3xl font-black text-amber-400 mt-1.5">{{ pendingOrdersCount }}</p>
+
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Pending Orders</p>
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-300">
+              <i class="pi pi-clock text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-amber-300 mt-2">{{ pendingOrdersCount }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Awaiting kitchen accept</p>
         </div>
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-brand-400 uppercase tracking-wider">Preparing in Kitchen</p>
-          <p class="text-3xl font-black text-brand-400 mt-1.5">{{ preparingOrdersCount }}</p>
+
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Preparing</p>
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-300">
+              <i class="pi pi-spin pi-spinner text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-amber-300 mt-2">{{ preparingOrdersCount }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Kitchen in preparation</p>
         </div>
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Completed Today</p>
-          <p class="text-3xl font-black text-emerald-400 mt-1.5">{{ completedOrdersCount }}</p>
+
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Completed Today</p>
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i class="pi pi-check-circle text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-2">{{ completedOrdersCount }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Fulfilled today</p>
         </div>
       </div>
 
       <!-- Filter Tabs -->
-      <div class="flex items-center gap-2 border-b border-surface-800 pb-3 overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-1.5 p-1 bg-surface-900/80 border border-surface-750/70 rounded-xl w-fit overflow-x-auto no-scrollbar">
         <button 
           v-for="st in statusFilters" 
           :key="st.key"
           @click="selectedFilter = st.key"
-          class="px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
-          :class="selectedFilter === st.key ? 'bg-surface-700 text-white shadow-md' : 'text-gray-400 hover:text-white'">
-          {{ st.label }}
+          class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer"
+          :class="selectedFilter === st.key 
+            ? 'bg-surface-750 text-white shadow-sm' 
+            : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/40'">
+          <span>{{ st.label }}</span>
+          <span 
+            v-if="getFilterCount(st.key) > 0" 
+            class="px-1.5 py-0.2 rounded-full text-[10px] font-bold"
+            :class="selectedFilter === st.key ? 'bg-amber-500/20 text-amber-300' : 'bg-surface-800 text-neutral-400'">
+            {{ getFilterCount(st.key) }}
+          </span>
         </button>
       </div>
 
@@ -235,10 +274,22 @@ const AdminOrdersTab = {
       </div>
 
       <!-- Empty State -->
-      <div v-else class="text-center py-20 bg-surface-800/40 rounded-3xl border border-surface-700/50">
-        <div class="text-4xl mb-3">☕</div>
-        <p class="text-base font-bold text-white">No active orders matching this filter</p>
-        <p class="text-xs text-gray-500 mt-1">New incoming customer orders will appear here automatically.</p>
+      <div v-else class="py-16 sm:py-20 px-6 rounded-3xl bg-surface-900/60 border border-surface-750/70 text-center flex flex-col items-center justify-center space-y-3 shadow-inner">
+        <div class="w-14 h-14 rounded-2xl bg-surface-800/80 border border-surface-700/60 flex items-center justify-center text-neutral-400 shadow-sm">
+          <i class="pi pi-inbox text-2xl text-neutral-400"></i>
+        </div>
+        <div class="space-y-1 max-w-sm">
+          <h3 class="text-base font-bold text-white">No active orders matching this filter</h3>
+          <p class="text-xs text-neutral-400 leading-relaxed">
+            New incoming customer delivery and counter pickup orders will appear here automatically in real time.
+          </p>
+        </div>
+        <button 
+          @click="openWalkInModal"
+          class="mt-2 px-4 py-2 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 hover:text-white border border-surface-700 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm">
+          <i class="pi pi-plus text-xs text-amber-400"></i>
+          <span>Encode Walk-in Counter Order</span>
+        </button>
       </div>
 
       <!-- Walk-in Cashier (POS) Modal -->
@@ -485,12 +536,23 @@ const AdminOrdersTab = {
       return store.orders.filter(o => o.status === selectedFilter.value);
     });
 
+    const getFilterCount = (key) => {
+      if (key === 'active') return activeOrders.value.length;
+      if (key === 'Pending') return pendingOrdersCount.value;
+      if (key === 'Preparing') return preparingOrdersCount.value;
+      if (key === 'Ready for Pickup') {
+        return store.orders.filter(o => o.status === 'Ready for Pickup' || o.status === 'Out for Delivery').length;
+      }
+      if (key === 'all') return store.orders.length;
+      return 0;
+    };
+
     const getStatusBadge = (s) => {
-      if (s === 'Pending') return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
-      if (s === 'Preparing') return 'bg-brand-500/20 text-brand-400 border border-brand-500/30';
-      if (s === 'Ready for Pickup' || s === 'Out for Delivery') return 'bg-sky-500/20 text-sky-400 border border-sky-500/30';
-      if (s === 'Completed') return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+      if (s === 'Pending') return 'bg-amber-500/15 text-amber-300 border border-amber-500/30';
+      if (s === 'Preparing') return 'bg-amber-500/15 text-amber-300 border border-amber-500/30';
+      if (s === 'Ready for Pickup' || s === 'Out for Delivery') return 'bg-sky-500/15 text-sky-300 border border-sky-500/30';
+      if (s === 'Completed') return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+      return 'bg-rose-500/15 text-rose-300 border border-rose-500/30';
     };
 
     const formatTime = (isoString) => {
@@ -642,6 +704,7 @@ const AdminOrdersTab = {
       loading,
       selectedFilter,
       statusFilters,
+      getFilterCount,
       activeOrders,
       pendingOrdersCount,
       preparingOrdersCount,

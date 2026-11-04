@@ -91,6 +91,14 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        // Maintenance Mode Check: If the website has been shut down by Super Admin, block new orders
+        $maintenance = \App\Models\SystemSetting::where('key', 'maintenance_mode')->value('value');
+        if ($maintenance === 'true' || $maintenance === '1') {
+            return response()->json([
+                'message' => 'The website is currently undergoing scheduled maintenance. New customer orders are temporarily disabled.'
+            ], 503);
+        }
+
         $validated = $request->validate([
             'customer_name' => 'required|string',
             'customer_phone' => 'required|string',
@@ -294,11 +302,14 @@ class OrderController extends Controller
 
             $order->items()->createMany($itemsData);
 
-            // Automatically push order to Loyverse POS to update Sales Summary in Back Office
-            try {
-                app(\App\Services\LoyverseService::class)->pushOrderToLoyverse($order);
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("Loyverse auto-sync warning: " . $e->getMessage());
+            // Automatically push order to Loyverse POS ONLY if already Completed or Paid (e.g. staff created POS order)
+            // Online pending orders will sync upon approval / completion
+            if ($order->status === 'Completed' || in_array($order->payment_status, ['Paid', 'Verified'])) {
+                try {
+                    app(\App\Services\LoyverseService::class)->pushOrderToLoyverse($order);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Loyverse auto-sync warning: " . $e->getMessage());
+                }
             }
 
             $placingRole = $request->user()?->role;
@@ -378,6 +389,15 @@ class OrderController extends Controller
 
         $order->status = $newStatus;
         $order->save();
+
+        // Push to Loyverse POS when order is completed
+        if ($newStatus === 'Completed' && empty($order->loyverse_receipt_id) && $order->source !== 'loyverse_pos') {
+            try {
+                app(\App\Services\LoyverseService::class)->pushOrderToLoyverse($order);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Loyverse push on completion warning: ' . $e->getMessage());
+            }
+        }
 
         try {
             broadcast(new \App\Events\OrderStatusUpdated(

@@ -1,10 +1,10 @@
 <template>
 <div>
-      <!-- Floating Trigger Button -->
+      <!-- Floating Trigger Button (Positioned above mobile bottom navigation bar on cellphones) -->
       <button 
         v-if="!isOpen" 
         @click="isOpen = true"
-        class="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-yellow-400 hover:bg-yellow-300 text-black shadow-lg flex items-center justify-center transition-all cursor-pointer"
+        class="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-40 w-12 h-12 rounded-full bg-yellow-400 hover:bg-yellow-300 text-black shadow-2xl flex items-center justify-center transition-all cursor-pointer active:scale-95"
         aria-label="Open AI Assistant">
         <i class="pi pi-comments text-xl"></i>
         <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-surface-900 rounded-full animate-pulse"></span>
@@ -13,7 +13,7 @@
       <!-- Chat Modal Window -->
       <div 
         v-if="isOpen"
-        class="fixed bottom-6 right-6 z-50 w-full max-w-[360px] sm:max-w-[420px] bg-surface-900 border border-surface-700/80 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-toast-in max-h-[600px]">
+        class="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-24px)] max-w-[380px] sm:max-w-[420px] bg-surface-900 border border-surface-700/80 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-toast-in max-h-[75vh] sm:max-h-[600px]">
         
         <!-- Header -->
         <div class="p-4 bg-surface-800 border-b border-surface-700 flex items-center justify-between">

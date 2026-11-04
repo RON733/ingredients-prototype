@@ -13,10 +13,22 @@ class SystemController extends Controller
     public function settings()
     {
         // High-Performance In-Memory Cache: Serves system settings in 2ms
-        $settings = Cache::remember('system_settings_all', 180, function () {
+        $settings = Cache::remember('system_settings_all', 60, function () {
             $s = SystemSetting::all()->pluck('value', 'key')->toArray();
             if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
                 $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
+            }
+            if (!isset($s['maintenance_mode'])) {
+                $s['maintenance_mode'] = 'false';
+            }
+            if (!isset($s['maintenance_title'])) {
+                $s['maintenance_title'] = 'Website Under Scheduled Maintenance';
+            }
+            if (!isset($s['maintenance_message'])) {
+                $s['maintenance_message'] = 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!';
+            }
+            if (!isset($s['maintenance_until'])) {
+                $s['maintenance_until'] = '';
             }
             return $s;
         });
@@ -26,6 +38,16 @@ class SystemController extends Controller
     public function updateSettings(Request $request)
     {
         $data = $request->all();
+        $user = $request->user('sanctum') ?? $request->user();
+
+        // Strict Authorization: If modifying maintenance mode, ONLY Super Admin is permitted
+        if (isset($data['maintenance_mode'])) {
+            if ($user && $user->role !== 'super_admin') {
+                return response()->json([
+                    'message' => 'Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.'
+                ], 403);
+            }
+        }
 
         // Handle direct file upload for GCash QR code if submitted as multipart form data
         if ($request->hasFile('gcash_qr_file')) {
@@ -47,16 +69,24 @@ class SystemController extends Controller
             }
         }
 
+        $action = 'System Settings Updated';
         $details = 'Modified system variables and store preferences.';
-        if (isset($data['gcash_account_number']) || isset($data['gcash_qr_code'])) {
+
+        if (isset($data['maintenance_mode'])) {
+            $isShutdown = in_array($data['maintenance_mode'], ['true', true, '1', 1], true);
+            $action = $isShutdown ? 'Website Emergency Shutdown' : 'Website Restored Online';
+            $details = $isShutdown 
+                ? 'EMERGENCY: Super Admin initiated website shutdown. Customer access placed into Maintenance Mode.' 
+                : 'Super Admin deactivated Maintenance Mode. Public website and customer ordering restored.';
+        } elseif (isset($data['gcash_account_number']) || isset($data['gcash_qr_code'])) {
             $num = $data['gcash_account_number'] ?? 'unchanged';
             $details = "Updated GCash payment settings: Mobile No. {$num}, QR code updated.";
         }
 
         AuditLog::create([
-            'user_name' => $request->user()?->name ?? 'Admin',
-            'user_role' => $request->user()?->role ?? 'admin',
-            'action' => 'System Settings Updated',
+            'user_name' => $user?->name ?? 'Admin',
+            'user_role' => $user?->role ?? 'admin',
+            'action' => $action,
             'details' => $details,
             'ip_address' => $request->ip(),
         ]);

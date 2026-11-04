@@ -1,4 +1,4 @@
-﻿// G Shot Teas � Pinia Central Store
+// G Shot Teas � Pinia Central Store
 const { defineStore } = Pinia;
 
 const DEFAULT_PRODUCTS = [
@@ -8,7 +8,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 89,
     description: 'Juicy grilled beef patty, golden brioche bun, fresh lettuce, and melted rich cheddar cheese.',
-    emoji: '??',
+    emoji: '🍔',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 23,
@@ -26,7 +26,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 149,
     description: 'Double-stacked beef smash patties with double layers of cheddar and toasted brioche.',
-    emoji: '??',
+    emoji: '🍔',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 21,
@@ -43,7 +43,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 169,
     description: 'Loaded with savory pepperoni cuts, premium mozzarella cheese blend, and signature Italian sauce.',
-    emoji: '??',
+    emoji: '🍕',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -61,7 +61,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 159,
     description: 'A cheesy paradise featuring melted mozzarella and cheddar cheese over seasoned tomato sauce.',
-    emoji: '??',
+    emoji: '🧀',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -79,7 +79,7 @@ const DEFAULT_PRODUCTS = [
     category: 'RiceMeals',
     price: 129,
     description: 'Crispy flavorful glazed chicken wings served with fragrant steamed rice and dipping sauce.',
-    emoji: '??',
+    emoji: '🍗',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 12,
@@ -95,7 +95,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 79,
     description: 'Crispy golden fries generously topped with warm melted cheddar cheese sauce.',
-    emoji: '??',
+    emoji: '🍟',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 24,
@@ -111,7 +111,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 49,
     description: 'Timeless brewed black tea infused with creamy milk and loaded with chewy brown sugar tapioca pearls.',
-    emoji: '??',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 44,
@@ -128,7 +128,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Warm tiger-striped brown sugar drizzle, fresh dairy milk, and slow-cooked boba pearls.',
-    emoji: '??',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 34,
@@ -145,7 +145,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 79,
     description: 'Fine Japanese ceremonial matcha layered over cold fresh milk and sweet pearls.',
-    emoji: '??',
+    emoji: '🍵',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -162,7 +162,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Rich velvety purple taro with tea essence, creamy dairy, and bouncy pearls.',
-    emoji: '??',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -180,7 +180,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Coffee',
     price: 89,
     description: 'Freshly extracted espresso shot combined with vanilla-infused milk and buttery caramel drizzle.',
-    emoji: '?',
+    emoji: '☕',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 40,
@@ -196,7 +196,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 99,
     description: 'Filipino shaved ice delicacy loaded with sweet jellies, leche flan, ube, and rich milk.',
-    emoji: '??',
+    emoji: '🍧',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 30,
@@ -329,6 +329,16 @@ const useGShotStore = defineStore('gshot', {
     isStaffOrAdmin: (state) => ['staff', 'admin', 'super_admin'].includes(state.user?.role),
     isAdminOrSuper: (state) => ['admin', 'super_admin'].includes(state.user?.role),
     isSuperAdmin: (state) => state.user?.role === 'super_admin',
+
+    isMaintenanceMode: (state) => {
+      if (state.settings && state.settings.maintenance_mode !== undefined) {
+        return state.settings.maintenance_mode === 'true' || state.settings.maintenance_mode === true || state.settings.maintenance_mode === '1';
+      }
+      return false;
+    },
+    maintenanceTitle: (state) => state.settings?.maintenance_title || 'Website Under Scheduled Maintenance',
+    maintenanceMessage: (state) => state.settings?.maintenance_message || 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!',
+    maintenanceUntil: (state) => state.settings?.maintenance_until || '',
 
     isStoreOpen: (state) => {
       if (state.settings && state.settings.store_open !== undefined) {
@@ -793,6 +803,65 @@ const useGShotStore = defineStore('gshot', {
       const isAdminRoute = typeof window !== 'undefined' && (window.location.pathname.includes('admin') || window.location.pathname.includes('staff') || window.location.pathname.includes('superadmin') || window.location.pathname.includes('super-admin') || window.location.pathname.includes('dashboard'));
       this.currentView = isAdminRoute ? 'admin' : 'customer';
       this.notify('Logged out successfully.');
+    },
+
+    async fetchSettings() {
+      try {
+        const res = await GST_API.getSettings();
+        if (res?.data) {
+          this.settings = { ...this.settings, ...res.data };
+        }
+        return res?.data;
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    },
+
+    // Super Admin: Website Emergency Shutdown / Maintenance Mode Controls
+    async toggleMaintenanceMode(options = {}) {
+      if (!this.isSuperAdmin) {
+        this.notify('Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.', 'error');
+        return false;
+      }
+      const next = !this.isMaintenanceMode;
+      return await this.setMaintenanceMode(next, options);
+    },
+
+    async setMaintenanceMode(enable, options = {}) {
+      if (!this.isSuperAdmin) {
+        this.notify('Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.', 'error');
+        return false;
+      }
+      const valStr = enable ? 'true' : 'false';
+      this.settings.maintenance_mode = valStr;
+      if (options.title) this.settings.maintenance_title = options.title;
+      if (options.message) this.settings.maintenance_message = options.message;
+      if (options.until !== undefined) this.settings.maintenance_until = options.until;
+
+      try {
+        const payload = {
+          maintenance_mode: valStr,
+          ...(options.title ? { maintenance_title: options.title } : {}),
+          ...(options.message ? { maintenance_message: options.message } : {}),
+          ...(options.until !== undefined ? { maintenance_until: options.until } : {}),
+        };
+        const res = await GST_API.updateSettings(payload);
+        if (res.data?.settings) {
+          this.settings = { ...this.settings, ...res.data.settings };
+        }
+        this.notify(
+          enable 
+            ? '🚨 WEBSITE SHUTDOWN ACTIVATED! Customers now see the Under Maintenance screen.' 
+            : '✅ WEBSITE RESTORED ONLINE! Customer store ordering and access are back live.',
+          enable ? 'info' : 'success'
+        );
+        return true;
+      } catch (err) {
+        console.error('Failed to update maintenance mode:', err);
+        const errMsg = err.response?.data?.message || 'Failed to update website status on server.';
+        this.notify(errMsg, 'error');
+        return false;
+      }
     },
 
     // Store Status Toggle (Staff, Admin, Super Admin)

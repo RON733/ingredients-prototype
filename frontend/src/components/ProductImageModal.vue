@@ -14,7 +14,7 @@
         <!-- Modal Top Bar -->
         <div class="px-4 sm:px-6 py-3.5 bg-surface-800/95 border-b border-surface-700/70 flex items-center justify-between gap-3 shrink-0">
           <div class="flex items-center gap-2.5 min-w-0">
-            <span class="text-xl sm:text-2xl drop-shadow select-none shrink-0">{{ store.previewProduct.emoji || '🍽️' }}</span>
+            <span v-if="store.previewProduct.emoji && !store.previewProduct.emoji.includes('?')" class="text-xl sm:text-2xl drop-shadow select-none shrink-0">{{ store.previewProduct.emoji }}</span>
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="text-base sm:text-lg font-black text-white truncate">{{ store.previewProduct.name }}</h3>
@@ -33,22 +33,52 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0">
-            <!-- Zoom Toggle Button -->
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <!-- Zoom Out (-) -->
+            <button 
+              type="button"
+              @click="zoomOut"
+              :disabled="zoomScale <= 1"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-surface-700/80 hover:bg-surface-600 text-gray-200 text-xs font-semibold flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              title="Zoom Out">
+              <i class="pi pi-minus text-amber-400 text-xs"></i>
+            </button>
+
+            <!-- Zoom Level Pill / Toggle -->
             <button 
               type="button"
               @click="toggleZoom"
-              class="px-2.5 py-1.5 rounded-xl bg-surface-700/80 hover:bg-surface-600 text-gray-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
-              :title="isZoomed ? 'Fit to Screen' : 'View Full Resolution'">
-              <i class="pi" :class="isZoomed ? 'pi-search-minus text-amber-400' : 'pi-search-plus text-brand-400'"></i>
-              <span class="hidden sm:inline">{{ isZoomed ? 'Fit to Screen' : 'Zoom In' }}</span>
+              class="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-surface-700/80 hover:bg-surface-600 text-gray-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              :title="zoomScale > 1 ? 'Fit to Screen' : 'View Full Resolution'">
+              <i class="pi" :class="zoomScale > 1 ? 'pi-search-minus text-amber-400' : 'pi-search-plus text-brand-400'"></i>
+              <span class="text-[11px] font-bold">{{ zoomScale > 1 ? `${Math.round(zoomScale * 100)}%` : 'Zoom In' }}</span>
+            </button>
+
+            <!-- Zoom In (+) -->
+            <button 
+              type="button"
+              @click="zoomIn"
+              :disabled="zoomScale >= 4"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-surface-700/80 hover:bg-surface-600 text-gray-200 text-xs font-semibold flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              title="Zoom In">
+              <i class="pi pi-plus text-amber-400 text-xs"></i>
+            </button>
+
+            <!-- Reset button if zoomed -->
+            <button 
+              v-if="zoomScale > 1"
+              type="button"
+              @click="resetZoom"
+              class="hidden sm:inline-flex px-2 py-1.5 rounded-xl bg-surface-700/80 hover:bg-surface-600 text-amber-400 text-[11px] font-bold transition-colors cursor-pointer"
+              title="Reset View">
+              Reset
             </button>
 
             <!-- Close Button -->
             <button 
               type="button"
               @click="close"
-              class="w-8 h-8 rounded-full bg-surface-700/80 hover:bg-surface-600 text-gray-300 hover:text-white flex items-center justify-center text-xs font-bold transition-all cursor-pointer"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-surface-700/80 hover:bg-surface-600 text-gray-300 hover:text-white flex items-center justify-center text-xs font-bold transition-all cursor-pointer"
               title="Close (Esc)">
               ✕
             </button>
@@ -57,25 +87,43 @@
 
         <!-- Image Viewing Canvas (Centered, Whole Picture Visible) -->
         <div 
-          class="relative bg-surface-950 flex items-center justify-center overflow-auto p-4 sm:p-6 transition-all duration-300 select-none min-h-[260px] sm:min-h-[340px]"
-          :class="isZoomed ? 'max-h-[70vh] cursor-zoom-out' : 'max-h-[55vh] cursor-zoom-in'"
-          @click="toggleZoom"
-          :title="isZoomed ? 'Click to fit image to window' : 'Click to zoom in'">
+          class="relative bg-surface-950 flex items-center justify-center overflow-hidden p-3 sm:p-5 transition-all duration-300 select-none min-h-[260px] sm:min-h-[340px] max-h-[60vh] touch-none"
+          :class="zoomScale > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-zoom-in'"
+          @mousedown="onMouseDown"
+          @wheel.prevent="onWheel"
+          @touchstart="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+          @click="handleCanvasClick"
+          :title="zoomScale > 1 ? 'Drag to move photo • Click to fit screen' : 'Click to zoom in'">
           
           <img 
             :src="store.previewProduct.image || '/assets/hero-banner.png'" 
             :alt="store.previewProduct.name"
-            class="transition-all duration-300 drop-shadow-2xl"
-            :class="isZoomed ? 'w-auto max-w-none scale-125 my-8 rounded-2xl shadow-2xl' : 'max-h-[48vh] max-w-full w-auto object-contain rounded-2xl ring-1 ring-white/10'"
+            draggable="false"
+            class="pointer-events-none drop-shadow-2xl rounded-2xl will-change-transform max-h-[52vh] max-w-full w-auto object-contain ring-1 ring-white/10"
+            :class="isDragging ? 'transition-none' : 'transition-transform duration-200 ease-out'"
+            :style="{
+              transform: `translate3d(${panX}px, ${panY}px, 0) scale(${zoomScale})`,
+              transformOrigin: 'center center'
+            }"
             onerror="this.src='/assets/hero-banner.png'"
           />
 
           <!-- Overlay Zoom Hint Pill -->
           <div 
-            v-if="!isZoomed"
+            v-if="zoomScale <= 1"
             class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-surface-900/80 backdrop-blur-md text-gray-300 text-[10px] sm:text-xs flex items-center gap-1.5 border border-surface-700 pointer-events-none shadow-md">
             <i class="pi pi-search-plus text-brand-400"></i>
             <span>Click photo to zoom</span>
+          </div>
+
+          <!-- Helper Pill: Drag to move when zoomed -->
+          <div 
+            v-else
+            class="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-surface-900/90 backdrop-blur-md text-amber-300 text-[10px] sm:text-xs flex items-center gap-1.5 border border-amber-500/30 pointer-events-none shadow-lg animate-fade-in whitespace-nowrap">
+            <i class="pi pi-arrows-alt text-amber-400 text-xs"></i>
+            <span>Drag to move • I-drag para igalaw</span>
           </div>
         </div>
 
@@ -186,7 +234,185 @@ export default {
   name: 'ProductImageModal',
   setup() {
     const store = useGShotStore();
-    const isZoomed = Vue.ref(false);
+
+    // Pan & Zoom controls for product photo viewer
+    const zoomScale = Vue.ref(1);
+    const panX = Vue.ref(0);
+    const panY = Vue.ref(0);
+    const isDragging = Vue.ref(false);
+    const isZoomed = Vue.computed(() => zoomScale.value > 1.05);
+
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let panStartX = 0;
+    let panStartY = 0;
+    let hasDragged = false;
+    let pinchStartDist = 0;
+    let pinchStartScale = 1;
+    let lastTapTime = 0;
+
+    const resetZoom = () => {
+      zoomScale.value = 1;
+      panX.value = 0;
+      panY.value = 0;
+      isDragging.value = false;
+      hasDragged = false;
+    };
+
+    const zoomIn = () => {
+      if (zoomScale.value < 1.1) {
+        zoomScale.value = 2;
+      } else {
+        zoomScale.value = Number(Math.min(zoomScale.value + 0.5, 4).toFixed(2));
+      }
+    };
+
+    const zoomOut = () => {
+      const next = Math.max(zoomScale.value - 0.5, 1);
+      zoomScale.value = Number(next.toFixed(2));
+      if (zoomScale.value <= 1) {
+        resetZoom();
+      }
+    };
+
+    const toggleZoom = () => {
+      if (zoomScale.value > 1.05) {
+        resetZoom();
+      } else {
+        zoomScale.value = 2;
+        panX.value = 0;
+        panY.value = 0;
+      }
+    };
+
+    const clampPan = (x, y) => {
+      const maxPanX = Math.max(150, window.innerWidth * 0.8 * (zoomScale.value - 0.5));
+      const maxPanY = Math.max(150, window.innerHeight * 0.8 * (zoomScale.value - 0.5));
+      return {
+        x: Math.max(-maxPanX, Math.min(maxPanX, x)),
+        y: Math.max(-maxPanY, Math.min(maxPanY, y)),
+      };
+    };
+
+    const onMouseDown = (e) => {
+      if (e.button !== 0) return; // left click only
+      isDragging.value = true;
+      hasDragged = false;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      panStartX = panX.value;
+      panStartY = panY.value;
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    };
+
+    const onMouseMove = (e) => {
+      if (!isDragging.value) return;
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        hasDragged = true;
+      }
+      if (zoomScale.value > 1) {
+        const clamped = clampPan(panStartX + dx, panStartY + dy);
+        panX.value = clamped.x;
+        panY.value = clamped.y;
+      }
+    };
+
+    const onMouseUp = () => {
+      isDragging.value = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    const onWheel = (e) => {
+      const delta = e.deltaY < 0 ? 0.3 : -0.3;
+      const newScale = Number(Math.min(Math.max(zoomScale.value + delta, 1), 4).toFixed(2));
+      zoomScale.value = newScale;
+      if (newScale <= 1) {
+        panX.value = 0;
+        panY.value = 0;
+      } else {
+        const clamped = clampPan(panX.value, panY.value);
+        panX.value = clamped.x;
+        panY.value = clamped.y;
+      }
+    };
+
+    const onTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        isDragging.value = true;
+        hasDragged = false;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX.value;
+        panStartY = panY.value;
+      } else if (e.touches.length === 2) {
+        isDragging.value = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchStartDist = Math.hypot(dx, dy);
+        pinchStartScale = zoomScale.value;
+      }
+    };
+
+    const onTouchMove = (e) => {
+      if (e.touches.length === 1 && isDragging.value) {
+        const dx = e.touches[0].clientX - dragStartX;
+        const dy = e.touches[0].clientY - dragStartY;
+        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+          hasDragged = true;
+        }
+        if (zoomScale.value > 1) {
+          if (e.cancelable) e.preventDefault();
+          const clamped = clampPan(panStartX + dx, panStartY + dy);
+          panX.value = clamped.x;
+          panY.value = clamped.y;
+        }
+      } else if (e.touches.length === 2 && pinchStartDist > 0) {
+        if (e.cancelable) e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const ratio = dist / pinchStartDist;
+        zoomScale.value = Number(Math.min(Math.max(pinchStartScale * ratio, 1), 4).toFixed(2));
+        hasDragged = true;
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      if (e.touches.length === 0) {
+        isDragging.value = false;
+        pinchStartDist = 0;
+        if (zoomScale.value <= 1) {
+          panX.value = 0;
+          panY.value = 0;
+        }
+        const now = Date.now();
+        if (!hasDragged && now - lastTapTime < 300) {
+          toggleZoom();
+          lastTapTime = 0;
+        } else {
+          lastTapTime = now;
+        }
+      } else if (e.touches.length === 1) {
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX.value;
+        panStartY = panY.value;
+        isDragging.value = true;
+        pinchStartDist = 0;
+      }
+    };
+
+    const handleCanvasClick = () => {
+      if (hasDragged) {
+        hasDragged = false;
+        return;
+      }
+      toggleZoom();
+    };
 
     const isCustomizable = Vue.computed(() => {
       if (!store.previewProduct) return false;
@@ -195,12 +421,8 @@ export default {
     });
 
     const close = () => {
-      isZoomed.value = false;
+      resetZoom();
       store.closeProductPreview();
-    };
-
-    const toggleZoom = () => {
-      isZoomed.value = !isZoomed.value;
     };
 
     const handleAction = () => {
@@ -231,18 +453,33 @@ export default {
 
     Vue.onUnmounted(() => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
     });
 
     Vue.watch(() => store.previewProduct, () => {
-      isZoomed.value = false;
+      resetZoom();
     });
 
     return {
       store,
       isZoomed,
+      zoomScale,
+      panX,
+      panY,
+      isDragging,
+      zoomIn,
+      zoomOut,
+      resetZoom,
+      toggleZoom,
+      onMouseDown,
+      onWheel,
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
+      handleCanvasClick,
       isCustomizable,
       close,
-      toggleZoom,
       handleAction,
     };
   },

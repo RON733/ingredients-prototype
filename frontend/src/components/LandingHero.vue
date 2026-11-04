@@ -48,10 +48,15 @@
           </button>
           
           <button 
-            @click="orderNow"
-            class="w-full sm:w-auto px-7 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <i class="pi pi-bolt"></i>
-            <span>Order Now</span>
+            @click="openCart"
+            class="w-full sm:w-auto px-7 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <i class="pi pi-shopping-cart"></i>
+            <span>View Cart</span>
+            <span 
+              v-if="store.cartCount > 0" 
+              class="ml-0.5 px-2 py-0.5 text-xs bg-black text-yellow-400 rounded-full font-black leading-none">
+              {{ store.cartCount }}
+            </span>
           </button>
         </div>
 
@@ -72,19 +77,19 @@ export default {
     const store = useGShotStore();
 
     const scrollToMenu = () => {
+      store.currentView = 'menu';
       store.activeSection = 'menu';
-      const el = document.getElementById('menu');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const orderNow = () => {
-      scrollToMenu();
+    const openCart = () => {
+      store.cartOpen = true;
     };
 
     return {
       store,
       scrollToMenu,
-      orderNow,
+      openCart,
     };
   },
 };

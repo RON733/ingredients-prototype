@@ -15,7 +15,7 @@
         </div>
 
         <!-- 2. Center: Primary Navigation Links (Customer View) -->
-        <nav class="hidden lg:flex items-center gap-2 xl:gap-3 font-semibold text-xs tracking-wider">
+        <nav v-if="!store.isMaintenanceMode || store.isStaffOrAdmin" class="hidden lg:flex items-center gap-2 xl:gap-3 font-semibold text-xs tracking-wider">
           <button 
             @click="navTo('home')" 
             class="px-3.5 py-2 rounded-xl transition-all"
@@ -26,7 +26,7 @@
           </button>
           <button 
             @click="navTo('menu')" 
-            class="px-3.5 py-2 rounded-xl transition-all"
+            class="px-3.5 py-2 rounded-xl transition-all cursor-pointer"
             :class="[store.activeSection === 'menu' && store.currentView === 'customer' 
               ? 'text-yellow-400 font-bold' 
               : 'text-gray-300 hover:text-white hover:bg-surface-800/60']">
@@ -83,45 +83,24 @@
               <i class="pi pi-clock text-[10px] text-brand-400"></i>
               <span>{{ currentTime }}</span>
             </div>
-
-            
-
-            <!-- Driver Hub Button if Driver -->
-            <button 
-              v-if="store.isDriver"
-              @click="store.currentView = store.currentView === 'driver' ? 'customer' : 'driver'"
-              class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 shadow-md"
-              :class="store.currentView === 'driver' ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/30' : 'bg-surface-800 text-emerald-400 border-surface-700 hover:border-emerald-500/50'">
-              <i class="pi pi-compass text-[11px]"></i>
-              <span>{{ store.currentView === 'driver' ? 'Customer View' : 'Driver Portal' }}</span>
-            </button>
-
-            <!-- Portal Switcher Button if Staff or Admin -->
-            <a 
-              v-if="store.isStaffOrAdmin"
-              href="/admin"
-              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black shadow-md transition-all">
-              <i class="pi pi-shield text-[11px]"></i>
-              <span>Operations Portal</span>
-            </a>
           </div>
 
           <!-- Customer Action Buttons Group -->
           <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <!-- Compact Store Status Pill on Mobile (visible above 380px) -->
-            <button 
-              @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
-              class="hidden xs:flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all"
+            <div 
+              class="hidden xs:flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all"
               :class="store.isStoreOpen 
                 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' 
                 : 'bg-rose-500/15 text-rose-400 border-rose-500/30'"
-              :title="store.isStaffOrAdmin ? 'Click to toggle Store Status' : 'Store is currently ' + (store.isStoreOpen ? 'Open' : 'Closed')">
+              :title="'Store is currently ' + (store.isStoreOpen ? 'Open' : 'Closed')">
               <span class="w-1.5 h-1.5 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
               <span>{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
-            </button>
+            </div>
 
-            <!-- Shopping Cart Button with Badge -->
+            <!-- Shopping Cart Button with Badge (Hidden during public maintenance) -->
             <button 
+              v-if="!store.isMaintenanceMode"
               @click="store.cartOpen = true"
               class="relative p-2 sm:p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700/60 transition-all hover:scale-105 shadow-sm shrink-0"
               aria-label="View Shopping Cart">
@@ -184,21 +163,6 @@
                     class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors">
                     <i class="pi pi-map-marker text-emerald-400"></i> Track Active Order
                   </button>
-                  <a 
-                    v-if="store.isStaffOrAdmin"
-                    href="/admin"
-                    class="w-full text-left px-4 py-2 text-xs text-yellow-400 hover:bg-surface-700/70 hover:text-yellow-300 flex items-center gap-2.5 transition-colors font-bold">
-                    <i class="pi pi-th-large text-yellow-400"></i> Management Dashboard
-                  </a>
-                  <button 
-                    v-if="store.isStaffOnly"
-                    @click="showUserMenu = false; store.staffPinModalOpen = true" 
-                    class="w-full text-left px-4 py-2 text-xs text-sky-300 hover:bg-surface-700/70 hover:text-sky-200 flex items-center justify-between transition-colors">
-                    <span class="flex items-center gap-2.5">
-                      <i class="pi pi-id-card text-sky-400"></i> Fast Staff PIN Switch
-                    </span>
-                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono font-bold">PIN</span>
-                  </button>
                 </div>
 
                 <div class="border-t border-surface-700/80 pt-1.5">
@@ -233,7 +197,7 @@
 
       <!-- Store Closed Announcement Banner (Integrated into Fixed Header) -->
       <div 
-        v-if="store.currentView === 'customer' && !store.isStoreOpen"
+        v-if="store.currentView === 'customer' && !store.isStoreOpen && !store.isMaintenanceMode"
         class="bg-surface-900 border-t border-b border-surface-700 text-gray-300 text-[11px] sm:text-xs py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
         <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
         <span>Notice: G Shot Teas is currently <strong>CLOSED for live ordering</strong> (Hours: 9:00 AM – 10:00 PM). You can still browse our menu, customize ingredients, and book catering packages!</span>
@@ -257,7 +221,7 @@
           <button 
             @click="navTo('menu')" 
             class="flex items-center gap-2 p-3 rounded-xl transition-all"
-            :class="store.activeSection === 'menu' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            :class="store.currentView === 'menu' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-400/20' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
             <i class="pi pi-th-large text-sm"></i>
             <span>Menu</span>
           </button>
@@ -293,39 +257,12 @@
             <span>{{ currentTime }}</span>
           </div>
 
-          <button 
-            @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
+          <div 
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all"
             :class="store.isStoreOpen ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'">
             <span class="w-2 h-2 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
             <span>{{ store.isStoreOpen ? 'Store is OPEN' : 'Store is CLOSED' }}</span>
-            <i v-if="store.isStaffOrAdmin" class="pi pi-sync text-[10px] ml-1"></i>
-          </button>
-        </div>
-
-        <!-- Staff / Admin Controls Section -->
-        <div class="pt-2 border-t border-surface-800 space-y-2">
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-[10px] uppercase font-bold text-gray-400">Role Switcher:</span>
-            <select 
-              :value="store.user?.role || 'customer'"
-              @change="onRoleChange($event.target.value)"
-              class="text-xs font-semibold bg-surface-800 text-gray-300 border border-surface-700 rounded-lg px-2.5 py-1.5 cursor-pointer">
-              <option value="customer">Role: Customer</option>
-              <option value="staff">Role: Staff</option>
-              <option value="driver">Role: Delivery Driver</option>
-              <option value="admin">Role: Admin</option>
-              <option value="super_admin">Role: Super Admin</option>
-            </select>
           </div>
-
-          <a 
-            v-if="store.isStaffOrAdmin"
-            href="/admin"
-            class="w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 bg-yellow-400 text-black shadow-md">
-            <i class="pi pi-shield"></i>
-            <span>Open Management Console</span>
-          </a>
         </div>
 
         <!-- Account quick actions -->
@@ -404,12 +341,25 @@ export default {
 
     const navTo = (section) => {
       mobileMenuOpen.value = false;
+      const isMobile = window.innerWidth < 1024;
+      if (section === 'menu' && isMobile) {
+        store.currentView = 'menu';
+        store.activeSection = 'menu';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
       store.currentView = 'customer';
       store.activeSection = section;
-      const el = document.getElementById(section);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+      if (section === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
       }
+      Vue.nextTick(() => {
+        const el = document.getElementById(section);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
     };
 
     

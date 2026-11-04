@@ -51,29 +51,48 @@ apiClient.interceptors.response.use(
 
 export const GST_API = {
   // Products & Menu
-  getProducts: () => apiClient.get('/products'),
+  getProducts: (params) => apiClient.get('/products', { params }),
   getProduct: (id) => apiClient.get(`/products/${id}`),
   createProduct: (data) => apiClient.post('/products', data),
   updateProduct: (id, data) => apiClient.put(`/products/${id}`, data),
+  toggleProductAvailability: (id) => apiClient.patch(`/products/${id}/toggle-availability`),
   deleteProduct: (id) => apiClient.delete(`/products/${id}`),
 
   // Ingredients & Inventory
   getIngredients: () => apiClient.get('/ingredients'),
+  createIngredient: (data) => apiClient.post('/ingredients', data),
+  updateIngredient: (id, data) => apiClient.put(`/ingredients/${id}`, data),
+  adjustStock: (id, amount) => apiClient.post(`/ingredients/${id}/adjust`, { amount }),
   restockIngredient: (id, data) => apiClient.post(`/ingredients/${id}/restock`, data),
   setStockIngredient: (id, data) => apiClient.put(`/ingredients/${id}/set-stock`, data),
+  deleteIngredient: (id) => apiClient.delete(`/ingredients/${id}`),
 
   // Orders
   getOrders: (params) => apiClient.get('/orders', { params }),
+  getOrder: (id) => apiClient.get(`/orders/${encodeURIComponent(String(id).replace('#', '').trim())}`),
+  getActiveOrder: (userId) => apiClient.get('/orders/active', { params: { user_id: userId } }),
   createOrder: (data) => apiClient.post('/orders', data),
-  getOrder: (id) => apiClient.get(`/orders/${id}`),
-  updateOrderStatus: (id, status, notes = '') => apiClient.put(`/orders/${id}/status`, { status, notes }),
+  placeOrder: (data) => apiClient.post('/orders', data),
+  updateOrderStatus: (id, status, notes = '') => apiClient.patch(`/orders/${id}/status`, { status, notes }),
+  verifyPayment: (id) => apiClient.patch(`/orders/${id}/verify-payment`),
+  updateDriverLocation: (id, coords) => apiClient.patch(`/orders/${id}/driver-location`, coords),
+  updateCustomerLocation: (id, data) => apiClient.patch(`/orders/${id}/customer-location`, data),
+  assignDriver: (id, driverId) => apiClient.patch(`/orders/${id}/assign-driver`, { driver_id: driverId }),
+  getDrivers: () => apiClient.get('/drivers'),
+  toggleDriverAvailability: (isAvailable, driverId) => apiClient.patch('/driver/toggle-availability', { is_available: isAvailable, driver_id: driverId }),
+  getDriverOrders: (params) => apiClient.get('/driver/orders', { params }),
 
   // Authentication & Verification
-  login: (email, password) => apiClient.post('/auth/login', { email, password }),
+  login: (email, password, portal = 'customer') => apiClient.post('/auth/login', { email, password, portal }),
   register: (data) => apiClient.post('/auth/register', data),
-  googleLogin: (data) => apiClient.post('/auth/google', data),
+  googleLogin: (data, portal = 'customer') => {
+    const payload = typeof data === 'string' ? { credential: data, portal } : { ...data, portal };
+    return apiClient.post('/auth/google', payload);
+  },
+  getGoogleConfig: () => apiClient.get('/auth/google/config'),
   getMe: () => apiClient.get('/auth/me'),
   logout: () => apiClient.post('/auth/logout'),
+  updateProfile: (data) => apiClient.put('/auth/profile', data),
   quickPinLogin: (pin, userId) => apiClient.post('/auth/pin-switch', { pin, user_id: userId }),
   verifyPassword: (data) => apiClient.post('/auth/verify-password', data),
 
@@ -84,23 +103,33 @@ export const GST_API = {
   getStaffList: () => apiClient.get('/auth/staff-list'),
 
   // Analytics & Dashboard Stats
-  getAnalytics: () => apiClient.get('/analytics/dashboard'),
+  getAnalytics: (params) => apiClient.get('/analytics/overview', { params }),
   getUsers: (params) => apiClient.get('/users', { params }),
-  updateUser: (id, data) => apiClient.put(`/users/${id}`, data),
+  createUser: (data) => apiClient.post('/users', data),
+  updateUser: (id, data) => apiClient.patch(`/users/${id}`, data),
   deleteUser: (id) => apiClient.delete(`/users/${id}`),
 
   // Announcements & Event Bookings
-  getAnnouncements: () => apiClient.get('/announcements'),
+  getAnnouncements: (params) => apiClient.get('/announcements', { params }),
+  getAllAnnouncements: () => apiClient.get('/announcements', { params: { all: 1 } }),
   createAnnouncement: (data) => apiClient.post('/announcements', data),
   updateAnnouncement: (id, data) => apiClient.put(`/announcements/${id}`, data),
+  toggleAnnouncement: (id) => apiClient.patch(`/announcements/${id}/toggle`),
   deleteAnnouncement: (id) => apiClient.delete(`/announcements/${id}`),
 
   getBookings: (params) => apiClient.get('/bookings', { params }),
   createBooking: (data) => apiClient.post('/bookings', data),
-  updateBookingStatus: (id, status) => apiClient.put(`/bookings/${id}/status`, { status }),
+  updateBookingStatus: (id, status) => apiClient.patch(`/bookings/${id}/status`, { status }),
 
   // Chatbot Support
   chatWithBot: (message, history = []) => apiClient.post('/chatbot', { message, history }),
+  sendChatbot: (message) => apiClient.post('/chatbot', { message }),
+
+  // Loyverse POS Integration
+  getLoyverseStatus: () => apiClient.get('/loyverse/status'),
+  syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}),
+  exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu'),
+  registerLoyverseWebhook: (url) => apiClient.post('/loyverse/register-webhook', { url }),
 };
 
 export default GST_API;

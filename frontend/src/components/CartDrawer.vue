@@ -53,7 +53,7 @@
             
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <span class="text-lg">{{ item.emoji || '🍽️' }}</span>
+                <span v-if="item.emoji && !item.emoji.includes('?')" class="text-lg">{{ item.emoji }}</span>
                 <h4 class="text-sm font-bold text-white truncate">{{ item.name }}</h4>
               </div>
               

@@ -1,12 +1,17 @@
 <template>
-<div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-yellow-400 selection:text-black">
+<div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-amber-400 selection:text-black">
       
-      <!-- 1. Authenticated Staff, Admin, or Super Admin: Render Full Management Dashboard -->
-      <div v-if="isLoggedIn && store.user && store.isStaffOrAdmin" class="flex-1 flex flex-col">
+      <!-- 1. Authenticated Delivery Rider: Render Dedicated Driver View -->
+      <div v-if="isLoggedIn && store.user && store.user.role === 'driver'" class="flex-1 flex flex-col">
+        <DriverView />
+      </div>
+
+      <!-- 2. Authenticated Staff, Admin, or Super Admin: Render Full Management Dashboard -->
+      <div v-else-if="isLoggedIn && store.user && store.isStaffOrAdmin" class="flex-1 flex flex-col">
         <AdminDashboard />
       </div>
 
-      <!-- 2. LOGIN PAGE: Always Shown First When Accessing /admin, /staff, or /superadmin -->
+      <!-- 3. LOGIN PAGE: Always Shown First When Accessing /admin, /staff, /driver, or /superadmin -->
       <div v-else class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden">
         
         <!-- Background Ambient Glows -->
@@ -31,29 +36,37 @@
             <p class="text-xs text-gray-400 font-medium">{{ portalSubtext }}</p>
           </div>
 
-          <!-- Connected Role Navigation Tabs (/staff, /admin, /superadmin) -->
-          <div class="grid grid-cols-3 p-1 rounded-2xl bg-surface-900 border border-surface-800 text-xs font-bold gap-1 shadow-lg">
+          <!-- Connected Role Navigation Tabs (/staff, /driver, /admin, /superadmin) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 p-1 rounded-2xl bg-surface-900 border border-surface-800 text-xs font-semibold gap-1 shadow-md">
             <button 
               type="button"
               @click="setPortalRole('staff')"
-              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center"
-              :class="activeRole === 'staff' ? 'bg-yellow-400 text-black shadow-md font-black' : 'text-gray-400 hover:text-white'">
+              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
+              :class="activeRole === 'staff' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold shadow-sm' : 'text-neutral-400 hover:text-white border-transparent'">
               <i class="pi pi-id-card text-xs"></i>
               <span>Staff</span>
             </button>
             <button 
               type="button"
+              @click="setPortalRole('driver')"
+              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
+              :class="activeRole === 'driver' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold shadow-sm' : 'text-neutral-400 hover:text-white border-transparent'">
+              <i class="pi pi-compass text-xs"></i>
+              <span>Rider</span>
+            </button>
+            <button 
+              type="button"
               @click="setPortalRole('admin')"
-              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center"
-              :class="activeRole === 'admin' ? 'bg-yellow-400 text-black shadow-md font-black' : 'text-gray-400 hover:text-white'">
+              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
+              :class="activeRole === 'admin' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold shadow-sm' : 'text-neutral-400 hover:text-white border-transparent'">
               <i class="pi pi-shield text-xs"></i>
               <span>Admin</span>
             </button>
             <button 
               type="button"
               @click="setPortalRole('super_admin')"
-              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center"
-              :class="activeRole === 'super_admin' ? 'bg-purple-500 text-white shadow-md font-black' : 'text-gray-400 hover:text-white'">
+              class="py-2.5 px-1 rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
+              :class="activeRole === 'super_admin' ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 font-bold shadow-sm' : 'text-neutral-400 hover:text-white border-transparent'">
               <i class="pi pi-lock text-xs"></i>
               <span>Super Admin</span>
             </button>
@@ -63,20 +76,20 @@
           <div class="bg-surface-900/95 backdrop-blur-xl border border-surface-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4">
             
             <!-- Login Method Switcher Tabs (PIN vs Password) -->
-            <div class="grid grid-cols-2 p-1 rounded-xl bg-surface-950 border border-surface-800 text-xs font-bold">
+            <div class="grid grid-cols-2 p-1 rounded-xl bg-surface-950 border border-surface-800 text-xs font-semibold">
               <button 
                 type="button"
                 @click="authTab = 'pin'"
-                class="py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                :class="authTab === 'pin' ? 'bg-yellow-400 text-black shadow-sm font-bold' : 'text-gray-400 hover:text-white'">
+                class="py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border"
+                :class="authTab === 'pin' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold shadow-sm' : 'text-neutral-400 hover:text-white border-transparent'">
                 <i class="pi pi-id-card text-xs"></i>
                 <span>4-Digit PIN</span>
               </button>
               <button 
                 type="button"
                 @click="authTab = 'credentials'"
-                class="py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                :class="authTab === 'credentials' ? 'bg-yellow-400 text-black shadow-sm font-bold' : 'text-gray-400 hover:text-white'">
+                class="py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border"
+                :class="authTab === 'credentials' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold shadow-sm' : 'text-neutral-400 hover:text-white border-transparent'">
                 <i class="pi pi-key text-xs"></i>
                 <span>Password</span>
               </button>
@@ -102,9 +115,9 @@
                     type="button"
                     @click="selectedStaff = s; pinDigits = ''"
                     class="p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col"
-                    :class="selectedStaff?.id === s.id ? 'bg-yellow-400/15 border-yellow-400 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-300 hover:border-surface-600'">
+                    :class="selectedStaff?.id === s.id ? 'bg-amber-500/15 border-amber-500/50 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-300 hover:border-surface-600'">
                     <span class="text-xs font-bold truncate">{{ s.name }}</span>
-                    <span class="text-[9px] font-mono uppercase tracking-wider" :class="selectedStaff?.id === s.id ? 'text-yellow-400 font-bold' : 'text-gray-500'">
+                    <span class="text-[9px] font-mono uppercase tracking-wider" :class="selectedStaff?.id === s.id ? 'text-amber-400 font-bold' : 'text-gray-500'">
                       Staff Operator
                     </span>
                   </button>
@@ -122,7 +135,7 @@
                     :key="i"
                     class="w-11 h-12 rounded-xl border flex items-center justify-center text-xl font-black transition-all"
                     :class="pinDigits.length >= i 
-                      ? 'bg-yellow-400 border-yellow-400 text-black shadow-lg shadow-yellow-400/20' 
+                      ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-md shadow-amber-500/20' 
                       : 'bg-surface-950 border-surface-700 text-gray-600'">
                     {{ pinDigits.length >= i ? '•' : '' }}
                   </div>
@@ -169,8 +182,8 @@
                 type="button"
                 @click="submitPinLogin"
                 :disabled="pinLoading || pinDigits.length < 4"
-                class="w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-40 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-yellow-400/10 cursor-pointer"
-                :class="activeRole === 'super_admin' ? 'bg-purple-500 hover:bg-purple-400 text-white' : 'bg-yellow-400 hover:bg-yellow-300 text-black'">
+                class="w-full py-3 rounded-xl disabled:opacity-40 font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
+                :class="activeRole === 'super_admin' ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-amber-500/20'">
                 <i v-if="pinLoading" class="pi pi-spin pi-spinner"></i>
                 <span v-else>Authorize Entry</span>
               </button>
@@ -180,7 +193,7 @@
             <form v-else @submit.prevent="submitCredentialsLogin" class="space-y-3.5">
               <div>
                 <label class="block text-xs font-semibold text-gray-300 mb-1">
-                  {{ activeRole === 'super_admin' ? 'Super Admin Email' : (activeRole === 'admin' ? 'Administrator Email' : 'Staff Email') }}
+                  {{ activeRole === 'super_admin' ? 'Super Admin Email' : (activeRole === 'admin' ? 'Administrator Email' : (activeRole === 'driver' ? 'Delivery Rider Email' : 'Staff Email')) }}
                 </label>
                 <div class="relative">
                   <i class="pi pi-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
@@ -215,21 +228,29 @@
               <button 
                 type="submit"
                 :disabled="credentialsLoading"
-                class="w-full py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-xl shadow-yellow-400/10 cursor-pointer"
-                :class="activeRole === 'super_admin' ? 'bg-purple-500 hover:bg-purple-400 text-white' : 'bg-yellow-400 hover:bg-yellow-300 text-black'">
+                class="w-full py-3 rounded-xl disabled:opacity-50 font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
+                :class="activeRole === 'super_admin' ? 'bg-purple-600 hover:bg-purple-500 text-white' : (activeRole === 'driver' ? 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-amber-500/20')">
                 <i v-if="credentialsLoading" class="pi pi-spin pi-spinner"></i>
                 <span v-else>Access Console</span>
               </button>
             </form>
 
             <!-- 1-CLICK INSTANT DEMO LOGIN BUTTON (GUARANTEES ACCESS) -->
-            <div class="pt-2 border-t border-surface-800">
+            <div class="pt-2 border-t border-surface-800 space-y-2">
               <button 
                 type="button"
                 @click="oneClickDirectLogin"
                 :disabled="credentialsLoading"
                 class="w-full py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-750 text-yellow-400 font-bold text-xs flex items-center justify-center gap-2 border border-surface-700 transition-all cursor-pointer">
-                <span>⚡ Instant 1-Click Sign In as {{ activeRole === 'super_admin' ? 'Super Admin' : (activeRole === 'admin' ? 'Admin' : 'Staff') }}</span>
+                <span>⚡ Instant 1-Click Sign In as {{ activeRole === 'super_admin' ? 'Super Admin' : (activeRole === 'admin' ? 'Admin' : (activeRole === 'driver' ? 'Delivery Rider' : 'Staff')) }}</span>
+              </button>
+
+              <button 
+                type="button"
+                @click="goToCustomerStore"
+                class="w-full py-2.5 px-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md">
+                <i class="pi pi-arrow-left text-xs"></i>
+                <span>Go to Customer Storefront (Ordering Page)</span>
               </button>
             </div>
 
@@ -239,7 +260,10 @@
           <div class="text-center text-[11px] text-gray-500 space-y-1">
             <p>Protected System — All staff logins & inventory adjustments are audited.</p>
             <div class="flex items-center justify-center gap-2 text-[10px]">
-              <a href="/" class="text-gray-400 hover:text-yellow-400 hover:underline">← Customer Storefront</a>
+              <a href="/" @click="goToCustomerStore" class="text-yellow-400 hover:text-yellow-300 hover:underline font-semibold flex items-center gap-1">
+                <i class="pi pi-external-link text-[10px]"></i>
+                <span>Customer Storefront</span>
+              </a>
               <span>•</span>
               <span>STI College Santa Rosa Capstone</span>
             </div>
@@ -315,6 +339,8 @@ export default {
       const path = (window.location.pathname || '').toLowerCase();
       if (path.includes('superadmin') || path.includes('super-admin')) {
         setPortalRole('super_admin');
+      } else if (path.includes('driver') || path.includes('rider')) {
+        setPortalRole('driver');
       } else if (path.includes('admin')) {
         setPortalRole('admin');
       } else {
@@ -326,13 +352,21 @@ export default {
       activeRole.value = role;
       authError.value = '';
       pinDigits.value = '';
-      const targetPath = role === 'super_admin' ? '/superadmin' : (role === 'admin' ? '/admin' : '/staff');
+      let targetPath = '/admin';
+      if (role === 'super_admin') targetPath = '/superadmin';
+      else if (role === 'staff') targetPath = '/staff';
+      else if (role === 'driver') targetPath = '/driver';
+
       if (window.location.pathname !== targetPath) {
         window.history.pushState({}, '', targetPath);
       }
       if (role === 'staff') {
         authTab.value = 'pin';
         email.value = 'staff@gshotteas.com';
+        password.value = 'password123';
+      } else if (role === 'driver') {
+        authTab.value = 'credentials';
+        email.value = 'driver@gshotteas.com';
         password.value = 'password123';
       } else if (role === 'super_admin') {
         authTab.value = 'credentials';
@@ -347,12 +381,17 @@ export default {
 
     onMounted(async () => {
       await store.init();
-      store.currentView = 'admin';
 
       // Check session: only keep unlocked if explicitly authenticated in this active browser session tab
       const sessionUnlocked = sessionStorage.getItem('gst_admin_unlocked') === 'true';
-      if (sessionUnlocked && store.user && store.isStaffOrAdmin) {
+      const isOpsUser = store.user && ['staff', 'admin', 'super_admin', 'driver'].includes(store.user.role);
+      if (sessionUnlocked && isOpsUser) {
         isLoggedIn.value = true;
+        if (store.user.role === 'driver') {
+          store.currentView = 'driver';
+        } else {
+          store.currentView = 'admin';
+        }
       } else {
         isLoggedIn.value = false;
         sessionStorage.removeItem('gst_admin_unlocked');
@@ -377,18 +416,21 @@ export default {
 
     const portalBadgeClass = computed(() => {
       if (activeRole.value === 'super_admin') return 'bg-purple-500/15 text-purple-400 border-purple-500/30';
+      if (activeRole.value === 'driver') return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
       if (activeRole.value === 'staff') return 'bg-sky-500/15 text-sky-400 border-sky-500/30';
-      return 'bg-yellow-400/15 text-yellow-400 border-yellow-400/30';
+      return 'bg-amber-500/15 text-amber-300 border border-amber-500/30';
     });
 
     const portalBadgeText = computed(() => {
-      if (activeRole.value === 'super_admin') return 'Super Admin Console';
-      if (activeRole.value === 'staff') return 'Staff Operations';
-      return 'Admin Management';
+      if (activeRole.value === 'super_admin') return 'Super Admin Root Console';
+      if (activeRole.value === 'driver') return 'Delivery Fleet Portal';
+      if (activeRole.value === 'staff') return 'Staff Operations Terminal';
+      return 'Admin Management Console';
     });
 
     const portalSubtext = computed(() => {
-      if (activeRole.value === 'super_admin') return 'System Configuration, Role Management & Audit Trail';
+      if (activeRole.value === 'super_admin') return 'System Configuration, Role Management & Audit Intelligence';
+      if (activeRole.value === 'driver') return 'Live Delivery Dispatch, Turn-by-Turn Navigation & GPS Tracking';
       if (activeRole.value === 'staff') return 'POS Orders, Counter Duty & Kitchen Inventory Portions';
       return 'Sales Analytics, Product Recipes, Orders & Store Controls';
     });
@@ -435,19 +477,24 @@ export default {
       credentialsLoading.value = true;
       authError.value = '';
       try {
-        await store.login(email.value, password.value);
-        if (!store.isStaffOrAdmin) {
-          authError.value = 'Access denied. Only authorized staff and admin accounts may enter.';
+        await store.login(email.value, password.value, 'operations');
+        const allowedRoles = ['staff', 'admin', 'super_admin', 'driver'];
+        if (!store.user || !allowedRoles.includes(store.user.role)) {
+          authError.value = 'Access denied. The Operations Portal is strictly reserved for Staff, Admin, Super Admin, and Delivery Riders.';
           store.logout();
           sessionStorage.removeItem('gst_admin_unlocked');
           isLoggedIn.value = false;
         } else {
           sessionStorage.setItem('gst_admin_unlocked', 'true');
           isLoggedIn.value = true;
-          store.currentView = 'admin';
+          if (store.user.role === 'driver') {
+            store.currentView = 'driver';
+          } else {
+            store.currentView = 'admin';
+          }
         }
       } catch (err) {
-        authError.value = err.response?.data?.message || 'Invalid email or password.';
+        authError.value = err.response?.data?.message || err.message || 'Invalid email or password.';
       } finally {
         credentialsLoading.value = false;
       }
@@ -457,16 +504,21 @@ export default {
       credentialsLoading.value = true;
       authError.value = '';
       let targetEmail = 'staff@gshotteas.com';
-      if (activeRole.value === 'admin') targetEmail = 'admin@gshotteas.com';
-      if (activeRole.value === 'super_admin') targetEmail = 'superadmin@gshotteas.com';
+      if (activeRole.value === 'driver') targetEmail = 'driver@gshotteas.com';
+      else if (activeRole.value === 'admin') targetEmail = 'admin@gshotteas.com';
+      else if (activeRole.value === 'super_admin') targetEmail = 'superadmin@gshotteas.com';
 
       try {
-        await store.login(targetEmail, 'password123');
+        await store.login(targetEmail, 'password123', 'operations');
         sessionStorage.setItem('gst_admin_unlocked', 'true');
         isLoggedIn.value = true;
-        store.currentView = 'admin';
+        if (store.user?.role === 'driver') {
+          store.currentView = 'driver';
+        } else {
+          store.currentView = 'admin';
+        }
       } catch (err) {
-        authError.value = err.response?.data?.message || 'Login failed.';
+        authError.value = err.response?.data?.message || err.message || 'Login failed.';
       } finally {
         credentialsLoading.value = false;
       }
@@ -484,6 +536,15 @@ export default {
       if (type === 'warning') return 'pi-exclamation-triangle text-amber-400';
       if (type === 'info') return 'pi-info-circle text-sky-400';
       return 'pi-check-circle text-emerald-400';
+    };
+
+    const goToCustomerStore = (e) => {
+      if (e) e.preventDefault();
+      // If user had an unauthenticated or leftover operational account in localStorage, clean it so customer view is pristine
+      if (!isLoggedIn.value && store.user && ['staff', 'admin', 'super_admin', 'driver'].includes(store.user.role)) {
+        store.logout();
+      }
+      window.location.href = '/';
     };
 
     return {
@@ -510,6 +571,7 @@ export default {
       submitPinLogin,
       submitCredentialsLogin,
       oneClickDirectLogin,
+      goToCustomerStore,
       getToastClass,
       getToastIcon
     };

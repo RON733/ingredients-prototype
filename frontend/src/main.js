@@ -1,3 +1,11 @@
+// Instant guard: Operational accounts (Staff, Admin, Super Admin, Driver) must never view the customer storefront
+try {
+  const storedUser = JSON.parse(localStorage.getItem('gst_user') || 'null');
+  if (storedUser && ['staff', 'admin', 'super_admin', 'driver'].includes(storedUser.role)) {
+    window.location.replace('/admin');
+  }
+} catch (e) {}
+
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
@@ -24,6 +32,7 @@ import StaffPinModal from './components/StaffPinModal.vue';
 import AboutSection from './components/AboutSection.vue';
 import DriverView from './components/DriverView.vue';
 import ContactSection from './components/ContactSection.vue';
+import MaintenanceView from './components/MaintenanceView.vue';
 
 // Admin Components (for quick admin views)
 import AdminDashboard from './admin/AdminDashboard.vue';
@@ -64,6 +73,7 @@ app.component('StaffPinModal', StaffPinModal);
 app.component('AboutSection', AboutSection);
 app.component('DriverView', DriverView);
 app.component('ContactSection', ContactSection);
+app.component('MaintenanceView', MaintenanceView);
 
 app.component('AdminDashboard', AdminDashboard);
 app.component('AdminOrdersTab', AdminOrdersTab);

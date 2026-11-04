@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-8 animate-fade-in">
+<div class="space-y-8">
       
       <!-- Top Header & Add Product Button (Matches Figure 17) -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -13,7 +13,7 @@
 
         <button 
           @click="openAddModal"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 self-start sm:self-auto cursor-pointer">
+          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 self-start sm:self-auto cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
           <i class="pi pi-plus"></i>
           <span>Add Product</span>
         </button>
@@ -28,10 +28,10 @@
             v-for="cat in categories" 
             :key="cat"
             @click="selectedCategory = cat"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer border"
             :class="selectedCategory === cat 
-              ? 'bg-yellow-400 text-black font-bold' 
-              : 'bg-surface-800 text-gray-400 hover:text-white border border-surface-700/60'">
+              ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 font-bold shadow-sm' 
+              : 'bg-surface-850/80 text-neutral-400 hover:text-white border-surface-750/60'">
             {{ cat }}
           </button>
         </div>
@@ -76,8 +76,8 @@
             />
             <div class="absolute inset-0 bg-gradient-to-t from-surface-800 via-transparent"></div>
 
-            <span class="absolute top-3 left-3 text-2xl drop-shadow-md">
-              {{ product.emoji || '🍽️' }}
+            <span v-if="product.emoji && !product.emoji.includes('?')" class="absolute top-3 left-3 text-2xl drop-shadow-md">
+              {{ product.emoji }}
             </span>
 
             <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full bg-surface-900/80 text-gray-300 border border-surface-700">
@@ -179,7 +179,7 @@
 
           <div class="flex justify-end gap-3 pt-3 border-t border-surface-700">
             <button @click="modalOpen = false" class="px-4 py-2 text-xs text-gray-400">Cancel</button>
-            <button @click="saveProduct" class="px-4 py-2 text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black rounded-xl cursor-pointer">
+            <button @click="saveProduct" class="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 rounded-xl cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
               {{ isEditing ? 'Save Changes' : 'Create Product' }}
             </button>
           </div>

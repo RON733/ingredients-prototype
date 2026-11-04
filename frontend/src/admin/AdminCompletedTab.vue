@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-8 animate-fade-in">
+<div class="space-y-8">
       
       <!-- Top Header (Matches Figure 16) -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

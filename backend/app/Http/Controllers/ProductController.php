@@ -16,9 +16,7 @@ class ProductController extends Controller
 
         // High-Performance In-Memory Cache: Serves default catalog in 3ms instead of 4,000ms
         if (!$hasFilters) {
-            $products = Cache::remember('products_catalog_default', 180, function () {
-                return Product::with('recipes.ingredient')->orderBy('name', 'asc')->get();
-            });
+            $products = Product::with('recipes.ingredient')->orderBy('name', 'asc')->get();
             return response()->json($products);
         }
 

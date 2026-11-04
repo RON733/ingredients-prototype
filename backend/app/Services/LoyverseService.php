@@ -264,7 +264,7 @@ class LoyverseService
                 $name = $item['item_name'] ?? '';
                 $qty = (float)($item['quantity'] ?? 1);
                 $price = (float)($item['price'] ?? 0);
-                $grossTotal = (float)($item['gross_total'] ?? ($price * $qty));
+                $grossTotal = (float)($item['gross_total_money'] ?? $item['total_money'] ?? $item['gross_total'] ?? ($price * $qty));
 
                 // Find matching product in DB
                 $matchedProduct = null;
@@ -355,7 +355,8 @@ class LoyverseService
             }
 
             $totalMoney = (float)($receipt['total_money'] ?? 0);
-            $receiptDate = !empty($receipt['created_at']) ? date('Y-m-d H:i:s', strtotime($receipt['created_at'])) : now();
+            $rawDate = $receipt['receipt_date'] ?? $receipt['created_at'] ?? null;
+            $receiptDate = !empty($rawDate) ? date('Y-m-d H:i:s', strtotime($rawDate)) : now();
 
             // 4. Create Order
             $order = Order::create([
@@ -406,6 +407,13 @@ class LoyverseService
     {
         // 1. Skip if order already came from Loyverse POS or already pushed
         if ($order->source === 'loyverse_pos' || !empty($order->loyverse_receipt_id)) {
+            return null;
+        }
+
+        // Only push real completed / paid sales to Loyverse POS
+        // Prevents cancelled or abandoned cart / pending orders from polluting Loyverse revenue!
+        if ($order->status !== 'Completed' && !in_array($order->payment_status, ['Paid', 'Verified'])) {
+            Log::info("Skipping Loyverse push for non-completed order #{$order->order_number} (Status: {$order->status}, Payment: {$order->payment_status})");
             return null;
         }
 
@@ -471,8 +479,11 @@ class LoyverseService
             $note .= " | GCash Ref: {$order->gcash_ref}";
         }
 
+        $orderDate = $order->created_at ? $order->created_at->toIso8601String() : now()->toIso8601String();
+
         $receiptPayload = [
             'store_id' => $storeId,
+            'receipt_date' => $orderDate,
             'note' => $note,
             'dining_option' => $order->order_type === 'Delivery' ? 'DELIVERY' : 'TAKEAWAY',
             'line_items' => $lineItemsPayload,
@@ -480,6 +491,7 @@ class LoyverseService
                 [
                     'payment_type_id' => $paymentTypeId,
                     'money_amount' => (float) $order->total_amount,
+                    'paid_at' => $orderDate,
                 ]
             ]
         ];
@@ -511,13 +523,14 @@ class LoyverseService
     }
 
     /**
-     * Push all unpushed website orders to Loyverse POS in bulk.
+     * Push all unpushed completed website orders to Loyverse POS in bulk.
      */
     public function pushAllPendingWebsiteOrders(): array
     {
         $orders = Order::where('source', 'web')
             ->whereNull('loyverse_receipt_id')
-            ->whereIn('payment_status', ['Paid', 'Verified', 'Pending'])
+            ->where('status', 'Completed')
+            ->whereIn('payment_status', ['Paid', 'Verified'])
             ->get();
 
         $results = [

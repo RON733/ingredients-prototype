@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-8 animate-fade-in">
+<div class="space-y-8">
       
       <!-- Top Header & Add Ingredient Button -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -13,25 +13,25 @@
           </p>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5 flex-wrap">
           <button 
             @click="handleSyncLoyverse"
             :disabled="isSyncingLoyverse"
-            class="px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+            class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
             title="Sync latest POS sales and update ingredient stock">
-            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner' : 'pi-sync'"></i>
+            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner text-amber-400' : 'pi-sync text-emerald-400'"></i>
             <span>{{ isSyncingLoyverse ? 'Syncing...' : 'Sync POS Sales' }}</span>
           </button>
           <button 
             @click="openAddModal"
-            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
+            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
             <i class="pi pi-plus"></i>
             <span>Add Raw Ingredient</span>
           </button>
           
           <button 
             @click="refresh"
-            class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 text-xs transition-colors"
+            class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-300 hover:text-white border border-surface-700 text-xs transition-colors cursor-pointer"
             title="Refresh Stock">
             <i class="pi pi-refresh" :class="{ 'pi-spin': loading }"></i>
           </button>
@@ -40,21 +40,48 @@
 
       <!-- Ingredient KPI Summary Cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total Tracked Items</p>
-          <p class="text-3xl font-black text-white mt-1.5">{{ store.ingredients.length }}</p>
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Total Tracked</p>
+            <div class="w-8 h-8 rounded-xl bg-surface-800 border border-surface-700/60 flex items-center justify-center text-neutral-300">
+              <i class="pi pi-box text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-white mt-2">{{ store.ingredients.length }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Raw inventory items</p>
         </div>
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Healthy Stocks</p>
-          <p class="text-3xl font-black text-emerald-400 mt-1.5">{{ healthyCount }}</p>
+
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Healthy Stocks</p>
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i class="pi pi-check-circle text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-2">{{ healthyCount }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Optimal stock levels</p>
         </div>
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-amber-400 uppercase tracking-wider">Low Stock Warnings</p>
-          <p class="text-3xl font-black text-amber-400 mt-1.5">{{ lowCount }}</p>
+
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Low Warnings</p>
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-300">
+              <i class="pi pi-exclamation-circle text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-amber-300 mt-2">{{ lowCount }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Below safety threshold</p>
         </div>
-        <div class="p-5 rounded-2xl bg-surface-800/80 border border-surface-700/60">
-          <p class="text-[11px] font-bold text-rose-400 uppercase tracking-wider">Depleted / Out of Stock</p>
-          <p class="text-3xl font-black text-rose-400 mt-1.5">{{ depletedCount }}</p>
+
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-850/80 border border-surface-750/70 hover:border-surface-700 transition-all shadow-sm">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Depleted</p>
+            <div class="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+              <i class="pi pi-times-circle text-xs"></i>
+            </div>
+          </div>
+          <p class="text-2xl sm:text-3xl font-extrabold text-rose-400 mt-2">{{ depletedCount }}</p>
+          <p class="text-[11px] text-neutral-400/80 mt-1">Menu items blocked</p>
         </div>
       </div>
 

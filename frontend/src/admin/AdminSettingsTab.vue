@@ -1,11 +1,11 @@
 <template>
-<div class="space-y-8 animate-fade-in">
+<div class="space-y-8">
       
       <!-- Top Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-surface-800">
         <div>
           <h2 class="text-2xl font-black text-white flex items-center gap-3">
-            <span class="w-10 h-10 rounded-2xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center text-lg">
+            <span class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-lg">
               <i class="pi pi-qrcode"></i>
             </span>
             <span>Store & Payment Settings</span>
@@ -27,36 +27,37 @@
       </div>
 
       <!-- MAIN SECTION 1: GCash Online Payment & Scan-to-Pay Settings -->
-      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-700 shadow-xl relative overflow-hidden space-y-6">
+      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-750 shadow-2xl relative overflow-hidden space-y-6">
         
-        
+        <!-- Ambient subtle accent glow -->
+        <div class="absolute -top-24 right-0 w-72 h-72 bg-sky-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <!-- Section Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center font-black text-yellow-400 text-lg">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-sky-500/20 shrink-0">
               G
             </div>
             <div>
-              <h3 class="text-lg font-black text-white flex items-center gap-2">
+              <h3 class="text-lg font-black text-white flex items-center gap-2 flex-wrap">
                 <span>GCash Payment Configuration</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-yellow-400/10 text-yellow-400 border border-yellow-400/20">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-sky-500/15 text-sky-300 border border-sky-500/30">
                   Online Checkout
                 </span>
               </h3>
-              <p class="text-xs text-gray-400">
+              <p class="text-xs text-gray-400 mt-0.5">
                 Customers scan this QR code or send payment to this GCash mobile number upon checkout.
               </p>
             </div>
           </div>
 
           <!-- Active QR Type Badge -->
-          <div class="flex items-center gap-2">
-            <span v-if="hasCustomQr" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+          <div class="flex items-center gap-2 shrink-0">
+            <span v-if="hasCustomQr" class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Custom Uploaded QR Code Active</span>
             </span>
-            <span v-else class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center gap-1.5">
+            <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5 shadow-sm">
               <i class="pi pi-info-circle text-xs"></i>
               <span>Default System QR Active</span>
             </span>
@@ -80,7 +81,7 @@
                   v-model="gcashForm.gcash_account_name" 
                   type="text" 
                   placeholder="e.g. Jefferson A. or G Shot Teas"
-                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 transition-colors font-medium"
+                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-medium"
                 />
               </div>
               <p class="text-[11px] text-gray-500 mt-1.5">
@@ -88,14 +89,14 @@
               </p>
             </div>
 
-            <!-- GCash Mobile Number -->
+            <!-- GCash Mobile Number (Clean label, no duplicate number display) -->
             <div>
               <div class="flex items-center justify-between mb-2">
                 <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
                   GCash Mobile Number <span class="text-rose-500">*</span>
                 </label>
-                <span class="text-[11px] font-mono text-yellow-400 font-bold">
-                  {{ gcashForm.gcash_account_number || 'None' }}
+                <span class="text-[10px] font-semibold text-gray-400 bg-surface-950 px-2 py-0.5 rounded border border-surface-800">
+                  Official Merchant Recipient
                 </span>
               </div>
               <div class="relative">
@@ -104,7 +105,7 @@
                   v-model="gcashForm.gcash_account_number" 
                   type="text" 
                   placeholder="0912 345 6789"
-                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 transition-colors font-mono tracking-wider font-bold"
+                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-mono tracking-wider font-bold"
                 />
               </div>
               <p class="text-[11px] text-gray-500 mt-1.5">
@@ -113,7 +114,7 @@
             </div>
 
             <!-- QR Code Upload & File Selector -->
-            <div class="p-5 rounded-2xl bg-surface-950/70 border border-surface-800 space-y-4">
+            <div class="p-5 rounded-2xl bg-surface-950/80 border border-surface-800 space-y-4 shadow-sm">
               <div class="flex items-center justify-between">
                 <div>
                   <h4 class="text-xs font-bold text-white uppercase tracking-wider">Upload GCash QR Code</h4>
@@ -132,13 +133,13 @@
                 />
                 <label 
                   for="admin_gcash_qr_input"
-                  class="w-full p-6 rounded-2xl border-2 border-dashed border-surface-700 hover:border-yellow-400 bg-surface-950 hover:bg-surface-850 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 group">
-                  <div class="w-12 h-12 rounded-xl bg-sky-500/20 text-yellow-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                  class="w-full p-6 rounded-2xl border-2 border-dashed border-surface-700 hover:border-amber-400 bg-surface-950/60 hover:bg-surface-850 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 group">
+                  <div class="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-amber-500/10 group-hover:text-amber-400 group-hover:border-amber-500/30 transition-all">
                     <i class="pi pi-cloud-upload"></i>
                   </div>
                   <div>
-                    <p class="text-xs font-bold text-white group-hover:text-yellow-400">
-                      {{ qrFileName ? 'Change Selected QR: ' + qrFileName : 'Click to select or upload a new GCash QR Code' }}
+                    <p class="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">
+                      {{ qrFileName ? 'Selected: ' + qrFileName : 'Click to select or drag a new GCash QR Code' }}
                     </p>
                     <p class="text-[11px] text-gray-400 mt-1">
                       High-resolution PNG, JPG, or WEBP (Automatically optimized & compressed)
@@ -153,7 +154,7 @@
                   v-if="hasCustomQr"
                   type="button" 
                   @click="resetToDefaultQr"
-                  class="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                  class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95">
                   <i class="pi pi-trash text-xs"></i>
                   <span>Remove Custom QR (Use Default)</span>
                 </button>
@@ -161,7 +162,7 @@
                 <a 
                   :href="activeQrPreview" 
                   download="gshot-gcash-qr.png"
-                  class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs font-bold transition-all inline-flex items-center gap-1.5">
+                  class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-95">
                   <i class="pi pi-download text-xs"></i>
                   <span>Download Current QR</span>
                 </a>
@@ -174,7 +175,7 @@
                 type="button"
                 @click="saveGcashSettings"
                 :disabled="isSavingGcash"
-                class="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-sm bg-yellow-400 hover:bg-yellow-300 text-black font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+                class="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50">
                 <i v-if="isSavingGcash" class="pi pi-spin pi-spinner"></i>
                 <i v-else class="pi pi-check"></i>
                 <span>Save GCash Payment Settings</span>
@@ -184,61 +185,96 @@
           </div>
 
           <!-- Right Column: Live Customer Checkout Preview (lg:col-span-5) -->
-          <div class="lg:col-span-5 bg-surface-950 rounded-2xl border border-surface-700 p-5 space-y-4 shadow-xl">
+          <div class="lg:col-span-5 bg-surface-950 rounded-2xl border border-surface-750 p-5 space-y-4 shadow-xl">
             <div class="flex items-center justify-between pb-3 border-b border-surface-800">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="text-xs font-black uppercase tracking-wider text-yellow-400">Checkout Preview</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Checkout Preview</span>
               </div>
               <span class="text-[10px] text-gray-400 font-mono">Customer Perspective</span>
             </div>
 
-            <!-- The Mini Checkout Card -->
-            <div class="p-4 rounded-2xl bg-surface-900 border border-surface-700 space-y-3.5">
+            <!-- Sleek Authentic GCash Checkout Mockup Card -->
+            <div class="rounded-2xl bg-surface-900 border border-surface-700/80 overflow-hidden shadow-lg space-y-0">
               
-              <!-- Card Header -->
-              <div class="flex items-center justify-between pb-2.5 border-b border-surface-800">
+              <!-- GCash Branded Top Bar -->
+              <div class="bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 p-3.5 text-white flex items-center justify-between shadow-sm">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-400/40 flex items-center justify-center font-black text-yellow-400 text-xs">
+                  <div class="w-7 h-7 rounded-lg bg-white text-blue-700 font-black text-xs flex items-center justify-center shadow">
                     G
                   </div>
                   <div>
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Official Store GCash</p>
-                    <p class="text-xs font-black text-white font-mono">
+                    <p class="text-[10px] font-extrabold uppercase tracking-widest text-sky-100">Official Merchant</p>
+                    <p class="text-xs font-black tracking-wide">GCash QR Pay</p>
+                  </div>
+                </div>
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm flex items-center gap-1 border border-white/20">
+                  <i class="pi pi-check-circle text-[9px]"></i>
+                  <span>Verified</span>
+                </span>
+              </div>
+
+              <!-- Content Area -->
+              <div class="p-4 space-y-4">
+                
+                <!-- Merchant Account & Number -->
+                <div class="p-3 rounded-xl bg-surface-950 border border-surface-800/80 flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Account Recipient</p>
+                    <p class="text-xs font-bold text-white truncate">
+                      {{ gcashForm.gcash_account_name || 'Jefferson A. (G Shot Teas)' }}
+                    </p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Mobile No.</p>
+                    <p class="text-xs font-black text-amber-400 font-mono tracking-wider">
                       {{ gcashForm.gcash_account_number || '0912 345 6789' }}
                     </p>
                   </div>
                 </div>
-                <span class="text-[9px] px-2 py-0.5 rounded-full bg-sky-500/20 text-gray-400 font-bold border border-sky-400/30">
-                  {{ gcashForm.gcash_account_name || 'Jefferson A.' }}
-                </span>
-              </div>
 
-              <!-- The QR Code Image Box -->
-              <div class="text-center space-y-2">
-                <div class="w-44 h-44 mx-auto rounded-xl bg-white p-2 border border-surface-700 shadow-md flex items-center justify-center overflow-hidden">
-                  <img 
-                    :src="activeQrPreview" 
-                    alt="GCash QR Code Preview" 
-                    class="w-full h-full object-contain"
-                  />
-                </div>
-                <p class="text-[10px] font-semibold text-gray-400 flex items-center justify-center gap-1">
-                  <i class="pi pi-camera text-[9px]"></i>
-                  <span>Customers scan this with GCash app</span>
-                </p>
-              </div>
+                <!-- The QR Code Image Container with Scanner Guides -->
+                <div class="text-center space-y-2">
+                  <div class="relative w-48 h-48 mx-auto rounded-2xl bg-white p-3 border border-gray-200 shadow-xl flex items-center justify-center overflow-hidden group">
+                    <!-- Scanner Corner Brackets -->
+                    <span class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-blue-600 rounded-tl pointer-events-none"></span>
+                    <span class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-blue-600 rounded-tr pointer-events-none"></span>
+                    <span class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-blue-600 rounded-bl pointer-events-none"></span>
+                    <span class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-blue-600 rounded-br pointer-events-none"></span>
 
-              <!-- Both Required Notice -->
-              <div class="p-2.5 rounded-xl bg-surface-950 border border-surface-800 space-y-1 text-[11px]">
-                <p class="font-bold text-gray-300 flex items-center gap-1">
-                  <i class="pi pi-shield text-xs text-yellow-400"></i>
-                  <span>Strict Requirements Enforced:</span>
-                </p>
-                <div class="text-[10px] text-gray-300 space-y-0.5 pl-4">
-                  <p>✓ 1. Reference Number (9-13 digits) <span class="text-rose-400">*</span></p>
-                  <p>✓ 2. GCash Receipt Screenshot <span class="text-rose-400">*</span></p>
+                    <img 
+                      :src="activeQrPreview" 
+                      alt="GCash QR Code" 
+                      class="w-full h-full object-contain select-none"
+                      @error="(e) => { e.target.src = '/assets/gcash-qr-default.png'; }"
+                    />
+                  </div>
+                  <p class="text-[11px] font-semibold text-gray-400 flex items-center justify-center gap-1.5">
+                    <i class="pi pi-camera text-sky-400 text-xs"></i>
+                    <span>Scan with GCash app to transfer</span>
+                  </p>
                 </div>
+
+                <!-- Verification Requirements -->
+                <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-1.5 text-[11px]">
+                  <p class="font-extrabold text-gray-200 flex items-center gap-1.5">
+                    <i class="pi pi-shield text-xs text-yellow-400"></i>
+                    <span>Customer Requirements upon Order:</span>
+                  </p>
+                  <div class="text-[10px] text-gray-300 space-y-1 pl-4">
+                    <p class="flex items-center gap-1.5">
+                      <span class="text-emerald-400 font-bold">✓</span>
+                      <span>1. GCash Reference Number (9–13 digits)</span>
+                      <span class="text-rose-400">*</span>
+                    </p>
+                    <p class="flex items-center gap-1.5">
+                      <span class="text-emerald-400 font-bold">✓</span>
+                      <span>2. Proof of Payment (Screenshot upload)</span>
+                      <span class="text-rose-400">*</span>
+                    </p>
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -253,106 +289,128 @@
       </div>
 
       <!-- MAIN SECTION 2: General Store & Operations Settings -->
-      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-800 shadow-xl space-y-6">
+      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-750 shadow-xl space-y-6">
         
-        <div class="pb-4 border-b border-surface-800">
-          <h3 class="text-lg font-black text-white flex items-center gap-2">
-            <i class="pi pi-sliders-h text-yellow-400"></i>
-            <span>General Store & Operations Preferences</span>
-          </h3>
-          <p class="text-xs text-gray-400 mt-1">
-            Store contact info, physical address, operating schedule, and default delivery fee.
-          </p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-base shrink-0">
+              <i class="pi pi-sliders-h"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-black text-white">General Store & Operations Preferences</h3>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Store contact info, physical address, operating schedule, and default delivery fee.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           
           <!-- Store Name -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
               Store Name
             </label>
-            <input 
-              v-model="storeForm.store_name" 
-              type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
-            />
+            <div class="relative">
+              <i class="pi pi-building absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+              <input 
+                v-model="storeForm.store_name" 
+                type="text" 
+                class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-medium"
+              />
+            </div>
           </div>
 
           <!-- Store Tagline -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
               Store Tagline
             </label>
-            <input 
-              v-model="storeForm.store_tagline" 
-              type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
-            />
+            <div class="relative">
+              <i class="pi pi-comment absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+              <input 
+                v-model="storeForm.store_tagline" 
+                type="text" 
+                class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-medium"
+              />
+            </div>
           </div>
 
           <!-- Delivery Fee -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Delivery Fee (₱)
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
+              Default Delivery Fee (₱)
             </label>
             <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₱</span>
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-400 font-bold font-mono text-sm">₱</span>
               <input 
                 v-model="storeForm.delivery_fee" 
                 type="number" 
                 step="5"
-                class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono font-bold"
+                class="w-full pl-9 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-mono font-bold"
               />
             </div>
           </div>
 
           <!-- Store Contact Phone -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
               Store Contact Phone
             </label>
-            <input 
-              v-model="storeForm.store_phone" 
-              type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono"
-            />
+            <div class="relative">
+              <i class="pi pi-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+              <input 
+                v-model="storeForm.store_phone" 
+                type="text" 
+                class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-mono"
+              />
+            </div>
           </div>
 
           <!-- Store Email -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
               Store Email
             </label>
-            <input 
-              v-model="storeForm.store_email" 
-              type="email" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
-            />
+            <div class="relative">
+              <i class="pi pi-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+              <input 
+                v-model="storeForm.store_email" 
+                type="email" 
+                class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-medium"
+              />
+            </div>
           </div>
 
           <!-- Business Operating Hours -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
               Operating Hours
             </label>
-            <input 
-              v-model="storeForm.business_hours" 
-              type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
-            />
+            <div class="relative">
+              <i class="pi pi-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+              <input 
+                v-model="storeForm.business_hours" 
+                type="text" 
+                class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-medium"
+              />
+            </div>
           </div>
 
           <!-- Store Address (Full Row) -->
           <div class="sm:col-span-2 lg:col-span-3">
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
               Store Physical Address
             </label>
-            <input 
-              v-model="storeForm.store_address" 
-              type="text" 
-              class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400"
-            />
+            <div class="relative">
+              <i class="pi pi-map-marker absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+              <input 
+                v-model="storeForm.store_address" 
+                type="text" 
+                class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-medium"
+              />
+            </div>
           </div>
 
         </div>
@@ -362,11 +420,186 @@
             type="button"
             @click="saveGeneralSettings"
             :disabled="isSavingStore"
-            class="px-5 py-2.5 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
+            class="px-6 py-3 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50">
             <i v-if="isSavingStore" class="pi pi-spin pi-spinner"></i>
             <i v-else class="pi pi-save"></i>
             <span>Save Store Preferences</span>
           </button>
+        </div>
+
+      </div>
+
+      <!-- MAIN SECTION 3: Super Admin Emergency Website Shutdown & Maintenance Controls -->
+      <div 
+        v-if="store.isSuperAdmin"
+        class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-purple-500/40 shadow-2xl relative overflow-hidden space-y-6">
+        
+        <!-- Ambient Purple Glow -->
+        <div class="absolute -top-24 right-0 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Section Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center justify-center text-xl shrink-0">
+              <i class="pi pi-power-off"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-black text-white">Emergency Website Shutdown & Maintenance</h3>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                  Super Admin Exclusive
+                </span>
+              </div>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Shut down the entire customer-facing website and display the "Website Under Maintenance" page to visitors.
+              </p>
+            </div>
+          </div>
+
+          <!-- Active Website Status Pill -->
+          <div class="flex items-center gap-2">
+            <span v-if="maintForm.maintenance_mode" class="px-3 py-1 rounded-full text-xs font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              <span>WEBSITE SHUTDOWN (Active)</span>
+            </span>
+            <span v-else class="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Website Live Online</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Form Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- Left Col: Toggle Card & Settings -->
+          <div class="lg:col-span-7 space-y-5 text-xs">
+            
+            <!-- Master Toggle Switch Box -->
+            <div class="p-5 rounded-2xl bg-surface-950/80 border border-surface-800 flex items-center justify-between gap-4 shadow-inner">
+              <div>
+                <h4 class="font-extrabold text-white text-sm">Website Operational Status</h4>
+                <p class="text-[11px] text-gray-400 mt-1 max-w-md">
+                  Toggle ON to immediately shut down public access and display the Maintenance Page to all customers. Toggle OFF to restore customer ordering.
+                </p>
+              </div>
+
+              <button 
+                type="button"
+                @click="maintForm.maintenance_mode = !maintForm.maintenance_mode"
+                class="relative inline-flex h-8 w-16 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                :class="maintForm.maintenance_mode ? 'bg-rose-600' : 'bg-emerald-600'">
+                <span 
+                  class="pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+                  :class="maintForm.maintenance_mode ? 'translate-x-8' : 'translate-x-0'"></span>
+              </button>
+            </div>
+
+            <!-- Maintenance Headline / Title -->
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
+                Maintenance Headline / Title
+              </label>
+              <input 
+                v-model="maintForm.maintenance_title" 
+                type="text" 
+                placeholder="e.g. Website Under Scheduled Maintenance"
+                class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-medium"
+              />
+              <p class="text-[11px] text-gray-500 mt-1">
+                Main headline displayed on the customer maintenance screen.
+              </p>
+            </div>
+
+            <!-- Detailed Customer Notice Message -->
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
+                Detailed Customer Notice Message
+              </label>
+              <textarea 
+                v-model="maintForm.maintenance_message" 
+                rows="3"
+                placeholder="Explain the maintenance reason..."
+                class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-medium leading-relaxed resize-none"
+              ></textarea>
+              <p class="text-[11px] text-gray-500 mt-1">
+                Detailed explanation for why the website is currently offline.
+              </p>
+            </div>
+
+            <!-- Estimated Back Online Time -->
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
+                Estimated Back Online Schedule (Optional)
+              </label>
+              <input 
+                v-model="maintForm.maintenance_until" 
+                type="text" 
+                placeholder="e.g. Today at 4:00 PM or Resuming at 1:00 PM"
+                class="w-full px-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-400 font-medium"
+              />
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-2 flex items-center gap-3">
+              <button 
+                type="button"
+                @click="saveMaintenanceSettings"
+                :disabled="isSavingMaint"
+                class="px-6 py-2.5 rounded-xl font-black text-xs transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg"
+                :class="maintForm.maintenance_mode ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/30' : 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/30'">
+                <i v-if="isSavingMaint" class="pi pi-spin pi-spinner"></i>
+                <i v-else class="pi pi-save"></i>
+                <span>{{ maintForm.maintenance_mode ? 'Apply Website Shutdown' : 'Save Maintenance Settings' }}</span>
+              </button>
+
+              <button 
+                v-if="maintForm.maintenance_mode"
+                type="button"
+                @click="restoreWebsiteNow"
+                :disabled="isSavingMaint"
+                class="px-5 py-2.5 rounded-xl font-black text-xs bg-emerald-500 hover:bg-emerald-400 text-black transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow">
+                <i class="pi pi-check-circle"></i>
+                <span>Restore Online Now</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Right Col: Live Customer Maintenance Screen Preview -->
+          <div class="lg:col-span-5 p-5 rounded-2xl bg-surface-950 border border-surface-800 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-surface-800">
+              <div class="flex items-center gap-2 text-xs font-extrabold text-white">
+                <i class="pi pi-desktop text-yellow-400"></i>
+                <span>Customer View Live Preview</span>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-gray-500">Preview</span>
+            </div>
+
+            <!-- Mini Simulated Maintenance Screen -->
+            <div class="p-4 rounded-xl bg-surface-900 border border-surface-700/80 text-center space-y-3">
+              <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 mx-auto flex items-center justify-center font-black text-yellow-400 text-base shadow">
+                G'
+              </div>
+              <span class="inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                Website Under Maintenance
+              </span>
+              <h5 class="text-xs font-black text-white line-clamp-1">
+                {{ maintForm.maintenance_title || 'Website Under Scheduled Maintenance' }}
+              </h5>
+              <p class="text-[11px] text-gray-400 line-clamp-3 leading-relaxed">
+                {{ maintForm.maintenance_message || 'G Shot Teas is currently undergoing essential system updates...' }}
+              </p>
+              <div v-if="maintForm.maintenance_until" class="text-[10px] font-bold text-amber-300 bg-amber-500/10 rounded-lg py-1 px-2 border border-amber-500/20">
+                ⏰ Back Online: {{ maintForm.maintenance_until }}
+              </div>
+            </div>
+
+            <p class="text-[11px] text-gray-500 text-center">
+              This preview matches what all public visitors see when Website Shutdown is active.
+            </p>
+          </div>
+
         </div>
 
       </div>
@@ -390,7 +623,7 @@ export default {
     const isSavingStore = Vue.ref(false);
     const qrFileName = Vue.ref('');
 
-    const defaultQrPath = './assets/gcash-qr-default.png';
+    const defaultQrPath = '/assets/gcash-qr-default.png';
 
     // GCash specific form state
     const gcashForm = Vue.reactive({
@@ -424,8 +657,47 @@ export default {
         if (newSettings.store_email !== undefined) storeForm.store_email = newSettings.store_email;
         if (newSettings.delivery_fee !== undefined) storeForm.delivery_fee = newSettings.delivery_fee;
         if (newSettings.business_hours !== undefined) storeForm.business_hours = newSettings.business_hours;
+
+        maintForm.maintenance_mode = store.isMaintenanceMode;
+        maintForm.maintenance_title = store.maintenanceTitle;
+        maintForm.maintenance_message = store.maintenanceMessage;
+        maintForm.maintenance_until = store.maintenanceUntil;
       }
     }, { deep: true });
+
+    // Super Admin: Website Maintenance & Shutdown State
+    const isSavingMaint = Vue.ref(false);
+    const maintForm = Vue.reactive({
+      maintenance_mode: store.isMaintenanceMode,
+      maintenance_title: store.maintenanceTitle,
+      maintenance_message: store.maintenanceMessage,
+      maintenance_until: store.maintenanceUntil,
+    });
+
+    const saveMaintenanceSettings = async () => {
+      isSavingMaint.value = true;
+      try {
+        await store.setMaintenanceMode(maintForm.maintenance_mode, {
+          title: maintForm.maintenance_title,
+          message: maintForm.maintenance_message,
+          until: maintForm.maintenance_until,
+        });
+      } finally {
+        isSavingMaint.value = false;
+      }
+    };
+
+    const restoreWebsiteNow = async () => {
+      if (confirm('Restore Website Online? All customers will immediately regain access to order and view the menu.')) {
+        isSavingMaint.value = true;
+        try {
+          await store.setMaintenanceMode(false);
+          maintForm.maintenance_mode = false;
+        } finally {
+          isSavingMaint.value = false;
+        }
+      }
+    };
 
     const hasCustomQr = Vue.computed(() => {
       return Boolean(gcashForm.gcash_qr_code && gcashForm.gcash_qr_code.trim().length > 0);
@@ -650,6 +922,10 @@ export default {
       handleExportMenu,
       handleRegisterWebhook,
       copyWebhookUrl,
+      maintForm,
+      isSavingMaint,
+      saveMaintenanceSettings,
+      restoreWebsiteNow,
     };
   },
 };

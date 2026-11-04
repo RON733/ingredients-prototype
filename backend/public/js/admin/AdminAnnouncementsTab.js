@@ -77,7 +77,8 @@ const AdminAnnouncementsTab = {
         <div 
           v-for="item in filteredAnnouncements" 
           :key="item.id"
-          class="p-5 rounded-3xl bg-surface-900 border border-surface-800 flex flex-col justify-between hover:border-surface-700 transition-all shadow-md">
+          class="p-5 rounded-3xl bg-surface-900 border flex flex-col justify-between hover:border-surface-700 transition-all shadow-md"
+          :class="item.is_active ? 'border-surface-800' : 'border-dashed border-surface-700/80 opacity-75'">
           
           <div>
             <!-- Header: Badge, Status Pill, Photo indicator -->
@@ -95,10 +96,11 @@ const AdminAnnouncementsTab = {
               <!-- Status Toggle Switch -->
               <button 
                 @click="store.toggleAnnouncementStatus(item.id)"
-                class="px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-colors flex items-center gap-1.5"
-                :class="item.is_active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-surface-800 text-gray-400 border-surface-700'">
+                class="px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer"
+                :class="item.is_active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-surface-800 text-gray-400 border-surface-700'"
+                :title="item.is_active ? 'Click to hide announcement' : 'Click to show announcement'">
                 <span class="w-1.5 h-1.5 rounded-full" :class="item.is_active ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'"></span>
-                <span>{{ item.is_active ? 'Published' : 'Draft' }}</span>
+                <span>{{ item.is_active ? 'Published' : 'Hidden / Draft' }}</span>
               </button>
             </div>
 
@@ -129,16 +131,28 @@ const AdminAnnouncementsTab = {
             </span>
 
             <div class="flex items-center gap-1.5">
+              <!-- Hide / Unhide Announcement Button -->
+              <button 
+                @click="store.toggleAnnouncementStatus(item.id)"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-colors cursor-pointer"
+                :class="item.is_active 
+                  ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border-amber-500/30' 
+                  : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30'"
+                :title="item.is_active ? 'Hide announcement from customers' : 'Show announcement to customers'">
+                <i class="pi text-xs" :class="item.is_active ? 'pi-eye-slash' : 'pi-eye'"></i>
+                <span>{{ item.is_active ? 'Hide Announcement' : 'Unhide Announcement' }}</span>
+              </button>
+
               <button 
                 @click="store.openEditAnnouncementModal(item)"
-                class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 text-xs font-bold border border-surface-700 flex items-center gap-1 transition-colors">
+                class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 text-xs font-bold border border-surface-700 flex items-center gap-1 transition-colors cursor-pointer">
                 <i class="pi pi-pencil text-[10px]"></i>
                 <span>Edit</span>
               </button>
 
               <button 
                 @click="confirmDelete(item)"
-                class="px-2.5 py-1.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 hover:text-rose-300 text-xs font-bold border border-rose-500/20 transition-colors"
+                class="px-2.5 py-1.5 rounded-xl bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 hover:text-rose-300 text-xs font-bold border border-rose-500/20 transition-colors cursor-pointer"
                 title="Delete Announcement">
                 <i class="pi pi-trash text-[10px]"></i>
               </button>

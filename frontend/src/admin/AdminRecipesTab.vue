@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-8 animate-fade-in">
+<div class="space-y-8">
       
       <!-- Top Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -32,7 +32,7 @@
             <!-- Header: Title, Category, and Available Portions -->
             <div class="flex items-start justify-between gap-3 border-b border-surface-700/60 pb-3">
               <div>
-                <span class="text-xl">{{ product.emoji || '🍽️' }}</span>
+                <span v-if="product.emoji && !product.emoji.includes('?')" class="text-xl">{{ product.emoji }}</span>
                 <h3 class="text-base font-black text-white mt-1">{{ product.name }}</h3>
                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ product.category }} • ₱{{ Number(product.price).toFixed(2) }}</span>
               </div>

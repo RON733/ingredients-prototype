@@ -6,49 +6,76 @@
       <div class="relative z-10 flex flex-col flex-1">
         
         <!-- Navigation Header (Customer Views) -->
-        <Navbar v-if="store.currentView !== 'admin' && store.currentView !== 'driver'" />
+        <Navbar />
 
         <!-- Main Content Area -->
         <main class="flex-1">
-          <!-- 1. Customer Landing & Menu -->
-          <div v-if="store.currentView === 'customer'" class="animate-fade-in">
-            <LandingHero />
-            <AnnouncementSection />
-            <FeaturedSection />
-            <MenuSection />
-            <AboutSection />
-            <ContactSection />
-            <ActiveOrderWidget />
+          <!-- 0. Website Shutdown / Maintenance Mode for Customers -->
+          <div v-if="store.isMaintenanceMode" class="animate-fade-in">
+            <MaintenanceView />
           </div>
 
-          <!-- 2. Checkout Section (Figure 10) -->
-          <div v-else-if="store.currentView === 'checkout'">
-            <CheckoutView />
-          </div>
+          <!-- Normal System Views for Customers -->
+          <template v-else>
+            <!-- 1. Customer Landing (Home View) -->
+            <div v-if="store.currentView === 'customer'" class="animate-fade-in">
+              <LandingHero />
+              <AnnouncementSection />
+              <FeaturedSection />
+              <MenuSection :isStandalonePage="false" />
+              <AboutSection />
+              <ContactSection />
+              <ActiveOrderWidget />
+            </div>
 
-          <!-- 3. Track Order View (Figure 11) -->
-          <div v-else-if="store.currentView === 'track'">
-            <OrderTracker />
-          </div>
+            <!-- 2. Dedicated Standalone Menu Page (Separate page for mobile & direct navigation) -->
+            <div v-else-if="store.currentView === 'menu'" class="animate-fade-in">
+              <!-- Mobile Phone: Dedicated standalone mobile menu page -->
+              <div class="block lg:hidden">
+                <MenuSection :isStandalonePage="true" />
+              </div>
+              <!-- Computer / Desktop: Exactly like before when there was no menu page -->
+              <div class="hidden lg:block">
+                <LandingHero />
+                <AnnouncementSection />
+                <FeaturedSection />
+                <MenuSection :isStandalonePage="false" />
+                <AboutSection />
+                <ContactSection />
+              </div>
+              <ActiveOrderWidget />
+            </div>
 
-          <!-- 4. Customer Order History View (Figure 13) -->
-          <div v-else-if="store.currentView === 'history'">
-            <OrderHistoryView />
-          </div>
+            <!-- 3. Checkout Section -->
+            <div v-else-if="store.currentView === 'checkout'">
+              <CheckoutView />
+            </div>
 
-          <!-- 5. Staff & Admin Management Dashboard (Figures 14–17) -->
-          <div v-else-if="store.currentView === 'admin'">
-            <AdminDashboard />
-          </div>
+            <!-- 4. Track Order View -->
+            <div v-else-if="store.currentView === 'track'">
+              <OrderTracker />
+            </div>
 
-          <!-- 6. Delivery Driver Mobile-First Portal -->
-          <div v-else-if="store.currentView === 'driver'">
-            <DriverView />
-          </div>
+            <!-- 5. Customer Order History View -->
+            <div v-else-if="store.currentView === 'history'">
+              <OrderHistoryView />
+            </div>
+
+            <!-- 6. Resilient Fallback: Always display Customer Storefront if view is unknown -->
+            <div v-else class="animate-fade-in">
+              <LandingHero />
+              <AnnouncementSection />
+              <FeaturedSection />
+              <MenuSection :isStandalonePage="false" />
+              <AboutSection />
+              <ContactSection />
+              <ActiveOrderWidget />
+            </div>
+          </template>
         </main>
 
         <!-- Footer (Customer Views) -->
-        <footer v-if="store.currentView !== 'admin' && store.currentView !== 'driver'" class="py-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
+        <footer v-if="!store.isMaintenanceMode" class="py-10 pb-24 lg:pb-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
           <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <span class="font-extrabold text-white text-sm">G SHOT TEAS</span>
@@ -60,6 +87,68 @@
           </div>
         </footer>
 
+        <!-- Mobile Bottom App Bar (Customer Cellphone Navigation) -->
+        <nav 
+          v-if="!store.isMaintenanceMode && store.currentView !== 'admin' && store.currentView !== 'driver'"
+          class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-2 py-2 flex items-center justify-around shadow-2xl">
+          
+          <!-- 1. Home -->
+          <button 
+            @click="navToSection('home')"
+            type="button"
+            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer"
+            :class="store.currentView === 'customer' && store.activeSection === 'home' ? 'text-yellow-400 font-bold' : 'text-gray-400 hover:text-gray-200'">
+            <i class="pi pi-home text-base"></i>
+            <span class="text-[10px] tracking-tight">Home</span>
+          </button>
+
+          <!-- 2. Menu (Opens Dedicated Mobile Menu Page) -->
+          <button 
+            @click="navToSection('menu')"
+            type="button"
+            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer"
+            :class="store.currentView === 'menu' ? 'text-yellow-400 font-bold scale-105' : 'text-gray-400 hover:text-gray-200'">
+            <i class="pi pi-th-large text-base"></i>
+            <span class="text-[10px] tracking-tight">Menu</span>
+          </button>
+
+          <!-- 3. Cart with Badge -->
+          <button 
+            @click="store.cartOpen = true"
+            type="button"
+            class="relative flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-200">
+            <div class="relative">
+              <i class="pi pi-shopping-bag text-base"></i>
+              <span 
+                v-if="store.cartCount > 0" 
+                class="absolute -top-1.5 -right-2 px-1.5 py-0.2 bg-yellow-400 text-black text-[9px] font-black rounded-full leading-tight">
+                {{ store.cartCount }}
+              </span>
+            </div>
+            <span class="text-[10px] tracking-tight">Cart</span>
+          </button>
+
+          <!-- 4. Track Active Order -->
+          <button 
+            @click="store.currentView = 'track'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+            type="button"
+            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer"
+            :class="store.currentView === 'track' ? 'text-yellow-400 font-bold' : 'text-gray-400 hover:text-gray-200'">
+            <i class="pi pi-map-marker text-base"></i>
+            <span class="text-[10px] tracking-tight">Track</span>
+          </button>
+
+          <!-- 5. Book Catering Package -->
+          <button 
+            @click="store.bookingModalOpen = true"
+            type="button"
+            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-200">
+            <i class="pi pi-calendar-plus text-base"></i>
+            <span class="text-[10px] tracking-tight">Book</span>
+          </button>
+
+        </nav>
+
         <!-- Global Drawers & Modals -->
         <CartDrawer />
         <CustomizationModal />
@@ -67,8 +156,7 @@
         <EventBookingModal />
         <AnnouncementModal />
         <AuthModal />
-        <StaffPinModal v-if="store.currentView !== 'admin'" />
-        <ChatbotAssistant v-if="store.currentView !== 'admin'" />
+        <ChatbotAssistant />
 
         <!-- Flyer Fullscreen Lightbox Modal -->
         <div 
@@ -158,8 +246,30 @@ export default {
       return 'pi-check-circle text-emerald-400';
     };
 
+    const navToSection = (section) => {
+      if (section === 'menu') {
+        store.currentView = 'menu';
+        store.activeSection = 'menu';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      store.currentView = 'customer';
+      store.activeSection = section;
+      if (section === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      Vue.nextTick(() => {
+        const el = document.getElementById(section);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    };
+
     return {
       store,
+      navToSection,
       getToastClass,
       getToastIcon,
     };

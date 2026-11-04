@@ -22,9 +22,15 @@
           </h2>
           <p class="text-xs text-gray-400 mt-1">
             {{ store.authMode === 'login' 
-              ? 'Access online ordering, real-time tracking, or admin dashboard' 
+              ? 'Sign in to your customer account to place orders and track deliveries' 
               : 'Register to start ordering milk tea and comfort snacks' }}
           </p>
+        </div>
+
+        <!-- In-Modal Error Banner -->
+        <div v-if="authError" class="mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs font-semibold flex items-start gap-2.5 animate-shake">
+          <i class="pi pi-exclamation-triangle text-rose-400 mt-0.5 shrink-0 text-sm"></i>
+          <span class="flex-1 leading-snug">{{ authError }}</span>
         </div>
 
         <!-- Google Sign-In Section -->
@@ -132,6 +138,18 @@
           </p>
         </div>
 
+        <!-- Operations Personnel Redirection Box -->
+        <div class="mt-4 p-3 rounded-2xl bg-surface-950/80 border border-surface-800 text-[11px] text-gray-400 flex items-start gap-2.5">
+          <i class="pi pi-shield text-amber-400 mt-0.5 shrink-0 text-xs"></i>
+          <div>
+            <span class="font-bold text-gray-200">Staff, Admin, or Delivery Rider?</span>
+            <p class="text-[10px] text-gray-400 mt-0.5 leading-snug">
+              Operational credentials are not allowed on the customer page.
+              <a href="/admin" class="text-amber-400 hover:text-amber-300 font-bold underline ml-1">Open Operations Portal &rarr;</a>
+            </p>
+          </div>
+        </div>
+
         </div>
     </div>
 </template>
@@ -149,9 +167,7 @@ export default {
     const store = useGShotStore();
     const loading = Vue.ref(false);
     const googleLoading = Vue.ref(false);
-    
-    
-    
+    const authError = Vue.ref('');
 
     const form = Vue.reactive({
       name: '',
@@ -165,6 +181,7 @@ export default {
     });
 
     const toggleAuthMode = () => {
+      authError.value = '';
       store.authMode = store.authMode === 'login' ? 'register' : 'login';
       Vue.nextTick(() => {
         initGoogleIdentity();
@@ -211,16 +228,18 @@ export default {
     const handleGoogleSuccess = async (response) => {
       if (!response?.credential) return;
       googleLoading.value = true;
+      authError.value = '';
       try {
-        await store.loginWithGoogle(response.credential);
+        await store.loginWithGoogle(response.credential, 'customer');
       } catch (err) {
-        // error notification handled in store
+        authError.value = err.response?.data?.message || err.message || 'Google Sign-In failed.';
       } finally {
         googleLoading.value = false;
       }
     };
 
     const handleContinueWithGoogle = () => {
+      authError.value = '';
       if (isGoogleClientConfigured.value && window.google?.accounts?.id) {
         try {
           window.google.accounts.id.prompt();
@@ -236,16 +255,12 @@ export default {
       }
     };
 
-    
-
-    
-
-
     const handleSubmit = async () => {
       loading.value = true;
+      authError.value = '';
       try {
         if (store.authMode === 'login') {
-          await store.login(form.email, form.password);
+          await store.login(form.email, form.password, 'customer');
         } else {
           await store.register({
             name: form.name,
@@ -254,7 +269,7 @@ export default {
           });
         }
       } catch (err) {
-        // error handled in store
+        authError.value = err.response?.data?.message || err.message || 'Authentication failed. Please verify your credentials.';
       } finally {
         loading.value = false;
       }
@@ -263,6 +278,7 @@ export default {
     // Watch modal state to initialize Google button when open
     Vue.watch(() => store.authModalOpen, (isOpen) => {
       if (isOpen) {
+        authError.value = '';
         Vue.nextTick(() => {
           initGoogleIdentity();
         });
@@ -280,17 +296,12 @@ export default {
       form,
       loading,
       googleLoading,
-      
-      
-      
+      authError,
       isGoogleClientConfigured,
       hasGoogleRendered,
       toggleAuthMode,
-      
-      handleContinueWithGoogle,
-      
-      
       handleSubmit,
+      handleContinueWithGoogle,
     };
   },
 };

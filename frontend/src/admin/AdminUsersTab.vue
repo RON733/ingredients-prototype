@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-6 animate-fade-in">
+<div class="space-y-6">
       
       <!-- Top Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -11,7 +11,7 @@
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">User & Role Management</h2>
           <p class="text-xs text-gray-400 mt-1 max-w-2xl">
-            Create new staff barista and administrative accounts, assign 4-digit POS PINs, and manage operational privileges.
+            Manage store personnel accounts: Baristas, Delivery Riders, and Administrators. Assign 4-digit POS PINs and operational privileges.
           </p>
         </div>
 
@@ -19,9 +19,9 @@
           <!-- Create New Personnel Button (Admin & Super Admin) -->
           <button 
             @click="openCreateModal"
-            class="px-4 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs transition-all flex items-center gap-2 cursor-pointer">
+            class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
             <i class="pi pi-user-plus text-xs"></i>
-            <span>Create Staff / Admin</span>
+            <span>Create Personnel</span>
           </button>
 
           <button 
@@ -41,11 +41,11 @@
           class="p-4 rounded-2xl border transition-all cursor-pointer"
           :class="selectedRoleFilter === 'all' ? 'bg-surface-800/90 border-brand-500/60 ring-1 ring-brand-500/30' : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
           <div class="flex items-center justify-between text-gray-400 text-[10px] font-bold uppercase tracking-wider">
-            <span>Total Accounts</span>
+            <span>Total Personnel</span>
             <i class="pi pi-users text-brand-400 text-xs"></i>
           </div>
           <div class="text-xl font-black text-white mt-1">{{ users.length }}</div>
-          <span class="text-[9px] text-gray-400">All registered users</span>
+          <span class="text-[9px] text-gray-400">All store workers</span>
         </div>
 
         <div 
@@ -61,6 +61,18 @@
         </div>
 
         <div 
+          @click="selectedRoleFilter = 'driver'"
+          class="p-4 rounded-2xl border transition-all cursor-pointer"
+          :class="selectedRoleFilter === 'driver' ? 'bg-emerald-950/40 border-emerald-500/70 ring-1 ring-emerald-500/30' : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
+          <div class="flex items-center justify-between text-emerald-300 text-[10px] font-bold uppercase tracking-wider">
+            <span>Delivery Riders</span>
+            <i class="pi pi-send text-emerald-400 text-xs"></i>
+          </div>
+          <div class="text-xl font-black text-emerald-300 mt-1">{{ driverCount }}</div>
+          <span class="text-[9px] text-emerald-400/80">Delivery Fleet & GPS</span>
+        </div>
+
+        <div 
           @click="selectedRoleFilter = 'admin'"
           class="p-4 rounded-2xl border transition-all cursor-pointer"
           :class="selectedRoleFilter === 'admin' ? 'bg-amber-950/40 border-amber-500/70 ring-1 ring-amber-500/30' : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
@@ -70,18 +82,6 @@
           </div>
           <div class="text-xl font-black text-amber-300 mt-1">{{ adminCount }}</div>
           <span class="text-[9px] text-amber-400/80">Owner & Managers</span>
-        </div>
-
-        <div 
-          @click="selectedRoleFilter = 'super_admin'"
-          class="p-4 rounded-2xl border transition-all cursor-pointer"
-          :class="selectedRoleFilter === 'super_admin' ? 'bg-purple-950/40 border-purple-500/70 ring-1 ring-purple-500/30' : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
-          <div class="flex items-center justify-between text-purple-300 text-[10px] font-bold uppercase tracking-wider">
-            <span>Super Admins</span>
-            <i class="pi pi-crown text-purple-400 text-xs"></i>
-          </div>
-          <div class="text-xl font-black text-purple-300 mt-1">{{ superAdminCount }}</div>
-          <span class="text-[9px] text-purple-400/80">System Administrators</span>
         </div>
       </div>
 
@@ -102,22 +102,16 @@
             Staff ({{ staffCount }})
           </button>
           <button 
+            @click="selectedRoleFilter = 'driver'"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-emerald-300"
+            :class="selectedRoleFilter === 'driver' ? 'bg-emerald-600 text-white shadow-sm' : 'hover:bg-emerald-950/40'">
+            Delivery Rider ({{ driverCount }})
+          </button>
+          <button 
             @click="selectedRoleFilter = 'admin'"
             class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-amber-300"
             :class="selectedRoleFilter === 'admin' ? 'bg-amber-600 text-white shadow-sm' : 'hover:bg-amber-950/40'">
             Admin ({{ adminCount }})
-          </button>
-          <button 
-            @click="selectedRoleFilter = 'super_admin'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-purple-300"
-            :class="selectedRoleFilter === 'super_admin' ? 'bg-purple-600 text-white shadow-sm' : 'hover:bg-purple-950/40'">
-            Super Admin ({{ superAdminCount }})
-          </button>
-          <button 
-            @click="selectedRoleFilter = 'customer'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-emerald-300"
-            :class="selectedRoleFilter === 'customer' ? 'bg-emerald-600 text-white shadow-sm' : 'hover:bg-emerald-950/40'">
-            Customers ({{ customerCount }})
           </button>
         </div>
 
@@ -202,7 +196,7 @@
 
                 <!-- 4-Digit Staff PIN Column -->
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="['staff', 'admin', 'super_admin'].includes(u.role)" class="flex items-center gap-2">
+                  <div v-if="['staff', 'driver', 'admin'].includes(u.role)" class="flex items-center gap-2">
                     <span class="font-mono font-bold text-xs px-2 py-0.5 rounded-lg bg-surface-900 border border-surface-700 text-brand-400">
                       {{ revealedPins[u.id] ? (u.pin || 'None') : (u.pin ? '••••' : 'None') }}
                     </span>
@@ -244,10 +238,9 @@
                       :value="u.role" 
                       @change="changeRole(u, $event.target.value)"
                       class="px-2.5 py-1 rounded-lg bg-surface-900 border border-surface-700 text-xs text-gray-200 cursor-pointer focus:outline-none focus:border-brand-500">
-                      <option value="customer">Customer</option>
                       <option value="staff">Staff (Barista)</option>
+                      <option value="driver">Delivery Rider</option>
                       <option value="admin">Admin (Owner)</option>
-                      <option v-if="store.isSuperAdmin" value="super_admin">Super Admin</option>
                     </select>
 
                     <button 
@@ -325,9 +318,8 @@
                   required
                   class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500 cursor-pointer">
                   <option value="staff">Staff / Barista (Counter & Orders)</option>
-                  <option value="driver">Delivery Driver (Rider & GPS)</option>
+                  <option value="driver">Delivery Rider (Fleet & GPS)</option>
                   <option value="admin">Admin (Store Owner / Manager)</option>
-                  <option v-if="store.isSuperAdmin" value="super_admin">Super Admin (System Administrator)</option>
                 </select>
               </div>
 
@@ -402,7 +394,7 @@
               <button 
                 type="submit" 
                 :disabled="savingUser"
-                class="px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50">
+                class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm shadow-amber-500/20 active:scale-95">
                 <i class="pi pi-check" :class="{ 'pi-spin pi-spinner': savingUser }"></i>
                 <span>{{ savingUser ? 'Provisioning...' : 'Create Account' }}</span>
               </button>
@@ -454,7 +446,9 @@ export default {
       loading.value = true;
       try {
         const res = await GST_API.getUsers();
-        users.value = Array.isArray(res.data) ? res.data : [];
+        const rawList = Array.isArray(res.data) ? res.data : [];
+        // Strictly filter workers only: exclude customers and super_admin
+        users.value = rawList.filter(u => u.role !== 'customer' && u.role !== 'super_admin');
       } catch (err) {
         console.error(err);
       } finally {
@@ -463,9 +457,8 @@ export default {
     };
 
     const staffCount = Vue.computed(() => users.value.filter(u => u.role === 'staff').length);
+    const driverCount = Vue.computed(() => users.value.filter(u => u.role === 'driver').length);
     const adminCount = Vue.computed(() => users.value.filter(u => u.role === 'admin').length);
-    const superAdminCount = Vue.computed(() => users.value.filter(u => u.role === 'super_admin').length);
-    const customerCount = Vue.computed(() => users.value.filter(u => u.role === 'customer').length);
 
     const filteredUsers = Vue.computed(() => {
       return users.value.filter(u => {
@@ -491,7 +484,7 @@ export default {
       if (role === 'admin') return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
       if (role === 'staff') return 'bg-sky-500/20 text-sky-300 border border-sky-500/30';
       if (role === 'driver') return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-      return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      return 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
     };
 
     const formatRoleName = (role) => {
@@ -499,8 +492,8 @@ export default {
         case 'super_admin': return 'Super Admin';
         case 'admin': return 'Admin (Owner)';
         case 'staff': return 'Staff (Barista)';
-        case 'driver': return 'Delivery Driver';
-        default: return 'Customer';
+        case 'driver': return 'Delivery Rider';
+        default: return role;
       }
     };
 
@@ -582,9 +575,8 @@ export default {
       searchQuery,
       revealedPins,
       staffCount,
+      driverCount,
       adminCount,
-      superAdminCount,
-      customerCount,
       filteredUsers,
       createModalOpen,
       savingUser,

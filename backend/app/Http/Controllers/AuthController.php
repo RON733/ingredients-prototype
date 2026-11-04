@@ -59,6 +59,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
+            'portal' => 'nullable|string',
         ]);
 
         $user = User::where('email', $validated['email'])->first();
@@ -75,6 +76,22 @@ class AuthController extends Controller
             ], 403);
         }
 
+        $portal = $request->input('portal', 'customer');
+
+        // Bawal mag-login ang operational accounts (staff, admin, super_admin, driver) sa customer storefront
+        if ($portal === 'customer' && in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
+            return response()->json([
+                'message' => 'Staff, Admin, Super Admin, and Delivery Rider accounts cannot log in to the customer storefront. Please access the Operations Portal at /admin.'
+            ], 403);
+        }
+
+        // Bawal mag-login ang customer accounts sa Operations Portal
+        if ($portal === 'operations' && $user->role === 'customer') {
+            return response()->json([
+                'message' => 'Access denied. The Operations Portal is exclusively reserved for Staff, Admin, Super Admin, and Delivery Riders.'
+            ], 403);
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
 
         if (in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
@@ -83,7 +100,7 @@ class AuthController extends Controller
                 'user_name' => $user->name,
                 'user_role' => $user->role,
                 'action' => 'User Logged In',
-                'details' => 'Signed in with role: ' . $user->role,
+                'details' => 'Signed in via ' . ($portal === 'operations' ? 'Operations Portal' : 'Customer Storefront') . ' with role: ' . $user->role,
                 'ip_address' => $request->ip(),
             ]);
         }
@@ -223,6 +240,21 @@ class AuthController extends Controller
             ], 403);
         }
 
+        $portal = $request->input('portal', 'customer');
+
+        // Bawal mag-login ang operational accounts sa customer storefront via Google
+        if ($portal === 'customer' && in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
+            return response()->json([
+                'message' => 'Staff, Admin, Super Admin, and Delivery Rider accounts cannot log in to the customer storefront. Please access the Operations Portal at /admin.'
+            ], 403);
+        }
+
+        if ($portal === 'operations' && $user->role === 'customer') {
+            return response()->json([
+                'message' => 'Access denied. The Operations Portal is exclusively reserved for Staff, Admin, Super Admin, and Delivery Riders.'
+            ], 403);
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
 
         if (in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
@@ -285,7 +317,14 @@ class AuthController extends Controller
 
     public function listUsers(Request $request)
     {
-        $users = User::latest()->get();
+        $query = User::latest();
+        if (!$request->boolean('include_customers')) {
+            $query->where('role', '!=', 'customer');
+        }
+        if (!$request->boolean('include_super_admin')) {
+            $query->where('role', '!=', 'super_admin');
+        }
+        $users = $query->get();
         return response()->json($users);
     }
 
@@ -364,7 +403,7 @@ class AuthController extends Controller
             $user = User::where('id', $validated['user_id'])
                 ->where('pin', $pin)
                 ->where('status', 'active')
-                ->whereIn('role', ['staff', 'admin', 'super_admin'])
+                ->whereIn('role', ['staff', 'admin', 'super_admin', 'driver'])
                 ->first();
         }
 
@@ -372,7 +411,7 @@ class AuthController extends Controller
         if (!$user) {
             $user = User::where('pin', $pin)
                 ->where('status', 'active')
-                ->whereIn('role', ['staff', 'admin', 'super_admin'])
+                ->whereIn('role', ['staff', 'admin', 'super_admin', 'driver'])
                 ->first();
         }
 

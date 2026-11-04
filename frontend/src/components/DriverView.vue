@@ -52,20 +52,13 @@
             <span>{{ isGpsBroadcasting ? 'GPS Active' : 'GPS Off' }}</span>
           </button>
 
-          <!-- Back to Store / Customer View -->
-          <button 
-            type="button"
-            @click="store.currentView = 'customer'"
-            class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold border border-surface-700 transition-colors cursor-pointer">
-            Storefront
-          </button>
-
-          <!-- Logout Button -->
+          <!-- Sign Out from Operations Portal -->
           <button 
             type="button"
             @click="handleLogout"
-            class="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer">
-            Logout
+            class="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm">
+            <i class="pi pi-power-off text-xs"></i>
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
@@ -496,7 +489,8 @@ export default {
 
     const handleLogout = async () => {
       await store.logout();
-      store.currentView = 'customer';
+      sessionStorage.removeItem('gst_admin_unlocked');
+      window.location.href = '/admin';
     };
 
     // --- Interactive Rider Road Map & Turn-by-Turn Direction Line ---

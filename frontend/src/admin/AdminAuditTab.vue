@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <div v-else class="space-y-6 animate-fade-in">
+    <div v-else class="space-y-6">
       
       <!-- Top Header & Role Stat Cards -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -331,7 +331,7 @@
               type="button"
               @click="goToPage(page)"
               class="w-8 h-8 rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer border"
-              :class="currentPage === page ? 'bg-yellow-400 text-black border-yellow-400 font-black shadow-lg shadow-yellow-400/20' : 'bg-surface-800 text-gray-300 border-surface-700 hover:bg-surface-700 hover:text-white'">
+              :class="currentPage === page ? 'bg-amber-500/20 text-amber-300 border-amber-500 font-bold shadow-sm' : 'bg-surface-800 text-gray-300 border-surface-700 hover:bg-surface-700 hover:text-white'">
               {{ page }}
             </button>
 
@@ -486,6 +486,12 @@ export default {
 
     const getActionBadgeClass = (action, role) => {
       const act = (action || '').toLowerCase();
+      if (act.includes('shutdown') || act.includes('maintenance')) {
+        return 'bg-rose-950/80 border-rose-600/80 text-rose-300 font-extrabold';
+      }
+      if (act.includes('restored') || act.includes('online')) {
+        return 'bg-emerald-950/80 border-emerald-500/80 text-emerald-300 font-extrabold';
+      }
       if (act.includes('setting') || act.includes('initial')) {
         return 'bg-purple-950/60 border-purple-700/60 text-purple-300';
       }

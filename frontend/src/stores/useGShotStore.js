@@ -1,4 +1,4 @@
-﻿// G Shot Teas � Pinia Central Store
+// G Shot Teas � Pinia Central Store
 import { defineStore } from 'pinia';
 import GST_API from '../services/api.js';
 import initEcho from '../services/echo.js';
@@ -10,7 +10,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 89,
     description: 'Juicy grilled beef patty, golden brioche bun, fresh lettuce, and melted rich cheddar cheese.',
-    emoji: '??',
+    emoji: '🍔',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 23,
@@ -28,7 +28,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 149,
     description: 'Double-stacked beef smash patties with double layers of cheddar and toasted brioche.',
-    emoji: '??',
+    emoji: '🍔',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 21,
@@ -45,7 +45,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 169,
     description: 'Loaded with savory pepperoni cuts, premium mozzarella cheese blend, and signature Italian sauce.',
-    emoji: '??',
+    emoji: '🍕',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -63,7 +63,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 159,
     description: 'A cheesy paradise featuring melted mozzarella and cheddar cheese over seasoned tomato sauce.',
-    emoji: '??',
+    emoji: '🧀',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -81,7 +81,7 @@ const DEFAULT_PRODUCTS = [
     category: 'RiceMeals',
     price: 129,
     description: 'Crispy flavorful glazed chicken wings served with fragrant steamed rice and dipping sauce.',
-    emoji: '??',
+    emoji: '🍗',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 12,
@@ -97,7 +97,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 79,
     description: 'Crispy golden fries generously topped with warm melted cheddar cheese sauce.',
-    emoji: '??',
+    emoji: '🍟',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 24,
@@ -113,7 +113,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 49,
     description: 'Timeless brewed black tea infused with creamy milk and loaded with chewy brown sugar tapioca pearls.',
-    emoji: '??',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 44,
@@ -130,7 +130,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Warm tiger-striped brown sugar drizzle, fresh dairy milk, and slow-cooked boba pearls.',
-    emoji: '??',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 34,
@@ -147,7 +147,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 79,
     description: 'Fine Japanese ceremonial matcha layered over cold fresh milk and sweet pearls.',
-    emoji: '??',
+    emoji: '🍵',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -164,7 +164,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Rich velvety purple taro with tea essence, creamy dairy, and bouncy pearls.',
-    emoji: '??',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -182,7 +182,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Coffee',
     price: 89,
     description: 'Freshly extracted espresso shot combined with vanilla-infused milk and buttery caramel drizzle.',
-    emoji: '?',
+    emoji: '☕',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 40,
@@ -198,7 +198,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 99,
     description: 'Filipino shaved ice delicacy loaded with sweet jellies, leche flan, ube, and rich milk.',
-    emoji: '??',
+    emoji: '🍧',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 30,
@@ -290,8 +290,18 @@ const useGShotStore = defineStore('gshot', {
     analytics: null,
     googleConfig: { client_id: '373451248580-gkci5qsn9j0euan2hafq5v01bhborvlo.apps.googleusercontent.com', configured: true },
 
-    // Shopping Cart
-    cart: JSON.parse(localStorage.getItem('gst_cart') || '[]'),
+    // Shopping Cart (sanitizing corrupted '??' emojis from previous sessions)
+    cart: (() => {
+      try {
+        const raw = JSON.parse(localStorage.getItem('gst_cart') || '[]');
+        return Array.isArray(raw) ? raw.map(item => ({
+          ...item,
+          emoji: (typeof item.emoji === 'string' && !item.emoji.includes('?')) ? item.emoji : ''
+        })) : [];
+      } catch (e) {
+        return [];
+      }
+    })(),
 
     // UI Toasts & Status
     toasts: [],
@@ -331,6 +341,16 @@ const useGShotStore = defineStore('gshot', {
     isStaffOrAdmin: (state) => ['staff', 'admin', 'super_admin'].includes(state.user?.role),
     isAdminOrSuper: (state) => ['admin', 'super_admin'].includes(state.user?.role),
     isSuperAdmin: (state) => state.user?.role === 'super_admin',
+
+    isMaintenanceMode: (state) => {
+      if (state.settings && state.settings.maintenance_mode !== undefined) {
+        return state.settings.maintenance_mode === 'true' || state.settings.maintenance_mode === true || state.settings.maintenance_mode === '1';
+      }
+      return false;
+    },
+    maintenanceTitle: (state) => state.settings?.maintenance_title || 'Website Under Scheduled Maintenance',
+    maintenanceMessage: (state) => state.settings?.maintenance_message || 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!',
+    maintenanceUntil: (state) => state.settings?.maintenance_until || '',
 
     isStoreOpen: (state) => {
       if (state.settings && state.settings.store_open !== undefined) {
@@ -409,7 +429,9 @@ const useGShotStore = defineStore('gshot', {
         ]);
 
         if (prodRes.status === 'fulfilled' && prodRes.value.data) {
-          this.products = prodRes.value.data;
+          if (Array.isArray(prodRes.value.data) && prodRes.value.data.length > 0) {
+            this.products = prodRes.value.data;
+          }
           this.backendConnected = true;
         }
         if (ingRes.status === 'fulfilled' && ingRes.value.data) {
@@ -437,7 +459,9 @@ const useGShotStore = defineStore('gshot', {
     async fetchProducts(params = {}) {
       try {
         const res = await GST_API.getProducts(params);
-        this.products = res.data;
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          this.products = res.data;
+        }
       } catch (err) {
         console.error('Error fetching products:', err);
       }
@@ -528,7 +552,7 @@ const useGShotStore = defineStore('gshot', {
           product_id: product.id,
           name: product.name,
           category: product.category,
-          emoji: product.emoji,
+          emoji: (product.emoji && !product.emoji.includes('?')) ? product.emoji : '',
           image: product.image,
           unit_price: unitPrice,
           quantity: 1,
@@ -699,10 +723,18 @@ const useGShotStore = defineStore('gshot', {
     },
 
     // Authentication Actions
-    async login(email, password) {
+    async login(email, password, portal = 'customer') {
       try {
-        const res = await GST_API.login(email, password);
-        this.user = res.data.user;
+        const res = await GST_API.login(email, password, portal);
+        const loggedUser = res.data.user;
+
+        // Strict Enforcement: Operational accounts are forbidden on the customer storefront
+        if (portal === 'customer' && ['staff', 'admin', 'super_admin', 'driver'].includes(loggedUser.role)) {
+          this.logout();
+          throw new Error('Staff, Admin, Super Admin, and Delivery Rider accounts cannot log in to the customer storefront. Please log in through the Operations Portal (/admin).');
+        }
+
+        this.user = loggedUser;
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
@@ -710,22 +742,25 @@ const useGShotStore = defineStore('gshot', {
 
         this.notify(`Welcome back, ${this.user.name}!`);
 
-        // Role-based redirection from Capstone document (page 26, 49):
-        // "Customers are directed to the ordering module, while administrators are redirected to the administrative dashboard"
+        // Role-based redirection from Capstone document:
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
-          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard')) {
-            window.location.href = '/admin';
+          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard') && !window.location.pathname.includes('driver') && !window.location.pathname.includes('rider')) {
+            window.location.replace('/admin');
             return;
           }
         } else if (this.user.role === 'driver') {
           this.currentView = 'driver';
+          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard') && !window.location.pathname.includes('driver') && !window.location.pathname.includes('rider')) {
+            window.location.replace('/admin');
+            return;
+          }
         } else {
           this.currentView = 'customer';
         }
         this.fetchUserActiveOrder();
       } catch (err) {
-        const msg = err.response?.data?.message || 'Login failed. Please check credentials.';
+        const msg = err.response?.data?.message || err.message || 'Login failed. Please check credentials.';
         this.notify(msg, 'error');
         throw err;
       }
@@ -749,13 +784,20 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    async loginWithGoogle(credentialOrData) {
+    async loginWithGoogle(credentialOrData, portal = 'customer') {
       try {
         const payload = typeof credentialOrData === 'string'
-          ? { credential: credentialOrData }
-          : credentialOrData;
-        const res = await GST_API.googleLogin(payload);
-        this.user = res.data.user;
+          ? { credential: credentialOrData, portal }
+          : { ...credentialOrData, portal };
+        const res = await GST_API.googleLogin(payload, portal);
+        const loggedUser = res.data.user;
+
+        if (portal === 'customer' && ['staff', 'admin', 'super_admin', 'driver'].includes(loggedUser.role)) {
+          this.logout();
+          throw new Error('Staff, Admin, Super Admin, and Delivery Rider accounts cannot log in to the customer storefront. Please log in through the Operations Portal (/admin).');
+        }
+
+        this.user = loggedUser;
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
@@ -765,19 +807,23 @@ const useGShotStore = defineStore('gshot', {
 
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
-          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard')) {
-            window.location.href = '/admin';
+          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard') && !window.location.pathname.includes('driver') && !window.location.pathname.includes('rider')) {
+            window.location.replace('/admin');
             return;
           }
         } else if (this.user.role === 'driver') {
           this.currentView = 'driver';
+          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('driver') && !window.location.pathname.includes('rider')) {
+            window.location.replace('/admin');
+            return;
+          }
         } else {
           this.currentView = 'customer';
         }
         this.fetchUserActiveOrder();
         return res.data;
       } catch (err) {
-        const msg = err.response?.data?.message || (err.message && err.message.includes('Network') ? 'Backend server unreachable. Please verify server is running on 127.0.0.1:8000.' : 'Google Sign-In failed.');
+        const msg = err.response?.data?.message || err.message || (err.message && err.message.includes('Network') ? 'Backend server unreachable. Please verify server is running on 127.0.0.1:8000.' : 'Google Sign-In failed.');
         this.notify(msg, 'error');
         throw err;
       }
@@ -797,6 +843,65 @@ const useGShotStore = defineStore('gshot', {
       this.notify('Logged out successfully.');
     },
 
+    async fetchSettings() {
+      try {
+        const res = await GST_API.getSettings();
+        if (res?.data) {
+          this.settings = { ...this.settings, ...res.data };
+        }
+        return res?.data;
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    },
+
+    // Super Admin: Website Emergency Shutdown / Maintenance Mode Controls
+    async toggleMaintenanceMode(options = {}) {
+      if (!this.isSuperAdmin) {
+        this.notify('Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.', 'error');
+        return false;
+      }
+      const next = !this.isMaintenanceMode;
+      return await this.setMaintenanceMode(next, options);
+    },
+
+    async setMaintenanceMode(enable, options = {}) {
+      if (!this.isSuperAdmin) {
+        this.notify('Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.', 'error');
+        return false;
+      }
+      const valStr = enable ? 'true' : 'false';
+      this.settings.maintenance_mode = valStr;
+      if (options.title) this.settings.maintenance_title = options.title;
+      if (options.message) this.settings.maintenance_message = options.message;
+      if (options.until !== undefined) this.settings.maintenance_until = options.until;
+
+      try {
+        const payload = {
+          maintenance_mode: valStr,
+          ...(options.title ? { maintenance_title: options.title } : {}),
+          ...(options.message ? { maintenance_message: options.message } : {}),
+          ...(options.until !== undefined ? { maintenance_until: options.until } : {}),
+        };
+        const res = await GST_API.updateSettings(payload);
+        if (res.data?.settings) {
+          this.settings = { ...this.settings, ...res.data.settings };
+        }
+        this.notify(
+          enable 
+            ? '🚨 WEBSITE SHUTDOWN ACTIVATED! Customers now see the Under Maintenance screen.' 
+            : '✅ WEBSITE RESTORED ONLINE! Customer store ordering and access are back live.',
+          enable ? 'info' : 'success'
+        );
+        return true;
+      } catch (err) {
+        console.error('Failed to update maintenance mode:', err);
+        const errMsg = err.response?.data?.message || 'Failed to update website status on server.';
+        this.notify(errMsg, 'error');
+        return false;
+      }
+    },
+
     // Store Status Toggle (Staff, Admin, Super Admin)
     async toggleStoreStatus() {
       const next = !this.isStoreOpen;
@@ -804,7 +909,7 @@ const useGShotStore = defineStore('gshot', {
       this.settings.store_open = valStr;
       try {
         await GST_API.updateSettings({ store_open: valStr });
-        this.notify(next ? '?? Store is now OPEN for customer orders!' : '?? Store is now CLOSED. Ordering paused.', next ? 'success' : 'info');
+        this.notify(next ? '🟢 Store is now OPEN for customer orders!' : '🔴 Store is now CLOSED. Ordering paused.', next ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status on backend:', err);
         this.notify(next ? 'Store opened locally.' : 'Store closed locally.', 'info');
@@ -816,7 +921,7 @@ const useGShotStore = defineStore('gshot', {
       this.settings.store_open = valStr;
       try {
         await GST_API.updateSettings({ store_open: valStr });
-        this.notify(isOpen ? '?? Store is now OPEN!' : '?? Store is now CLOSED.', isOpen ? 'success' : 'info');
+        this.notify(isOpen ? '🟢 Store is now OPEN!' : '🔴 Store is now CLOSED.', isOpen ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status:', err);
       }
@@ -862,20 +967,23 @@ const useGShotStore = defineStore('gshot', {
           category: 'Menu',
           price: null,
           description: '',
-          emoji: '???',
+          emoji: '',
           max_portions: 99,
           recipes: [],
         };
         return;
       }
       const matched = this.products.find(p => p.id === item.id) || {};
+      const safeEmoji = (item.emoji && !item.emoji.includes('?')) 
+        ? item.emoji 
+        : ((matched.emoji && !matched.emoji.includes('?')) ? matched.emoji : '');
       this.previewProduct = {
         id: item.id || matched.id,
         name: item.name || matched.name || 'Menu Item',
         category: item.category || matched.category || 'Menu',
         price: item.price !== undefined ? item.price : (matched.price !== undefined ? matched.price : null),
         description: item.description || item.desc || matched.description || '',
-        emoji: item.emoji || matched.emoji || '???',
+        emoji: safeEmoji,
         image: item.image || item.image_url || matched.image || './assets/hero-banner.png',
         max_portions: matched.max_portions !== undefined ? matched.max_portions : (item.max_portions !== undefined ? item.max_portions : 99),
         recipes: matched.recipes || item.recipes || [],

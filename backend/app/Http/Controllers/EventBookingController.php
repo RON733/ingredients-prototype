@@ -16,6 +16,17 @@ class EventBookingController extends Controller
 
     public function store(Request $request)
     {
+        // Maintenance Mode Check
+        $maintenance = \App\Models\SystemSetting::where('key', 'maintenance_mode')->value('value');
+        if ($maintenance === 'true' || $maintenance === '1') {
+            $userRole = $request->user()?->role;
+            if (!$userRole || !in_array($userRole, ['staff', 'admin', 'super_admin'])) {
+                return response()->json([
+                    'message' => 'The website is currently undergoing scheduled maintenance. Event booking requests are temporarily paused.'
+                ], 503);
+            }
+        }
+
         $validated = $request->validate([
             'client_name' => 'required|string',
             'client_phone' => 'required|string',

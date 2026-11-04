@@ -19,12 +19,14 @@ import AdminSettingsTab from './admin/AdminSettingsTab.vue';
 import StaffPinModal from './components/StaffPinModal.vue';
 import AnnouncementModal from './components/AnnouncementModal.vue';
 import ProductImageModal from './components/ProductImageModal.vue';
+import DriverView from './components/DriverView.vue';
 
 const app = createApp(AdminApp);
 const pinia = createPinia();
 app.use(pinia);
 
 app.component('AdminDashboard', AdminDashboard);
+app.component('DriverView', DriverView);
 app.component('AdminOrdersTab', AdminOrdersTab);
 app.component('AdminAnalyticsTab', AdminAnalyticsTab);
 app.component('AdminCompletedTab', AdminCompletedTab);
