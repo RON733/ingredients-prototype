@@ -1,11 +1,19 @@
 import axios from 'axios';
 
-// Get base URL dynamically or fallback to Laravel backend port
+// Get base URL dynamically or fallback to relative API path
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined' && window.location.port === '5173') {
-    return '/api'; // Proxied via Vite dev server
+  if (typeof window !== 'undefined') {
+    if (window.GST_BACKEND_URL) {
+      return window.GST_BACKEND_URL;
+    }
+    if (window.location.protocol === 'file:') {
+      return 'http://127.0.0.1:8000/api';
+    }
+    // In production (Render, Railway) and local Vite dev proxy / Laravel serve:
+    // always use relative '/api' so all requests stay same-origin (no CORS, no Mixed Content)
+    return '/api';
   }
-  return 'http://127.0.0.1:8000/api';
+  return '/api';
 };
 
 export const apiClient = axios.create({
@@ -73,7 +81,7 @@ export const GST_API = {
   getSettings: () => apiClient.get('/settings'),
   updateSettings: (data) => apiClient.post('/settings', data),
   getAuditLogs: (params) => apiClient.get('/audit-logs', { params }),
-  getStaffList: () => apiClient.get('/staff-list'),
+  getStaffList: () => apiClient.get('/auth/staff-list'),
 
   // Analytics & Dashboard Stats
   getAnalytics: () => apiClient.get('/analytics/dashboard'),

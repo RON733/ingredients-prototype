@@ -1,4 +1,4 @@
-﻿services:
+services:
   - type: web
     name: g-shot-teas
     runtime: docker
@@ -10,6 +10,8 @@
         value: "G Shot Teas"
       - key: APP_ENV
         value: production
+      - key: APP_KEY
+        value: base64:n1kx9EcizrzwR93H+K1GkPw1fJs5NVP3CSnK5SDe7fI=
       - key: APP_DEBUG
         value: "false"
       - key: DB_CONNECTION
@@ -22,5 +24,25 @@
         value: postgres
       - key: DB_USERNAME
         value: postgres.lwfwqyjjrblwwelfxbpg
+      - key: DB_PASSWORD
+        value: resengictap8
       - key: DB_SSLMODE
         value: require
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: REVERB_APP_ID
+        value: "622953"
+      - key: REVERB_APP_KEY
+        value: aap9fufewjheyroh7txe
+      - key: REVERB_APP_SECRET
+        value: yql4x1ek2vuo9yui92pz
+      - key: REVERB_HOST
+        value: "0.0.0.0"
+      - key: REVERB_PORT
+        value: "8080"
+      - key: REVERB_SCHEME
+        value: http

@@ -18,6 +18,7 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::get('/auth/google/config', [AuthController::class, 'googleConfig']);
 Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
+Route::get('/staff-list', [AuthController::class, 'listStaff']);
 Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
 Route::post('/auth/verify-password', [AuthController::class, 'verifyPassword']);
 

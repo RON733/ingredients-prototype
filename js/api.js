@@ -1,7 +1,7 @@
 // G Shot Teas — Axios API Client & Network Service
 (function () {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const API_BASE_URL = window.GST_BACKEND_URL || (isLocal ? (window.location.port === '8000' ? '/api' : 'http://127.0.0.1:8000/api') : '/api');
+  const API_BASE_URL = window.GST_BACKEND_URL || (isLocal && window.location.protocol !== 'https:' && window.location.port !== '8000' ? 'http://127.0.0.1:8000/api' : '/api');
 
   const apiClient = axios.create({
     baseURL: API_BASE_URL,
