@@ -1,11 +1,3 @@
-// Instant guard: Operational accounts (Staff, Admin, Super Admin, Driver) must never view the customer storefront
-try {
-  const storedUser = JSON.parse(localStorage.getItem('gst_user') || 'null');
-  if (storedUser && ['staff', 'admin', 'super_admin', 'driver'].includes(storedUser.role)) {
-    window.location.replace('/admin');
-  }
-} catch (e) {}
-
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';

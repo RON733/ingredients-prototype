@@ -372,6 +372,8 @@ const useGShotStore = defineStore('gshot', {
     gcashQrCode: (state) => state.settings?.gcash_qr_code || './assets/gcash-qr-default.png',
     gcashAccountNumber: (state) => state.settings?.gcash_account_number || '0912 345 6789',
     gcashAccountName: (state) => state.settings?.gcash_account_name || 'Jefferson A.',
+    discountedProductsCount: (state) => state.products.filter(p => (p.original_price && Number(p.original_price) > Number(p.price)) || (p.discount_percent && Number(p.discount_percent) > 0)).length,
+    discountedProducts: (state) => state.products.filter(p => (p.original_price && Number(p.original_price) > Number(p.price)) || (p.discount_percent && Number(p.discount_percent) > 0)),
   },
 
   actions: {
@@ -769,18 +771,71 @@ const useGShotStore = defineStore('gshot', {
     async register(data) {
       try {
         const res = await GST_API.register(data);
+        return res.data;
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || 'Registration failed.';
+        this.notify(msg, 'error');
+        throw new Error(msg);
+      }
+    },
+
+    async verifyRegister(data) {
+      try {
+        const res = await GST_API.verifyRegister(data);
         this.user = res.data.user;
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
         this.authModalOpen = false;
 
-        this.notify(`Account created successfully! Welcome to G Shot Teas.`);
+        this.notify(res.data.message || 'Account verified! Welcome to G Shot Teas.');
         this.currentView = 'customer';
+        return res.data;
       } catch (err) {
-        const msg = err.response?.data?.message || 'Registration failed.';
+        const msg = err.response?.data?.message || err.message || 'Verification failed.';
         this.notify(msg, 'error');
-        throw err;
+        throw new Error(msg);
+      }
+    },
+
+    async resendRegisterOtp(email) {
+      try {
+        const res = await GST_API.resendRegisterOtp({ email });
+        return res.data;
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || 'Failed to resend code.';
+        this.notify(msg, 'error');
+        throw new Error(msg);
+      }
+    },
+
+    async forgotPassword(email) {
+      try {
+        const res = await GST_API.forgotPassword(email);
+        return res.data;
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || 'Failed to send verification code.';
+        throw new Error(msg);
+      }
+    },
+
+    async resetPassword(data) {
+      try {
+        const res = await GST_API.resetPassword(data);
+        if (res.data.token && res.data.user) {
+          this.user = res.data.user;
+          this.token = res.data.token;
+          localStorage.setItem('gst_user', JSON.stringify(this.user));
+          localStorage.setItem('gst_auth_token', this.token);
+          this.authModalOpen = false;
+          this.notify(res.data.message || 'Password reset successfully! Welcome back.');
+          this.currentView = 'customer';
+          this.fetchUserActiveOrder();
+        }
+        return res.data;
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || 'Failed to reset password.';
+        throw new Error(msg);
       }
     },
 

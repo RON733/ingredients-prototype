@@ -67,9 +67,12 @@
                 </span>
               </p>
 
-              <p class="text-xs font-extrabold text-brand-400 mt-1.5">
-                ₱{{ (item.unit_price * item.quantity).toFixed(2) }}
-                <span class="text-[10px] text-gray-500 font-normal"> (₱{{ item.unit_price.toFixed(2) }} each)</span>
+              <p class="text-xs font-extrabold text-brand-400 mt-1.5 flex items-center gap-1.5 flex-wrap">
+                <span>₱{{ (item.unit_price * item.quantity).toFixed(2) }}</span>
+                <span class="text-[10px] text-gray-400 font-normal"> (₱{{ item.unit_price.toFixed(2) }} each)</span>
+                <span v-if="item.discount_percent > 0" class="text-[9px] font-black px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  {{ item.discount_percent }}% PROMO
+                </span>
               </p>
             </div>
 

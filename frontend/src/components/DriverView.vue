@@ -315,17 +315,33 @@
         <div 
           v-for="order in completedDeliveries" 
           :key="order.id"
-          class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 flex items-center justify-between text-xs">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-white">{{ order.order_number }}</span>
-              <span class="text-emerald-400 font-bold">✓ Delivered by You</span>
+          class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-lg hover:border-surface-600 transition-colors">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold text-white text-sm sm:text-base">{{ order.order_number }}</span>
+              <span class="text-emerald-400 font-bold flex items-center gap-1 text-xs">
+                <i class="pi pi-check-circle text-xs"></i> Delivered by You
+              </span>
             </div>
-            <p class="text-[11px] text-gray-400 mt-0.5">{{ order.customer_name }} • {{ order.delivery_address || 'Santa Rosa' }}</p>
+            <p class="text-[11px] text-gray-400">{{ order.customer_name }} • {{ order.delivery_address || 'Santa Rosa' }}</p>
+            <div class="flex items-center gap-2 text-[11px] font-mono pt-1">
+              <span class="inline-flex items-center gap-1.5 text-emerald-400 bg-surface-950/80 px-2.5 py-1 rounded-md border border-surface-800">
+                <i class="pi pi-calendar text-[10px]"></i>
+                <span>{{ formatDeliveryDate(order.delivered_at || order.updated_at || order.created_at) }}</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 text-amber-300 bg-surface-950/80 px-2.5 py-1 rounded-md border border-surface-800">
+                <i class="pi pi-clock text-[10px]"></i>
+                <span>{{ formatDeliveryTime(order.delivered_at || order.updated_at || order.created_at) }}</span>
+              </span>
+            </div>
           </div>
-          <div class="text-right">
-            <span class="font-black text-white">₱{{ Number(order.total_amount).toFixed(2) }}</span>
-            <p class="text-[10px] text-gray-400">{{ order.payment_method }}</p>
+          <div class="text-left sm:text-right flex sm:flex-col justify-between items-center sm:items-end gap-1 border-t sm:border-t-0 border-surface-800 pt-2 sm:pt-0">
+            <span class="font-black text-white text-base">₱{{ Number(order.total_amount).toFixed(2) }}</span>
+            <span 
+              class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+              :class="order.payment_method === 'Cash' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
+              {{ order.payment_method }}
+            </span>
           </div>
         </div>
       </div>
@@ -378,6 +394,43 @@ export default {
       if (!isoString) return '';
       const d = new Date(isoString);
       return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const parseDateSafe = (isoString) => {
+      if (!isoString) return null;
+      if (isoString instanceof Date) return isoString;
+      let s = String(isoString).trim();
+      if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(s)) {
+        s = s.replace(" ", "T");
+      }
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const formatDeliveryDate = (isoString) => {
+      const d = parseDateSafe(isoString);
+      if (!d) return "Today";
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    };
+
+    const formatDeliveryTime = (isoString) => {
+      const d = parseDateSafe(isoString);
+      if (!d) return "";
+      return d.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    };
+
+    const formatDeliveryDateTime = (isoString) => {
+      const d = parseDateSafe(isoString);
+      if (!d) return "";
+      return formatDeliveryDate(d) + " • " + formatDeliveryTime(d);
     };
 
         const getGoogleMapsNavUrl = (order) => {
@@ -464,14 +517,17 @@ export default {
       if (!confirm(confirmMsg)) return;
 
       try {
+        const completedIso = new Date().toISOString();
         await GST_API.updateOrderStatus(order.id, 'Completed');
         order.status = 'Completed';
+        order.delivered_at = completedIso;
         if (order.payment_method === 'Cash') order.payment_status = 'Paid';
         
         // Update item in central store
         const storeItem = store.orders.find(o => o.id === order.id);
         if (storeItem) {
           storeItem.status = 'Completed';
+          storeItem.delivered_at = completedIso;
           if (storeItem.payment_method === 'Cash') storeItem.payment_status = 'Paid';
         }
 
@@ -769,6 +825,9 @@ export default {
       completedDeliveries,
       totalCashToRemit,
       formatTime,
+      formatDeliveryDate,
+      formatDeliveryTime,
+      formatDeliveryDateTime,
       getNavigationUrl,
       getGoogleMapsNavUrl,
       getWazeNavUrl,

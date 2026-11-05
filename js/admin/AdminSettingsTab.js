@@ -1,4 +1,4 @@
-﻿// G Shot Teas — Store & GCash Payment Settings (Admin & Super Admin)
+// G Shot Teas � Store & GCash Payment Settings (Admin & Super Admin)
 const AdminSettingsTab = {
   template: `
     <div class="space-y-8 animate-fade-in">
@@ -238,8 +238,8 @@ const AdminSettingsTab = {
                   <span>Strict Requirements Enforced:</span>
                 </p>
                 <div class="text-[10px] text-gray-300 space-y-0.5 pl-4">
-                  <p>✓ 1. Reference Number (9-13 digits) <span class="text-rose-400">*</span></p>
-                  <p>✓ 2. GCash Receipt Screenshot <span class="text-rose-400">*</span></p>
+                  <p>? 1. Reference Number (9-13 digits) <span class="text-rose-400">*</span></p>
+                  <p>? 2. GCash Receipt Screenshot <span class="text-rose-400">*</span></p>
                 </div>
               </div>
 
@@ -296,10 +296,10 @@ const AdminSettingsTab = {
           <!-- Delivery Fee -->
           <div>
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Delivery Fee (₱)
+              Delivery Fee (?)
             </label>
             <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₱</span>
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">?</span>
               <input 
                 v-model="storeForm.delivery_fee" 
                 type="number" 
@@ -397,7 +397,7 @@ const AdminSettingsTab = {
       store_tagline: store.settings?.store_tagline || 'Satisfy Yourself',
       store_address: store.settings?.store_address || 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna',
       store_phone: store.settings?.store_phone || '+63 912 345 6789',
-      store_email: store.settings?.store_email || 'info@gshotcafe.com',
+      store_email: store.settings?.store_email || 'gshotteas2@gmail.com',
       delivery_fee: store.settings?.delivery_fee || '40.00',
       business_hours: store.settings?.business_hours || 'Monday - Saturday: 9:00 AM - 10:00 PM',
     });

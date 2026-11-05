@@ -58,7 +58,7 @@ const AboutSection = {
             <div>
               <p class="text-xs text-brand-400 font-bold uppercase tracking-wider">Store Founder & Owner</p>
               <h4 class="text-base font-black text-white">Jefferson Alulod</h4>
-              <p class="text-[11px] text-gray-400">Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna • 0993.700.5426</p>
+              <p class="text-[11px] text-gray-400">Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna • 0994 612 1933</p>
             </div>
           </div>
           <div class="flex items-center gap-2">

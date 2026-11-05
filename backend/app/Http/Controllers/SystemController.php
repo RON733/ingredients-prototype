@@ -138,12 +138,12 @@ class SystemController extends Controller
 
         $owner = env('STORE_OWNER', 'Jefferson Alulod');
         $address = env('STORE_ADDRESS', 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna');
-        $phone = env('STORE_PHONE', '0993.700.5426');
+        $phone = env('STORE_PHONE', '0994 612 1933');
         $apiKey = env('GEMINI_API_KEY', '');
 
         if (empty($rawMessage)) {
             return response()->json([
-                'reply' => "Hello! I am your Gshot Assistant powered by Google Gemini AI 🧋 How can I help you today? You can ask about our drinks, food menu, walk-in orders, our owner ({$owner}), store location at {$address}, or event catering!"
+                'reply' => "Hello! I am your Gshot Assistant 🧋 How can I help you today? You can ask about our drinks, food menu, walk-in orders, our owner ({$owner}), store location at {$address}, or event catering!"
             ]);
         }
 

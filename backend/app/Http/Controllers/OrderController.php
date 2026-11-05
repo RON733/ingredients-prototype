@@ -383,8 +383,13 @@ class OrderController extends Controller
             }
         }
 
-        if ($newStatus === 'Completed' && $order->payment_method === 'Cash') {
-            $order->payment_status = 'Paid';
+        if ($newStatus === 'Completed') {
+            if ($order->payment_method === 'Cash') {
+                $order->payment_status = 'Paid';
+            }
+            if (empty($order->delivered_at)) {
+                $order->delivered_at = now();
+            }
         }
 
         $order->status = $newStatus;

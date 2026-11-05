@@ -259,7 +259,7 @@ const FeaturedSection = {
                     </div>
                     <div class="flex items-center gap-1.5 text-gray-300 font-bold">
                       <i class="pi pi-phone text-amber-400"></i>
-                      <span>Jefferson Alulod — 0993.700.5426</span>
+                      <span>Jefferson Alulod — 0994 612 1933</span>
                     </div>
                   </div>
                 </div>
@@ -357,7 +357,7 @@ const FeaturedSection = {
                     </div>
                     <div class="flex items-center gap-1.5 text-gray-300 font-bold">
                       <i class="pi pi-phone text-rose-400"></i>
-                      <span>Jefferson Alulod — 0993.700.5426</span>
+                      <span>Jefferson Alulod — 0994 612 1933</span>
                     </div>
                   </div>
                 </div>

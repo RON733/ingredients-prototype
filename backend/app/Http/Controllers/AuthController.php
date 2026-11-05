@@ -11,9 +11,67 @@ use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\AuditLog;
 use App\Models\SystemSetting;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
+    /**
+     * Validate email domain against known typos, disposable services, and DNS.
+     */
+    private function validateEmailDomain(string $email): ?string
+    {
+        $parts = explode('@', $email);
+        if (count($parts) !== 2) {
+            return 'Please enter a valid email address.';
+        }
+        $domain = strtolower(trim($parts[1]));
+
+        // Detect common typos
+        $typos = [
+            'gmai.com' => 'gmail.com',
+            'gmial.com' => 'gmail.com',
+            'gamil.com' => 'gmail.com',
+            'gmaill.com' => 'gmail.com',
+            'gmail.con' => 'gmail.com',
+            'gmail.co' => 'gmail.com',
+            'yaho.com' => 'yahoo.com',
+            'yahooo.com' => 'yahoo.com',
+            'hotmial.com' => 'hotmail.com',
+            'outlok.com' => 'outlook.com',
+        ];
+
+        if (isset($typos[$domain])) {
+            return "Did you mean @" . $typos[$domain] . "? Please check your email address spelling.";
+        }
+
+        // Reject temporary and disposable domains
+        $disposable = [
+            'tempmail.com', '10minutemail.com', 'guerrillamail.com', 'mailinator.com',
+            'trashmail.com', 'throwawaymail.com', 'getairmail.com', 'sharklasers.com',
+            'yopmail.com', 'dispostable.com', 'burnermail.io', 'dropmail.me'
+        ];
+
+        if (in_array($domain, $disposable)) {
+            return 'Temporary and disposable email addresses are not permitted. Please use your real email address.';
+        }
+
+        // Check DNS MX / A records
+        if (function_exists('checkdnsrr')) {
+            try {
+                if (!checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A')) {
+                    return "The email domain '@" . $domain . "' does not appear to exist. Please verify your email address.";
+                }
+            } catch (\Throwable $e) {
+                // Ignore network errors in local offline mode
+            }
+        }
+
+        return null;
+    }
+
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -24,34 +82,210 @@ class AuthController extends Controller
             'address' => 'nullable|string',
         ]);
 
-        $user = User::create([
+        $email = strtolower(trim($validated['email']));
+
+        // Check domain typos and disposable emails
+        $domainError = $this->validateEmailDomain($email);
+        if ($domainError) {
+            return response()->json(['message' => $domainError], 422);
+        }
+
+        // Generate 6-digit numeric verification code
+        $code = (string) random_int(100000, 999999);
+
+        // Store pending registration payload in cache for 15 minutes
+        $cacheKey = 'pending_reg_' . md5($email);
+        Cache::put($cacheKey, [
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            'email' => $email,
             'password' => Hash::make($validated['password']),
-            'role' => 'customer',
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
-            'status' => 'active',
+            'code' => Hash::make($code),
+            'plain_code' => $code,
+            'attempts' => 0,
+            'created_at' => now()->toIso8601String(),
+        ], now()->addMinutes(15));
+
+        $mailSent = false;
+        $userName = htmlspecialchars($validated['name']);
+        try {
+            Mail::send([], [], function ($message) use ($email, $code, $userName) {
+                $message->to($email)
+                    ->subject("G Shot Teas — Account Verification Code: " . $code)
+                    ->html("
+                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
+                            <div style='text-align: center; margin-bottom: 24px;'>
+                                <div style='display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 12px; background: #1f242d; color: #FACC15; font-size: 22px; font-weight: 900; margin-bottom: 12px;'>G'</div>
+                                <h2 style='color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;'>G Shot Teas</h2>
+                                <p style='color: #9CA3AF; font-size: 13px; margin-top: 4px;'>Verify Your Email Address</p>
+                            </div>
+                            <p style='color: #E5E7EB; font-size: 14px;'>Hello <strong>" . $userName . "</strong>,</p>
+                            <p style='color: #9CA3AF; font-size: 13px; line-height: 1.6;'>Thank you for creating an account with G Shot Teas! Enter the 6-digit verification code below to complete your registration and activate your account. This code expires in <strong>15 minutes</strong>.</p>
+                            <div style='background: #181c22; border: 2px dashed #FACC15; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;'>
+                                <span style='font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #FACC15; font-family: monospace;'>" . $code . "</span>
+                            </div>
+                            <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not attempt to register at G Shot Teas, please ignore this email.</p>
+                            <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
+                                G Shot Teas • STI College Santa Rosa Capstone Project
+                            </div>
+                        </div>
+                    ");
+            });
+            $mailSent = true;
+        } catch (\Throwable $e) {
+            Log::warning("Registration OTP email sending failed for " . $email . ": " . $e->getMessage());
+        }
+
+        Log::info("Registration OTP generated for " . $email . ": " . $code);
+
+        $isDevOrLog = config('app.debug') || env('MAIL_MAILER') === 'log' || app()->environment('local');
+
+        return response()->json([
+            'message' => 'A 6-digit verification code has been sent to ' . $email . '. Please check your email to complete registration.',
+            'email' => $email,
+            'requires_verification' => true,
+            'dev_code' => $isDevOrLog ? $code : null,
+            'mail_sent' => $mailSent,
         ]);
+    }
+
+    public function verifyRegisterOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $code = trim($validated['code']);
+
+        $cacheKey = 'pending_reg_' . md5($email);
+        $pending = Cache::get($cacheKey);
+
+        if (!$pending) {
+            return response()->json([
+                'message' => 'Verification code expired or no pending registration found. Please register again.'
+            ], 422);
+        }
+
+        if (($pending['attempts'] ?? 0) >= 5) {
+            Cache::forget($cacheKey);
+            return response()->json([
+                'message' => 'Too many invalid attempts. Please register again.'
+            ], 429);
+        }
+
+        // Verify code
+        $codeMatches = Hash::check($code, $pending['code']) || ($code === ($pending['plain_code'] ?? ''));
+        if (!$codeMatches) {
+            $pending['attempts'] = ($pending['attempts'] ?? 0) + 1;
+            Cache::put($cacheKey, $pending, now()->addMinutes(15));
+            return response()->json([
+                'message' => 'Invalid verification code. Please check your email and try again.'
+            ], 422);
+        }
+
+        // Check if email was taken while waiting
+        if (User::where('email', $email)->exists()) {
+            Cache::forget($cacheKey);
+            return response()->json([
+                'message' => 'An account with this email address already exists. Please sign in.'
+            ], 422);
+        }
+
+        // Provision verified customer account
+        $user = User::create([
+            'name' => $pending['name'],
+            'email' => $pending['email'],
+            'password' => $pending['password'], // already hashed
+            'role' => 'customer',
+            'phone' => $pending['phone'] ?? null,
+            'address' => $pending['address'] ?? null,
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+
+        Cache::forget($cacheKey);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        if (in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
-            AuditLog::create([
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'user_role' => $user->role,
-                'action' => 'Personnel Registered',
-                'details' => 'New staff/admin account created for ' . $user->email,
-                'ip_address' => $request->ip(),
-            ]);
-        }
+        AuditLog::create([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_role' => $user->role,
+            'action' => 'Customer Registered & Verified',
+            'details' => 'Customer registered and verified email via OTP: ' . $user->email,
+            'ip_address' => $request->ip(),
+        ]);
 
         return response()->json([
-            'message' => 'Registration successful',
+            'message' => 'Email verified! Account created successfully. Welcome to G Shot Teas.',
             'user' => $user,
             'token' => $token,
         ], 201);
+    }
+
+    public function resendRegisterOtp(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $cacheKey = 'pending_reg_' . md5($email);
+        $pending = Cache::get($cacheKey);
+
+        if (!$pending) {
+            return response()->json([
+                'message' => 'Registration session expired. Please enter your registration details again.'
+            ], 422);
+        }
+
+        $code = (string) random_int(100000, 999999);
+        $pending['code'] = Hash::make($code);
+        $pending['plain_code'] = $code;
+        $pending['attempts'] = 0;
+        Cache::put($cacheKey, $pending, now()->addMinutes(15));
+
+        $mailSent = false;
+        $userName = htmlspecialchars($pending['name']);
+        try {
+            Mail::send([], [], function ($message) use ($email, $code, $userName) {
+                $message->to($email)
+                    ->subject("G Shot Teas — Account Verification Code: " . $code)
+                    ->html("
+                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
+                            <div style='text-align: center; margin-bottom: 24px;'>
+                                <div style='display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 12px; background: #1f242d; color: #FACC15; font-size: 22px; font-weight: 900; margin-bottom: 12px;'>G'</div>
+                                <h2 style='color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;'>G Shot Teas</h2>
+                                <p style='color: #9CA3AF; font-size: 13px; margin-top: 4px;'>Verify Your Email Address</p>
+                            </div>
+                            <p style='color: #E5E7EB; font-size: 14px;'>Hello <strong>" . $userName . "</strong>,</p>
+                            <p style='color: #9CA3AF; font-size: 13px; line-height: 1.6;'>Here is your new 6-digit verification code to complete your registration. This code expires in <strong>15 minutes</strong>.</p>
+                            <div style='background: #181c22; border: 2px dashed #FACC15; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;'>
+                                <span style='font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #FACC15; font-family: monospace;'>" . $code . "</span>
+                            </div>
+                            <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not attempt to register at G Shot Teas, please ignore this email.</p>
+                            <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
+                                G Shot Teas • STI College Santa Rosa Capstone Project
+                            </div>
+                        </div>
+                    ");
+            });
+            $mailSent = true;
+        } catch (\Throwable $e) {
+            Log::warning("Resend registration OTP failed for " . $email . ": " . $e->getMessage());
+        }
+
+        $isDevOrLog = config('app.debug') || env('MAIL_MAILER') === 'log' || app()->environment('local');
+
+        return response()->json([
+            'message' => 'A new 6-digit verification code has been sent to ' . $email . '.',
+            'email' => $email,
+            'dev_code' => $isDevOrLog ? $code : null,
+            'mail_sent' => $mailSent,
+        ]);
     }
 
     public function login(Request $request)
@@ -107,6 +341,175 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'No account was found with that email address. Please verify your spelling or create an account.'
+            ], 404);
+        }
+
+        if ($user->status === 'deactivated') {
+            return response()->json([
+                'message' => 'This account has been deactivated. Please contact support.'
+            ], 403);
+        }
+
+        if (in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
+            return response()->json([
+                'message' => 'Staff and Administrator accounts must manage credentials through the Operations Portal. This portal is for customers.'
+            ], 403);
+        }
+
+        // Generate a 6-digit numeric verification code
+        $code = (string) random_int(100000, 999999);
+
+        // Store or update in password_reset_tokens
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            [
+                'token' => Hash::make($code),
+                'created_at' => now(),
+            ]
+        );
+
+        $mailSent = false;
+        try {
+            Mail::send([], [], function ($message) use ($email, $code, $user) {
+                $userName = htmlspecialchars($user->name);
+                $message->to($email)
+                    ->subject("G Shot Teas â€” Password Reset Code: {$code}")
+                    ->html("
+                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
+                            <div style='text-align: center; margin-bottom: 24px;'>
+                                <div style='display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 12px; background: #1f242d; color: #FACC15; font-size: 22px; font-weight: 900; margin-bottom: 12px;'>G'</div>
+                                <h2 style='color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;'>G Shot Teas</h2>
+                                <p style='color: #9CA3AF; font-size: 13px; margin-top: 4px;'>Password Reset Request</p>
+                            </div>
+                            <p style='color: #E5E7EB; font-size: 14px;'>Hello <strong>{$userName}</strong>,</p>
+                            <p style='color: #9CA3AF; font-size: 13px; line-height: 1.6;'>We received a request to reset the password for your customer account. Use the 6-digit verification code below. This code will expire in <strong>15 minutes</strong>.</p>
+                            <div style='background: #181c22; border: 2px dashed #FACC15; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;'>
+                                <span style='font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #FACC15; font-family: monospace;'>{$code}</span>
+                            </div>
+                            <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not make this request, you can safely ignore this email. Your account remains secure.</p>
+                            <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
+                                G Shot Teas â€¢ STI College Santa Rosa Capstone Project
+                            </div>
+                        </div>
+                    ");
+            });
+            $mailSent = true;
+        } catch (\Throwable $e) {
+            Log::warning("Password reset email sending failed for {$email}: " . $e->getMessage());
+        }
+
+        Log::info("Password reset OTP generated for {$email}: {$code}");
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_role' => $user->role,
+            'action' => 'Customer Password Reset Requested',
+            'details' => "Customer {$email} requested a password reset code.",
+            'ip_address' => $request->ip(),
+        ]);
+
+        $isDevOrLog = config('app.debug') || env('MAIL_MAILER') === 'log' || app()->environment('local');
+
+        return response()->json([
+            'message' => 'A 6-digit verification code has been sent to your email.',
+            'email' => $email,
+            'dev_code' => $isDevOrLog ? $code : null,
+            'mail_sent' => $mailSent,
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $code = trim($validated['code']);
+
+        $user = User::where('email', $email)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'No account found with that email address.'
+            ], 404);
+        }
+
+        if ($user->status === 'deactivated') {
+            return response()->json([
+                'message' => 'This account has been deactivated. Please contact support.'
+            ], 403);
+        }
+
+        $tokenRecord = DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->first();
+
+        if (!$tokenRecord) {
+            return response()->json([
+                'message' => 'No active password reset request found. Please request a new code.'
+            ], 422);
+        }
+
+        // 15-minute expiration check
+        $createdAt = Carbon::parse($tokenRecord->created_at);
+        if ($createdAt->addMinutes(15)->isPast()) {
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+            return response()->json([
+                'message' => 'The verification code has expired. Please request a new code.'
+            ], 422);
+        }
+
+        // Verify code match
+        if (!Hash::check($code, $tokenRecord->token) && $code !== $tokenRecord->token) {
+            return response()->json([
+                'message' => 'Invalid verification code. Please check your email or request a new code.'
+            ], 422);
+        }
+
+        // Update user password
+        $user->password = Hash::make($validated['password']);
+        $user->save();
+
+        // Invalidate the reset token
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        // Revoke old tokens
+        $user->tokens()->delete();
+
+        // Generate fresh token
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        AuditLog::create([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_role' => $user->role,
+            'action' => 'Customer Password Reset Completed',
+            'details' => "Customer {$email} successfully reset their password via verification code.",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => 'Your password has been successfully reset! Welcome back.',
             'user' => $user,
             'token' => $token,
         ]);

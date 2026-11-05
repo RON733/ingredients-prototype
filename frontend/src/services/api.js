@@ -84,7 +84,11 @@ export const GST_API = {
 
   // Authentication & Verification
   login: (email, password, portal = 'customer') => apiClient.post('/auth/login', { email, password, portal }),
+  forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),
+  resetPassword: (data) => apiClient.post('/auth/reset-password', data),
   register: (data) => apiClient.post('/auth/register', data),
+  verifyRegister: (data) => apiClient.post('/auth/register-verify', data),
+  resendRegisterOtp: (data) => apiClient.post('/auth/register-resend', data),
   googleLogin: (data, portal = 'customer') => {
     const payload = typeof data === 'string' ? { credential: data, portal } : { ...data, portal };
     return apiClient.post('/auth/google', payload);

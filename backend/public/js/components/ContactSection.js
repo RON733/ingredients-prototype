@@ -28,7 +28,7 @@ const ContactSection = {
                 <div>
                   <p class="font-bold text-gray-300">Store Owner & Proprietor</p>
                   <p class="text-white font-semibold mt-0.5">Jefferson Alulod</p>
-                  <p class="text-[10px] text-gray-400">Direct Inquiries: 0993.700.5426</p>
+                  <p class="text-[10px] text-gray-400">Direct Inquiries: 0994 612 1933</p>
                 </div>
               </div>
 
@@ -50,7 +50,7 @@ const ContactSection = {
                 </div>
                 <div>
                   <p class="font-bold text-gray-300">Contact Number</p>
-                  <p class="text-gray-400 mt-0.5">0993.700.5426 / +63 912 345 6789</p>
+                  <p class="text-gray-400 mt-0.5">0994 612 1933 / +63 912 345 6789</p>
                 </div>
               </div>
 
@@ -60,7 +60,7 @@ const ContactSection = {
                 </div>
                 <div>
                   <p class="font-bold text-gray-300">Email Address</p>
-                  <p class="text-gray-400 mt-0.5">info@gshotcafe.com</p>
+                  <p class="text-gray-400 mt-0.5">gshotteas2@gmail.com</p>
                 </div>
               </div>
 

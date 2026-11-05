@@ -62,6 +62,16 @@
           
           <!-- Staff Controls Capsule -->
           <div class="hidden sm:flex items-center bg-surface-950/80 border border-surface-700/60 rounded-xl p-1 gap-1.5 shadow-inner">
+            <!-- Operations Console Shortcut for Staff, Admin, Rider -->
+            <a 
+              v-if="store.isStaffOrAdmin || store.isDriver"
+              href="/admin"
+              class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 hover:bg-yellow-400 hover:text-black transition-all cursor-pointer shadow-sm"
+              title="Return to Operations Management Console">
+              <i class="pi pi-shield text-[10px]"></i>
+              <span>Console</span>
+            </a>
+
             <!-- Store Open / Close Status Badge & Toggle (Desktop) -->
             <button 
               @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
@@ -151,6 +161,12 @@
                 </div>
 
                 <div class="py-1.5">
+                  <a 
+                    v-if="store.isStaffOrAdmin || store.isDriver"
+                    href="/admin"
+                    class="w-full text-left px-4 py-2 text-xs text-yellow-400 hover:bg-surface-700/70 hover:text-yellow-300 font-bold flex items-center gap-2.5 transition-colors border-b border-surface-700/60 mb-1">
+                    <i class="pi pi-shield text-yellow-400"></i> Operations Portal (/admin)
+                  </a>
                   <button 
                     v-if="store.user"
                     @click="goToView('history')" 
@@ -249,6 +265,16 @@
           class="w-full py-2.5 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
           <span>🎉 Book Catering & Mobile Bar</span>
         </button>
+
+        <!-- Operations Portal Button (Mobile) -->
+        <a 
+          v-if="store.isStaffOrAdmin || store.isDriver"
+          href="/admin"
+          @click="mobileMenuOpen = false"
+          class="w-full py-2.5 px-4 rounded-xl bg-yellow-400 text-black font-extrabold text-xs flex items-center justify-center gap-2 shadow-md">
+          <i class="pi pi-shield text-xs"></i>
+          <span>Operations Console (/admin)</span>
+        </a>
 
         <!-- Operations Card: Live Clock & Store Status -->
         <div class="p-3.5 rounded-2xl bg-surface-950/80 border border-surface-700/60 flex items-center justify-between text-xs">

@@ -64,7 +64,11 @@ class ProductController extends Controller
             'emoji' => 'nullable|string',
             'image' => 'nullable|string',
             'is_available' => 'boolean',
-            'recipes' => 'nullable|array', // array of { ingredient_id, qty }
+            'recipes' => 'nullable|array',
+            'original_price' => 'nullable|numeric|min:0',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'discount_type' => 'nullable|string',
+            'discount_value' => 'nullable|numeric|min:0', // array of { ingredient_id, qty }
         ]);
 
         $product = Product::create([
@@ -73,7 +77,7 @@ class ProductController extends Controller
             'category' => $validated['category'],
             'price' => $validated['price'],
             'description' => $validated['description'] ?? '',
-            'emoji' => $validated['emoji'] ?? '🍽️',
+            'emoji' => $validated['emoji'] ?? 'ðŸ½ï¸',
             'image' => $validated['image'] ?? '/assets/hero-banner.png',
             'is_available' => $validated['is_available'] ?? true,
         ]);
@@ -92,7 +96,7 @@ class ProductController extends Controller
             'user_name' => $request->user()?->name ?? 'Admin',
             'user_role' => $request->user()?->role ?? 'admin',
             'action' => 'Product Created',
-            'details' => "Added {$product->name} (₱{$product->price}) under category {$product->category}",
+            'details' => "Added {$product->name} (â‚±{$product->price}) under category {$product->category}",
             'ip_address' => $request->ip(),
         ]);
 
@@ -111,6 +115,10 @@ class ProductController extends Controller
             'image' => 'nullable|string',
             'is_available' => 'sometimes|boolean',
             'recipes' => 'nullable|array',
+            'original_price' => 'nullable|numeric|min:0',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'discount_type' => 'nullable|string',
+            'discount_value' => 'nullable|numeric|min:0',
         ]);
 
         $product->update($validated);
@@ -175,5 +183,142 @@ class ProductController extends Controller
         ]);
 
         return response()->json(['message' => 'Product deleted successfully']);
+    }
+
+    public function applyDiscount(Request $request)
+    {
+        $validated = $request->validate([
+            'scope' => 'required|in:single,category,all',
+            'product_id' => 'required_if:scope,single|nullable|string|exists:products,id',
+            'category' => 'required_if:scope,category|nullable|string',
+            'discount_type' => 'required|in:percentage,fixed',
+            'discount_value' => 'required|numeric|min:0.01',
+        ]);
+
+        $query = Product::query();
+
+        if ($validated['scope'] === 'single') {
+            $query->where('id', $validated['product_id']);
+        } elseif ($validated['scope'] === 'category') {
+            $query->where('category', $validated['category']);
+        }
+
+        $products = $query->get();
+
+        if ($products->isEmpty()) {
+            return response()->json([
+                'message' => 'No products found matching the criteria.'
+            ], 404);
+        }
+
+        $discType = $validated['discount_type'];
+        $discVal = (float)$validated['discount_value'];
+        $updatedCount = 0;
+
+        foreach ($products as $product) {
+            $basePrice = ($product->original_price && $product->original_price > 0)
+                ? (float)$product->original_price
+                : (float)$product->price;
+
+            if ($discType === 'percentage') {
+                $percent = min(99, max(1, $discVal));
+                $newPrice = round($basePrice * (1 - ($percent / 100)), 2);
+                $percentVal = $percent;
+            } else {
+                $fixed = $discVal;
+                $newPrice = max(0, round($basePrice - $fixed, 2));
+                $percentVal = $basePrice > 0 ? round((($basePrice - $newPrice) / $basePrice) * 100, 1) : 0;
+            }
+
+            $product->original_price = $basePrice;
+            $product->price = $newPrice;
+            $product->discount_percent = $percentVal;
+            $product->discount_type = $discType;
+            $product->discount_value = $discVal;
+            $product->save();
+            $updatedCount++;
+        }
+
+        Cache::forget('products_catalog_default');
+
+        $user = $request->user();
+        $userName = $user?->name ?? 'Staff';
+        $userRole = $user?->role ?? 'staff';
+
+        $scopeLabel = $validated['scope'] === 'all'
+            ? 'all menu products'
+            : ($validated['scope'] === 'category' ? "all {$validated['category']}" : "product {$products->first()->name}");
+
+        $discLabel = $discType === 'percentage' ? "{$discVal}%" : "PHP {$discVal}";
+
+        AuditLog::create([
+            'user_name' => $userName,
+            'user_role' => $userRole,
+            'action' => 'Menu Discount Applied',
+            'details' => "Applied {$discLabel} discount to {$scopeLabel} ({$updatedCount} items affected)",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => "Successfully applied {$discLabel} discount to {$scopeLabel} ({$updatedCount} items updated).",
+            'updated_count' => $updatedCount,
+            'products' => Product::with('recipes.ingredient')->orderBy('name', 'asc')->get()
+        ]);
+    }
+
+    public function removeDiscount(Request $request)
+    {
+        $validated = $request->validate([
+            'scope' => 'required|in:single,category,all',
+            'product_id' => 'required_if:scope,single|nullable|string',
+            'category' => 'required_if:scope,category|nullable|string',
+        ]);
+
+        $query = Product::query();
+
+        if ($validated['scope'] === 'single') {
+            $query->where('id', $validated['product_id']);
+        } elseif ($validated['scope'] === 'category') {
+            $query->where('category', $validated['category']);
+        }
+
+        $products = $query->get();
+        $updatedCount = 0;
+
+        foreach ($products as $product) {
+            if ($product->original_price !== null && $product->original_price > 0) {
+                $product->price = (float)$product->original_price;
+            }
+            $product->original_price = null;
+            $product->discount_percent = 0;
+            $product->discount_type = null;
+            $product->discount_value = 0;
+            $product->save();
+            $updatedCount++;
+        }
+
+        Cache::forget('products_catalog_default');
+
+        $user = $request->user();
+        $userName = $user?->name ?? 'Staff';
+        $userRole = $user?->role ?? 'staff';
+
+        $scopeLabel = $validated['scope'] === 'all'
+            ? 'all products'
+            : ($validated['scope'] === 'category' ? "all {$validated['category']}" : 'selected product');
+
+        AuditLog::create([
+            'user_name' => $userName,
+            'user_role' => $userRole,
+            'action' => 'Menu Discount Removed',
+            'details' => "Removed discounts from {$scopeLabel} ({$updatedCount} items restored to base prices)",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => "Discounts successfully removed from {$scopeLabel} ({$updatedCount} items restored).",
+            'updated_count' => $updatedCount,
+            'products' => Product::with('recipes.ingredient')->orderBy('name', 'asc')->get()
+        ]);
     }
 }

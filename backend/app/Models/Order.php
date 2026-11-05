@@ -29,6 +29,7 @@ class Order extends Model
         'gcash_ref',
         'proof_image',
         'status',
+        'delivered_at',
         'subtotal',
         'delivery_fee',
         'total_amount',
@@ -43,6 +44,7 @@ class Order extends Model
         'customer_lng' => 'float',
         'driver_lat' => 'float',
         'driver_lng' => 'float',
+        'delivered_at' => 'datetime',
     ];
 
     public function user()

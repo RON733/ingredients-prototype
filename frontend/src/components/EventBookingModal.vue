@@ -205,7 +205,7 @@
               </div>
               <div class="sm:text-right">
                 <span class="text-[10px] text-gray-400 block">Transportation fee varies by location</span>
-                <span class="text-[10px] sm:text-[11px] font-bold text-white">Direct: Jefferson Alulod (0993.700.5426)</span>
+                <span class="text-[10px] sm:text-[11px] font-bold text-white">Direct: Jefferson Alulod (0994 612 1933)</span>
               </div>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-surface-700/60 pt-2">

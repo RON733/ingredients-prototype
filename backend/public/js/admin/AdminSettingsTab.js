@@ -397,7 +397,7 @@ const AdminSettingsTab = {
       store_tagline: store.settings?.store_tagline || 'Satisfy Yourself',
       store_address: store.settings?.store_address || 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna',
       store_phone: store.settings?.store_phone || '+63 912 345 6789',
-      store_email: store.settings?.store_email || 'info@gshotcafe.com',
+      store_email: store.settings?.store_email || 'gshotteas2@gmail.com',
       delivery_fee: store.settings?.delivery_fee || '40.00',
       business_hours: store.settings?.business_hours || 'Monday - Saturday: 9:00 AM - 10:00 PM',
     });

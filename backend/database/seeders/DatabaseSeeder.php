@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password123'),
             'role' => 'admin',
             'pin' => '2222',
-            'phone' => '+63 912 345 6789',
+            'phone' => '0994 612 1933',
             'address' => 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna',
             'status' => 'active',
         ]);
@@ -474,7 +474,7 @@ class DatabaseSeeder extends Seeder
             'store_tagline' => 'Satisfy Yourself',
             'store_address' => 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna',
             'store_phone' => '+63 912 345 6789',
-            'store_email' => 'info@gshotcafe.com',
+            'store_email' => 'gshotteas2@gmail.com',
             'business_hours' => 'Monday - Saturday: 9:00 AM - 10:00 PM',
             'delivery_fee' => '40.00',
             'gcash_account_name' => 'Jefferson A.',

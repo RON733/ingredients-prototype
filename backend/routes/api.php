@@ -15,12 +15,18 @@ use App\Http\Controllers\LoyverseController;
 // --- Public Endpoints ---
 Route::post('/auth/login', [AuthController::class, 'login'])->name('login');
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/register-verify', [AuthController::class, 'verifyRegisterOtp']);
+Route::post('/auth/register-resend', [AuthController::class, 'resendRegisterOtp']);
+Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 Route::get('/auth/google/config', [AuthController::class, 'googleConfig']);
 Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
 Route::get('/staff-list', [AuthController::class, 'listStaff']);
 Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
 Route::post('/auth/verify-password', [AuthController::class, 'verifyPassword']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -67,6 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products', [ProductController::class, 'store']);
     Route::match(['put', 'patch'], '/products/{id}', [ProductController::class, 'update']);
     Route::match(['put', 'patch'], '/products/{id}/toggle-availability', [ProductController::class, 'toggleAvailability']);
+    Route::post('/products/discount', [ProductController::class, 'applyDiscount']);
+    Route::post('/products/discount/remove', [ProductController::class, 'removeDiscount']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
     // Event Bookings
@@ -109,6 +117,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/products', [ProductController::class, 'store']);
     Route::match(['put', 'patch'], '/products/{id}', [ProductController::class, 'update']);
     Route::match(['put', 'patch'], '/products/{id}/toggle-availability', [ProductController::class, 'toggleAvailability']);
+    Route::post('/products/discount', [ProductController::class, 'applyDiscount']);
+    Route::post('/products/discount/remove', [ProductController::class, 'removeDiscount']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/bookings', [EventBookingController::class, 'index']);
     Route::match(['put', 'patch'], '/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);
@@ -120,6 +130,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/staff-list', [AuthController::class, 'listStaff']);
     Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
     Route::post('/auth/verify-password', [AuthController::class, 'verifyPassword']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/pin-switch', [AuthController::class, 'quickPinLogin']);
     Route::post('/verify-password', [AuthController::class, 'verifyPassword']);
     Route::post('/settings', [SystemController::class, 'updateSettings']);

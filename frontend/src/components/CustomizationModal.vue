@@ -149,7 +149,15 @@
         <div class="p-5 bg-surface-900 border-t border-surface-700 flex items-center justify-between">
           <div>
             <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Price</p>
-            <p class="text-2xl font-black text-brand-400">₱{{ computedTotal.toFixed(2) }}</p>
+            <div class="flex items-baseline gap-2">
+              <p class="text-2xl font-black text-brand-400">₱{{ computedTotal.toFixed(2) }}</p>
+              <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="text-xs line-through text-gray-400 font-semibold">
+                ₱{{ (computedTotal + (Number(product.original_price) - Number(product.price))).toFixed(2) }}
+              </span>
+              <span v-if="product.discount_percent > 0" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                {{ product.discount_percent }}% OFF
+              </span>
+            </div>
           </div>
 
           <div class="flex items-center gap-3">

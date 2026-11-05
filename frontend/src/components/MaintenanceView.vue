@@ -75,14 +75,14 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <!-- Hotline Card -->
             <a 
-              :href="'tel:' + (store.settings?.store_phone || '09937005426')"
+              :href="'tel:' + (store.settings?.store_phone || '09946121933')"
               class="p-3.5 rounded-2xl bg-surface-950/60 border border-surface-800 hover:border-yellow-400/50 transition-all flex items-center gap-3 group">
               <div class="w-9 h-9 rounded-xl bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                 <i class="pi pi-phone text-sm"></i>
               </div>
               <div class="min-w-0">
                 <p class="text-[10px] text-gray-400 font-medium">Direct Hotline / Call</p>
-                <p class="font-bold text-white truncate font-mono">{{ store.settings?.store_phone || '0993.700.5426' }}</p>
+                <p class="font-bold text-white truncate font-mono">{{ store.settings?.store_phone || '0994 612 1933' }}</p>
               </div>
             </a>
 

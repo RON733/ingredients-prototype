@@ -17,6 +17,10 @@ class Product extends Model
         'name',
         'category',
         'price',
+        'original_price',
+        'discount_percent',
+        'discount_type',
+        'discount_value',
         'description',
         'emoji',
         'image',
@@ -25,10 +29,18 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'float',
+        'original_price' => 'float',
+        'discount_percent' => 'float',
+        'discount_value' => 'float',
         'is_available' => 'boolean',
     ];
 
-    protected $appends = ['max_portions', 'stock_status'];
+    protected $appends = ['max_portions', 'stock_status', 'is_discounted'];
+
+    public function getIsDiscountedAttribute()
+    {
+        return $this->original_price !== null && $this->original_price > $this->price && $this->discount_percent > 0;
+    }
 
     public function recipes()
     {
@@ -75,3 +87,4 @@ class Product extends Model
         return 'available';
     }
 }
+

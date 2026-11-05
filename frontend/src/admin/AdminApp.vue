@@ -313,8 +313,21 @@ export default {
   setup() {
     const store = useGShotStore();
 
-    // The user MUST see the login page first unless actively unlocked in this session
-    const isLoggedIn = ref(false);
+    const isOpsUser = (u) => Boolean(u && ['staff', 'admin', 'super_admin', 'driver'].includes(u.role));
+
+    // Persist login state immediately from stored session to prevent login-page flash/reset on refresh
+    const initialUser = (() => {
+      try {
+        return JSON.parse(localStorage.getItem('gst_user') || 'null');
+      } catch (e) {
+        return null;
+      }
+    })();
+    const initialToken = localStorage.getItem('gst_auth_token') || '';
+    const initialUnlocked = sessionStorage.getItem('gst_admin_unlocked') === 'true';
+
+    // User is logged in if they have an active operational account in localStorage or active session unlock
+    const isLoggedIn = ref(Boolean(initialUser && isOpsUser(initialUser) && (initialToken || initialUnlocked)));
 
     // Active Role selection: 'staff' | 'admin' | 'super_admin'
     const activeRole = ref('staff');
@@ -382,12 +395,12 @@ export default {
     onMounted(async () => {
       await store.init();
 
-      // Check session: only keep unlocked if explicitly authenticated in this active browser session tab
-      const sessionUnlocked = sessionStorage.getItem('gst_admin_unlocked') === 'true';
-      const isOpsUser = store.user && ['staff', 'admin', 'super_admin', 'driver'].includes(store.user.role);
-      if (sessionUnlocked && isOpsUser) {
+      // Check session: keep unlocked if user is authenticated with an operational role
+      const currentUser = store.user;
+      if (currentUser && isOpsUser(currentUser)) {
         isLoggedIn.value = true;
-        if (store.user.role === 'driver') {
+        sessionStorage.setItem('gst_admin_unlocked', 'true');
+        if (currentUser.role === 'driver') {
           store.currentView = 'driver';
         } else {
           store.currentView = 'admin';
@@ -411,6 +424,16 @@ export default {
         }
       } catch (e) {
         // fallback
+      }
+    });
+
+    watch(() => store.user, (u) => {
+      if (!u || !isOpsUser(u)) {
+        isLoggedIn.value = false;
+        sessionStorage.removeItem('gst_admin_unlocked');
+      } else {
+        isLoggedIn.value = true;
+        sessionStorage.setItem('gst_admin_unlocked', 'true');
       }
     });
 
@@ -540,10 +563,6 @@ export default {
 
     const goToCustomerStore = (e) => {
       if (e) e.preventDefault();
-      // If user had an unauthenticated or leftover operational account in localStorage, clean it so customer view is pristine
-      if (!isLoggedIn.value && store.user && ['staff', 'admin', 'super_admin', 'driver'].includes(store.user.role)) {
-        store.logout();
-      }
       window.location.href = '/';
     };
 

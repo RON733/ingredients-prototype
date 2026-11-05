@@ -212,6 +212,9 @@
           <span class="absolute top-1.5 left-1.5 text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-surface-950/85 backdrop-blur-md text-gray-200 border border-surface-700 pointer-events-none">
             {{ product.category }}
           </span>
+          <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="absolute top-1.5 right-1.5 text-[8px] font-black px-1.5 py-0.5 rounded-md bg-rose-600 text-white shadow animate-pulse pointer-events-none">
+            {{ product.discount_percent }}% OFF
+          </span>
 
           <!-- Enlarge Button -->
           <button 
@@ -248,9 +251,15 @@
             </h3>
 
             <!-- Price -->
-            <div class="mt-1 flex items-baseline justify-between">
-              <span class="text-xs sm:text-sm font-black text-yellow-400">
+            <div class="mt-1 flex items-baseline gap-1.5 flex-wrap">
+              <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="text-[10px] line-through text-gray-400 font-semibold">
+                ₱{{ Number(product.original_price).toFixed(2) }}
+              </span>
+              <span class="text-xs sm:text-sm font-black" :class="product.original_price && Number(product.original_price) > Number(product.price) ? 'text-rose-400' : 'text-yellow-400'">
                 ₱{{ Number(product.price).toFixed(2) }}
+              </span>
+              <span v-if="product.discount_percent > 0" class="text-[8px] font-black px-1 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                -{{ product.discount_percent }}%
               </span>
             </div>
 
@@ -351,9 +360,14 @@
               <h3 class="font-bold text-white text-[11px] line-clamp-1" :title="product.name">
                 {{ product.name }}
               </h3>
-              <p class="text-[11px] font-black text-yellow-400 mt-0.5">
-                ₱{{ Number(product.price).toFixed(2) }}
-              </p>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="text-[9px] line-through text-gray-500">
+                  ₱{{ Number(product.original_price).toFixed(2) }}
+                </span>
+                <p class="text-[11px] font-black" :class="product.original_price && Number(product.original_price) > Number(product.price) ? 'text-rose-400' : 'text-yellow-400'">
+                  ₱{{ Number(product.price).toFixed(2) }}
+                </p>
+              </div>
             </div>
 
             <button 
@@ -407,6 +421,10 @@
           </span>
         </div>
 
+        <div v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-600 text-white text-xs font-black uppercase tracking-wider shadow-lg border border-rose-400/40 z-10 animate-pulse pointer-events-none">
+          <i class="pi pi-bolt text-[10px]"></i>
+          <span>{{ product.discount_percent }}% OFF</span>
+        </div>
         <span class="absolute top-3 right-3 text-[11px] font-bold px-2.5 py-1 rounded-full bg-surface-900/80 backdrop-blur-md text-gray-200 border border-surface-700 pointer-events-none">
           {{ product.category }}
         </span>
@@ -447,9 +465,14 @@
             <h3 class="font-bold text-white text-base sm:text-lg group-hover:text-yellow-400 transition-colors">
               {{ product.name }}
             </h3>
-            <span class="text-base sm:text-lg font-black text-yellow-400 whitespace-nowrap">
-              ₱{{ Number(product.price).toFixed(2) }}
-            </span>
+            <div class="text-right shrink-0">
+              <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="block text-xs line-through text-gray-500 font-semibold leading-none">
+                ₱{{ Number(product.original_price).toFixed(2) }}
+              </span>
+              <span class="text-base sm:text-lg font-black whitespace-nowrap" :class="product.original_price && Number(product.original_price) > Number(product.price) ? 'text-rose-400' : 'text-yellow-400'">
+                ₱{{ Number(product.price).toFixed(2) }}
+              </span>
+            </div>
           </div>
           <p class="text-xs text-gray-400 line-clamp-2 leading-relaxed mb-4">
             {{ product.description }}

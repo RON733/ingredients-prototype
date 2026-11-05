@@ -85,7 +85,7 @@
         </button>
 
         <button 
-          v-if="store.isAdminOrSuper"
+          v-if="store.isStaffOrAdmin"
           @click="selectTab('products')" 
           class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
           :class="store.adminTab === 'products' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
@@ -267,9 +267,9 @@
                 <span>Sales Analytics</span>
               </button>
 
-              <!-- Product Menu Management -->
+              <!-- Product Menu Management (Staff, Admin, Super Admin) -->
               <button 
-                v-if="store.isAdminOrSuper"
+                v-if="store.isStaffOrAdmin"
                 @click="selectTab('products')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
                 :class="store.adminTab === 'products' 

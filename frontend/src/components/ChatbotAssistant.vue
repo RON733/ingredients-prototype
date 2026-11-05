@@ -28,8 +28,6 @@
               </h3>
               <p class="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
                 <span>Online</span>
-                <span class="text-gray-500">•</span>
-                <span class="text-gray-300">Powered by Google Gemini AI ✨</span>
               </p>
             </div>
           </div>
@@ -59,8 +57,6 @@
 
             <!-- AI Model Badge Indicator -->
             <div v-if="msg.sender === 'bot'" class="mt-1 flex items-center gap-1.5 px-1 text-[9px] text-gray-500 font-mono">
-              <span class="text-brand-400 font-bold">✨ Gemini AI</span>
-              <span>•</span>
               <span>Owner: Jefferson Alulod</span>
             </div>
           </div>
@@ -71,19 +67,52 @@
               <span class="w-1.5 h-1.5 bg-brand-400 rounded-full animate-bounce"></span>
               <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
               <span class="w-1.5 h-1.5 bg-brand-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-              <span class="text-[10px] text-gray-400 ml-1">Gemini AI is thinking...</span>
+              <span class="text-[10px] text-gray-400 ml-1">Assistant is thinking...</span>
             </div>
           </div>
         </div>
 
         <!-- Quick Question Chips -->
-        <div class="px-3 py-2 border-t border-surface-800/80 bg-surface-900/90 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div class="px-2.5 py-2 border-t border-surface-800/80 bg-surface-900/90 flex items-center gap-1.5 relative">
+          <!-- Scroll Left Arrow Button -->
           <button 
-            v-for="chip in quickChips" 
-            :key="chip"
-            @click="sendQuick(chip)"
-            class="text-[10px] font-bold px-3 py-1.5 rounded-full bg-surface-800 hover:bg-surface-700 text-brand-300 hover:text-white border border-brand-500/30 whitespace-nowrap transition-all hover:scale-105 active:scale-95 shrink-0">
-            {{ chip }}
+            type="button"
+            @click="scrollChips('left')"
+            :disabled="!canScrollLeft"
+            class="w-6 h-6 rounded-full bg-surface-800 hover:bg-yellow-400 hover:text-black text-yellow-400 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-surface-800 disabled:hover:text-yellow-400 border border-surface-700/80 shadow-xs flex items-center justify-center transition-all cursor-pointer shrink-0 z-10"
+            title="Scroll left"
+            aria-label="Scroll left">
+            <i class="pi pi-chevron-left text-[9px]"></i>
+          </button>
+
+          <!-- Chips Scrollable Container -->
+          <div 
+            ref="chipsContainer"
+            @scroll="updateScrollState"
+            class="flex-1 flex items-center gap-1.5 overflow-x-auto select-none faq-chips-scroll py-1 touch-pan-x"
+            :class="isDragging ? 'cursor-grabbing' : 'cursor-grab'"
+            @mousedown="startDrag"
+            @mousemove="onDrag"
+            @mouseup="stopDrag">
+            <button 
+              v-for="chip in quickChips" 
+              :key="chip"
+              @click="handleChipClick(chip)"
+              type="button"
+              class="text-[10px] font-bold px-3 py-1.5 rounded-full bg-surface-800 hover:bg-surface-700 text-brand-300 hover:text-white border border-brand-500/30 whitespace-nowrap transition-all hover:scale-105 active:scale-95 shrink-0 cursor-pointer">
+              {{ chip }}
+            </button>
+          </div>
+
+          <!-- Scroll Right Arrow Button -->
+          <button 
+            type="button"
+            @click="scrollChips('right')"
+            :disabled="!canScrollRight"
+            class="w-6 h-6 rounded-full bg-surface-800 hover:bg-yellow-400 hover:text-black text-yellow-400 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-surface-800 disabled:hover:text-yellow-400 border border-surface-700/80 shadow-xs flex items-center justify-center transition-all cursor-pointer shrink-0 z-10"
+            title="Scroll right"
+            aria-label="Scroll right">
+            <i class="pi pi-chevron-right text-[9px]"></i>
           </button>
         </div>
 
@@ -113,7 +142,7 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
-// G Shot Teas — AI Chatbot Assistant (Powered by Google Gemini AI)
+// G Shot Teas — AI Chatbot Assistant 
 export default {
   name: 'ChatbotAssistant',
   setup() {
@@ -135,7 +164,7 @@ export default {
     const messages = Vue.reactive([
       {
         sender: 'bot',
-        text: 'Hello! I am your Gshot Assistant powered by Google Gemini AI. 🧋\n\nI can think freely and answer questions about our drinks, burgers, pizzas, walk-in orders, our owner **Jefferson Alulod**, or our store at **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**! How can I help you today?',
+        text: 'Hello! I am your Gshot Assistant. 🧋\n\nI can think freely and answer questions about our drinks, burgers, pizzas, walk-in orders, our owner **Jefferson Alulod**, or our store at **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**! How can I help you today?',
         ai_powered: true,
       },
     ]);
@@ -185,7 +214,7 @@ export default {
       } catch (err) {
         messages.push({
           sender: 'bot',
-          text: 'Yes! Walk-in orders and online delivery are always welcomed at **G Shot Teas**! 😊\n\nOwner: **Jefferson Alulod**\nAddress: **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**\nHours: Mon–Sat, 9:00 AM – 10:00 PM\nPhone: **0993.700.5426**',
+          text: 'Yes! Walk-in orders and online delivery are always welcomed at **G Shot Teas**! 😊\n\nOwner: **Jefferson Alulod**\nAddress: **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**\nHours: Mon–Sat, 9:00 AM – 10:00 PM\nPhone: **0994 612 1933**',
           ai_powered: false
         });
       } finally {
@@ -198,6 +227,106 @@ export default {
       inputMessage.value = chip;
       sendMessage();
     };
+    const chipsContainer = Vue.ref(null);
+    const canScrollLeft = Vue.ref(false);
+    const canScrollRight = Vue.ref(true);
+    const isDragging = Vue.ref(false);
+    let isMouseDown = false;
+    let startX = 0;
+    let scrollStartX = 0;
+
+    const updateScrollState = () => {
+      if (!chipsContainer.value) return;
+      const el = chipsContainer.value;
+      canScrollLeft.value = el.scrollLeft > 2;
+      canScrollRight.value = el.scrollLeft < (el.scrollWidth - el.clientWidth - 2);
+    };
+
+    const scrollChips = (direction) => {
+      if (!chipsContainer.value) return;
+      const distance = direction === 'left' ? -150 : 150;
+      chipsContainer.value.scrollBy({ left: distance, behavior: 'smooth' });
+      setTimeout(updateScrollState, 250);
+      setTimeout(updateScrollState, 450);
+    };
+
+    const startDrag = (e) => {
+      if (!chipsContainer.value) return;
+      isMouseDown = true;
+      isDragging.value = false;
+      startX = e.pageX;
+      scrollStartX = chipsContainer.value.scrollLeft;
+    };
+
+    const onDrag = (e) => {
+      if (!isMouseDown || !chipsContainer.value) return;
+      e.preventDefault();
+      const diff = e.pageX - startX;
+      if (Math.abs(diff) > 4) {
+        isDragging.value = true;
+      }
+      chipsContainer.value.scrollLeft = scrollStartX - diff;
+      updateScrollState();
+    };
+
+    const stopDrag = () => {
+      if (isMouseDown) {
+        isMouseDown = false;
+        setTimeout(() => {
+          isDragging.value = false;
+        }, 80);
+      }
+    };
+
+    const handleChipClick = (chip) => {
+      if (isDragging.value) return;
+      sendQuick(chip);
+    };
+
+    const onWheel = (e) => {
+      if (!chipsContainer.value) return;
+      const el = chipsContainer.value;
+      if (el.scrollWidth > el.clientWidth && e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+        updateScrollState();
+      }
+    };
+
+    Vue.watch(chipsContainer, (newEl, oldEl) => {
+      if (oldEl) {
+        oldEl.removeEventListener('wheel', onWheel);
+      }
+      if (newEl) {
+        newEl.addEventListener('wheel', onWheel, { passive: false });
+        Vue.nextTick(updateScrollState);
+      }
+    });
+
+    Vue.watch(isOpen, (open) => {
+      if (open) {
+        Vue.nextTick(() => {
+          scrollToBottom();
+          updateScrollState();
+        });
+        setTimeout(updateScrollState, 150);
+        setTimeout(updateScrollState, 350);
+      }
+    });
+
+    Vue.onMounted(() => {
+      window.addEventListener('resize', updateScrollState);
+      window.addEventListener('mouseup', stopDrag);
+    });
+
+    Vue.onUnmounted(() => {
+      window.removeEventListener('resize', updateScrollState);
+      window.removeEventListener('mouseup', stopDrag);
+      if (chipsContainer.value) {
+        chipsContainer.value.removeEventListener('wheel', onWheel);
+      }
+    });
+
 
     return {
       store,
@@ -207,10 +336,42 @@ export default {
       messages,
       quickChips,
       chatContainer,
+      chipsContainer,
+      canScrollLeft,
+      canScrollRight,
+      isDragging,
       formatMessage,
       sendMessage,
       sendQuick,
+      scrollChips,
+      startDrag,
+      onDrag,
+      stopDrag,
+      handleChipClick,
+      updateScrollState,
     };
   },
 };
 </script>
+
+<style scoped>
+.faq-chips-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(250, 204, 21, 0.45) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.faq-chips-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.faq-chips-scroll::-webkit-scrollbar-track {
+  background: rgba(39, 39, 42, 0.4);
+  border-radius: 9999px;
+}
+.faq-chips-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(250, 204, 21, 0.4);
+  border-radius: 9999px;
+}
+.faq-chips-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(250, 204, 21, 0.85);
+}
+</style>

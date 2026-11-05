@@ -30,7 +30,11 @@
           <div class="flex items-center justify-between border-b border-surface-700/60 pb-4">
             <div>
               <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">ORDER {{ order.order_number }}</p>
-              <p class="text-xs text-gray-400 mt-0.5">{{ formatDate(order.created_at) }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">Placed: {{ formatDate(order.created_at) }}</p>
+              <p v-if="order.delivered_at || (order.order_type === 'Delivery' && order.status === 'Completed')" class="text-[11px] text-emerald-400 font-mono mt-0.5 flex items-center gap-1">
+                <i class="pi pi-check-circle text-[10px]"></i>
+                Delivered: {{ formatDate(order.delivered_at || order.updated_at) }}
+              </p>
             </div>
 
             <span class="px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">

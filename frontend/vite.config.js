@@ -11,6 +11,28 @@ export default defineConfig({
   plugins: [
     vue(),
     tailwindcss(),
+    {
+      name: 'admin-route-rewrite',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const rawUrl = req.url ? req.url.split('?')[0] : '';
+          const cleanUrl = rawUrl.toLowerCase().replace(/\/+$/, '');
+          const opsRoutes = [
+            '/admin',
+            '/staff',
+            '/superadmin',
+            '/super-admin',
+            '/driver',
+            '/rider',
+            '/dashboard',
+          ];
+          if (opsRoutes.includes(cleanUrl)) {
+            req.url = '/admin.html';
+          }
+          next();
+        });
+      },
+    },
   ],
   resolve: {
     alias: {
