@@ -1,4 +1,4 @@
-// G Shot Teas � Pinia Central Store
+// G Shot Teas ï¿½ Pinia Central Store
 const { defineStore } = Pinia;
 
 const DEFAULT_PRODUCTS = [
@@ -8,7 +8,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 89,
     description: 'Juicy grilled beef patty, golden brioche bun, fresh lettuce, and melted rich cheddar cheese.',
-    emoji: '??',
+    emoji: 'ðŸ”',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 23,
@@ -26,7 +26,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 149,
     description: 'Double-stacked beef smash patties with double layers of cheddar and toasted brioche.',
-    emoji: '??',
+    emoji: 'ðŸ”',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 21,
@@ -43,7 +43,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 169,
     description: 'Loaded with savory pepperoni cuts, premium mozzarella cheese blend, and signature Italian sauce.',
-    emoji: '??',
+    emoji: 'ðŸ•',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -61,7 +61,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 159,
     description: 'A cheesy paradise featuring melted mozzarella and cheddar cheese over seasoned tomato sauce.',
-    emoji: '??',
+    emoji: 'ðŸ§€',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -79,7 +79,7 @@ const DEFAULT_PRODUCTS = [
     category: 'RiceMeals',
     price: 129,
     description: 'Crispy flavorful glazed chicken wings served with fragrant steamed rice and dipping sauce.',
-    emoji: '??',
+    emoji: 'ðŸ—',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 12,
@@ -95,7 +95,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 79,
     description: 'Crispy golden fries generously topped with warm melted cheddar cheese sauce.',
-    emoji: '??',
+    emoji: 'ðŸŸ',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 24,
@@ -111,7 +111,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 49,
     description: 'Timeless brewed black tea infused with creamy milk and loaded with chewy brown sugar tapioca pearls.',
-    emoji: '??',
+    emoji: 'ðŸ§‹',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 44,
@@ -128,7 +128,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Warm tiger-striped brown sugar drizzle, fresh dairy milk, and slow-cooked boba pearls.',
-    emoji: '??',
+    emoji: 'ðŸ§‹',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 34,
@@ -145,7 +145,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 79,
     description: 'Fine Japanese ceremonial matcha layered over cold fresh milk and sweet pearls.',
-    emoji: '??',
+    emoji: 'ðŸµ',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -162,7 +162,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Rich velvety purple taro with tea essence, creamy dairy, and bouncy pearls.',
-    emoji: '??',
+    emoji: 'ðŸ§‹',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -180,7 +180,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Coffee',
     price: 89,
     description: 'Freshly extracted espresso shot combined with vanilla-infused milk and buttery caramel drizzle.',
-    emoji: '?',
+    emoji: 'â˜•',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 40,
@@ -196,7 +196,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 99,
     description: 'Filipino shaved ice delicacy loaded with sweet jellies, leche flan, ube, and rich milk.',
-    emoji: '??',
+    emoji: 'ðŸ§',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 30,
@@ -336,6 +336,16 @@ const useGShotStore = defineStore('gshot', {
     isAdminOrSuper: (state) => ['admin', 'super_admin'].includes(state.user?.role),
     isSuperAdmin: (state) => state.user?.role === 'super_admin',
 
+    isMaintenanceMode: (state) => {
+      if (state.settings && state.settings.maintenance_mode !== undefined) {
+        return state.settings.maintenance_mode === 'true' || state.settings.maintenance_mode === true || state.settings.maintenance_mode === '1';
+      }
+      return false;
+    },
+    maintenanceTitle: (state) => state.settings?.maintenance_title || 'Website Under Scheduled Maintenance',
+    maintenanceMessage: (state) => state.settings?.maintenance_message || 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!',
+    maintenanceUntil: (state) => state.settings?.maintenance_until || '',
+
     isStoreOpen: (state) => {
       if (state.settings && state.settings.store_open !== undefined) {
         return state.settings.store_open === 'true' || state.settings.store_open === true;
@@ -369,6 +379,9 @@ const useGShotStore = defineStore('gshot', {
     },
 
     removeToast(id) {
+    },
+    addToast(msg, type = 'success') {
+      this.notify(msg, type);
       this.toasts = this.toasts.filter(t => t.id !== id);
     },
 
@@ -532,6 +545,14 @@ const useGShotStore = defineStore('gshot', {
         if (orderData && (orderData.id || orderData.order_number)) {
           this.activeOrder = orderData;
           localStorage.setItem('gst_active_order_id', orderData.id);
+          try {
+            const list = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
+            const idStr = String(orderData.id);
+            if (!list.includes(idStr)) {
+              list.unshift(idStr);
+              localStorage.setItem('gst_local_order_history', JSON.stringify(list.slice(0, 50)));
+            }
+          } catch (e) {}
           return;
         }
       } catch (err) {
@@ -861,6 +882,65 @@ const useGShotStore = defineStore('gshot', {
       this.notify('Logged out successfully.');
     },
 
+    async fetchSettings() {
+      try {
+        const res = await GST_API.getSettings();
+        if (res?.data) {
+          this.settings = { ...this.settings, ...res.data };
+        }
+        return res?.data;
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    },
+
+    // Super Admin: Website Emergency Shutdown / Maintenance Mode Controls
+    async toggleMaintenanceMode(options = {}) {
+      if (!this.isSuperAdmin) {
+        this.notify('Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.', 'error');
+        return false;
+      }
+      const next = !this.isMaintenanceMode;
+      return await this.setMaintenanceMode(next, options);
+    },
+
+    async setMaintenanceMode(enable, options = {}) {
+      if (!this.isSuperAdmin) {
+        this.notify('Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.', 'error');
+        return false;
+      }
+      const valStr = enable ? 'true' : 'false';
+      this.settings.maintenance_mode = valStr;
+      if (options.title) this.settings.maintenance_title = options.title;
+      if (options.message) this.settings.maintenance_message = options.message;
+      if (options.until !== undefined) this.settings.maintenance_until = options.until;
+
+      try {
+        const payload = {
+          maintenance_mode: valStr,
+          ...(options.title ? { maintenance_title: options.title } : {}),
+          ...(options.message ? { maintenance_message: options.message } : {}),
+          ...(options.until !== undefined ? { maintenance_until: options.until } : {}),
+        };
+        const res = await GST_API.updateSettings(payload);
+        if (res.data?.settings) {
+          this.settings = { ...this.settings, ...res.data.settings };
+        }
+        this.notify(
+          enable 
+            ? 'ðŸš¨ WEBSITE SHUTDOWN ACTIVATED! Customers now see the Under Maintenance screen.' 
+            : 'âœ… WEBSITE RESTORED ONLINE! Customer store ordering and access are back live.',
+          enable ? 'info' : 'success'
+        );
+        return true;
+      } catch (err) {
+        console.error('Failed to update maintenance mode:', err);
+        const errMsg = err.response?.data?.message || 'Failed to update website status on server.';
+        this.notify(errMsg, 'error');
+        return false;
+      }
+    },
+
     // Store Status Toggle (Staff, Admin, Super Admin)
     async toggleStoreStatus() {
       const next = !this.isStoreOpen;
@@ -1044,6 +1124,43 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
+    // Menu Promotional Discount Actions
+    async applyDiscount(payload) {
+      try {
+        const res = await GST_API.applyDiscount(payload);
+        if (res.data?.products) {
+          this.products = res.data.products;
+        } else {
+          await this.fetchProducts();
+        }
+        this.notify(res.data?.message || 'Discount applied successfully!', 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Failed to apply discount:', err);
+        const msg = err.response?.data?.message || 'Failed to apply discount.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
+    async removeDiscount(payload) {
+      try {
+        const res = await GST_API.removeDiscount(payload);
+        if (res.data?.products) {
+          this.products = res.data.products;
+        } else {
+          await this.fetchProducts();
+        }
+        this.notify(res.data?.message || 'Discounts removed successfully.', 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Failed to remove discount:', err);
+        const msg = err.response?.data?.message || 'Failed to remove discount.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
     // Loyverse POS Integration Actions
     async getLoyverseStatus() {
       try {
@@ -1066,7 +1183,7 @@ const useGShotStore = defineStore('gshot', {
           this.fetchProducts(),
         ]);
         if (count > 0) {
-          this.notify(`⚡ Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
+          this.notify(`âš¡ Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
         } else {
           this.notify('Loyverse POS is up to date. No new un-synced sales.', 'info');
         }
@@ -1085,7 +1202,7 @@ const useGShotStore = defineStore('gshot', {
       try {
         const res = await GST_API.exportMenuToLoyverse();
         const total = res.data?.results?.total ?? 0;
-        this.notify(`📤 Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
+        this.notify(`ðŸ“¤ Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
         return res.data;
       } catch (err) {
         console.error('Loyverse export failed:', err);

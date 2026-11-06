@@ -2,12 +2,12 @@
 <div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-amber-400 selection:text-black">
       
       <!-- 1. Authenticated Delivery Rider: Render Dedicated Driver View -->
-      <div v-if="isLoggedIn && store.user && store.user.role === 'driver'" class="flex-1 flex flex-col">
+      <div v-if="isLoggedIn && store.user && (store.user.role === 'driver' || (store.isAdminOrSuper && store.currentView === 'driver'))" class="flex-1 flex flex-col">
         <DriverView />
       </div>
 
       <!-- 2. Authenticated Staff, Admin, or Super Admin: Render Full Management Dashboard -->
-      <div v-else-if="isLoggedIn && store.user && store.isStaffOrAdmin" class="flex-1 flex flex-col">
+      <div v-else-if="isLoggedIn && store.user && (store.isStaffOrAdmin || store.currentView === 'admin')" class="flex-1 flex flex-col">
         <AdminDashboard />
       </div>
 
@@ -244,14 +244,6 @@
                 class="w-full py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-750 text-yellow-400 font-bold text-xs flex items-center justify-center gap-2 border border-surface-700 transition-all cursor-pointer">
                 <span>⚡ Instant 1-Click Sign In as {{ activeRole === 'super_admin' ? 'Super Admin' : (activeRole === 'admin' ? 'Admin' : (activeRole === 'driver' ? 'Delivery Rider' : 'Staff')) }}</span>
               </button>
-
-              <button 
-                type="button"
-                @click="goToCustomerStore"
-                class="w-full py-2.5 px-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md">
-                <i class="pi pi-arrow-left text-xs"></i>
-                <span>Go to Customer Storefront (Ordering Page)</span>
-              </button>
             </div>
 
           </div>
@@ -260,11 +252,8 @@
           <div class="text-center text-[11px] text-gray-500 space-y-1">
             <p>Protected System — All staff logins & inventory adjustments are audited.</p>
             <div class="flex items-center justify-center gap-2 text-[10px]">
-              <a href="/" @click="goToCustomerStore" class="text-yellow-400 hover:text-yellow-300 hover:underline font-semibold flex items-center gap-1">
-                <i class="pi pi-external-link text-[10px]"></i>
-                <span>Customer Storefront</span>
-              </a>
-              <span>•</span>
+              <span class="text-neutral-400 font-semibold">G Shot Teas Operations Terminal</span>
+              <span>&bull;</span>
               <span>STI College Santa Rosa Capstone</span>
             </div>
           </div>
@@ -354,7 +343,7 @@ export default {
         setPortalRole('super_admin');
       } else if (path.includes('driver') || path.includes('rider')) {
         setPortalRole('driver');
-      } else if (path.includes('admin')) {
+      } else if (path.includes('admin') || path.includes('operation') || path.includes('ops') || path.includes('portal') || path.includes('terminal') || path.includes('dashboard')) {
         setPortalRole('admin');
       } else {
         setPortalRole('staff');
@@ -403,7 +392,7 @@ export default {
         if (currentUser.role === 'driver') {
           store.currentView = 'driver';
         } else {
-          store.currentView = 'admin';
+          store.currentView = store.user?.role === 'driver' ? 'driver' : 'admin';
         }
       } else {
         isLoggedIn.value = false;
@@ -561,11 +550,6 @@ export default {
       return 'pi-check-circle text-emerald-400';
     };
 
-    const goToCustomerStore = (e) => {
-      if (e) e.preventDefault();
-      window.location.href = '/';
-    };
-
     return {
       store,
       isLoggedIn,
@@ -590,7 +574,6 @@ export default {
       submitPinLogin,
       submitCredentialsLogin,
       oneClickDirectLogin,
-      goToCustomerStore,
       getToastClass,
       getToastIcon
     };

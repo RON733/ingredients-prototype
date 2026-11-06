@@ -267,7 +267,31 @@ const useGShotStore = defineStore('gshot', {
     token: localStorage.getItem('gst_auth_token') || '',
 
     // Navigation & Modals
-    currentView: (typeof window !== 'undefined' && (window.location.pathname.includes('admin') || window.location.pathname.includes('staff') || window.location.pathname.includes('superadmin') || window.location.pathname.includes('super-admin') || window.location.pathname.includes('dashboard'))) ? 'admin' : 'customer', // 'customer' | 'admin' | 'checkout' | 'track' | 'history'
+    currentView: (typeof window !== 'undefined' && (
+      window.location.pathname.includes('admin') || 
+      window.location.pathname.includes('staff') || 
+      window.location.pathname.includes('superadmin') || 
+      window.location.pathname.includes('super-admin') || 
+      window.location.pathname.includes('dashboard') ||
+      window.location.pathname.includes('operation') ||
+      window.location.pathname.includes('ops') ||
+      window.location.pathname.includes('terminal') ||
+      window.location.pathname.includes('portal') ||
+      window.location.pathname.includes('driver') ||
+      window.location.pathname.includes('rider')
+    )) ? (
+      (window.location.pathname.includes('driver') || window.location.pathname.includes('rider')) ? 'driver' : 'admin'
+    ) : (
+      (function() {
+        try {
+          const u = JSON.parse(localStorage.getItem('gst_user') || 'null');
+          if (u && ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'].includes(u.role)) {
+            return u.role === 'driver' ? 'driver' : 'admin';
+          }
+        } catch (e) {}
+        return 'customer';
+      })()
+    ), // 'customer' | 'admin' | 'checkout' | 'track' | 'history'
     activeSection: 'home',   // 'home' | 'menu' | 'about' | 'contact'
     adminTab: 'orders',      // 'orders' | 'analytics' | 'products' | 'inventory' | 'recipes' | 'bookings' | 'users' | 'audit'
     cartOpen: false,
@@ -344,7 +368,7 @@ const useGShotStore = defineStore('gshot', {
 
     isDriver: (state) => state.user?.role === 'driver',
     isStaffOnly: (state) => state.user?.role === 'staff',
-    isStaffOrAdmin: (state) => ['staff', 'admin', 'super_admin'].includes(state.user?.role),
+    isStaffOrAdmin: (state) => ['staff', 'admin', 'super_admin', 'superadmin'].includes(state.user?.role),
     isAdminOrSuper: (state) => ['admin', 'super_admin'].includes(state.user?.role),
     isSuperAdmin: (state) => state.user?.role === 'super_admin',
 
@@ -396,8 +420,33 @@ const useGShotStore = defineStore('gshot', {
       this.toasts = this.toasts.filter(t => t.id !== id);
     },
 
+    addToast(msg, type = 'success') {
+      this.notify(msg, type);
+    },
+
     // Initialize Store
     async init() {
+      // Immediate Guard: Operational personnel (staff, driver, admin, super admin) only need the dashboard
+      if (this.user && ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'].includes(this.user.role)) {
+        const isOpsPath = typeof window !== 'undefined' && (
+          window.location.pathname.includes('admin') || 
+          window.location.pathname.includes('staff') || 
+          window.location.pathname.includes('superadmin') || 
+          window.location.pathname.includes('super-admin') || 
+          window.location.pathname.includes('dashboard') ||
+          window.location.pathname.includes('operation') ||
+          window.location.pathname.includes('ops') ||
+          window.location.pathname.includes('terminal') ||
+          window.location.pathname.includes('portal') ||
+          window.location.pathname.includes('driver') ||
+          window.location.pathname.includes('rider')
+        );
+        if (!isOpsPath) {
+          window.location.replace('/admin');
+          return;
+        }
+      }
+
       await this.refreshAllData();
       // Non-blocking single-flight periodic refresh for active order
       let isPollInFlight = false;
@@ -560,6 +609,14 @@ const useGShotStore = defineStore('gshot', {
         if (orderData && (orderData.id || orderData.order_number)) {
           this.activeOrder = orderData;
           localStorage.setItem('gst_active_order_id', orderData.id);
+          try {
+            const list = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
+            const idStr = String(orderData.id);
+            if (!list.includes(idStr)) {
+              list.unshift(idStr);
+              localStorage.setItem('gst_local_order_history', JSON.stringify(list.slice(0, 50)));
+            }
+          } catch (e) {}
           return;
         }
       } catch (err) {
@@ -679,6 +736,7 @@ const useGShotStore = defineStore('gshot', {
         if (this.token) {
           localStorage.setItem('gst_auth_token', this.token);
         }
+        document.cookie = `gst_role=${this.user.role}; path=/; max-age=${30 * 86400}; SameSite=Lax`;
 
         // Auto-lock previous staff account upon PIN handoff
         if (previousStaffId) {
@@ -806,6 +864,11 @@ const useGShotStore = defineStore('gshot', {
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
+        if (['staff', 'admin', 'super_admin', 'driver'].includes(this.user.role)) {
+          document.cookie = `gst_role=${this.user.role}; path=/; max-age=${30 * 86400}; SameSite=Lax`;
+        } else {
+          document.cookie = `gst_role=customer; path=/; max-age=${30 * 86400}; SameSite=Lax`;
+        }
         this.authModalOpen = false;
 
         this.notify(`Welcome back, ${this.user.name}!`);
@@ -922,6 +985,11 @@ const useGShotStore = defineStore('gshot', {
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
+        if (['staff', 'admin', 'super_admin', 'driver'].includes(this.user.role)) {
+          document.cookie = `gst_role=${this.user.role}; path=/; max-age=${30 * 86400}; SameSite=Lax`;
+        } else {
+          document.cookie = `gst_role=customer; path=/; max-age=${30 * 86400}; SameSite=Lax`;
+        }
         this.authModalOpen = false;
 
         this.notify(res.data.message || `Welcome, ${this.user.name}!`);
@@ -957,6 +1025,7 @@ const useGShotStore = defineStore('gshot', {
       this.activeOrder = null;
       localStorage.removeItem('gst_user');
       localStorage.removeItem('gst_auth_token');
+      document.cookie = 'gst_role=; path=/; max-age=0; SameSite=Lax';
       localStorage.removeItem('gst_active_order_id');
       sessionStorage.removeItem('gst_admin_unlocked');
       const isAdminRoute = typeof window !== 'undefined' && (window.location.pathname.includes('admin') || window.location.pathname.includes('staff') || window.location.pathname.includes('superadmin') || window.location.pathname.includes('super-admin') || window.location.pathname.includes('dashboard'));
@@ -1209,6 +1278,43 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
+    // Menu Promotional Discount Actions
+    async applyDiscount(payload) {
+      try {
+        const res = await GST_API.applyDiscount(payload);
+        if (res.data?.products) {
+          this.products = res.data.products;
+        } else {
+          await this.fetchProducts();
+        }
+        this.notify(res.data?.message || 'Discount applied successfully!', 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Failed to apply discount:', err);
+        const msg = err.response?.data?.message || 'Failed to apply discount.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
+    async removeDiscount(payload) {
+      try {
+        const res = await GST_API.removeDiscount(payload);
+        if (res.data?.products) {
+          this.products = res.data.products;
+        } else {
+          await this.fetchProducts();
+        }
+        this.notify(res.data?.message || 'Discounts removed successfully.', 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Failed to remove discount:', err);
+        const msg = err.response?.data?.message || 'Failed to remove discount.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
     // Loyverse POS Integration Actions
     async getLoyverseStatus() {
       try {
@@ -1245,16 +1351,94 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    async exportMenuToLoyverse() {
+        async exportMenuToLoyverse() {
       this.loading = true;
       try {
         const res = await GST_API.exportMenuToLoyverse();
         const total = res.data?.results?.total ?? 0;
-        this.notify(`ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¤ Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
+        this.notify(`Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
         return res.data;
       } catch (err) {
         console.error('Loyverse export failed:', err);
         this.notify(err.response?.data?.message || 'Failed to export menu to Loyverse.', 'error');
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async exportIngredientsToLoyverse() {
+      this.loading = true;
+      try {
+        const res = await GST_API.exportIngredientsToLoyverse();
+        const created = res.data?.results?.created ?? 0;
+        const updated = res.data?.results?.updated ?? 0;
+        await this.fetchIngredients();
+        this.notify(`Synced ${created + updated} raw ingredients & stock levels to Loyverse Advanced Inventory!`, 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Loyverse ingredients export failed:', err);
+        this.notify(err.response?.data?.message || 'Failed to export ingredients to Loyverse.', 'error');
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async pullLoyverseInventory() {
+      this.loading = true;
+      try {
+        const res = await GST_API.pullLoyverseInventory();
+        const count = res.data?.results?.updated_count ?? 0;
+        await Promise.all([
+          this.fetchIngredients(),
+          this.fetchProducts(),
+        ]);
+        if (count > 0) {
+          this.notify(`Updated ${count} ingredient stock level(s) from Loyverse Inventory!`, 'success');
+        } else {
+          this.notify('Website inventory is already in sync with Loyverse.', 'info');
+        }
+        return res.data;
+      } catch (err) {
+        console.error('Loyverse pull inventory failed:', err);
+        this.notify(err.response?.data?.message || 'Failed to pull inventory from Loyverse.', 'error');
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async pushLoyverseInventory() {
+      this.loading = true;
+      try {
+        const res = await GST_API.pushLoyverseInventory();
+        const count = res.data?.results?.pushed_count ?? 0;
+        this.notify(`Pushed ${count} ingredient stock levels to Loyverse!`, 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Loyverse push inventory failed:', err);
+        this.notify(err.response?.data?.message || 'Failed to push inventory to Loyverse.', 'error');
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fullLoyverseSync() {
+      this.loading = true;
+      try {
+        const res = await GST_API.fullLoyverseSync();
+        await Promise.all([
+          this.fetchIngredients(),
+          this.fetchProducts(),
+          this.fetchOrders(),
+        ]);
+        this.notify('Full Advanced Inventory sync complete! Ingredients, Recipes & Stocks are synchronized.', 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Loyverse full sync failed:', err);
+        this.notify(err.response?.data?.message || 'Failed to full sync with Loyverse.', 'error');
         throw err;
       } finally {
         this.loading = false;

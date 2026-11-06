@@ -107,7 +107,7 @@ const CheckoutView = {
                 type="button"
                 @click="useCurrentLocation" 
                 class="text-[11px] text-brand-400 hover:text-brand-300 font-semibold flex items-center gap-1">
-                <i class="pi pi-map-marker text-[10px]"></i> Use Santa Rosa Store Address
+                <i class="pi pi-building text-[10px]"></i> Reset Pin to Store Location
               </button>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -1161,7 +1161,7 @@ const CheckoutView = {
             setTimeout(() => { if (checkoutMap) checkoutMap.invalidateSize(); }, 200);
           }
 
-          store.notify(`? GPS Detected! Accurate within ?${accuracy}m. Fine-tune your gate on the map.`, 'success');
+          store.notify(`✅ GPS Detected! Accurate within ±${accuracy}m. Fine-tune your gate on the map.`, 'success');
         },
         (err) => {
           isLocatingGPS.value = false;
@@ -1318,6 +1318,16 @@ const CheckoutView = {
         store.clearCart();
         store.activeOrder = createdOrder;
         localStorage.setItem('gst_active_order_id', createdOrder.id);
+        try {
+          const localHistory = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
+          const idStr = String(createdOrder.id);
+          if (!localHistory.includes(idStr)) {
+            localHistory.unshift(idStr);
+            localStorage.setItem('gst_local_order_history', JSON.stringify(localHistory.slice(0, 50)));
+          }
+        } catch (e) {
+          // ignore
+        }
         store.notify(`Order ${createdOrder.order_number || ''} confirmed! Ingredients deducted.`, 'success');
 
         // Immediately refresh ingredients & products inventory in background

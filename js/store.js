@@ -379,6 +379,9 @@ const useGShotStore = defineStore('gshot', {
     },
 
     removeToast(id) {
+    },
+    addToast(msg, type = 'success') {
+      this.notify(msg, type);
       this.toasts = this.toasts.filter(t => t.id !== id);
     },
 
@@ -542,6 +545,14 @@ const useGShotStore = defineStore('gshot', {
         if (orderData && (orderData.id || orderData.order_number)) {
           this.activeOrder = orderData;
           localStorage.setItem('gst_active_order_id', orderData.id);
+          try {
+            const list = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
+            const idStr = String(orderData.id);
+            if (!list.includes(idStr)) {
+              list.unshift(idStr);
+              localStorage.setItem('gst_local_order_history', JSON.stringify(list.slice(0, 50)));
+            }
+          } catch (e) {}
           return;
         }
       } catch (err) {
@@ -1110,6 +1121,43 @@ const useGShotStore = defineStore('gshot', {
       } catch (err) {
         console.error('Failed to delete announcement via API:', err);
         this.notify('Announcement removed locally.', 'info');
+      }
+    },
+
+    // Menu Promotional Discount Actions
+    async applyDiscount(payload) {
+      try {
+        const res = await GST_API.applyDiscount(payload);
+        if (res.data?.products) {
+          this.products = res.data.products;
+        } else {
+          await this.fetchProducts();
+        }
+        this.notify(res.data?.message || 'Discount applied successfully!', 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Failed to apply discount:', err);
+        const msg = err.response?.data?.message || 'Failed to apply discount.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
+    async removeDiscount(payload) {
+      try {
+        const res = await GST_API.removeDiscount(payload);
+        if (res.data?.products) {
+          this.products = res.data.products;
+        } else {
+          await this.fetchProducts();
+        }
+        this.notify(res.data?.message || 'Discounts removed successfully.', 'success');
+        return res.data;
+      } catch (err) {
+        console.error('Failed to remove discount:', err);
+        const msg = err.response?.data?.message || 'Failed to remove discount.';
+        this.notify(msg, 'error');
+        throw err;
       }
     },
 

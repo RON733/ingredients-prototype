@@ -77,9 +77,26 @@ export default {
     const store = useGShotStore();
 
     const scrollToMenu = () => {
-      store.currentView = 'menu';
+      const isMobile = window.innerWidth < 1024;
+      if (isMobile) {
+        store.currentView = 'menu';
+        store.activeSection = 'menu';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // On desktop / wide displays: ensure customer view and smooth-scroll to #menu
+      store.currentView = 'customer';
       store.activeSection = 'menu';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const el = document.getElementById('menu');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        Vue.nextTick(() => {
+          const retryEl = document.getElementById('menu');
+          if (retryEl) retryEl.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
     };
 
     const openCart = () => {

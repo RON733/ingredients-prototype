@@ -605,6 +605,195 @@
       </div>
 
     </div>
+
+      <!-- MAIN SECTION 4: Loyverse Advanced Inventory & POS Integration -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-emerald-500/30 shadow-2xl relative overflow-hidden space-y-6">
+        
+        <!-- Ambient subtle emerald glow -->
+        <div class="absolute -top-24 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Section Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-emerald-500/20 shrink-0">
+              <i class="pi pi-box"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-lg font-black text-white">Loyverse Advanced Inventory Integration</h3>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Connected: {{ loyverseInfo.store_name }}
+                </span>
+              </div>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Two-way synchronization for Raw Ingredients, Composite Recipes (Productions), Stock Adjustments, Inventory Counts & POS Sales.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <button 
+              type="button"
+              @click="handleFullSync"
+              :disabled="isFullSyncing"
+              class="px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-neutral-950 shadow-md shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50">
+              <i class="pi" :class="isFullSyncing ? 'pi-spin pi-spinner' : 'pi-cloud-upload'"></i>
+              <span>{{ isFullSyncing ? 'Synchronizing Everything...' : 'Master Full Sync' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Capability Badges & Active Status -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="p-4 rounded-2xl bg-surface-950/80 border border-surface-800">
+            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Raw Ingredients</p>
+            <p class="text-xl font-black text-white mt-1">{{ store.ingredients.length }} Tracked</p>
+            <p class="text-[10px] text-emerald-400 mt-0.5"><i class="pi pi-check"></i> Stock tracking enabled</p>
+          </div>
+          <div class="p-4 rounded-2xl bg-surface-950/80 border border-surface-800">
+            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Composite Recipes</p>
+            <p class="text-xl font-black text-white mt-1">{{ store.products.length }} Linked</p>
+            <p class="text-[10px] text-purple-400 mt-0.5"><i class="pi pi-cog"></i> Productions ready</p>
+          </div>
+          <div class="p-4 rounded-2xl bg-surface-950/80 border border-surface-800">
+            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Stock Adjustments</p>
+            <p class="text-xl font-black text-white mt-1">2-Way Sync</p>
+            <p class="text-[10px] text-sky-400 mt-0.5"><i class="pi pi-arrows-h"></i> Live webhook & poll</p>
+          </div>
+          <div class="p-4 rounded-2xl bg-surface-950/80 border border-surface-800">
+            <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Purchase Orders</p>
+            <p class="text-xl font-black text-white mt-1">Active</p>
+            <p class="text-[10px] text-amber-400 mt-0.5"><i class="pi pi-file-edit"></i> Supplier restock ready</p>
+          </div>
+        </div>
+
+        <!-- Detailed Sync Control Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- Left Col: Actions (lg:col-span-7) -->
+          <div class="lg:col-span-7 space-y-4">
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Synchronization Controls</h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button 
+                type="button"
+                @click="handlePullInventory"
+                :disabled="isPulling"
+                class="p-3 rounded-xl bg-surface-950 hover:bg-surface-850 border border-surface-800 text-left transition-all cursor-pointer group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                    <i class="pi" :class="isPulling ? 'pi-spin pi-spinner' : 'pi-download'"></i> Pull Stock
+                  </span>
+                  <span class="text-[9px] bg-sky-500/10 text-sky-300 px-1.5 py-0.5 rounded">From POS</span>
+                </div>
+                <p class="text-[11px] text-neutral-400">Pull stock adjustments, counts & POs from Loyverse into website.</p>
+              </button>
+
+              <button 
+                type="button"
+                @click="handlePushInventory"
+                :disabled="isPushing"
+                class="p-3 rounded-xl bg-surface-950 hover:bg-surface-850 border border-surface-800 text-left transition-all cursor-pointer group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                    <i class="pi" :class="isPushing ? 'pi-spin pi-spinner' : 'pi-upload'"></i> Push Stock
+                  </span>
+                  <span class="text-[9px] bg-amber-500/10 text-amber-300 px-1.5 py-0.5 rounded">To POS</span>
+                </div>
+                <p class="text-[11px] text-neutral-400">Push current website ingredient stock levels to Loyverse.</p>
+              </button>
+
+              <button 
+                type="button"
+                @click="handleSyncLoyverse"
+                :disabled="isSyncingLoyverse"
+                class="p-3 rounded-xl bg-surface-950 hover:bg-surface-850 border border-surface-800 text-left transition-all cursor-pointer group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                    <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner' : 'pi-sync'"></i> Sync Sales
+                  </span>
+                  <span class="text-[9px] bg-emerald-500/10 text-emerald-300 px-1.5 py-0.5 rounded">Receipts</span>
+                </div>
+                <p class="text-[11px] text-neutral-400">Sync walk-in cashier receipts and deduct recipe ingredients.</p>
+              </button>
+            </div>
+
+            <!-- Webhook Registration Bar -->
+            <div class="p-4 rounded-2xl bg-surface-950 border border-surface-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-neutral-300 flex items-center gap-1.5">
+                  <i class="pi pi-bolt text-amber-400"></i> Real-time Webhook Endpoint
+                </span>
+                <button 
+                  type="button"
+                  @click="handleRegisterWebhook"
+                  :disabled="isRegisteringWebhook"
+                  class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-surface-800 hover:bg-surface-750 text-white border border-surface-700 transition-colors flex items-center gap-1">
+                  <i class="pi" :class="isRegisteringWebhook ? 'pi-spin pi-spinner' : 'pi-check'"></i>
+                  <span>{{ isRegisteringWebhook ? 'Registering...' : 'Auto-Register with Loyverse' }}</span>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input 
+                  readonly 
+                  :value="loyverseWebhookUrl" 
+                  class="w-full px-3 py-2 rounded-xl bg-surface-900 border border-surface-750 text-xs font-mono text-neutral-400 focus:outline-none select-all"
+                />
+                <button 
+                  type="button"
+                  @click="copyWebhookUrl"
+                  class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 text-xs font-bold flex items-center gap-1 shrink-0">
+                  <i class="pi pi-copy"></i>
+                  <span>Copy</span>
+                </button>
+              </div>
+              <p class="text-[10px] text-neutral-500">
+                Receives both <code class="text-neutral-400">receipts.update</code> and <code class="text-neutral-400">inventory_levels.update</code> events instantly.
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Col: Loyverse Account Summary (lg:col-span-5) -->
+          <div class="lg:col-span-5 p-5 rounded-2xl bg-surface-950 border border-surface-800 space-y-3.5 text-xs">
+            <div class="flex items-center justify-between pb-2 border-b border-surface-850">
+              <span class="font-bold text-white">Loyverse Connection Info</span>
+              <span class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400">ACTIVE</span>
+            </div>
+
+            <div class="space-y-2 text-neutral-400">
+              <div class="flex justify-between">
+                <span>Store Name:</span>
+                <span class="font-bold text-white">{{ loyverseInfo.store_name }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Store ID:</span>
+                <span class="font-mono text-[10px] text-neutral-300 truncate max-w-[200px]" :title="loyverseInfo.store_id">{{ loyverseInfo.store_id }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Catalog Items in Loyverse:</span>
+                <span class="font-bold text-white">{{ loyverseInfo.items_count }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Inventory Valuation:</span>
+                <span class="font-bold text-emerald-400">Enabled</span>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-surface-900/90 border border-surface-800 text-[11px] text-neutral-400 space-y-1">
+              <p class="font-bold text-amber-300 flex items-center gap-1">
+                <i class="pi pi-lightbulb"></i> How to use in Loyverse Back Office:
+              </p>
+              <p>• <strong>Purchase Orders:</strong> Go to Inventory &gt; Purchase orders &gt; Add Purchase Order to restock raw ingredients from suppliers.</p>
+              <p>• <strong>Stock Adjustments:</strong> Go to Inventory &gt; Stock adjustments to record waste or damaged stock.</p>
+              <p>• <strong>Productions:</strong> Go to Inventory &gt; Productions to prepare composite items from component ingredients.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
 </template>
 
 <script>
@@ -865,6 +1054,40 @@ export default {
       }
     };
 
+    const isFullSyncing = Vue.ref(false);
+    const isPulling = Vue.ref(false);
+    const isPushing = Vue.ref(false);
+
+    const handleFullSync = async () => {
+      isFullSyncing.value = true;
+      try {
+        await store.fullLoyverseSync();
+        await checkLoyverse();
+      } finally {
+        isFullSyncing.value = false;
+      }
+    };
+
+    const handlePullInventory = async () => {
+      isPulling.value = true;
+      try {
+        await store.pullLoyverseInventory();
+        await checkLoyverse();
+      } finally {
+        isPulling.value = false;
+      }
+    };
+
+    const handlePushInventory = async () => {
+      isPushing.value = true;
+      try {
+        await store.pushLoyverseInventory();
+        await checkLoyverse();
+      } finally {
+        isPushing.value = false;
+      }
+    };
+
     const handleRegisterWebhook = async () => {
       isRegisteringWebhook.value = true;
       try {
@@ -920,6 +1143,12 @@ export default {
       loyverseWebhookUrl,
       handleSyncLoyverse,
       handleExportMenu,
+      isFullSyncing,
+      isPulling,
+      isPushing,
+      handleFullSync,
+      handlePullInventory,
+      handlePushInventory,
       handleRegisterWebhook,
       copyWebhookUrl,
       maintForm,

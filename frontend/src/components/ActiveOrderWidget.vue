@@ -1,7 +1,7 @@
 <template>
 <div 
       v-if="store.activeOrder && store.currentView === 'customer' && isOngoing"
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-bounce-sm">
+      class="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-40 animate-bounce-sm">
       
       <button 
         @click="goToTracker"

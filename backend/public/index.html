@@ -8,14 +8,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Immediate Guard: Store personnel (staff, rider, admin, super admin) only need the operations dashboard -->
+  <script>
+    (function() {
+      try {
+        var raw = localStorage.getItem('gst_user');
+        if (raw) {
+          var u = JSON.parse(raw);
+          var workerRoles = ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'];
+          if (u && workerRoles.indexOf(u.role) !== -1) {
+            window.location.replace('/admin');
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script type="module" crossorigin src="/assets/main-BdIjlvjh.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/DriverView-B1PXFwXy.js">
-  <link rel="stylesheet" crossorigin href="/assets/DriverView-Vb6SEljj.css">
+  <script type="module" crossorigin src="/assets/main-lmNC8bV3.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/DriverView-DOKD4P-c.js">
+  <link rel="stylesheet" crossorigin href="/assets/DriverView-DY1ieTO3.css">
   <link rel="stylesheet" crossorigin href="/assets/main-01PaPpm6.css">
 </head>
 <body class="bg-surface-950 text-gray-100 antialiased selection:bg-yellow-400 selection:text-black">
-  <div id="app"></div>
+  <div id="app"></div>
 </body>
 </html>

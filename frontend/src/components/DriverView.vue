@@ -33,6 +33,16 @@
             <span>{{ isAvailable ? 'Available for Orders' : 'On Break / Offline' }}</span>
           </button>
 
+          <!-- Return to Admin Console (Admin Only) -->
+          <button 
+            v-if="store.isAdminOrSuper"
+            type="button"
+            @click="store.currentView = 'admin'"
+            class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm">
+            <i class="pi pi-arrow-left text-xs"></i>
+            <span>Back to Admin</span>
+          </button>
+
           <!-- Sign Out from Operations Portal -->
           <button 
             type="button"

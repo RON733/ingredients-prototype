@@ -25,8 +25,6 @@ Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
 Route::get('/staff-list', [AuthController::class, 'listStaff']);
 Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
 Route::post('/auth/verify-password', [AuthController::class, 'verifyPassword']);
-    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -53,10 +51,16 @@ Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
 
-// Loyverse POS Integration
+// Loyverse Advanced Inventory Integration
 Route::get('/loyverse/status', [LoyverseController::class, 'status']);
 Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
 Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
+Route::post('/loyverse/export-ingredients', [LoyverseController::class, 'exportIngredients']);
+Route::post('/loyverse/pull-inventory', [LoyverseController::class, 'pullInventory']);
+Route::post('/loyverse/push-inventory', [LoyverseController::class, 'pushInventory']);
+Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
+Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);
+Route::post('/loyverse/suppliers', [LoyverseController::class, 'saveSupplier']);
 Route::post('/loyverse/register-webhook', [LoyverseController::class, 'registerWebhook']);
 Route::post('/loyverse/webhook', [LoyverseController::class, 'webhook']);
 
@@ -115,9 +119,6 @@ Route::prefix('v1')->group(function () {
     Route::post('/driver/notice', [OrderController::class, 'submitRiderNotice']);
     Route::get('/driver/notices', [OrderController::class, 'getRiderNotices']);
     Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/acknowledge', [OrderController::class, 'acknowledgeRiderNotice']);
-Route::post('/driver/notice', [OrderController::class, 'submitRiderNotice']);
-Route::get('/driver/notices', [OrderController::class, 'getRiderNotices']);
-Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/acknowledge', [OrderController::class, 'acknowledgeRiderNotice']);
     Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
     Route::post('/ingredients', [IngredientController::class, 'store']);
     Route::match(['put', 'patch'], '/ingredients/{id}', [IngredientController::class, 'update']);
@@ -153,10 +154,16 @@ Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/acknowledge', [Orde
     Route::match(['put', 'patch'], '/announcements/{id}/toggle', [AnnouncementController::class, 'toggleActive']);
     Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
 
-    // Loyverse POS Integration
+    // Loyverse Advanced Inventory Integration
     Route::get('/loyverse/status', [LoyverseController::class, 'status']);
     Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
     Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
+    Route::post('/loyverse/export-ingredients', [LoyverseController::class, 'exportIngredients']);
+    Route::post('/loyverse/pull-inventory', [LoyverseController::class, 'pullInventory']);
+    Route::post('/loyverse/push-inventory', [LoyverseController::class, 'pushInventory']);
+    Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
+    Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);
+    Route::post('/loyverse/suppliers', [LoyverseController::class, 'saveSupplier']);
     Route::post('/loyverse/register-webhook', [LoyverseController::class, 'registerWebhook']);
     Route::post('/loyverse/webhook', [LoyverseController::class, 'webhook']);
 });

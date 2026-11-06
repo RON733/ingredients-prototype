@@ -1,4 +1,4 @@
-// G Shot Teas — Cart Drawer Component (Matches Figure 9)
+﻿// G Shot Teas — Cart Drawer Component (Matches Figure 9)
 const CartDrawer = {
   template: `
     <div>
@@ -109,12 +109,15 @@ const CartDrawer = {
               <span class="text-white font-medium">₱{{ store.cartSubtotal.toFixed(2) }}</span>
             </div>
             <div class="flex justify-between">
-              <span>Standard Delivery</span>
-              <span class="text-white font-medium">₱{{ store.cartDeliveryFee.toFixed(2) }}</span>
+              <span class="flex items-center gap-1">
+                Delivery Fee
+                <span class="text-[10px] text-gray-500">(set at checkout)</span>
+              </span>
+              <span class="text-gray-500 font-medium">+&#8369;40 if Delivery</span>
             </div>
             <div class="flex justify-between text-base font-black text-white pt-2 border-t border-surface-800">
-              <span>Total</span>
-              <span class="text-brand-400">₱{{ store.cartTotal.toFixed(2) }}</span>
+              <span>Subtotal</span>
+              <span class="text-brand-400">&#8369;{{ store.cartSubtotal.toFixed(2) }}</span>
             </div>
           </div>
 

@@ -339,11 +339,13 @@ class AuthController extends Controller
             ]);
         }
 
+        $cookie = cookie('gst_role', in_array($user->role, ['staff', 'admin', 'super_admin', 'driver']) ? $user->role : 'customer', 60 * 24 * 30, '/', null, false, false);
+
         return response()->json([
             'message' => 'Login successful',
             'user' => $user,
             'token' => $token,
-        ]);
+        ])->withCookie($cookie);
     }
 
     public function forgotPassword(Request $request)
@@ -671,12 +673,14 @@ class AuthController extends Controller
             ]);
         }
 
+        $cookie = cookie('gst_role', in_array($user->role, ['staff', 'admin', 'super_admin', 'driver']) ? $user->role : 'customer', 60 * 24 * 30, '/', null, false, false);
+
         return response()->json([
             'message' => $isNew ? 'Registration successful via Google' : 'Login successful via Google',
             'user' => $user,
             'token' => $token,
             'is_new' => $isNew,
-        ]);
+        ])->withCookie($cookie);
     }
 
     public function me(Request $request)
@@ -715,7 +719,8 @@ class AuthController extends Controller
         if ($user && $user->currentAccessToken()) {
             $user->currentAccessToken()->delete();
         }
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['message' => 'Logged out successfully'])
+            ->withCookie(cookie()->forget('gst_role'));
     }
 
     public function listUsers(Request $request)
@@ -835,11 +840,12 @@ class AuthController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
+        $cookie = cookie('gst_role', $user->role, 60 * 24 * 30, '/', null, false, false);
         return response()->json([
             'message' => "Welcome on duty, {$user->name}!",
             'user' => $user,
             'token' => $token,
-        ]);
+        ])->withCookie($cookie);
     }
 
     public function updateUserRole(Request $request, $id)
@@ -868,7 +874,9 @@ class AuthController extends Controller
 
         if (isset($validated['role'])) $user->role = $validated['role'];
         if (isset($validated['status'])) $user->status = $validated['status'];
-        if (array_key_exists('pin', $validated)) $user->pin = $validated['pin'];
+        if (array_key_exists('pin', $validated)) {
+            $user->pin = !empty($validated['pin']) ? trim($validated['pin']) : null;
+        }
         if (isset($validated['name'])) $user->name = $validated['name'];
         if (isset($validated['phone'])) $user->phone = $validated['phone'];
         $user->save();

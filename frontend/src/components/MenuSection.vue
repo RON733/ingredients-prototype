@@ -1,5 +1,5 @@
 <template>
-<section id="menu" :class="isStandalonePage ? 'py-4 sm:py-8 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-32 sm:pb-20' : 'py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'">
+<section id="menu" :class="isStandalonePage ? 'py-4 sm:py-8 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-32 sm:pb-20' : 'scroll-mt-20 lg:scroll-mt-24 py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'">
       
   <!-- 1. Dedicated Standalone Menu Page Header (Cellphones Only) -->
   <div v-if="isStandalonePage" class="mb-4 border-b border-surface-800 pb-3">

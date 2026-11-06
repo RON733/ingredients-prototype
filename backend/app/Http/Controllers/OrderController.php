@@ -92,6 +92,15 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        // Workers and operational personnel cannot place customer storefront orders (POS orders permitted)
+        $actingUser = auth('sanctum')->user() ?? $request->user();
+        $isPosOrder = $request->boolean('is_pos') || $request->input('source') === 'pos' || $request->input('order_type') === 'Walk-in';
+        if (!$isPosOrder && $actingUser && in_array($actingUser->role, ['staff', 'admin', 'super_admin', 'driver'])) {
+            return response()->json([
+                'message' => 'Store personnel and operational accounts cannot place customer storefront orders. Workers only require the Operations Dashboard.'
+            ], 403);
+        }
+
         // Maintenance Mode Check: If the website has been shut down by Super Admin, block new orders
         $maintenance = \App\Models\SystemSetting::where('key', 'maintenance_mode')->value('value');
         if ($maintenance === 'true' || $maintenance === '1') {
@@ -117,9 +126,12 @@ class OrderController extends Controller
             'items.*.customization' => 'nullable|array',
         ]);
 
-        // 1. Phone number validation (numbers only, standard 11 digits)
+        // 1. Phone number validation (numbers only, standard 11 digits, with 63->0 normalization)
         $cleanPhone = preg_replace('/\D/', '', $validated['customer_phone']);
-        if (strlen($cleanPhone) < 10 || strlen($cleanPhone) > 11) {
+        if (str_starts_with($cleanPhone, '63') && strlen($cleanPhone) === 12) {
+            $cleanPhone = '0' . substr($cleanPhone, 2);
+        }
+        if (strlen($cleanPhone) !== 11) {
             return response()->json([
                 'message' => 'Please provide a valid 11-digit contact number (numbers only, e.g. 09123456789).'
             ], 422);
@@ -320,7 +332,7 @@ class OrderController extends Controller
                     'user_name' => $request->user()?->name ?? $validated['customer_name'],
                     'user_role' => $placingRole,
                     'action' => 'POS Order Placed',
-                    'details' => "Order {$orderNumber} processed by staff for Ã¢â€šÂ±{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). Raw ingredients depleted automatically.",
+                    'details' => "Order {$orderNumber} processed by staff for ₱{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). Raw ingredients depleted automatically.",
                     'ip_address' => $request->ip(),
                 ]);
             }
@@ -368,8 +380,8 @@ class OrderController extends Controller
             }
         }
 
-        // If order was cancelled before preparing, restore ingredients!
-        if ($newStatus === 'Cancelled' && $oldStatus === 'Pending') {
+        // Restore ingredients on cancellation (any status except already Cancelled/Completed)
+        if ($newStatus === 'Cancelled' && !in_array($oldStatus, ['Cancelled', 'Completed'])) {
             foreach ($order->items as $item) {
                 $product = Product::with('recipes')->find($item->product_id);
                 if ($product) {
@@ -423,7 +435,7 @@ class OrderController extends Controller
 
         $actionName = ($user?->role === 'driver') ? 'Delivery Completed' : 'Order Status Changed';
         $actionDetails = ($user?->role === 'driver')
-            ? "Order {$order->order_number} successfully delivered to {$order->customer_name} and marked Completed by driver {$user->name}." . ($order->payment_method === 'Cash' ? " Collected ?" . number_format($order->total_amount, 2) . " COD cash." : "")
+            ? "Order {$order->order_number} successfully delivered to {$order->customer_name} and marked Completed by driver {$user->name}." . ($order->payment_method === 'Cash' ? " Collected ₱" . number_format($order->total_amount, 2) . " COD cash." : "")
             : "Order {$order->order_number} transitioned from {$oldStatus} to {$newStatus}";
 
         AuditLog::create([

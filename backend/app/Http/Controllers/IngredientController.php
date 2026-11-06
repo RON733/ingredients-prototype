@@ -6,9 +6,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Ingredient;
 use App\Models\AuditLog;
+use App\Services\LoyverseService;
 
 class IngredientController extends Controller
 {
+    protected ?LoyverseService $loyverse;
+
+    public function __construct(?LoyverseService $loyverse = null)
+    {
+        $this->loyverse = $loyverse ?? app(LoyverseService::class);
+    }
+
     public function index()
     {
         // High-Performance In-Memory Cache: Serves ingredients in 3ms
@@ -34,13 +42,22 @@ class IngredientController extends Controller
             'id' => 'required|string|unique:ingredients,id',
             'name' => 'required|string',
             'category' => 'required|string',
+            'supplier_name' => 'nullable|string',
             'stock' => 'required|numeric|min:0',
+            'cost' => 'nullable|numeric|min:0',
             'unit' => 'required|string',
             'low_threshold' => 'required|numeric|min:0',
         ]);
 
         $ingredient = Ingredient::create($validated);
         Cache::forget('ingredients_all');
+
+        // Sync to Loyverse Advanced Inventory
+        try {
+            $this->loyverse->pushSingleIngredientStock($ingredient);
+        } catch (\Exception $e) {
+            // Non-blocking
+        }
 
         AuditLog::create([
             'user_name' => $request->user()?->name ?? 'Admin',
@@ -59,7 +76,9 @@ class IngredientController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string',
             'category' => 'sometimes|string',
+            'supplier_name' => 'nullable|string',
             'stock' => 'sometimes|numeric|min:0',
+            'cost' => 'nullable|numeric|min:0',
             'unit' => 'sometimes|string',
             'low_threshold' => 'sometimes|numeric|min:0',
         ]);
@@ -69,6 +88,13 @@ class IngredientController extends Controller
         Cache::forget('ingredients_all');
 
         if (isset($validated['stock']) && $validated['stock'] != $oldStock) {
+            // Push updated stock to Loyverse
+            try {
+                $this->loyverse->pushSingleIngredientStock($ingredient);
+            } catch (\Exception $e) {
+                // Non-blocking
+            }
+
             AuditLog::create([
                 'user_name' => $request->user()?->name ?? 'Staff',
                 'user_role' => $request->user()?->role ?? 'staff',
@@ -90,6 +116,13 @@ class IngredientController extends Controller
         $ingredient->stock = $newStock;
         $ingredient->save();
         Cache::forget('ingredients_all');
+
+        // Push to Loyverse
+        try {
+            $this->loyverse->pushSingleIngredientStock($ingredient);
+        } catch (\Exception $e) {
+            // Non-blocking
+        }
 
         AuditLog::create([
             'user_name' => $request->user()?->name ?? 'Staff',

@@ -439,6 +439,11 @@ export default {
     });
 
     Vue.onMounted(() => {
+      if (!store.isAdminOrSuper) {
+        store.notify('Access Denied: User & Role management is restricted to Administrators.', 'error');
+        store.adminTab = 'orders';
+        return;
+      }
       refresh();
     });
 

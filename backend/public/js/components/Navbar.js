@@ -281,6 +281,31 @@ const Navbar = {
           </button>
         </nav>
 
+        <!-- Customer Orders & Tracking Shortcuts (Mobile Drawer) -->
+        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+          <button 
+            @click="goToView('history')" 
+            class="flex items-center gap-2.5 p-3 rounded-xl transition-all cursor-pointer text-left"
+            :class="store.currentView === 'history' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-400/20' : 'bg-surface-800/80 text-gray-300 hover:text-white border border-surface-700/60'">
+            <i class="pi pi-history text-sm" :class="store.currentView === 'history' ? 'text-black' : 'text-brand-400'"></i>
+            <div class="leading-tight">
+              <span>Order History</span>
+              <p class="text-[9px] opacity-70 font-normal">Past orders & receipts</p>
+            </div>
+          </button>
+
+          <button 
+            @click="goToView('track')" 
+            class="flex items-center gap-2.5 p-3 rounded-xl transition-all cursor-pointer text-left"
+            :class="store.currentView === 'track' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-400/20' : 'bg-surface-800/80 text-gray-300 hover:text-white border border-surface-700/60'">
+            <i class="pi pi-map-marker text-sm" :class="store.currentView === 'track' ? 'text-black' : 'text-emerald-400'"></i>
+            <div class="leading-tight">
+              <span>Track Order</span>
+              <p class="text-[9px] opacity-70 font-normal">Live order status</p>
+            </div>
+          </button>
+        </div>
+
         <!-- Book Event Call to Action -->
         <button 
           @click="store.bookingModalOpen = true; mobileMenuOpen = false" 

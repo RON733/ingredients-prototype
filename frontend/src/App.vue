@@ -3,10 +3,27 @@
       
       
 
-      <div class="relative z-10 flex flex-col flex-1">
+      <!-- Operations Personnel Redirection Screen (Workers strictly access Operations Dashboard only) -->
+      <div v-if="isWorker" class="flex-1 flex flex-col items-center justify-center p-6 text-center animate-fade-in min-h-[70vh]">
+        <div class="w-16 h-16 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-3xl mb-4 shadow-xl animate-pulse">
+          <i class="pi pi-shield"></i>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-white mb-2">Store Personnel Access Restricted</h2>
+        <p class="text-xs sm:text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
+          Store personnel (Staff, Delivery Riders, and Administrators) only access the Operations Dashboard and Terminal. Redirecting you to your portal...
+        </p>
+        <a 
+          href="/admin" 
+          class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs inline-flex items-center gap-2 transition-all shadow-lg shadow-amber-400/20">
+          <i class="pi pi-arrow-right text-xs"></i>
+          <span>Open Operations Dashboard</span>
+        </a>
+      </div>
+
+      <div v-else class="relative z-10 flex flex-col flex-1">
         
         <!-- Navigation Header (Customer Views) -->
-        <Navbar />
+        <Navbar v-if="store.currentView !== 'admin' && store.currentView !== 'driver'" />
 
         <!-- Main Content Area -->
         <main class="flex-1">
@@ -28,21 +45,9 @@
               <ActiveOrderWidget />
             </div>
 
-            <!-- 2. Dedicated Standalone Menu Page (Separate page for mobile & direct navigation) -->
+            <!-- 2. Dedicated Standalone Menu Page (Accessible on mobile & direct desktop menu view) -->
             <div v-else-if="store.currentView === 'menu'" class="animate-fade-in">
-              <!-- Mobile Phone: Dedicated standalone mobile menu page -->
-              <div class="block lg:hidden">
-                <MenuSection :isStandalonePage="true" />
-              </div>
-              <!-- Computer / Desktop: Exactly like before when there was no menu page -->
-              <div class="hidden lg:block">
-                <LandingHero />
-                <AnnouncementSection />
-                <FeaturedSection />
-                <MenuSection :isStandalonePage="false" />
-                <AboutSection />
-                <ContactSection />
-              </div>
+              <MenuSection :isStandalonePage="true" />
               <ActiveOrderWidget />
             </div>
 
@@ -75,7 +80,7 @@
         </main>
 
         <!-- Footer (Customer Views) -->
-        <footer v-if="!store.isMaintenanceMode" class="py-10 pb-24 lg:pb-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
+        <footer v-if="!store.isMaintenanceMode && store.currentView !== 'admin' && store.currentView !== 'driver'" class="py-10 pb-24 lg:pb-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
           <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <span class="font-extrabold text-white text-sm">G SHOT TEAS</span>
@@ -90,13 +95,13 @@
         <!-- Mobile Bottom App Bar (Customer Cellphone Navigation) -->
         <nav 
           v-if="!store.isMaintenanceMode && store.currentView !== 'admin' && store.currentView !== 'driver'"
-          class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-2 py-2 flex items-center justify-around shadow-2xl">
+          class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-1 py-1.5 flex items-center justify-around shadow-2xl">
           
           <!-- 1. Home -->
           <button 
             @click="navToSection('home')"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
             :class="store.currentView === 'customer' && store.activeSection === 'home' ? 'text-yellow-400 font-bold' : 'text-gray-400 hover:text-gray-200'">
             <i class="pi pi-home text-base"></i>
             <span class="text-[10px] tracking-tight">Home</span>
@@ -106,7 +111,7 @@
           <button 
             @click="navToSection('menu')"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
             :class="store.currentView === 'menu' ? 'text-yellow-400 font-bold scale-105' : 'text-gray-400 hover:text-gray-200'">
             <i class="pi pi-th-large text-base"></i>
             <span class="text-[10px] tracking-tight">Menu</span>
@@ -116,7 +121,7 @@
           <button 
             @click="store.cartOpen = true"
             type="button"
-            class="relative flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-200">
+            class="relative flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">
             <div class="relative">
               <i class="pi pi-shopping-bag text-base"></i>
               <span 
@@ -128,21 +133,39 @@
             <span class="text-[10px] tracking-tight">Cart</span>
           </button>
 
-          <!-- 4. Track Active Order -->
+          <!-- 4. Order History (Mobile) -->
+          <button 
+            @click="store.currentView = 'history'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+            type="button"
+            class="relative flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
+            :class="store.currentView === 'history' ? 'text-yellow-400 font-bold scale-105' : 'text-gray-400 hover:text-gray-200'"
+            title="Order History">
+            <div class="relative">
+              <i class="pi pi-history text-base"></i>
+              <span 
+                v-if="hasOngoingOrders" 
+                class="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"
+                title="Active order in progress">
+              </span>
+            </div>
+            <span class="text-[10px] tracking-tight">Orders</span>
+          </button>
+
+          <!-- 5. Track Active Order -->
           <button 
             @click="store.currentView = 'track'; window.scrollTo({ top: 0, behavior: 'smooth' })"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer"
+            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
             :class="store.currentView === 'track' ? 'text-yellow-400 font-bold' : 'text-gray-400 hover:text-gray-200'">
             <i class="pi pi-map-marker text-base"></i>
             <span class="text-[10px] tracking-tight">Track</span>
           </button>
 
-          <!-- 5. Book Catering Package -->
+          <!-- 6. Book Catering Package -->
           <button 
             @click="store.bookingModalOpen = true"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer text-gray-400 hover:text-gray-200">
+            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">
             <i class="pi pi-calendar-plus text-base"></i>
             <span class="text-[10px] tracking-tight">Book</span>
           </button>
@@ -228,8 +251,25 @@ export default {
   setup() {
     const store = useGShotStore();
 
+    const isWorker = computed(() => {
+      const role = store.user?.role;
+      return !!role && ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'].includes(role);
+    });
+
+    const enforceWorkerDashboardOnly = () => {
+      if (isWorker.value) {
+        window.location.replace('/admin');
+      }
+    };
+
     onMounted(async () => {
+      enforceWorkerDashboardOnly();
       await store.init();
+      enforceWorkerDashboardOnly();
+    });
+
+    watch(() => store.user, () => {
+      enforceWorkerDashboardOnly();
     });
 
     const getToastClass = (type) => {
@@ -247,10 +287,25 @@ export default {
     };
 
     const navToSection = (section) => {
+      const isMobile = window.innerWidth < 1024;
       if (section === 'menu') {
-        store.currentView = 'menu';
+        if (isMobile) {
+          store.currentView = 'menu';
+          store.activeSection = 'menu';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        store.currentView = 'customer';
         store.activeSection = 'menu';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const el = document.getElementById('menu');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          Vue.nextTick(() => {
+            const retryEl = document.getElementById('menu');
+            if (retryEl) retryEl.scrollIntoView({ behavior: 'smooth' });
+          });
+        }
         return;
       }
       store.currentView = 'customer';
@@ -267,8 +322,18 @@ export default {
       });
     };
 
+    const hasOngoingOrders = Vue.computed(() => {
+      if (store.activeOrder) {
+        const s = store.activeOrder.status;
+        if (['Pending', 'Preparing', 'Ready for Pickup', 'Out for Delivery'].includes(s)) return true;
+      }
+      return false;
+    });
+
     return {
       store,
+      isWorker,
+      hasOngoingOrders,
       navToSection,
       getToastClass,
       getToastIcon,

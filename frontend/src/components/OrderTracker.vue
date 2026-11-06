@@ -249,11 +249,19 @@
         <div class="text-4xl mb-4">📦</div>
         <h3 class="text-lg font-bold text-white">No Active Order Selected</h3>
         <p class="text-xs text-gray-400 mt-1">Place an order or check your order history to track progress.</p>
-        <button 
-          @click="backToHome"
-          class="mt-6 px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black shadow-lg shadow-yellow-500/20 transition-all">
-          Explore Menu
-        </button>
+        <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+          <button 
+            @click="backToHome"
+            class="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black shadow-lg shadow-yellow-500/20 transition-all cursor-pointer">
+            Explore Menu
+          </button>
+          <button 
+            @click="store.currentView = 'history'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+            class="px-5 py-2.5 rounded-xl bg-surface-700 hover:bg-surface-600 text-white text-xs font-bold border border-surface-600 transition-all flex items-center gap-1.5 cursor-pointer">
+            <i class="pi pi-history text-brand-400"></i>
+            <span>View Order History</span>
+          </button>
+        </div>
       </div>
 
       <!-- Receipt Lightbox Modal -->

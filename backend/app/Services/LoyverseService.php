@@ -69,10 +69,27 @@ class LoyverseService
      */
     public function getItems(int $limit = 250): array
     {
-        $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/items", [
-            'limit' => $limit
-        ]);
-        return $response->json('items') ?? [];
+        $allItems = [];
+        $cursor = null;
+
+        do {
+            $params = ['limit' => $limit];
+            if ($cursor) {
+                $params['cursor'] = $cursor;
+            }
+
+            $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/items", $params);
+            if (!$response->successful()) {
+                throw new \Exception("Loyverse Items Error: " . $response->body());
+            }
+
+            $data = $response->json();
+            $items = $data['items'] ?? [];
+            $allItems = array_merge($allItems, $items);
+            $cursor = $data['cursor'] ?? null;
+        } while ($cursor && count($items) === $limit && count($allItems) < 1000);
+
+        return $allItems;
     }
 
     /**
@@ -89,6 +106,9 @@ class LoyverseService
      */
     public function findOrCreateCategory(string $name, string $color = 'ORANGE'): ?string
     {
+        $validColors = ['GREY', 'RED', 'PINK', 'ORANGE', 'YELLOW', 'GREEN', 'BLUE', 'PURPLE'];
+        $color = in_array(strtoupper($color), $validColors) ? strtoupper($color) : 'ORANGE';
+
         $existing = $this->getCategories();
         foreach ($existing as $cat) {
             if (strcasecmp(trim($cat['name']), trim($name)) === 0 && empty($cat['deleted_at'])) {
@@ -105,20 +125,209 @@ class LoyverseService
     }
 
     /**
-     * Export all active products from website database into Loyverse POS.
-     * This populates the cashier tablet/app with prices and items immediately!
+     * ==========================================
+     * SUPPLIERS (Loyverse Advanced Inventory)
+     * ==========================================
+     */
+    public function getSuppliers(int $limit = 100): array
+    {
+        $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/suppliers", [
+            'limit' => $limit
+        ]);
+        if (!$response->successful()) {
+            throw new \Exception("Loyverse Suppliers Error: " . $response->body());
+        }
+        return $response->json('suppliers') ?? [];
+    }
+
+    public function createOrUpdateSupplier(array $data): array
+    {
+        $response = Http::withHeaders($this->headers())->post("{$this->apiUrl}/suppliers", $data);
+        if (!$response->successful()) {
+            throw new \Exception("Loyverse Supplier Save Error: " . $response->body());
+        }
+        return $response->json();
+    }
+
+    public function findOrCreateSupplier(string $name, ?string $contact = null, ?string $phone = null): ?string
+    {
+        $suppliers = $this->getSuppliers();
+        foreach ($suppliers as $s) {
+            if (strcasecmp(trim($s['name']), trim($name)) === 0 && empty($s['deleted_at'])) {
+                return $s['id'];
+            }
+        }
+
+        $payload = ['name' => $name];
+        if ($contact) $payload['contact'] = $contact;
+        if ($phone) $payload['phone_number'] = $phone;
+
+        $created = $this->createOrUpdateSupplier($payload);
+        return $created['id'] ?? null;
+    }
+
+    /**
+     * ==============================================================
+     * RAW INGREDIENTS EXPORT (Loyverse Advanced Inventory Components)
+     * ==============================================================
+     * Exports all kitchen raw ingredients to Loyverse with track_stock = true
+     * so they are immediately available for:
+     * - Purchase Orders
+     * - Stock Adjustments
+     * - Inventory Counts
+     * - Productions
+     * - Inventory Valuation & History
+     */
+    public function exportIngredientsToLoyverse(): array
+    {
+        $storeId = $this->getEffectiveStoreId();
+        $ingredients = Ingredient::all();
+        $existingItems = collect($this->getItems());
+        $catId = $this->findOrCreateCategory('Raw Ingredients', 'GREY');
+
+        $results = [
+            'total' => $ingredients->count(),
+            'created' => 0,
+            'updated' => 0,
+            'stocks_updated' => 0,
+            'errors' => []
+        ];
+
+        $stockLevelsToPush = [];
+
+        foreach ($ingredients as $ing) {
+            try {
+                // Find existing item by SKU or name
+                $matchedItem = $existingItems->first(function ($it) use ($ing) {
+                    if (strcasecmp(trim($it['item_name']), trim($ing->name)) === 0) return true;
+                    if (!empty($it['variants'])) {
+                        foreach ($it['variants'] as $v) {
+                            if (($v['sku'] ?? '') === $ing->id) return true;
+                        }
+                    }
+                    return false;
+                });
+
+                $itemId = $matchedItem['id'] ?? $ing->loyverse_item_id;
+                $variantId = null;
+                if ($matchedItem && !empty($matchedItem['variants'])) {
+                    $variantId = $matchedItem['variants'][0]['variant_id'];
+                }
+
+                $cost = (float) ($ing->cost ?? 0.0);
+                $lowStock = (float) ($ing->low_threshold ?? 5.0);
+                $optimalStock = $lowStock * 3.0;
+
+                $itemPayload = [
+                    'item_name' => $ing->name,
+                    'category_id' => $catId,
+                    'description' => "Kitchen Raw Ingredient ({$ing->unit}). Category: {$ing->category}",
+                    'track_stock' => true,
+                    'variants' => [
+                        [
+                            'variant_name' => $ing->unit ?: 'Regular',
+                            'sku' => $ing->id,
+                            'cost' => $cost > 0 ? $cost : 0.00,
+                            'default_pricing_type' => 'FIXED',
+                            'default_price' => 0.00,
+                            'stores' => [
+                                [
+                                    'store_id' => $storeId,
+                                    'pricing_type' => 'FIXED',
+                                    'price' => 0.00,
+                                    'available_for_sale' => false, // Hidden from cashier checkout, active in Back Office Inventory
+                                    'low_stock' => $lowStock,
+                                    'optimal_stock' => $optimalStock,
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+
+                if ($itemId) {
+                    $itemPayload['id'] = $itemId;
+                    if ($variantId) {
+                        $itemPayload['variants'][0]['variant_id'] = $variantId;
+                    }
+                }
+
+                $res = Http::withHeaders($this->headers())->post("{$this->apiUrl}/items", $itemPayload);
+
+                if ($res->successful()) {
+                    $savedItem = $res->json();
+                    $savedItemId = $savedItem['id'] ?? $itemId;
+                    $savedVariantId = $savedItem['variants'][0]['variant_id'] ?? $variantId;
+
+                    // Update model with IDs
+                    $ing->loyverse_item_id = $savedItemId;
+                    $ing->loyverse_variant_id = $savedVariantId;
+                    $ing->saveQuietly();
+
+                    if ($itemId) {
+                        $results['updated']++;
+                    } else {
+                        $results['created']++;
+                    }
+
+                    if ($savedVariantId) {
+                        $stockLevelsToPush[] = [
+                            'variant_id' => $savedVariantId,
+                            'store_id' => $storeId,
+                            'stock_after' => (float) $ing->stock
+                        ];
+                    }
+                } else {
+                    $results['errors'][] = "Failed ingredient '{$ing->name}': " . $res->body();
+                }
+            } catch (\Exception $e) {
+                $results['errors'][] = "Error ingredient '{$ing->name}': " . $e->getMessage();
+            }
+        }
+
+        // Batch update inventory levels for all raw ingredients
+        if (!empty($stockLevelsToPush)) {
+            try {
+                $invRes = Http::withHeaders($this->headers())->post("{$this->apiUrl}/inventory", [
+                    'inventory_levels' => $stockLevelsToPush
+                ]);
+                if ($invRes->successful()) {
+                    $results['stocks_updated'] = count($stockLevelsToPush);
+                } else {
+                    $results['errors'][] = "Inventory level batch sync error: " . $invRes->body();
+                }
+            } catch (\Exception $e) {
+                $results['errors'][] = "Inventory level push error: " . $e->getMessage();
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * ==============================================================
+     * MENU PRODUCTS & COMPOSITE RECIPES EXPORT
+     * ==============================================================
+     * Exports all menu items as Composite Items linking their exact
+     * component raw ingredients with quantities.
      */
     public function exportMenuToLoyverse(): array
     {
         $storeId = $this->getEffectiveStoreId();
-        $products = Product::all();
+
+        // 1. First ensure all raw ingredients are synced to have their Loyverse variant IDs
+        $ingResults = $this->exportIngredientsToLoyverse();
+
+        $products = Product::with('recipes.ingredient')->get();
         $existingItems = collect($this->getItems());
+        $allIngredients = Ingredient::all()->keyBy('id');
 
         $categoryMap = [];
         $results = [
             'total' => $products->count(),
             'created' => 0,
             'updated' => 0,
+            'composite_recipes_linked' => 0,
+            'ingredients_synced' => $ingResults,
             'errors' => []
         ];
 
@@ -150,12 +359,32 @@ class LoyverseService
                     if (!empty($matchedItem['variants'])) {
                         $variantId = $matchedItem['variants'][0]['variant_id'] ?? null;
                     }
+                } elseif (!empty($prod->loyverse_item_id)) {
+                    $itemId = $prod->loyverse_item_id;
+                    $variantId = $prod->loyverse_variant_id;
                 }
+
+                // Build components list from recipes
+                $components = [];
+                foreach ($prod->recipes as $recipe) {
+                    $ing = $allIngredients->get($recipe->ingredient_id);
+                    if ($ing && !empty($ing->loyverse_variant_id)) {
+                        $components[] = [
+                            'variant_id' => $ing->loyverse_variant_id,
+                            'quantity' => (float) $recipe->qty
+                        ];
+                    }
+                }
+
+                $isComposite = count($components) > 0;
 
                 $itemPayload = [
                     'item_name' => $prod->name,
                     'category_id' => $catId,
                     'description' => $prod->description ?? '',
+                    'is_composite' => $isComposite,
+                    'use_production' => false,
+                    'components' => $isComposite ? $components : [],
                     'variants' => [
                         [
                             'variant_name' => 'Regular',
@@ -184,20 +413,270 @@ class LoyverseService
                 $res = Http::withHeaders($this->headers())->post("{$this->apiUrl}/items", $itemPayload);
 
                 if ($res->successful()) {
+                    $savedItem = $res->json();
+                    $prod->loyverse_item_id = $savedItem['id'] ?? $itemId;
+                    $prod->loyverse_variant_id = $savedItem['variants'][0]['variant_id'] ?? $variantId;
+                    $prod->saveQuietly();
+
                     if ($itemId) {
                         $results['updated']++;
                     } else {
                         $results['created']++;
                     }
+                    if ($isComposite) {
+                        $results['composite_recipes_linked']++;
+                    }
                 } else {
-                    $results['errors'][] = "Failed '{$prod->name}': " . $res->body();
+                    $results['errors'][] = "Failed product '{$prod->name}': " . $res->body();
                 }
             } catch (\Exception $e) {
-                $results['errors'][] = "Error '{$prod->name}': " . $e->getMessage();
+                $results['errors'][] = "Error product '{$prod->name}': " . $e->getMessage();
             }
         }
 
         return $results;
+    }
+
+    /**
+     * ==============================================================
+     * INVENTORY LEVELS: PULL FROM LOYVERSE (Loyverse -> Website)
+     * ==============================================================
+     * Pulls stock levels from Loyverse (which might have changed due to
+     * Purchase Orders received, Stock Adjustments, or Inventory Counts)
+     * and updates the local website ingredients stock!
+     */
+    public function pullInventoryFromLoyverse(): array
+    {
+        $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/inventory");
+        if (!$response->successful()) {
+            throw new \Exception("Loyverse Inventory Fetch Error: " . $response->body());
+        }
+
+        $levels = $response->json('inventory_levels') ?? [];
+        $ingredients = Ingredient::all();
+
+        // Map variant_id to ingredient
+        $varToIng = [];
+        foreach ($ingredients as $ing) {
+            if (!empty($ing->loyverse_variant_id)) {
+                $varToIng[$ing->loyverse_variant_id] = $ing;
+            }
+        }
+
+        // If some ingredients don't have loyverse_variant_id, match via items list
+        if (count($varToIng) < $ingredients->count()) {
+            $loyverseItems = $this->getItems();
+            foreach ($loyverseItems as $it) {
+                if (!empty($it['variants'])) {
+                    foreach ($it['variants'] as $v) {
+                        $sku = $v['sku'] ?? '';
+                        $varId = $v['variant_id'] ?? '';
+                        $matched = $ingredients->firstWhere('id', $sku) ?? $ingredients->first(function ($i) use ($it) {
+                            return strcasecmp(trim($i->name), trim($it['item_name'])) === 0;
+                        });
+                        if ($matched && $varId) {
+                            $matched->loyverse_variant_id = $varId;
+                            $matched->loyverse_item_id = $it['id'];
+                            $matched->saveQuietly();
+                            $varToIng[$varId] = $matched;
+                        }
+                    }
+                }
+            }
+        }
+
+        $updated = [];
+        $changes = [];
+
+        foreach ($levels as $lvl) {
+            $varId = $lvl['variant_id'] ?? null;
+            if (!$varId || !isset($varToIng[$varId])) {
+                continue;
+            }
+
+            $ing = $varToIng[$varId];
+            $newStock = (float) ($lvl['in_stock'] ?? 0);
+            $oldStock = (float) $ing->stock;
+
+            if (abs($newStock - $oldStock) > 0.001) {
+                $ing->stock = $newStock;
+                $ing->saveQuietly();
+
+                $updated[] = [
+                    'id' => $ing->id,
+                    'name' => $ing->name,
+                    'old_stock' => $oldStock,
+                    'new_stock' => $newStock,
+                    'unit' => $ing->unit
+                ];
+
+                $diff = $newStock - $oldStock;
+                $diffText = ($diff > 0 ? "+{$diff}" : "{$diff}") . " {$ing->unit}";
+                $changes[] = "{$ing->name}: {$oldStock} -> {$newStock} {$ing->unit} ({$diffText})";
+            }
+        }
+
+        if (!empty($changes)) {
+            Cache::forget('ingredients_all');
+            Cache::forget('products_catalog_default');
+
+            AuditLog::create([
+                'user_name' => 'Loyverse Inventory Sync',
+                'user_role' => 'system',
+                'action' => 'Stock Levels Synced from Loyverse',
+                'details' => "Updated " . count($changes) . " ingredient(s) from Loyverse Inventory: " . implode('; ', $changes),
+                'ip_address' => request()->ip() ?? '127.0.0.1',
+            ]);
+        }
+
+        return [
+            'total_levels_received' => count($levels),
+            'updated_count' => count($updated),
+            'updated_ingredients' => $updated
+        ];
+    }
+
+    /**
+     * ==============================================================
+     * INVENTORY LEVELS: PUSH TO LOYVERSE (Website -> Loyverse)
+     * ==============================================================
+     * Pushes current website ingredient stock levels to Loyverse.
+     */
+    public function pushInventoryToLoyverse(?array $ingredientIds = null): array
+    {
+        $storeId = $this->getEffectiveStoreId();
+        $query = Ingredient::query();
+        if ($ingredientIds) {
+            $query->whereIn('id', $ingredientIds);
+        }
+        $ingredients = $query->get();
+
+        $levels = [];
+        foreach ($ingredients as $ing) {
+            if (!empty($ing->loyverse_variant_id)) {
+                $levels[] = [
+                    'variant_id' => $ing->loyverse_variant_id,
+                    'store_id' => $storeId,
+                    'stock_after' => (float) $ing->stock
+                ];
+            }
+        }
+
+        if (empty($levels)) {
+            // Need to export ingredients first so variant IDs exist
+            $this->exportIngredientsToLoyverse();
+            return $this->pushInventoryToLoyverse($ingredientIds);
+        }
+
+        $res = Http::withHeaders($this->headers())->post("{$this->apiUrl}/inventory", [
+            'inventory_levels' => $levels
+        ]);
+
+        if (!$res->successful()) {
+            throw new \Exception("Failed to push inventory to Loyverse: " . $res->body());
+        }
+
+        return [
+            'success' => true,
+            'pushed_count' => count($levels),
+            'response' => $res->json()
+        ];
+    }
+
+    /**
+     * Instantly push a single ingredient's updated stock to Loyverse
+     */
+    public function pushSingleIngredientStock(Ingredient $ingredient): bool
+    {
+        if (empty($this->token)) return false;
+
+        try {
+            $storeId = $this->getEffectiveStoreId();
+            $variantId = $ingredient->loyverse_variant_id;
+
+            if (!$variantId) {
+                // Try to find variant in Loyverse
+                $items = $this->getItems();
+                foreach ($items as $it) {
+                    if (strcasecmp(trim($it['item_name']), trim($ingredient->name)) === 0) {
+                        $variantId = $it['variants'][0]['variant_id'] ?? null;
+                        if ($variantId) {
+                            $ingredient->loyverse_item_id = $it['id'];
+                            $ingredient->loyverse_variant_id = $variantId;
+                            $ingredient->saveQuietly();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!$variantId) {
+                return false;
+            }
+
+            $res = Http::withHeaders($this->headers())->post("{$this->apiUrl}/inventory", [
+                'inventory_levels' => [
+                    [
+                        'variant_id' => $variantId,
+                        'store_id' => $storeId,
+                        'stock_after' => (float) $ingredient->stock
+                    ]
+                ]
+            ]);
+
+            return $res->successful();
+        } catch (\Exception $e) {
+            Log::warning("Could not sync single ingredient to Loyverse: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * ==============================================================
+     * FULL ADVANCED INVENTORY SYNCHRONIZATION
+     * ==============================================================
+     * Master button action that synchronizes everything:
+     * 1. Raw Ingredients with stock tracking & cost
+     * 2. Stock levels pushed to Loyverse inventory
+     * 3. Products and composite recipes with exact components
+     * 4. Automatic Webhooks subscription for inventory & receipts
+     */
+    public function fullAdvancedSync(?string $webhookBaseUrl = null): array
+    {
+        $storeId = $this->getEffectiveStoreId();
+
+        // 1. Export Ingredients
+        $ingredientsSync = $this->exportIngredientsToLoyverse();
+
+        // 2. Export Products with Composite Recipes
+        $menuSync = $this->exportMenuToLoyverse();
+
+        // 3. Register Webhooks if URL provided
+        $webhookResult = null;
+        if ($webhookBaseUrl) {
+            try {
+                $webhookResult = $this->registerAllWebhooks($webhookBaseUrl);
+            } catch (\Exception $e) {
+                $webhookResult = ['error' => $e->getMessage()];
+            }
+        }
+
+        // 4. Also sync any recent receipts
+        $receiptsSync = null;
+        try {
+            $receiptsSync = $this->syncRecentReceipts();
+        } catch (\Exception $e) {
+            $receiptsSync = ['error' => $e->getMessage()];
+        }
+
+        return [
+            'store_id' => $storeId,
+            'ingredients' => $ingredientsSync,
+            'menu_recipes' => $menuSync,
+            'webhooks' => $webhookResult,
+            'recent_receipts' => $receiptsSync,
+            'completed_at' => now()->toIso8601String()
+        ];
     }
 
     /**
@@ -400,18 +879,14 @@ class LoyverseService
     }
 
     /**
-     * Push a completed website order to Loyverse POS so it immediately updates
-     * the Sales Summary and revenue reports in the Loyverse Back Office.
+     * Push a completed website order to Loyverse POS.
      */
     public function pushOrderToLoyverse(Order $order): ?array
     {
-        // 1. Skip if order already came from Loyverse POS or already pushed
         if ($order->source === 'loyverse_pos' || !empty($order->loyverse_receipt_id)) {
             return null;
         }
 
-        // Only push real completed / paid sales to Loyverse POS
-        // Prevents cancelled or abandoned cart / pending orders from polluting Loyverse revenue!
         if ($order->status !== 'Completed' && !in_array($order->payment_status, ['Paid', 'Verified'])) {
             Log::info("Skipping Loyverse push for non-completed order #{$order->order_number} (Status: {$order->status}, Payment: {$order->payment_status})");
             return null;
@@ -419,9 +894,8 @@ class LoyverseService
 
         $storeId = $this->getEffectiveStoreId();
 
-        // 2. Map line items to Loyverse variant IDs
         $loyverseItems = $this->getItems();
-        $variantMap = []; // sku or name => variant_id
+        $variantMap = [];
         foreach ($loyverseItems as $it) {
             $nameKey = strtolower(trim($it['item_name']));
             if (!empty($it['variants'])) {
@@ -454,7 +928,6 @@ class LoyverseService
             }
         }
 
-        // If no matching variant found in Loyverse (e.g. newly added item), use first available variant
         if (empty($lineItemsPayload) && !empty($variantMap)) {
             $firstVariant = reset($variantMap);
             $lineItemsPayload[] = [
@@ -469,7 +942,6 @@ class LoyverseService
             return null;
         }
 
-        // 3. Select payment type ID: Cash or Card
         $paymentTypeId = (strcasecmp($order->payment_method, 'Cash') === 0)
             ? '13ac5a1f-4d0a-48f8-b162-9004f0f701b7'
             : '7130f409-fcb4-442f-8fc5-0f6da70dce3f';
@@ -522,9 +994,6 @@ class LoyverseService
         return $receiptData;
     }
 
-    /**
-     * Push all unpushed completed website orders to Loyverse POS in bulk.
-     */
     public function pushAllPendingWebsiteOrders(): array
     {
         $orders = Order::where('source', 'web')
@@ -556,9 +1025,6 @@ class LoyverseService
         return $results;
     }
 
-    /**
-     * Poll recent receipts and synchronize them.
-     */
     public function syncRecentReceipts(?string $since = null): array
     {
         if (!$since) {
@@ -591,7 +1057,6 @@ class LoyverseService
             $results['details'][] = $res;
         }
 
-        // Also push any pending website orders to Loyverse so both sides are in sync
         $pushRes = $this->pushAllPendingWebsiteOrders();
         $results['pushed_to_loyverse'] = $pushRes;
 
@@ -599,29 +1064,148 @@ class LoyverseService
     }
 
     /**
-     * Register Webhook subscription with Loyverse API for instant push events.
+     * ==========================================
+     * WEBHOOKS (Receipts & Inventory Levels)
+     * ==========================================
      */
-    public function registerWebhook(string $webhookUrl): array
+    public function registerWebhook(string $webhookUrl, string $type = 'receipts.update'): array
     {
         $response = Http::withHeaders($this->headers())->post("{$this->apiUrl}/webhooks", [
             'url' => $webhookUrl,
-            'type' => 'receipts.update',
+            'type' => $type,
             'status' => 'ENABLED'
         ]);
 
         if (!$response->successful()) {
-            throw new \Exception("Failed to register webhook: " . $response->body());
+            throw new \Exception("Failed to register webhook '{$type}': " . $response->body());
         }
 
         return $response->json();
     }
 
-    /**
-     * List active webhooks registered on this Loyverse account.
-     */
+    public function registerAllWebhooks(string $webhookUrl): array
+    {
+        $results = [];
+        $types = ['receipts.update', 'inventory_levels.update'];
+
+        foreach ($types as $type) {
+            try {
+                $results[$type] = $this->registerWebhook($webhookUrl, $type);
+            } catch (\Exception $e) {
+                $results[$type] = ['error' => $e->getMessage()];
+            }
+        }
+
+        return $results;
+    }
+
     public function getRegisteredWebhooks(): array
     {
         $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/webhooks");
         return $response->json('webhooks') ?? [];
+    }
+
+    /**
+     * Centralized Webhook Handler for all incoming Loyverse event types
+     */
+    public function processWebhookPayload(array $payload): array
+    {
+        $type = $payload['type'] ?? null;
+
+        // 1. Inventory Level Update Webhook (from Purchase orders, Stock Adjustments, Inventory Counts)
+        if ($type === 'inventory_levels.update' || isset($payload['inventory_levels'])) {
+            $levels = $payload['inventory_levels'] ?? [];
+            $updated = [];
+
+            foreach ($levels as $lvl) {
+                $varId = $lvl['variant_id'] ?? null;
+                $newStock = (float) ($lvl['in_stock'] ?? 0);
+
+                if (!$varId) continue;
+
+                $ing = Ingredient::where('loyverse_variant_id', $varId)->first();
+                if (!$ing) {
+                    // Try to match through Loyverse item list
+                    $items = $this->getItems();
+                    foreach ($items as $it) {
+                        foreach ($it['variants'] ?? [] as $v) {
+                            if (($v['variant_id'] ?? '') === $varId) {
+                                $sku = $v['sku'] ?? '';
+                                $ing = Ingredient::where('id', $sku)->first() ?? Ingredient::where('name', $it['item_name'])->first();
+                                if ($ing) {
+                                    $ing->loyverse_variant_id = $varId;
+                                    $ing->loyverse_item_id = $it['id'];
+                                    $ing->saveQuietly();
+                                    break 2;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if ($ing) {
+                    $oldStock = (float) $ing->stock;
+                    $ing->stock = $newStock;
+                    $ing->saveQuietly();
+
+                    $diff = $newStock - $oldStock;
+                    $diffFormatted = ($diff > 0 ? "+{$diff}" : "{$diff}") . " {$ing->unit}";
+
+                    AuditLog::create([
+                        'user_name' => 'Loyverse Live Webhook',
+                        'user_role' => 'system',
+                        'action' => 'Live Stock Update',
+                        'details' => "Ingredient '{$ing->name}' updated from {$oldStock} to {$newStock} {$ing->unit} ({$diffFormatted}) via Loyverse Inventory event.",
+                        'ip_address' => request()->ip() ?? '127.0.0.1',
+                    ]);
+
+                    $updated[] = [
+                        'ingredient' => $ing->name,
+                        'old_stock' => $oldStock,
+                        'new_stock' => $newStock,
+                    ];
+                }
+            }
+
+            if (!empty($updated)) {
+                Cache::forget('ingredients_all');
+                Cache::forget('products_catalog_default');
+            }
+
+            return [
+                'type' => 'inventory_levels.update',
+                'updated_count' => count($updated),
+                'updated' => $updated
+            ];
+        }
+
+        // 2. Receipt Update Webhook (POS Sales)
+        $receipts = [];
+        if (isset($payload['receipts']) && is_array($payload['receipts'])) {
+            $receipts = $payload['receipts'];
+        } elseif (isset($payload['receipt_number'])) {
+            $receipts = [$payload];
+        }
+
+        if (!empty($receipts)) {
+            $processed = [];
+            foreach ($receipts as $r) {
+                try {
+                    $processed[] = $this->processReceipt($r);
+                } catch (\Exception $e) {
+                    $processed[] = ['error' => $e->getMessage()];
+                }
+            }
+            return [
+                'type' => 'receipts.update',
+                'processed_count' => count($processed),
+                'processed' => $processed
+            ];
+        }
+
+        return [
+            'type' => $type ?? 'unknown',
+            'status' => 'unhandled_event'
+        ];
     }
 }

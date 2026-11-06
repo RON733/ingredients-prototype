@@ -1,5 +1,5 @@
 <template>
-<section id="about" class="py-20 bg-surface-900 border-t border-surface-800">
+<section id="about" class="scroll-mt-20 lg:scroll-mt-24 py-20 bg-surface-900 border-t border-surface-800">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Section Header -->

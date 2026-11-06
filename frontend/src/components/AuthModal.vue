@@ -413,18 +413,6 @@
         </div>
       </div>
 
-      <!-- Operations Personnel Redirection Box -->
-      <div v-if="store.authMode === 'login' || store.authMode === 'register'" class="mt-4 p-3 rounded-2xl bg-surface-950/80 border border-surface-800 text-[11px] text-gray-400 flex items-start gap-2.5">
-        <i class="pi pi-shield text-amber-400 mt-0.5 shrink-0 text-xs"></i>
-        <div>
-          <span class="font-bold text-gray-200">Staff, Admin, or Delivery Rider?</span>
-          <p class="text-[10px] text-gray-400 mt-0.5 leading-snug">
-            Operational credentials are not allowed on the customer page.
-            <a href="/admin" class="text-amber-400 hover:text-amber-300 font-bold underline ml-1">Open Operations Portal &rarr;</a>
-          </p>
-        </div>
-      </div>
-
     </div>
   </div>
 </template>

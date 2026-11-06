@@ -65,7 +65,7 @@
         <button 
           v-if="store.isAdminOrSuper"
           @click="selectTab('analytics')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'analytics' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-chart-line text-[11px]"></i>
           <span>Analytics</span>
@@ -73,7 +73,7 @@
 
         <button 
           @click="selectTab('orders')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'orders' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-list text-[11px]"></i>
           <span>Orders</span>
@@ -84,7 +84,7 @@
 
         <button 
           @click="selectTab('completed')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'completed' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-check-circle text-[11px]"></i>
           <span>Completed</span>
@@ -92,16 +92,15 @@
 
         <button 
           @click="selectTab('inventory')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'inventory' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-server text-[11px]"></i>
           <span>Inventory</span>
         </button>
 
         <button 
-          v-if="store.isStaffOrAdmin"
           @click="selectTab('products')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'products' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-box text-[11px]"></i>
           <span>Products</span>
@@ -110,7 +109,7 @@
         <button 
           v-if="store.isAdminOrSuper"
           @click="selectTab('recipes')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'recipes' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-book text-[11px]"></i>
           <span>Recipes</span>
@@ -118,7 +117,7 @@
 
         <button 
           @click="selectTab('bookings')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'bookings' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-calendar text-[11px]"></i>
           <span>Bookings</span>
@@ -126,7 +125,7 @@
 
         <button 
           @click="selectTab('announcements')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'announcements' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-megaphone text-[11px]"></i>
           <span>Announcements</span>
@@ -135,10 +134,11 @@
           </span>
         </button>
 
+        <!-- System Users (Admin & Super Admin Exclusive) -->
         <button 
           v-if="store.isAdminOrSuper"
           @click="selectTab('users')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'users' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-users text-[11px]"></i>
           <span>Users</span>
@@ -148,7 +148,7 @@
         <button 
           v-if="store.isSuperAdmin"
           @click="selectTab('audit')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'audit' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-history text-[11px]"></i>
           <span>Audit</span>
@@ -157,10 +157,19 @@
         <button 
           v-if="store.isAdminOrSuper"
           @click="selectTab('settings')" 
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'settings' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
           <i class="pi pi-qrcode text-[11px]"></i>
           <span>Settings</span>
+        </button>
+
+        <!-- Delivery Fleet Quick Switch (Mobile) -->
+        <button 
+          v-if="store.isAdminOrSuper"
+          @click="store.currentView = 'driver'" 
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20 cursor-pointer">
+          <i class="pi pi-compass text-[11px] text-emerald-400"></i>
+          <span>Fleet</span>
         </button>
       </div>
 
@@ -221,10 +230,10 @@
             <div class="space-y-1">
               <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-neutral-400/80 mb-1.5">Operations</p>
               
-              <!-- Active Orders (Staff & Admin) -->
+              <!-- Active Orders -->
               <button 
                 @click="selectTab('orders')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
                 :class="store.adminTab === 'orders' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
@@ -240,7 +249,7 @@
               <!-- Completed Orders -->
               <button 
                 @click="selectTab('completed')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'completed' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
@@ -251,7 +260,7 @@
               <!-- Kitchen Inventory -->
               <button 
                 @click="selectTab('inventory')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
                 :class="store.adminTab === 'inventory' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
@@ -263,6 +272,19 @@
                   {{ store.lowStockAlerts.length }}
                 </span>
               </button>
+
+              <!-- Delivery Fleet (Live Driver View) -->
+              <button 
+                v-if="store.isAdminOrSuper"
+                @click="store.currentView = 'driver'"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent cursor-pointer"
+                title="Open Delivery Fleet Dispatch & Rider Navigation">
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-compass text-sm text-emerald-400"></i>
+                  <span>Delivery Fleet (Rider)</span>
+                </div>
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">FLEET</span>
+              </button>
             </div>
 
             <!-- MANAGEMENT -->
@@ -273,47 +295,54 @@
               <button 
                 v-if="store.isAdminOrSuper"
                 @click="selectTab('analytics')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'analytics' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-chart-line text-sm"></i>
-                <span>Sales Analytics</span>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-chart-line text-sm"></i>
+                  <span>Sales Analytics</span>
+                </div>
               </button>
 
-              <!-- Product Menu Management (Staff, Admin, Super Admin) -->
+              <!-- Product Menu Management -->
               <button 
-                v-if="store.isStaffOrAdmin"
                 @click="selectTab('products')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'products' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-box text-sm"></i>
-                <span>Product Menu</span>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-box text-sm"></i>
+                  <span>Product Menu</span>
+                </div>
               </button>
 
-              <!-- Recipe Engine -->
+              <!-- Recipe Engine (Admin / Super Admin Exclusive) -->
               <button 
                 v-if="store.isAdminOrSuper"
                 @click="selectTab('recipes')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'recipes' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-book text-sm"></i>
-                <span>Recipes & Portions</span>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-book text-sm"></i>
+                  <span>Recipes & Portions</span>
+                </div>
               </button>
 
               <!-- Event Bookings -->
               <button 
                 @click="selectTab('bookings')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'bookings' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-calendar text-sm"></i>
-                <span>Event Bookings</span>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-calendar text-sm"></i>
+                  <span>Event Bookings</span>
+                </div>
               </button>
             </div>
 
@@ -321,10 +350,10 @@
             <div class="space-y-1">
               <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-neutral-400/80 mb-1.5">System</p>
 
-              <!-- Announcements & Promos (Staff & Admin) -->
+              <!-- Announcements & Promos -->
               <button 
                 @click="selectTab('announcements')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
                 :class="store.adminTab === 'announcements' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
@@ -337,40 +366,46 @@
                 </span>
               </button>
 
-              <!-- System Users (Admin & Super Admin) -->
+              <!-- System Users (Admin & Super Admin Exclusive) -->
               <button 
                 v-if="store.isAdminOrSuper"
                 @click="selectTab('users')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'users' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-users text-sm"></i>
-                <span>User & Roles</span>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-users text-sm"></i>
+                  <span>User & Roles</span>
+                </div>
               </button>
 
               <!-- Audit Trail (Exclusively Super Admin Only) -->
               <button 
                 v-if="store.isSuperAdmin"
                 @click="selectTab('audit')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'audit' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-history text-sm"></i>
-                <span>Audit Trail</span>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-history text-sm"></i>
+                  <span>Audit Trail</span>
+                </div>
               </button>
 
-              <!-- Store & GCash Payment Settings (Admin & Super Admin) -->
+              <!-- Store & GCash Payment Settings (Admin & Super Admin Exclusive) -->
               <button 
                 v-if="store.isAdminOrSuper"
                 @click="selectTab('settings')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'settings' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-qrcode text-sm"></i>
-                <span>GCash & Settings</span>
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-qrcode text-sm"></i>
+                  <span>GCash & Settings</span>
+                </div>
               </button>
             </div>
 
@@ -472,15 +507,7 @@
               </span>
             </button>
 
-            <!-- Customer Storefront Link -->
-            <a 
-              href="/" 
-              target="_blank" 
-              class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-800/80 hover:bg-surface-700 border border-surface-700/60 text-xs font-semibold text-neutral-300 hover:text-white transition-all shadow-sm"
-              title="Open Customer Storefront in new tab">
-              <i class="pi pi-external-link text-amber-400 text-xs"></i>
-              <span class="hidden sm:inline">Storefront</span>
-            </a>
+
 
             <!-- Live Clock in Admin Console -->
             <div class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-800/80 border border-surface-700/60 text-xs font-mono text-neutral-300 shadow-sm" title="Live Store Clock">
@@ -812,6 +839,171 @@
 
       </div>
 
+      <!-- ================= RIDER FLEET NOTICES MODAL ================= -->
+      <div 
+        v-if="showRiderNoticesModal" 
+        class="fixed inset-0 z-[9998] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="showRiderNoticesModal = false">
+        
+        <div class="w-full max-w-2xl bg-surface-900 border border-surface-750 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative overflow-hidden flex flex-col max-h-[90vh]">
+          
+          <!-- Ambient Glow -->
+          <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-4 border-b border-surface-800 pb-4 relative z-10 shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0">
+                🛵
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base sm:text-lg font-black text-white">Rider Fleet Notices</h3>
+                  <span 
+                    v-if="store.unreadRiderNoticesCount > 0" 
+                    class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-500 text-white">
+                    {{ store.unreadRiderNoticesCount }} New
+                  </span>
+                </div>
+                <p class="text-xs text-neutral-400 mt-0.5">Availability updates, break notifications, and photo proofs from delivery riders.</p>
+              </div>
+            </div>
+
+            <button 
+              @click="showRiderNoticesModal = false" 
+              class="w-8 h-8 rounded-full bg-surface-800 text-neutral-400 hover:text-white flex items-center justify-center text-xs cursor-pointer">
+              ✕
+            </button>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-2 relative z-10 shrink-0">
+            <button 
+              type="button" 
+              @click="noticesFilter = 'all'"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
+              :class="noticesFilter === 'all' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
+              All ({{ store.riderNotices.length }})
+            </button>
+            <button 
+              type="button" 
+              @click="noticesFilter = 'unread'"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
+              :class="noticesFilter === 'unread' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
+              Unread ({{ store.unreadRiderNoticesCount }})
+            </button>
+            <button 
+              type="button" 
+              @click="noticesFilter = 'unavailable'"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
+              :class="noticesFilter === 'unavailable' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
+              On Break / Offline
+            </button>
+            <button 
+              type="button" 
+              @click="noticesFilter = 'available'"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
+              :class="noticesFilter === 'available' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
+              Available
+            </button>
+          </div>
+
+          <!-- Notice List -->
+          <div class="space-y-3 overflow-y-auto pr-1 flex-1 relative z-10">
+            <div 
+              v-if="filteredRiderNotices.length === 0" 
+              class="py-12 text-center text-neutral-500 text-xs font-medium">
+              No rider notices found in this filter.
+            </div>
+
+            <div 
+              v-for="notice in filteredRiderNotices" 
+              :key="notice.id"
+              class="p-4 rounded-2xl border transition-all space-y-3"
+              :class="notice.is_acknowledged 
+                ? 'bg-surface-950/60 border-surface-800 text-neutral-300' 
+                : 'bg-surface-850 border-amber-500/40 text-white shadow-md'">
+              
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                  <div 
+                    class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0"
+                    :class="notice.status === 'available' 
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
+                      : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'">
+                    <i class="pi" :class="notice.status === 'available' ? 'pi-check-circle' : 'pi-clock'"></i>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-extrabold text-xs text-white">{{ notice.driver_name || 'Rider' }}</span>
+                      <span 
+                        class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider"
+                        :class="notice.status === 'available' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'">
+                        {{ notice.status === 'available' ? 'Available' : 'On Break / Unavailable' }}
+                      </span>
+                    </div>
+                    <p class="text-[10px] text-neutral-400">{{ formatNoticeTime(notice.created_at) }}</p>
+                  </div>
+                </div>
+
+                <!-- Acknowledge Button -->
+                <button 
+                  v-if="!notice.is_acknowledged" 
+                  type="button"
+                  @click="store.acknowledgeRiderNotice(notice.id)"
+                  class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-black transition-all cursor-pointer shadow-sm">
+                  Mark Reviewed
+                </button>
+                <span 
+                  v-else 
+                  class="text-[10px] font-semibold text-neutral-500 flex items-center gap-1">
+                  <i class="pi pi-check text-[9px] text-emerald-400"></i>
+                  <span>Reviewed</span>
+                </span>
+              </div>
+
+              <!-- Reason Body -->
+              <div class="p-3 rounded-xl bg-surface-900 border border-surface-800 text-xs text-neutral-200 leading-relaxed">
+                {{ notice.reason }}
+              </div>
+
+              <!-- Proof Photo Thumbnail if attached -->
+              <div v-if="notice.proof_image" class="pt-1">
+                <button 
+                  type="button" 
+                  @click="openDashboardProof(notice.proof_image)"
+                  class="group inline-flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-surface-900 hover:bg-surface-800 border border-surface-750 transition-all cursor-pointer">
+                  <img :src="notice.proof_image" class="w-10 h-10 object-cover rounded-lg border border-surface-700" alt="Proof" />
+                  <div class="text-left">
+                    <span class="text-[11px] font-bold text-amber-300 group-hover:underline flex items-center gap-1">
+                      <i class="pi pi-image text-[10px]"></i> View Proof Photo
+                    </span>
+                    <span class="text-[9px] text-neutral-400 block">Click to enlarge</span>
+                  </div>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Lightbox inside Modal -->
+          <div 
+            v-if="dashboardLightboxImage" 
+            class="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-4"
+            @click="dashboardLightboxImage = null">
+            <div class="relative max-w-2xl max-h-[85vh] p-2" @click.stop>
+              <img :src="dashboardLightboxImage" class="max-w-full max-h-[80vh] rounded-2xl object-contain shadow-2xl border border-surface-700" alt="Proof Enlarge" />
+              <button 
+                type="button" 
+                @click="dashboardLightboxImage = null"
+                class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-surface-800 text-white font-bold flex items-center justify-center shadow-lg border border-surface-600 hover:bg-surface-700 cursor-pointer">
+                ✕
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 </template>
 
@@ -856,6 +1048,12 @@ export default {
 
     const mobileNavOpen = ref(false);
     const selectTab = (tab) => {
+      if ((tab === 'users' || tab === 'settings' || tab === 'recipes' || tab === 'analytics') && !store.isAdminOrSuper) {
+        return;
+      }
+      if (tab === 'audit' && !store.isSuperAdmin) {
+        return;
+      }
       store.adminTab = tab;
       mobileNavOpen.value = false;
     };
@@ -867,6 +1065,7 @@ export default {
     };
 
     let timer = null;
+    let noticePoller = null;
     onMounted(() => {
       updateTime();
       timer = setInterval(updateTime, 1000);
@@ -882,22 +1081,62 @@ export default {
       return store.orders.filter(o => ['Pending', 'Preparing', 'Ready for Pickup', 'Out for Delivery'].includes(o.status)).length;
     });
 
+    // Rider Fleet Notices State & Actions
+    const showRiderNoticesModal = ref(false);
+    const noticesFilter = ref('all');
+    const dashboardLightboxImage = ref(null);
+
+    const filteredRiderNotices = computed(() => {
+      const list = store.riderNotices || [];
+      if (noticesFilter.value === 'unread') {
+        return list.filter(n => !n.is_acknowledged);
+      }
+      if (noticesFilter.value === 'unavailable') {
+        return list.filter(n => n.status !== 'available');
+      }
+      if (noticesFilter.value === 'available') {
+        return list.filter(n => n.status === 'available');
+      }
+      return list;
+    });
+
+    const formatNoticeTime = (dt) => {
+      if (!dt) return '';
+      const d = new Date(dt);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    };
+
+    const openDashboardProof = (img) => {
+      dashboardLightboxImage.value = img;
+    };
+
     const activeTabComponent = computed(() => {
       switch (store.adminTab) {
-        case 'analytics': return 'AdminAnalyticsTab';
+        case 'analytics': return store.isAdminOrSuper ? 'AdminAnalyticsTab' : 'AdminOrdersTab';
         case 'orders': return 'AdminOrdersTab';
         case 'completed': return 'AdminCompletedTab';
         case 'products': return 'AdminProductsTab';
         case 'inventory': return 'AdminInventoryTab';
-        case 'recipes': return 'AdminRecipesTab';
+        case 'recipes': return store.isAdminOrSuper ? 'AdminRecipesTab' : 'AdminOrdersTab';
         case 'bookings': return 'AdminBookingsTab';
         case 'announcements': return 'AdminAnnouncementsTab';
-        case 'users': return 'AdminUsersTab';
+        case 'users': return store.isAdminOrSuper ? 'AdminUsersTab' : 'AdminOrdersTab';
         case 'audit': return store.isSuperAdmin ? 'AdminAuditTab' : 'AdminOrdersTab';
-        case 'settings': return 'AdminSettingsTab';
+        case 'settings': return store.isAdminOrSuper ? 'AdminSettingsTab' : 'AdminOrdersTab';
         default: return 'AdminOrdersTab';
       }
     });
+
+    // Guard: Prevent staff operators from staying in restricted admin tabs
+    watch(
+      () => [store.user?.role, store.adminTab],
+      ([role, tab]) => {
+        if (role === 'staff' && ['users', 'audit', 'settings', 'recipes', 'analytics'].includes(tab)) {
+          store.adminTab = 'orders';
+        }
+      },
+      { immediate: true }
+    );
 
     
 

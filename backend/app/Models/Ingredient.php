@@ -16,13 +16,18 @@ class Ingredient extends Model
         'id',
         'name',
         'category',
+        'supplier_name',
         'stock',
+        'cost',
         'unit',
         'low_threshold',
+        'loyverse_item_id',
+        'loyverse_variant_id',
     ];
 
     protected $casts = [
         'stock' => 'float',
+        'cost' => 'float',
         'low_threshold' => 'float',
     ];
 

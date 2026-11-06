@@ -101,7 +101,7 @@ const AdminDashboard = {
         </button>
 
         <button 
-          v-if="store.isAdminOrSuper"
+          
           @click="selectTab('products')" 
           class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border"
           :class="store.adminTab === 'products' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
@@ -285,7 +285,7 @@ const AdminDashboard = {
 
               <!-- Product Menu Management -->
               <button 
-                v-if="store.isAdminOrSuper"
+                
                 @click="selectTab('products')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border"
                 :class="store.adminTab === 'products' 
@@ -295,7 +295,7 @@ const AdminDashboard = {
                 <span>Product Menu</span>
               </button>
 
-              <!-- Recipe Engine -->
+              <!-- Recipe Engine (Admin / Super Admin Exclusive) -->
               <button 
                 v-if="store.isAdminOrSuper"
                 @click="selectTab('recipes')"
@@ -339,7 +339,7 @@ const AdminDashboard = {
                 </span>
               </button>
 
-              <!-- System Users (Admin & Super Admin) -->
+              <!-- System Users (Admin & Super Admin Exclusive) -->
               <button 
                 v-if="store.isAdminOrSuper"
                 @click="selectTab('users')"
@@ -363,7 +363,7 @@ const AdminDashboard = {
                 <span>Audit Trail</span>
               </button>
 
-              <!-- Store & GCash Payment Settings (Admin & Super Admin) -->
+              <!-- Store & GCash Payment Settings (Admin & Super Admin Exclusive) -->
               <button 
                 v-if="store.isAdminOrSuper"
                 @click="selectTab('settings')"
@@ -621,6 +621,12 @@ const AdminDashboard = {
 
     const mobileNavOpen = Vue.ref(false);
     const selectTab = (tab) => {
+      if ((tab === 'users' || tab === 'settings' || tab === 'recipes' || tab === 'analytics') && !store.isAdminOrSuper) {
+        return;
+      }
+      if (tab === 'audit' && !store.isSuperAdmin) {
+        return;
+      }
       store.adminTab = tab;
       mobileNavOpen.value = false;
     };
@@ -640,22 +646,62 @@ const AdminDashboard = {
       return store.orders.filter(o => ['Pending', 'Preparing', 'Ready for Pickup', 'Out for Delivery'].includes(o.status)).length;
     });
 
+    // Rider Fleet Notices State & Actions
+    const showRiderNoticesModal = Vue.ref(false);
+    const noticesFilter = Vue.ref('all');
+    const dashboardLightboxImage = Vue.ref(null);
+
+    const filteredRiderNotices = Vue.computed(() => {
+      const list = store.riderNotices || [];
+      if (noticesFilter.value === 'unread') {
+        return list.filter(n => !n.is_acknowledged);
+      }
+      if (noticesFilter.value === 'unavailable') {
+        return list.filter(n => n.status !== 'available');
+      }
+      if (noticesFilter.value === 'available') {
+        return list.filter(n => n.status === 'available');
+      }
+      return list;
+    });
+
+    const formatNoticeTime = (dt) => {
+      if (!dt) return '';
+      const d = new Date(dt);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    };
+
+    const openDashboardProof = (img) => {
+      dashboardLightboxImage.value = img;
+    };
+
     const activeTabComponent = Vue.computed(() => {
       switch (store.adminTab) {
-        case 'analytics': return AdminAnalyticsTab;
+        case 'analytics': return store.isAdminOrSuper ? AdminAnalyticsTab : AdminOrdersTab;
         case 'orders': return AdminOrdersTab;
         case 'completed': return AdminCompletedTab;
         case 'products': return AdminProductsTab;
         case 'inventory': return AdminInventoryTab;
-        case 'recipes': return AdminRecipesTab;
+        case 'recipes': return store.isAdminOrSuper ? AdminRecipesTab : AdminOrdersTab;
         case 'bookings': return AdminBookingsTab;
         case 'announcements': return AdminAnnouncementsTab;
-        case 'users': return AdminUsersTab;
+        case 'users': return store.isAdminOrSuper ? AdminUsersTab : AdminOrdersTab;
         case 'audit': return store.isSuperAdmin ? AdminAuditTab : AdminOrdersTab;
-        case 'settings': return AdminSettingsTab;
+        case 'settings': return store.isAdminOrSuper ? AdminSettingsTab : AdminOrdersTab;
         default: return AdminOrdersTab;
       }
     });
+
+    // Guard: Prevent staff operators from staying in restricted admin tabs
+    Vue.watch(
+      () => [store.user?.role, store.adminTab],
+      ([role, tab]) => {
+        if (role === 'staff' && ['users', 'audit', 'settings', 'recipes', 'analytics'].includes(tab)) {
+          store.adminTab = 'orders';
+        }
+      },
+      { immediate: true }
+    );
 
     
 

@@ -1,27 +1,46 @@
 <template>
 <div class="space-y-8">
       
-      <!-- Top Header & Add Ingredient Button -->
+      <!-- Top Header & Primary Actions -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
-            <i class="pi pi-box"></i> KITCHEN INGREDIENTS PROTOTYPE
+            <i class="pi pi-box"></i> KITCHEN INGREDIENTS & LOYVERSE PROTOTYPE
           </span>
           <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">Raw Ingredient Inventory</h2>
           <p class="text-xs text-gray-400">
-            Real-time tracking of raw ingredients. Stock dynamically deducts upon each order and dictates menu portion availability.
+            Real-time kitchen raw ingredient tracking synchronized with Loyverse Advanced Inventory (Purchase Orders, Adjustments & Productions).
           </p>
         </div>
 
         <div class="flex items-center gap-2.5 flex-wrap">
           <button 
+            @click="handleFullAdvancedSync"
+            :disabled="isFullSyncingLoyverse"
+            class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
+            title="Full synchronization: exports all ingredients, composite recipes, and stocks to Loyverse">
+            <i class="pi" :class="isFullSyncingLoyverse ? 'pi-spin pi-spinner' : 'pi-cloud-upload'"></i>
+            <span>{{ isFullSyncingLoyverse ? 'Syncing All...' : 'Full Loyverse Sync' }}</span>
+          </button>
+
+          <button 
+            @click="handlePullLoyverseInventory"
+            :disabled="isPullingLoyverse"
+            class="px-3 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
+            title="Pull latest stock counts & purchase orders from Loyverse Back Office into the website">
+            <i class="pi" :class="isPullingLoyverse ? 'pi-spin pi-spinner text-sky-400' : 'pi-download text-sky-400'"></i>
+            <span>{{ isPullingLoyverse ? 'Pulling...' : 'Pull Stock' }}</span>
+          </button>
+
+          <button 
             @click="handleSyncLoyverse"
             :disabled="isSyncingLoyverse"
-            class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-            title="Sync latest POS sales and update ingredient stock">
+            class="px-3 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
+            title="Sync latest POS sales and deduct raw ingredients">
             <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner text-amber-400' : 'pi-sync text-emerald-400'"></i>
             <span>{{ isSyncingLoyverse ? 'Syncing...' : 'Sync POS Sales' }}</span>
           </button>
+
           <button 
             @click="openAddModal"
             class="px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
@@ -35,6 +54,44 @@
             title="Refresh Stock">
             <i class="pi pi-refresh" :class="{ 'pi-spin': loading }"></i>
           </button>
+        </div>
+      </div>
+
+      <!-- Loyverse Advanced Inventory Live Sync Banner -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-surface-850 via-surface-800 to-amber-950/20 border border-surface-700/80 shadow-md">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex items-start sm:items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+              <i class="pi pi-check-circle text-lg"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-extrabold text-sm text-white">Loyverse Advanced Inventory Integration Active</h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Store: GSHOT
+                </span>
+              </div>
+              <p class="text-xs text-neutral-400 mt-0.5">
+                Two-way live synchronization enabled. Stock adjustments, Purchase Orders, and Inventory Counts in Loyverse reflect here immediately.
+              </p>
+            </div>
+          </div>
+
+          <!-- Feature Pills -->
+          <div class="flex items-center gap-2 flex-wrap text-[11px]">
+            <span class="px-2.5 py-1 rounded-lg bg-surface-900 border border-surface-700/80 text-amber-300 flex items-center gap-1.5">
+              <i class="pi pi-file-edit text-[10px]"></i> Purchase Orders
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-surface-900 border border-surface-700/80 text-sky-300 flex items-center gap-1.5">
+              <i class="pi pi-sliders-h text-[10px]"></i> Stock Adjustments
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-surface-900 border border-surface-700/80 text-purple-300 flex items-center gap-1.5">
+              <i class="pi pi-cog text-[10px]"></i> Productions
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-surface-900 border border-surface-700/80 text-emerald-300 flex items-center gap-1.5">
+              <i class="pi pi-chart-line text-[10px]"></i> Valuation
+            </span>
+          </div>
         </div>
       </div>
 
@@ -119,6 +176,7 @@
                 <th class="px-6 py-4">Category</th>
                 <th class="px-6 py-4">Current Stock</th>
                 <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4">Loyverse Sync</th>
                 <th class="px-6 py-4">Low Threshold</th>
                 <th class="px-6 py-4 text-center">Quick Restock</th>
                 <th class="px-6 py-4 text-right">Actions</th>
@@ -155,6 +213,9 @@
                     {{ ing.stock }}
                   </span>
                   <span class="text-gray-400 ml-1 font-medium">{{ ing.unit }}</span>
+                  <span v-if="ing.cost > 0" class="block text-[10px] text-neutral-400 mt-0.5">
+                    ₱{{ Number(ing.cost).toFixed(2) }} / {{ ing.unit }}
+                  </span>
                 </td>
 
                 <!-- Status Badge -->
@@ -163,6 +224,13 @@
                     class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
                     :class="getStatusBadge(ing)">
                     {{ getStatusText(ing) }}
+                  </span>
+                </td>
+
+                <!-- Loyverse Sync Badge -->
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <i class="pi pi-check text-[9px]"></i> Tracked
                   </span>
                 </td>
 
@@ -218,7 +286,7 @@
 
       <!-- Add/Edit Ingredient Modal -->
       <div v-if="modalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-surface-900 border border-surface-700 rounded-3xl p-6 space-y-4">
+        <div class="w-full max-w-md bg-surface-900 border border-surface-700 rounded-3xl p-6 space-y-4 shadow-2xl">
           <div class="flex justify-between items-center border-b border-surface-700 pb-3">
             <h3 class="text-lg font-black text-white">
               {{ isEditing ? 'Edit Ingredient' : 'Add Raw Ingredient' }}
@@ -251,17 +319,28 @@
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-gray-400 mb-1">Current Stock</label>
-                <input v-model.number="form.stock" type="number" min="0" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
+                <input v-model.number="form.stock" type="number" min="0" step="any" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
               </div>
               <div>
                 <label class="block text-gray-400 mb-1">Low Threshold</label>
-                <input v-model.number="form.low_threshold" type="number" min="0" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
+                <input v-model.number="form.low_threshold" type="number" min="0" step="any" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-gray-400 mb-1">Unit Cost (₱)</label>
+                <input v-model.number="form.cost" type="number" min="0" step="0.01" placeholder="0.00" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
+              </div>
+              <div>
+                <label class="block text-gray-400 mb-1">Supplier Name</label>
+                <input v-model="form.supplier_name" placeholder="e.g. San Miguel" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
               </div>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-3 border-t border-surface-700">
-            <button @click="modalOpen = false" class="px-4 py-2 text-xs text-gray-400">Cancel</button>
+            <button @click="modalOpen = false" class="px-4 py-2 text-xs text-gray-400 hover:text-white">Cancel</button>
             <button @click="saveIngredient" class="px-5 py-2 text-xs font-black bg-amber-500 hover:bg-amber-400 text-surface-950 rounded-xl">
               {{ isEditing ? 'Save Stock' : 'Add Ingredient' }}
             </button>
@@ -274,7 +353,6 @@
 
 <script>
 import * as Vue from 'vue';
-import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
@@ -285,6 +363,9 @@ export default {
     const store = useGShotStore();
     const loading = Vue.ref(false);
     const isSyncingLoyverse = Vue.ref(false);
+    const isPullingLoyverse = Vue.ref(false);
+    const isPushingLoyverse = Vue.ref(false);
+    const isFullSyncingLoyverse = Vue.ref(false);
 
     const handleSyncLoyverse = async () => {
       isSyncingLoyverse.value = true;
@@ -294,6 +375,25 @@ export default {
         isSyncingLoyverse.value = false;
       }
     };
+
+    const handlePullLoyverseInventory = async () => {
+      isPullingLoyverse.value = true;
+      try {
+        await store.pullLoyverseInventory();
+      } finally {
+        isPullingLoyverse.value = false;
+      }
+    };
+
+    const handleFullAdvancedSync = async () => {
+      isFullSyncingLoyverse.value = true;
+      try {
+        await store.fullLoyverseSync();
+      } finally {
+        isFullSyncingLoyverse.value = false;
+      }
+    };
+
     const selectedCategory = Vue.ref('All');
     const searchQuery = Vue.ref('');
 
@@ -306,6 +406,8 @@ export default {
       category: 'Produce',
       unit: 'cups',
       stock: 20,
+      cost: 0,
+      supplier_name: '',
       low_threshold: 5,
     });
 
@@ -313,7 +415,7 @@ export default {
       loading.value = true;
       try {
         await store.fetchIngredients();
-        await store.fetchProducts(); // refresh calculated portions
+        await store.fetchProducts();
       } finally {
         loading.value = false;
       }
@@ -370,8 +472,8 @@ export default {
 
     const quickAdjust = async (ing, amt) => {
       try {
-        await GST_API.adjustStock(ing.id, amt);
-        store.notify(`Added +${amt} ${ing.unit} to ${ing.name}`);
+        await GST_API.adjustIngredientStock(ing.id, amt);
+        store.notify(`Added +${amt} ${ing.unit} to ${ing.name} (synced to Loyverse)`);
         refresh();
       } catch (err) {
         store.notify('Error updating stock', 'error');
@@ -385,6 +487,8 @@ export default {
       form.category = 'Produce';
       form.unit = 'cups';
       form.stock = 25;
+      form.cost = 0;
+      form.supplier_name = '';
       form.low_threshold = 8;
       modalOpen.value = true;
     };
@@ -396,6 +500,8 @@ export default {
       form.category = ing.category;
       form.unit = ing.unit;
       form.stock = ing.stock;
+      form.cost = ing.cost || 0;
+      form.supplier_name = ing.supplier_name || '';
       form.low_threshold = ing.low_threshold;
       modalOpen.value = true;
     };
@@ -406,14 +512,14 @@ export default {
       try {
         if (isEditing.value) {
           await GST_API.updateIngredient(editingId.value, { ...form });
-          store.notify('Ingredient stock updated!');
+          store.notify('Ingredient stock updated & synced with Loyverse!');
         } else {
           const slug = form.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
           await GST_API.createIngredient({
             id: slug,
             ...form,
           });
-          store.notify('New raw ingredient added to inventory!');
+          store.notify('New raw ingredient added & synced to Loyverse!');
         }
         modalOpen.value = false;
         refresh();
@@ -457,6 +563,11 @@ export default {
       refresh,
       isSyncingLoyverse,
       handleSyncLoyverse,
+      isPullingLoyverse,
+      handlePullLoyverseInventory,
+      isPushingLoyverse,
+      isFullSyncingLoyverse,
+      handleFullAdvancedSync,
     };
   },
 };

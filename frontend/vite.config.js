@@ -25,6 +25,11 @@ export default defineConfig({
             '/driver',
             '/rider',
             '/dashboard',
+            '/operations',
+            '/operation',
+            '/ops',
+            '/portal',
+            '/terminal',
           ];
           if (opsRoutes.includes(cleanUrl)) {
             req.url = '/admin.html';

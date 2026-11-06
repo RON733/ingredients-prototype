@@ -71,16 +71,23 @@ class ProductController extends Controller
             'discount_value' => 'nullable|numeric|min:0', // array of { ingredient_id, qty }
         ]);
 
-        $product = Product::create([
+        $productData = [
             'id' => $validated['id'],
             'name' => $validated['name'],
             'category' => $validated['category'],
             'price' => $validated['price'],
             'description' => $validated['description'] ?? '',
-            'emoji' => $validated['emoji'] ?? 'ðŸ½ï¸',
+            'emoji' => $validated['emoji'] ?? '🍽️',
             'image' => $validated['image'] ?? '/assets/hero-banner.png',
             'is_available' => $validated['is_available'] ?? true,
-        ]);
+        ];
+        if (array_key_exists('original_price', $validated)) $productData['original_price'] = $validated['original_price'];
+        if (array_key_exists('discount_percent', $validated)) $productData['discount_percent'] = $validated['discount_percent'];
+        if (array_key_exists('discount_type', $validated)) $productData['discount_type'] = $validated['discount_type'];
+        if (array_key_exists('discount_value', $validated)) $productData['discount_value'] = $validated['discount_value'];
+
+        $product = Product::create($productData);
+        Cache::forget('products_catalog_default');
 
         if (!empty($validated['recipes'])) {
             foreach ($validated['recipes'] as $r) {

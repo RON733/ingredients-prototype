@@ -1,5 +1,5 @@
 <template>
-<section id="contact" class="py-20 bg-surface-950 border-t border-surface-800">
+<section id="contact" class="scroll-mt-20 lg:scroll-mt-24 py-20 bg-surface-950 border-t border-surface-800">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header -->
