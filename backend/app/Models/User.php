@@ -24,6 +24,9 @@ class User extends Authenticatable
         'avatar',
         'is_available',
         'driver_status',
+        'availability_reason',
+        'availability_proof_image',
+        'availability_updated_at',
     ];
 
     protected $hidden = [
@@ -50,3 +53,4 @@ class User extends Authenticatable
         return $this->hasMany(EventBooking::class);
     }
 }
+

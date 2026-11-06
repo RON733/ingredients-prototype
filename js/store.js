@@ -1,4 +1,4 @@
-// G Shot Teas � Pinia Central Store
+// G Shot Teas ï¿½ Pinia Central Store
 const { defineStore } = Pinia;
 
 const DEFAULT_PRODUCTS = [
@@ -8,7 +8,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 89,
     description: 'Juicy grilled beef patty, golden brioche bun, fresh lettuce, and melted rich cheddar cheese.',
-    emoji: '🍔',
+    emoji: 'ðŸ”',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 23,
@@ -26,7 +26,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 149,
     description: 'Double-stacked beef smash patties with double layers of cheddar and toasted brioche.',
-    emoji: '🍔',
+    emoji: 'ðŸ”',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 21,
@@ -43,7 +43,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 169,
     description: 'Loaded with savory pepperoni cuts, premium mozzarella cheese blend, and signature Italian sauce.',
-    emoji: '🍕',
+    emoji: 'ðŸ•',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -61,7 +61,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 159,
     description: 'A cheesy paradise featuring melted mozzarella and cheddar cheese over seasoned tomato sauce.',
-    emoji: '🧀',
+    emoji: 'ðŸ§€',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -79,7 +79,7 @@ const DEFAULT_PRODUCTS = [
     category: 'RiceMeals',
     price: 129,
     description: 'Crispy flavorful glazed chicken wings served with fragrant steamed rice and dipping sauce.',
-    emoji: '🍗',
+    emoji: 'ðŸ—',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 12,
@@ -95,7 +95,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 79,
     description: 'Crispy golden fries generously topped with warm melted cheddar cheese sauce.',
-    emoji: '🍟',
+    emoji: 'ðŸŸ',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 24,
@@ -111,7 +111,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 49,
     description: 'Timeless brewed black tea infused with creamy milk and loaded with chewy brown sugar tapioca pearls.',
-    emoji: '🧋',
+    emoji: 'ðŸ§‹',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 44,
@@ -128,7 +128,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Warm tiger-striped brown sugar drizzle, fresh dairy milk, and slow-cooked boba pearls.',
-    emoji: '🧋',
+    emoji: 'ðŸ§‹',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 34,
@@ -145,7 +145,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 79,
     description: 'Fine Japanese ceremonial matcha layered over cold fresh milk and sweet pearls.',
-    emoji: '🍵',
+    emoji: 'ðŸµ',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -162,7 +162,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Rich velvety purple taro with tea essence, creamy dairy, and bouncy pearls.',
-    emoji: '🧋',
+    emoji: 'ðŸ§‹',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -180,7 +180,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Coffee',
     price: 89,
     description: 'Freshly extracted espresso shot combined with vanilla-infused milk and buttery caramel drizzle.',
-    emoji: '☕',
+    emoji: 'â˜•',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 40,
@@ -196,7 +196,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 99,
     description: 'Filipino shaved ice delicacy loaded with sweet jellies, leche flan, ube, and rich milk.',
-    emoji: '🍧',
+    emoji: 'ðŸ§',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 30,
@@ -295,6 +295,12 @@ const useGShotStore = defineStore('gshot', {
     toasts: [],
     loading: false,
     backendConnected: false,
+
+    // Delivery Fleet & Rider Notices
+    riderNotices: [],
+    unreadRiderNoticesCount: 0,
+    showRiderNoticesModal: false,
+    previewProofImage: null,
 
     // Announcements (Promos, New Menus, Advisories)
     announcements: JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS)),
@@ -457,6 +463,66 @@ const useGShotStore = defineStore('gshot', {
         this.ingredients = res.data;
       } catch (err) {
         console.error('Error fetching ingredients:', err);
+      }
+    },
+
+    async fetchRiderNotices(silent = false) {
+      try {
+        const res = await GST_API.getRiderNotices();
+        const prevCount = this.unreadRiderNoticesCount;
+        this.riderNotices = res.data.notices || [];
+        this.unreadRiderNoticesCount = res.data.unread_count ?? this.riderNotices.filter(n => !n.is_acknowledged).length;
+
+        if (!silent && this.unreadRiderNoticesCount > prevCount && prevCount >= 0 && (this.isAdminOrSuper || this.isStaffOnly)) {
+          const newest = this.riderNotices[0];
+          if (newest && !newest.is_acknowledged) {
+            this.notify('Rider Notice: ' + newest.driver_name + ' is ' + (newest.status === 'available' ? 'Available' : 'Unavailable') + ' - ' + newest.reason, 'warning');
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch rider notices:', err);
+      }
+    },
+
+    async submitRiderNotice(payload) {
+      try {
+        const res = await GST_API.submitRiderNotice(payload);
+        if (this.user) {
+          const updatedUser = res.data.driver || res.data.user;
+          if (updatedUser) {
+            this.user.is_available = updatedUser.is_available;
+            this.user.driver_status = updatedUser.driver_status;
+            this.user.availability_reason = updatedUser.availability_reason;
+            this.user.availability_proof_image = updatedUser.availability_proof_image;
+          } else {
+            this.user.is_available = payload.is_available;
+            this.user.driver_status = payload.is_available ? 'available' : 'offline';
+            this.user.availability_reason = payload.reason;
+            this.user.availability_proof_image = payload.proof_image;
+          }
+          localStorage.setItem('gst_user', JSON.stringify(this.user));
+        }
+        await this.fetchRiderNotices(true);
+        return res.data;
+      } catch (err) {
+        throw err;
+      }
+    },
+
+    async acknowledgeRiderNotice(id) {
+      try {
+        const res = await GST_API.acknowledgeRiderNotice(id);
+        const notice = this.riderNotices.find(n => n.id === id);
+        if (notice) {
+          notice.is_acknowledged = true;
+          notice.acknowledged_at = new Date().toISOString();
+        }
+        this.unreadRiderNoticesCount = Math.max(0, this.unreadRiderNoticesCount - 1);
+        this.notify('Notice marked as reviewed.', 'success');
+        return res.data;
+      } catch (err) {
+        this.notify('Failed to acknowledge notice.', 'error');
+        throw err;
       }
     },
 
@@ -851,8 +917,8 @@ const useGShotStore = defineStore('gshot', {
         }
         this.notify(
           enable 
-            ? '🚨 WEBSITE SHUTDOWN ACTIVATED! Customers now see the Under Maintenance screen.' 
-            : '✅ WEBSITE RESTORED ONLINE! Customer store ordering and access are back live.',
+            ? 'ðŸš¨ WEBSITE SHUTDOWN ACTIVATED! Customers now see the Under Maintenance screen.' 
+            : 'âœ… WEBSITE RESTORED ONLINE! Customer store ordering and access are back live.',
           enable ? 'info' : 'success'
         );
         return true;
@@ -1069,7 +1135,7 @@ const useGShotStore = defineStore('gshot', {
           this.fetchProducts(),
         ]);
         if (count > 0) {
-          this.notify(`⚡ Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
+          this.notify(`âš¡ Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
         } else {
           this.notify('Loyverse POS is up to date. No new un-synced sales.', 'info');
         }
@@ -1088,7 +1154,7 @@ const useGShotStore = defineStore('gshot', {
       try {
         const res = await GST_API.exportMenuToLoyverse();
         const total = res.data?.results?.total ?? 0;
-        this.notify(`📤 Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
+        this.notify(`ðŸ“¤ Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
         return res.data;
       } catch (err) {
         console.error('Loyverse export failed:', err);

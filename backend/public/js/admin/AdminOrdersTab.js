@@ -1,4 +1,4 @@
-// G Shot Teas — Admin & Staff Active Orders Tab (Matches Figure 14)
+// G Shot Teas â€” Admin & Staff Active Orders Tab (Matches Figure 14)
 const AdminOrdersTab = {
   template: `
     <div class="space-y-8 animate-fade-in">
@@ -33,12 +33,6 @@ const AdminOrdersTab = {
             <span class="hidden sm:inline">GCash QR</span>
           </button>
 
-          <button 
-            @click="openWalkInModal"
-            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
-            <i class="pi pi-desktop text-xs"></i>
-            <span>Encode Walk-in Order (POS)</span>
-          </button>
 
           <button 
             @click="refresh"
@@ -135,10 +129,10 @@ const AdminOrdersTab = {
                 <i class="pi pi-bolt text-[10px]"></i> Loyverse POS
               </span>
               <span v-if="order.driver" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
-                🛵 {{ order.driver.name }}
+                ðŸ›µ {{ order.driver.name }}
               </span>
               <span class="text-xs text-gray-400">
-                • {{ formatTime(order.created_at) }}
+                â€¢ {{ formatTime(order.created_at) }}
               </span>
             </div>
 
@@ -197,12 +191,12 @@ const AdminOrdersTab = {
                     ({{ item.customization.size }}<span v-if="item.customization.sugar">, {{ item.customization.sugar }} sugar</span>)
                   </span>
                 </div>
-                <span class="font-bold text-gray-300">₱{{ Number(item.subtotal).toFixed(2) }}</span>
+                <span class="font-bold text-gray-300">â‚±{{ Number(item.subtotal).toFixed(2) }}</span>
               </div>
 
               <div class="flex justify-between text-sm font-black text-white pt-2">
                 <span>Total Amount:</span>
-                <span class="text-brand-400">₱{{ Number(order.total_amount).toFixed(2) }}</span>
+                <span class="text-brand-400">â‚±{{ Number(order.total_amount).toFixed(2) }}</span>
               </div>
             </div>
 
@@ -259,7 +253,7 @@ const AdminOrdersTab = {
               v-if="order.order_type === 'Delivery' && order.status === 'Out for Delivery'"
               class="px-3 py-1.5 rounded-xl bg-sky-950/60 border border-sky-500/30 text-sky-300 text-[11px] font-bold flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
-              <span>🛵 Dispatched to {{ order.driver?.name || 'Rider' }} • Awaiting Rider Completion</span>
+              <span>ðŸ›µ Dispatched to {{ order.driver?.name || 'Rider' }} â€¢ Awaiting Rider Completion</span>
             </div>
 
             <button 
@@ -284,51 +278,8 @@ const AdminOrdersTab = {
             New incoming customer delivery and counter pickup orders will appear here automatically in real time.
           </p>
         </div>
-        <button 
-          @click="openWalkInModal"
-          class="mt-2 px-4 py-2 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 hover:text-white border border-surface-700 transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm">
-          <i class="pi pi-plus text-xs text-amber-400"></i>
-          <span>Encode Walk-in Counter Order</span>
-        </button>
       </div>
 
-      <!-- Walk-in Cashier (POS) Modal -->
-      <div v-if="walkInModalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-2xl bg-surface-900 border border-surface-700 rounded-3xl p-6 space-y-4">
-          <div class="flex items-center justify-between border-b border-surface-700 pb-3">
-            <h3 class="text-lg font-black text-white">Encode Walk-in Counter Order (POS)</h3>
-            <button @click="walkInModalOpen = false" class="text-gray-400 hover:text-white">✕</button>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <label class="block text-gray-400 mb-1">Customer Name</label>
-              <input v-model="walkInForm.customer_name" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" placeholder="Walk-in Customer" />
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">Phone Number</label>
-              <input v-model="walkInForm.customer_phone" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" placeholder="09XXXXXXXXX" />
-            </div>
-          </div>
-
-          <!-- Select Product -->
-          <div>
-            <label class="block text-xs font-bold text-gray-400 mb-1">Select Menu Item</label>
-            <select v-model="walkInForm.product_id" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white text-xs cursor-pointer">
-              <option v-for="p in store.products" :key="p.id" :value="p.id">
-                {{ p.name }} (₱{{ p.price }}) - Stock: {{ p.max_portions }} portions
-              </option>
-            </select>
-          </div>
-
-          <div class="flex justify-end gap-3 pt-3 border-t border-surface-700">
-            <button @click="walkInModalOpen = false" class="px-4 py-2 text-xs text-gray-400">Cancel</button>
-            <button @click="submitWalkIn" class="px-5 py-2 text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl">
-              Place Walk-in Order
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- Receipt Screenshot Lightbox Modal -->
       <div 
@@ -343,7 +294,7 @@ const AdminOrdersTab = {
             <button 
               @click="selectedReceiptImage = null" 
               class="w-7 h-7 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors">
-              ✕
+              âœ•
             </button>
           </div>
           <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
@@ -371,7 +322,7 @@ const AdminOrdersTab = {
           <div class="flex items-center justify-between pb-3 border-b border-surface-800">
             <div class="flex items-center gap-2.5">
               <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
-                🛵
+                ðŸ›µ
               </div>
               <div>
                 <h3 class="text-sm font-black text-white">Dispatch Order {{ dispatchModalOrder.order_number }}</h3>
@@ -381,7 +332,7 @@ const AdminOrdersTab = {
             <button 
               @click="dispatchModalOrder = null" 
               class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors">
-              ✕
+              âœ•
             </button>
           </div>
 
@@ -389,10 +340,10 @@ const AdminOrdersTab = {
           <div class="p-3 rounded-2xl bg-surface-950 border border-surface-800 text-xs space-y-1">
             <p class="font-bold text-white flex items-center justify-between">
               <span>Customer: {{ dispatchModalOrder.customer_name }}</span>
-              <span class="text-brand-400">₱{{ Number(dispatchModalOrder.total_amount).toFixed(2) }} ({{ dispatchModalOrder.payment_method }})</span>
+              <span class="text-brand-400">â‚±{{ Number(dispatchModalOrder.total_amount).toFixed(2) }} ({{ dispatchModalOrder.payment_method }})</span>
             </p>
             <p class="text-[11px] text-gray-400 truncate" :title="dispatchModalOrder.delivery_address">
-              📍 {{ dispatchModalOrder.delivery_address || 'Santa Rosa, Laguna' }}
+              ðŸ“ {{ dispatchModalOrder.delivery_address || 'Santa Rosa, Laguna' }}
             </p>
           </div>
 
@@ -426,7 +377,7 @@ const AdminOrdersTab = {
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-md"
                   :class="driver.is_available ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'">
-                  🛵
+                  ðŸ›µ
                 </div>
                 <div class="min-w-0">
                   <div class="flex items-center gap-2">
@@ -438,6 +389,17 @@ const AdminOrdersTab = {
                     </span>
                   </div>
                   <p class="text-[10px] text-gray-400 mt-0.5">{{ driver.phone || driver.email }}</p>
+                  <p v-if="!driver.is_available && driver.availability_reason" class="text-[11px] text-rose-300 font-medium mt-1">
+                    Reason: "{{ driver.availability_reason }}"
+                  </p>
+                  <div v-if="!driver.is_available && driver.availability_proof_image" class="mt-1">
+                    <button 
+                      type="button" 
+                      @click.stop="ordersProofLightbox = driver.availability_proof_image"
+                      class="px-2 py-0.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer">
+                      <i class="pi pi-image text-[9px]"></i> View Proof Photo
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -478,14 +440,8 @@ const AdminOrdersTab = {
     const store = useGShotStore();
     const loading = Vue.ref(false);
     const selectedFilter = Vue.ref('active');
-    const walkInModalOpen = Vue.ref(false);
     const selectedReceiptImage = Vue.ref(null);
 
-    const walkInForm = Vue.reactive({
-      customer_name: 'Walk-in Customer',
-      customer_phone: '09000000000',
-      product_id: 'classic-cheeseburger',
-    });
 
     const statusFilters = [
       { key: 'active', label: 'All Active' },
@@ -604,39 +560,14 @@ const AdminOrdersTab = {
       }
     };
 
-    const openWalkInModal = () => {
-      walkInModalOpen.value = true;
-    };
 
-    const submitWalkIn = async () => {
-      try {
-        await GST_API.placeOrder({
-          customer_name: walkInForm.customer_name,
-          customer_phone: walkInForm.customer_phone,
-          order_type: 'Walk-in',
-          delivery_address: 'In-Store Counter',
-          payment_method: 'Cash',
-          items: [
-            {
-              product_id: walkInForm.product_id,
-              quantity: 1,
-            }
-          ]
-        });
-        store.notify('Walk-in order created! Ingredients depleted automatically.', 'success');
-        walkInModalOpen.value = false;
-        refresh();
-        store.fetchIngredients();
-      } catch (err) {
-        store.notify('Could not place walk-in order: Check ingredient stock.', 'error');
-      }
-    };
 
     // Rider Dispatch Modal State & Logic for Staff
     const dispatchModalOrder = Vue.ref(null);
     const driversList = Vue.ref([]);
     const selectedDriverId = Vue.ref(null);
     const isDispatching = Vue.ref(false);
+    const ordersProofLightbox = Vue.ref(null);
     const isSyncingLoyverse = Vue.ref(false);
 
     const handleSyncLoyverse = async () => {
@@ -715,10 +646,6 @@ const AdminOrdersTab = {
       updateStatus,
       verifyPayment,
       refresh,
-      walkInModalOpen,
-      walkInForm,
-      openWalkInModal,
-      submitWalkIn,
       selectedReceiptImage,
       dispatchModalOrder,
       driversList,
@@ -729,6 +656,7 @@ const AdminOrdersTab = {
       confirmDispatch,
       isSyncingLoyverse,
       handleSyncLoyverse,
+      ordersProofLightbox,
     };
   },
 };

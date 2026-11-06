@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Ingredient;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Models\RiderNotice;
 
 class OrderController extends Controller
 {
@@ -319,7 +320,7 @@ class OrderController extends Controller
                     'user_name' => $request->user()?->name ?? $validated['customer_name'],
                     'user_role' => $placingRole,
                     'action' => 'POS Order Placed',
-                    'details' => "Order {$orderNumber} processed by staff for ₱{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). Raw ingredients depleted automatically.",
+                    'details' => "Order {$orderNumber} processed by staff for Ã¢â€šÂ±{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). Raw ingredients depleted automatically.",
                     'ip_address' => $request->ip(),
                 ]);
             }
@@ -562,7 +563,7 @@ class OrderController extends Controller
     {
         $drivers = User::where('role', 'driver')
             ->where('status', 'active')
-            ->select('id', 'name', 'email', 'phone', 'is_available', 'driver_status', 'avatar')
+            ->select('id', 'name', 'email', 'phone', 'is_available', 'driver_status', 'avatar', 'availability_reason', 'availability_proof_image', 'availability_updated_at')
             ->get()
             ->map(function ($driver) {
                 $driver->active_deliveries_count = Order::where('driver_id', $driver->id)
@@ -615,6 +616,129 @@ class OrderController extends Controller
         ]);
     }
 
+    public function submitRiderNotice(Request $request)
+    {
+        $request->validate([
+            'reason' => 'required|string|min:2|max:1000',
+            'is_available' => 'nullable',
+            'driver_id' => 'nullable|integer',
+        ]);
+
+        $driver = $request->user();
+        if ($request->filled('driver_id')) {
+            $found = User::find($request->input('driver_id'));
+            if ($found) $driver = $found;
+        }
+        if (!$driver) {
+            $driver = User::where('role', 'driver')->first();
+        }
+        if (!$driver) {
+            return response()->json(['message' => 'Driver not found'], 404);
+        }
+
+        $isAvailable = $request->has('is_available') ? filter_var($request->input('is_available'), FILTER_VALIDATE_BOOLEAN) : false;
+        $reason = trim((string) $request->input('reason'));
+        $proofImageUrl = null;
+
+        if ($request->hasFile('proof_image') || $request->hasFile('proof_file')) {
+            $fileObj = $request->file('proof_image') ?? $request->file('proof_file');
+            $uploadDir = public_path('uploads/rider_notices');
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            $ext = $fileObj->getClientOriginalExtension() ?: 'jpg';
+            $filename = 'proof_' . $driver->id . '_' . time() . '.' . $ext;
+            $fileObj->move($uploadDir, $filename);
+            $proofImageUrl = '/uploads/rider_notices/' . $filename;
+        } elseif ($request->filled('proof_image')) {
+            $rawImage = $request->input('proof_image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $rawImage, $type)) {
+                $imageData = substr($rawImage, strpos($rawImage, ',') + 1);
+                $type = strtolower($type[1]);
+                $imageData = base64_decode($imageData);
+                if ($imageData !== false) {
+                    $uploadDir = public_path('uploads/rider_notices');
+                    if (!file_exists($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+                    $filename = 'proof_' . $driver->id . '_' . time() . '.' . ($type === 'jpeg' ? 'jpg' : $type);
+                    file_put_contents($uploadDir . '/' . $filename, $imageData);
+                    $proofImageUrl = '/uploads/rider_notices/' . $filename;
+                }
+            } elseif (filter_var($rawImage, FILTER_VALIDATE_URL) || str_starts_with($rawImage, '/')) {
+                $proofImageUrl = $rawImage;
+            }
+        }
+
+        $notice = RiderNotice::create([
+            'driver_id' => $driver->id,
+            'driver_name' => $driver->name,
+            'driver_phone' => $driver->phone,
+            'status' => $isAvailable ? 'available' : 'unavailable',
+            'reason' => $reason,
+            'proof_image' => $proofImageUrl,
+            'is_acknowledged' => false,
+        ]);
+
+        $driver->is_available = $isAvailable;
+        $driver->driver_status = $isAvailable ? 'available' : 'offline';
+        $driver->availability_reason = $reason;
+        $driver->availability_proof_image = $proofImageUrl;
+        $driver->availability_updated_at = now();
+        $driver->save();
+
+        AuditLog::create([
+            'user_id' => $driver->id,
+            'user_name' => $driver->name,
+            'user_role' => 'driver',
+            'action' => 'Rider Availability Notice Submitted',
+            'details' => "Rider {$driver->name} submitted notice: " . ($isAvailable ? 'Back Available' : 'Unavailable / On Break') . " | Reason: {$reason}" . ($proofImageUrl ? ' [Proof Photo Attached]' : ''),
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => 'Notice submitted successfully.',
+            'notice' => $notice,
+            'driver' => $driver,
+        ], 201);
+    }
+
+    public function getRiderNotices(Request $request)
+    {
+        $query = RiderNotice::query()->orderBy('created_at', 'desc');
+
+        if ($request->query('unread_only')) {
+            $query->where('is_acknowledged', false);
+        }
+
+        $limit = min((int)$request->query('limit', 50), 100);
+        $notices = $query->take($limit)->get();
+        $unreadCount = RiderNotice::where('is_acknowledged', false)->count();
+
+        return response()->json([
+            'notices' => $notices,
+            'unread_count' => $unreadCount,
+        ]);
+    }
+
+    public function acknowledgeRiderNotice(Request $request, $id)
+    {
+        $notice = RiderNotice::findOrFail($id);
+        $user = $request->user();
+
+        $notice->is_acknowledged = true;
+        $notice->acknowledged_by = $user?->id;
+        $notice->acknowledged_at = now();
+        $notice->save();
+
+        return response()->json([
+            'message' => 'Notice acknowledged.',
+            'notice' => $notice,
+        ]);
+    }
+
+
+
     public function driverOrders(Request $request)
     {
         $user = $request->user();
@@ -639,3 +763,4 @@ class OrderController extends Controller
         return response()->json($orders);
     }
 }
+

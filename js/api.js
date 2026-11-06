@@ -1,4 +1,4 @@
-// G Shot Teas — Axios API Client & Network Service
+// G Shot Teas Ã¢â‚¬â€ Axios API Client & Network Service
 (function () {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const API_BASE_URL = window.GST_BACKEND_URL || (isLocal && window.location.protocol !== 'https:' && window.location.port !== '8000' ? 'http://127.0.0.1:8000/api' : '/api');
@@ -67,6 +67,9 @@
     assignDriver: (id, driverId) => apiClient.patch(`/v1/orders/${id}/assign-driver`, { driver_id: driverId }),
     getDrivers: () => apiClient.get('/v1/drivers'),
     toggleDriverAvailability: (isAvailable, driverId) => apiClient.patch('/v1/driver/toggle-availability', { is_available: isAvailable, driver_id: driverId }),
+    submitRiderNotice: (data) => apiClient.post('/v1/driver/notice', data),
+    getRiderNotices: (params) => apiClient.get('/v1/driver/notices', { params }),
+    acknowledgeRiderNotice: (id) => apiClient.patch(/v1/driver/notices//acknowledge),
     getDriverOrders: (params) => apiClient.get('/v1/driver/orders', { params }),
 
     // Bookings

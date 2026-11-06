@@ -1,4 +1,4 @@
-// G Shot Teas — Admin & Staff Dashboard Shell (Matches Figures 14–17 + Prototype Tabs)
+// G Shot Teas â€” Admin & Staff Dashboard Shell (Matches Figures 14â€“17 + Prototype Tabs)
 const AdminDashboard = {
   template: `
     <div class="min-h-screen bg-surface-950 flex flex-col lg:flex-row">
@@ -20,6 +20,20 @@ const AdminDashboard = {
             <span class="w-1.5 h-1.5 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
             <span>{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
           </div>
+
+          <!-- Mobile Rider Notices Button -->
+          <button 
+            @click="showRiderNoticesModal = true"
+            type="button"
+            class="relative p-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs flex items-center justify-center cursor-pointer transition-colors"
+            title="Rider Notices">
+            <span class="text-xs">🛵</span>
+            <span 
+              v-if="store.unreadRiderNoticesCount > 0" 
+              class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black bg-rose-500 text-white flex items-center justify-center animate-pulse">
+              {{ store.unreadRiderNoticesCount }}
+            </span>
+          </button>
 
           <!-- Mobile Quick Lock Button -->
           <button 
@@ -462,6 +476,21 @@ const AdminDashboard = {
               <span>{{ store.isStoreOpen ? 'Flag as Closed' : 'Flag as Open' }}</span>
             </button>
 
+            <!-- Rider Fleet Notices Indicator Button -->
+            <button 
+              @click="showRiderNoticesModal = true"
+              type="button"
+              class="relative flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-800/80 hover:bg-surface-700 border border-surface-700/60 text-xs font-bold text-neutral-300 hover:text-white transition-all shadow-sm cursor-pointer"
+              title="View Notices & Availability Updates from Delivery Riders">
+              <span class="text-sm">🛵</span>
+              <span class="hidden sm:inline">Rider Notices</span>
+              <span 
+                v-if="store.unreadRiderNoticesCount > 0" 
+                class="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                {{ store.unreadRiderNoticesCount }}
+              </span>
+            </button>
+
             <!-- Quick Utility Buttons: Lock & Logout -->
             <div class="flex items-center gap-1 pl-1 border-l border-surface-750">
               <button 
@@ -682,6 +711,12 @@ const AdminDashboard = {
       unlockError,
       handleLockTerminal,
       handleUnlockTerminal,
+      showRiderNoticesModal,
+      noticesFilter,
+      dashboardLightboxImage,
+      filteredRiderNotices,
+      formatNoticeTime,
+      openDashboardProof,
       confirmLogoutFromLock,
     };
   },

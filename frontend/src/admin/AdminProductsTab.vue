@@ -15,10 +15,10 @@
           <!-- Manage Discounts Button (Staff, Admin, Super Admin) -->
           <button 
             @click="openDiscountModal('category', 'Burgers')"
-            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-rose-500/20 active:scale-95">
-            <i class="pi pi-percentage"></i>
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200 border border-amber-500/35 hover:border-amber-400/50 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95">
+            <i class="pi pi-percentage text-amber-400"></i>
             <span>Discounts & Promos</span>
-            <span v-if="store.discountedProductsCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-black/40 text-amber-300 ml-1 border border-white/20">
+            <span v-if="store.discountedProductsCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/25 text-amber-200 ml-1 border border-amber-400/30">
               {{ store.discountedProductsCount }} ON SALE
             </span>
           </button>
@@ -37,15 +37,15 @@
       <!-- Active Discounts Quick Banner -->
       <div 
         v-if="store.discountedProductsCount > 0" 
-        class="p-4 rounded-2xl bg-gradient-to-r from-rose-950/70 via-amber-950/50 to-surface-900 border border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        class="p-4 rounded-2xl bg-surface-900 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center shrink-0">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
             <i class="pi pi-tag text-base animate-pulse"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-xs font-black text-rose-300 uppercase tracking-wide">Promotional Discounts Active</span>
-              <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40">
+              <span class="text-xs font-black text-amber-300 uppercase tracking-wide">Promotional Discounts Active</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
                 {{ store.discountedProductsCount }} items discounted
               </span>
             </div>
@@ -86,7 +86,7 @@
               ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 font-bold shadow-sm' 
               : 'bg-surface-850/80 text-neutral-400 hover:text-white border-surface-750/60'">
             <span>{{ cat }}</span>
-            <span v-if="categoryDiscountCount(cat) > 0" class="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="Discount active in this section"></span>
+            <span v-if="categoryDiscountCount(cat) > 0" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Discount active in this section"></span>
           </button>
         </div>
 
@@ -136,7 +136,7 @@
             </span>
 
             <!-- Discount Ribbon / Badge -->
-            <div v-if="isProductDiscounted(product)" class="absolute top-3 left-12 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md border border-rose-400/30 animate-pulse">
+            <div v-if="isProductDiscounted(product)" class="absolute top-3 left-12 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-neutral-950 text-[10px] font-black uppercase tracking-wider shadow-md border border-amber-400/40">
               <i class="pi pi-bolt text-[9px]"></i>
               <span>{{ product.discount_percent }}% OFF</span>
             </div>
@@ -156,7 +156,7 @@
                     <span class="text-[11px] line-through text-gray-400 font-semibold leading-none">
                       ₱{{ Number(product.original_price).toFixed(2) }}
                     </span>
-                    <span class="font-black text-rose-400 text-base whitespace-nowrap mt-0.5">
+                    <span class="font-black text-amber-400 text-base whitespace-nowrap mt-0.5">
                       ₱{{ Number(product.price).toFixed(2) }}
                     </span>
                   </div>
@@ -196,8 +196,8 @@
                   @click="openDiscountModal('single', product)"
                   class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer border"
                   :class="isProductDiscounted(product) 
-                    ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-500/40' 
-                    : 'bg-surface-700 hover:bg-surface-650 text-gray-300 border-surface-650'">
+                    ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/40 font-bold' 
+                    : 'bg-surface-700 hover:bg-surface-650 hover:text-amber-200 hover:border-amber-500/30 text-gray-300 border-surface-650'">
                   <i class="pi pi-percentage text-[10px]"></i>
                   <span>{{ isProductDiscounted(product) ? 'Edit Promo' : 'Discount' }}</span>
                 </button>
@@ -206,7 +206,7 @@
                 <button 
                   v-if="isProductDiscounted(product)"
                   @click="quickRemoveDiscount(product)"
-                  class="p-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-colors cursor-pointer"
+                  class="p-2 rounded-xl text-xs font-semibold bg-surface-700 hover:bg-amber-500/20 text-gray-300 hover:text-amber-300 border border-surface-650 hover:border-amber-500/40 transition-colors cursor-pointer"
                   title="Remove discount & restore original price">
                   <i class="pi pi-times text-[10px]"></i>
                 </button>
@@ -241,7 +241,7 @@
           <!-- Modal Header -->
           <div class="flex justify-between items-start border-b border-surface-800 pb-4">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center text-white shadow-md">
+              <div class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-sm">
                 <i class="pi pi-percentage text-lg"></i>
               </div>
               <div>
@@ -377,7 +377,7 @@
                   type="button"
                   @click="discountForm.discount_value = pct"
                   class="px-2 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer"
-                  :class="discountForm.discount_value === pct ? 'bg-rose-500 text-white border-rose-400' : 'bg-surface-800 text-gray-300 border-surface-700 hover:border-gray-500'">
+                  :class="discountForm.discount_value === pct ? 'bg-amber-500 text-neutral-950 font-bold border-amber-400' : 'bg-surface-800 text-gray-300 border-surface-700 hover:border-gray-500'">
                   {{ pct }}% OFF
                 </button>
               </template>
@@ -388,7 +388,7 @@
                   type="button"
                   @click="discountForm.discount_value = amt"
                   class="px-2 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer"
-                  :class="discountForm.discount_value === amt ? 'bg-rose-500 text-white border-rose-400' : 'bg-surface-800 text-gray-300 border-surface-700 hover:border-gray-500'">
+                  :class="discountForm.discount_value === amt ? 'bg-amber-500 text-neutral-950 font-bold border-amber-400' : 'bg-surface-800 text-gray-300 border-surface-700 hover:border-gray-500'">
                   ₱{{ amt }} OFF
                 </button>
               </template>
@@ -443,9 +443,9 @@
                 :key="'disc-' + item.id"
                 class="flex items-center justify-between p-2 rounded-xl bg-surface-800/60 border border-surface-700/60 text-xs">
                 <div class="flex items-center gap-2 min-w-0">
-                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                   <span class="text-white font-medium truncate">{{ item.name }}</span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300">
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
                     {{ item.discount_percent }}% OFF
                   </span>
                 </div>
@@ -531,7 +531,7 @@
             <div class="p-3 rounded-xl bg-surface-800/80 border border-surface-700 space-y-2">
               <div class="flex items-center justify-between">
                 <span class="font-bold text-gray-300">Discount & Promo (% Off)</span>
-                <span v-if="form.discount_percent > 0" class="text-rose-400 font-bold">
+                <span v-if="form.discount_percent > 0" class="text-amber-400 font-bold">
                   Selling Price: ₱{{ (form.base_price * (1 - form.discount_percent / 100)).toFixed(2) }}
                 </span>
               </div>

@@ -26,30 +26,11 @@
           <!-- Rider Availability Toggle Switch (Flag Not Available) -->
           <button 
             type="button"
-            @click="toggleAvailability"
+            @click="handleAvailabilityClick"
             class="px-3.5 py-2 rounded-xl text-xs font-black border transition-all flex items-center gap-2 shadow-md cursor-pointer"
             :class="isAvailable ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'">
             <span class="w-2.5 h-2.5 rounded-full" :class="isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span>
             <span>{{ isAvailable ? 'Available for Orders' : 'On Break / Offline' }}</span>
-          </button>
-
-          <!-- Screen Wake Lock Status Badge -->
-          <span 
-            v-if="isWakeLockActive" 
-            title="Screen Wake Lock is active. Phone display will stay awake during deliveries."
-            class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span>⚡ Screen Awake</span>
-          </span>
-
-          <!-- GPS Broadcast Toggle Button -->
-          <button 
-            type="button"
-            @click="toggleGpsTracking"
-            class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer"
-            :class="isGpsBroadcasting ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-surface-800 text-gray-400 border-surface-700'">
-            <i class="pi pi-compass text-xs" :class="isGpsBroadcasting ? 'animate-spin' : ''"></i>
-            <span>{{ isGpsBroadcasting ? 'GPS Active' : 'GPS Off' }}</span>
           </button>
 
           <!-- Sign Out from Operations Portal -->
@@ -79,17 +60,28 @@
         </button>
       </div>
 
-      <!-- Quick Delivery KPIs -->
-      <div class="grid grid-cols-3 gap-3 text-center">
-        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4">
+      <!-- Quick Delivery KPIs (Responsive 4-Card Fleet Metric Grid) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+        <!-- Assigned Dispatches -->
+        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
           <p class="text-[10px] font-bold uppercase tracking-wider text-sky-400">Assigned Dispatches</p>
           <p class="text-2xl font-black text-white mt-1">{{ activeDeliveries.length }}</p>
         </div>
-        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4">
+
+        <!-- Delivered Today (Strictly completed today in rider local time) -->
+        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
           <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Delivered Today</p>
+          <p class="text-2xl font-black text-white mt-1">{{ deliveredTodayDeliveries.length }}</p>
+        </div>
+
+        <!-- Total Delivery (All completed deliveries) -->
+        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Total Delivery</p>
           <p class="text-2xl font-black text-white mt-1">{{ completedDeliveries.length }}</p>
         </div>
-        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4">
+
+        <!-- COD Cash to Remit -->
+        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
           <p class="text-[10px] font-bold uppercase tracking-wider text-brand-400">COD Cash to Remit</p>
           <p class="text-2xl font-black text-white mt-1">₱{{ Number(totalCashToRemit).toFixed(2) }}</p>
         </div>
@@ -118,7 +110,7 @@
         
         <!-- Empty State -->
         <div v-if="activeDeliveries.length === 0" class="text-center py-16 bg-surface-900/60 border border-surface-700 rounded-3xl p-6">
-          <div class="text-4xl mb-3">🛵✨</div>
+          <div class="text-4xl mb-3">🛵âœ¨</div>
           <h3 class="text-base font-bold text-white">No Dispatches Right Now</h3>
           <p class="text-xs text-gray-400 mt-1">When kitchen staff dispatches a delivery to you, it will appear here immediately.</p>
           <button 
@@ -154,10 +146,10 @@
                 {{ order.payment_method }}: ₱{{ Number(order.total_amount).toFixed(2) }}
               </span>
               <p v-if="order.payment_method === 'Cash'" class="text-[10px] text-amber-400 font-bold mt-1">
-                ⚠️ Collect ₱{{ Number(order.total_amount).toFixed(2) }} Cash
+                ⚠️ï¸ Collect ₱{{ Number(order.total_amount).toFixed(2) }} Cash
               </p>
               <p v-else class="text-[10px] text-emerald-400 font-bold mt-1">
-                ✓ Paid via GCash
+                âœ“ Paid via GCash
               </p>
             </div>
           </div>
@@ -184,7 +176,7 @@
               <div>
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Destination Address</p>
                 <p class="font-medium text-gray-200 line-clamp-2 mt-0.5" :title="order.delivery_address">
-                  📍 {{ order.delivery_address || 'Santa Rosa, Laguna' }}
+                  ðŸ“ {{ order.delivery_address || 'Santa Rosa, Laguna' }}
                 </p>
                 <p v-if="order.customer_lat && order.customer_lng" class="text-[11px] text-emerald-400 font-mono mt-1 flex items-center gap-1">
                   <i class="pi pi-check-circle text-[10px]"></i>
@@ -201,7 +193,7 @@
                   :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/50' : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
                   <span class="w-2.5 h-2.5 rounded-full" :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-400 animate-ping' : 'bg-white'"></span>
                   <i class="pi pi-send text-xs"></i>
-                  <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? '🟢 Sharing Real-Time GPS (Tap to Refresh)' : '📡 Share My Location Real-Time with Customer' }}</span>
+                  <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? 'ðŸŸ¢ Sharing Real-Time GPS (Tap to Refresh)' : 'ðŸ“¡ Share My Location Real-Time with Customer' }}</span>
                 </button>
                 <div v-if="order.isBroadcastingGps || isGpsBroadcasting" class="flex items-center justify-between px-1 text-[10px] text-emerald-400 font-mono">
                   <span>GPS: {{ order.driver_lat || 'Acquiring...' }}, {{ order.driver_lng || 'Acquiring...' }}</span>
@@ -306,14 +298,135 @@
 
       </div>
 
-      <!-- Tab 2: Delivered History -->
-      <div v-else class="space-y-3">
-        <div v-if="completedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-3xl p-6">
-          <p class="text-xs text-gray-400">No deliveries marked completed yet today.</p>
+      <!-- Tab 2: Delivered History (With Day/Date Filter) -->
+      <div v-else class="space-y-4">
+
+        <!-- History Filter Controls Toolbar -->
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-lg">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            
+            <!-- Quick Date Filter Presets -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-1 flex items-center gap-1">
+                <i class="pi pi-filter text-[10px] text-amber-400"></i> Date Filter:
+              </span>
+              
+              <button
+                type="button"
+                @click="historyFilterDate = ''"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                :class="historyFilterDate === '' 
+                  ? 'bg-amber-500 text-surface-950 font-black shadow-md shadow-amber-500/20' 
+                  : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
+                <span>All Deliveries</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="historyFilterDate === '' ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
+                  {{ completedDeliveries.length }}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                @click="historyFilterDate = getTodayDateKey()"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                :class="historyFilterDate === getTodayDateKey() 
+                  ? 'bg-emerald-500 text-surface-950 font-black shadow-md shadow-emerald-500/20' 
+                  : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
+                <span>Today</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="historyFilterDate === getTodayDateKey() ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
+                  {{ deliveredTodayDeliveries.length }}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                @click="historyFilterDate = getYesterdayDateKey()"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                :class="historyFilterDate === getYesterdayDateKey() 
+                  ? 'bg-sky-500 text-surface-950 font-black shadow-md shadow-sky-500/20' 
+                  : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
+                <span>Yesterday</span>
+              </button>
+            </div>
+
+            <!-- Specific Calendar Day Picker -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-3 py-1.5 transition-colors">
+                <i class="pi pi-calendar text-xs text-amber-400"></i>
+                <input
+                  type="date"
+                  v-model="historyFilterDate"
+                  style="color-scheme: dark;"
+                  class="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
+                  title="Select delivery date to view"
+                />
+              </div>
+
+              <button
+                v-if="historyFilterDate"
+                type="button"
+                @click="historyFilterDate = ''"
+                title="Reset to All Deliveries"
+                class="px-2.5 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-xs font-bold border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
+                <i class="pi pi-times text-[10px]"></i>
+                <span>Clear</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Filter Summary & Totals -->
+          <div class="pt-2.5 border-t border-surface-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+            <div class="flex items-center gap-2 text-gray-400">
+              <span class="w-2 h-2 rounded-full" :class="historyFilterDate ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'"></span>
+              <span v-if="historyFilterDate">
+                Showing deliveries for: <strong class="text-white">{{ formatFilterDisplayDate(historyFilterDate) }}</strong>
+              </span>
+              <span v-else>
+                Showing all-time completed deliveries
+              </span>
+              <span class="text-gray-600">•</span>
+              <span class="font-mono text-gray-300 font-bold">{{ filteredCompletedDeliveries.length }} {{ filteredCompletedDeliveries.length === 1 ? 'delivery' : 'deliveries' }}</span>
+            </div>
+
+            <div v-if="filteredCompletedDeliveries.length > 0" class="flex items-center gap-2.5 font-mono">
+              <span class="text-gray-400">Total:</span>
+              <strong class="text-emerald-400 font-bold">₱{{ Number(filteredCompletedTotal).toFixed(2) }}</strong>
+              <span v-if="filteredCashTotal > 0" class="text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 text-[10px]">
+                ₱{{ Number(filteredCashTotal).toFixed(2) }} COD Cash
+              </span>
+            </div>
+          </div>
         </div>
 
+        <!-- Empty State Case 1: Driver has 0 completed deliveries ever -->
+        <div v-if="completedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-3xl p-6 space-y-2">
+          <div class="text-4xl mb-2">📋</div>
+          <h3 class="text-base font-bold text-white">No Deliveries Completed Yet</h3>
+          <p class="text-xs text-gray-400">When you complete dispatches, your delivery history and remittance details will show up here.</p>
+        </div>
+
+        <!-- Empty State Case 2: Deliveries exist, but none on selected date -->
+        <div v-else-if="filteredCompletedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-3xl p-6 space-y-3">
+          <div class="text-4xl mb-1">📅</div>
+          <h3 class="text-base font-bold text-white">No Deliveries on {{ formatFilterDisplayDate(historyFilterDate) }}</h3>
+          <p class="text-xs text-gray-400 max-w-md mx-auto">
+            You do not have any deliveries recorded on this date. You have {{ completedDeliveries.length }} completed {{ completedDeliveries.length === 1 ? 'delivery' : 'deliveries' }} in total history.
+          </p>
+          <div>
+            <button
+              type="button"
+              @click="historyFilterDate = ''"
+              class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-surface-950 font-black text-xs transition-colors shadow-md cursor-pointer inline-flex items-center gap-1.5">
+              <i class="pi pi-calendar text-xs"></i>
+              <span>View All Deliveries ({{ completedDeliveries.length }})</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Populated Filtered Deliveries Cards -->
         <div 
-          v-for="order in completedDeliveries" 
+          v-else
+          v-for="order in filteredCompletedDeliveries" 
           :key="order.id"
           class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-lg hover:border-surface-600 transition-colors">
           <div class="space-y-1">
@@ -345,7 +458,6 @@
           </div>
         </div>
       </div>
-
     </div>
 </template>
 
@@ -355,7 +467,7 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
-// G Shot Teas — Driver & Delivery Portal Component (Mobile-First GPS Hub)
+// G Shot Teas â€” Driver & Delivery Portal Component (Mobile-First GPS Hub)
 export default {
   name: 'DriverView',
   setup() {
@@ -364,6 +476,8 @@ export default {
     const isGpsBroadcasting = Vue.ref(true);
     const isAvailable = Vue.ref(store.user?.is_available !== false);
     let gpsWatchId = null;
+
+    const historyFilterDate = Vue.ref('');
 
     const currentDriverId = Vue.computed(() => store.user?.id);
 
@@ -382,6 +496,35 @@ export default {
         o.status === 'Completed' &&
         o.driver_id == currentDriverId.value
       );
+    });
+
+    // Delivered Today: ONLY orders completed on today's local date
+    const deliveredTodayDeliveries = Vue.computed(() => {
+      const todayKey = getTodayDateKey();
+      return completedDeliveries.value.filter(o => getOrderDateKey(o) === todayKey);
+    });
+
+    // Filtered Completed Deliveries: filtered by history date (or all if none), newest first
+    const filteredCompletedDeliveries = Vue.computed(() => {
+      let list = completedDeliveries.value;
+      if (historyFilterDate.value) {
+        list = list.filter(o => getOrderDateKey(o) === historyFilterDate.value);
+      }
+      return [...list].sort((a, b) => {
+        const timeA = new Date(a.delivered_at || a.updated_at || a.created_at || 0).getTime();
+        const timeB = new Date(b.delivered_at || b.updated_at || b.created_at || 0).getTime();
+        return timeB - timeA;
+      });
+    });
+
+    const filteredCompletedTotal = Vue.computed(() => {
+      return filteredCompletedDeliveries.value.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+    });
+
+    const filteredCashTotal = Vue.computed(() => {
+      return filteredCompletedDeliveries.value
+        .filter(o => o.payment_method === 'Cash')
+        .reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
     });
 
     const totalCashToRemit = Vue.computed(() => {
@@ -405,6 +548,53 @@ export default {
       }
       const d = new Date(s);
       return isNaN(d.getTime()) ? null : d;
+    };
+
+    const getDateKey = (dateObj) => {
+      if (!dateObj) return '';
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const getOrderDateKey = (order) => {
+      const d = parseDateSafe(order.delivered_at || order.updated_at || order.created_at);
+      return d ? getDateKey(d) : '';
+    };
+
+    const getTodayDateKey = () => {
+      return getDateKey(new Date());
+    };
+
+    const getYesterdayDateKey = () => {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      return getDateKey(d);
+    };
+
+    const formatDateKeyReadable = (dateKey) => {
+      if (!dateKey) return '';
+      const parts = dateKey.split('-').map(Number);
+      if (parts.length !== 3) return dateKey;
+      const [y, m, d] = parts;
+      const dateObj = new Date(y, m - 1, d);
+      return dateObj.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    };
+
+    const formatFilterDisplayDate = (dateKey) => {
+      if (!dateKey) return '';
+      if (dateKey === getTodayDateKey()) {
+        return `Today, ${formatDateKeyReadable(dateKey)}`;
+      }
+      if (dateKey === getYesterdayDateKey()) {
+        return `Yesterday, ${formatDateKeyReadable(dateKey)}`;
+      }
+      return formatDateKeyReadable(dateKey);
     };
 
     const formatDeliveryDate = (isoString) => {
@@ -471,7 +661,7 @@ export default {
               driver_lng: lng,
               driver_notes: order.driver_notes || null
             });
-            store.notify('✅ Real-time GPS shared! Customer can now track you live on Google Maps.', 'success');
+            store.notify('âœ… Real-time GPS shared! Customer can now track you live on Google Maps.', 'success');
           } catch (err) {
             console.warn('Driver location broadcast error:', err);
           }
@@ -493,6 +683,174 @@ export default {
         stopGpsBroadcast();
       }
       store.notify('Stopped real-time GPS sharing.', 'info');
+    };
+
+    // Modal & Availability Notice States
+    const showUnavailableModal = Vue.ref(false);
+    const showReturnOnlineModal = Vue.ref(false);
+    const noticeReason = Vue.ref('');
+    const selectedChip = Vue.ref('');
+    const noticeProofImage = Vue.ref(null);
+    const proofFileName = Vue.ref('');
+    const reasonError = Vue.ref('');
+    const isSubmittingNotice = Vue.ref(false);
+    const returnNote = Vue.ref('');
+    const lightboxImage = Vue.ref(null);
+    const proofFileInput = Vue.ref(null);
+
+    const currentReason = Vue.computed(() => store.user?.availability_reason || '');
+    const currentProofImage = Vue.computed(() => store.user?.availability_proof_image || null);
+
+    const reasonChips = [
+      { label: '🥪 Lunch Break', text: 'Taking a lunch / meal break' },
+      { label: '⛽ Gas Refuel', text: 'Refueling motorcycle at gas station' },
+      { label: '🔧 Flat Tire / Repair', text: 'Flat tire / motorcycle mechanical trouble, at repair shop' },
+      { label: '🌧️ Heavy Rain', text: 'Waiting out severe weather / heavy rain delay' },
+      { label: '🚨 Emergency', text: 'Urgent personal / family emergency' },
+      { label: '🛑 Shift End', text: 'Finished delivery shift / going off-duty' },
+    ];
+
+    const selectReasonChip = (text) => {
+      selectedChip.value = text;
+      noticeReason.value = text;
+      reasonError.value = '';
+    };
+
+    const handleAvailabilityClick = () => {
+      if (isAvailable.value) {
+        // When clicking "Available for Orders" (currently available):
+        // DO NOT automatically make rider not available!
+        // Open the notice modal so he states the reason and can upload proof.
+        noticeReason.value = '';
+        selectedChip.value = '';
+        noticeProofImage.value = null;
+        proofFileName.value = '';
+        reasonError.value = '';
+        showUnavailableModal.value = true;
+      } else {
+        returnNote.value = '';
+        showReturnOnlineModal.value = true;
+      }
+    };
+
+    const openReturnOnlineModal = () => {
+      returnNote.value = '';
+      showReturnOnlineModal.value = true;
+    };
+
+    // Client-side canvas compression for proof image
+    const compressProofImage = (file, maxDim = 1200, quality = 0.85) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onerror = reject;
+          img.onload = () => {
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    const handleProofImageUpload = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        store.notify('Please select an image file (JPG, PNG, WEBP).', 'error');
+        return;
+      }
+
+      proofFileName.value = file.name;
+      try {
+        const compressed = await compressProofImage(file, 1200, 0.82);
+        noticeProofImage.value = compressed;
+        store.notify('Proof photo attached successfully!', 'success');
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          noticeProofImage.value = event.target.result;
+          store.notify('Proof photo attached successfully!', 'success');
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    const removeProofImage = () => {
+      noticeProofImage.value = null;
+      proofFileName.value = '';
+      if (proofFileInput.value) proofFileInput.value.value = '';
+    };
+
+    const openProofPreview = (imageUrl) => {
+      lightboxImage.value = imageUrl;
+    };
+
+    const submitUnavailableNotice = async () => {
+      const trimmed = noticeReason.value.trim();
+      if (!trimmed) {
+        reasonError.value = 'Please state the reason why you are taking a break or unavailable.';
+        return;
+      }
+      reasonError.value = '';
+      isSubmittingNotice.value = true;
+
+      try {
+        await store.submitRiderNotice({
+          reason: trimmed,
+          proof_image: noticeProofImage.value,
+          is_available: false,
+          driver_id: store.user?.id,
+        });
+
+        isAvailable.value = false;
+        showUnavailableModal.value = false;
+        store.notify('Notice submitted! Admin dashboard has been notified.', 'info');
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to submit notice.', 'error');
+      } finally {
+        isSubmittingNotice.value = false;
+      }
+    };
+
+    const confirmReturnOnline = async () => {
+      isSubmittingNotice.value = true;
+      try {
+        const note = returnNote.value.trim() || 'Rider returned to duty / Available for orders';
+        await store.submitRiderNotice({
+          reason: note,
+          proof_image: null,
+          is_available: true,
+          driver_id: store.user?.id,
+        });
+
+        isAvailable.value = true;
+        showReturnOnlineModal.value = false;
+        store.notify('Welcome back! You are now Available for orders.', 'success');
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to update status.', 'error');
+      } finally {
+        isSubmittingNotice.value = false;
+      }
     };
 
     // Rider Availability Toggle
@@ -642,7 +1000,7 @@ export default {
       // Customer Destination Pin
       const destMarker = L.marker([custLat, custLng], { icon: getDriverDestinationIcon() })
         .addTo(map)
-        .bindPopup(`<b>📍 Delivery Destination</b><br>${order.customer_name}<br>${order.delivery_address || ''}`);
+        .bindPopup(`<b>ðŸ“ Delivery Destination</b><br>${order.customer_name}<br>${order.delivery_address || ''}`);
 
       // Turn-by-Turn Road Route Polyline
       const roadData = await fetchDriverRoadRoute(riderLat, riderLng, custLat, custLng);
@@ -710,7 +1068,7 @@ export default {
           });
           console.log('🔋 [WakeLock] Screen Wake Lock acquired for delivery rider.');
         } catch (err) {
-          console.warn('⚠️ [WakeLock] Could not acquire screen wake lock:', err);
+          console.warn('⚠️ï¸ [WakeLock] Could not acquire screen wake lock:', err);
         }
       }
     };
@@ -823,6 +1181,14 @@ export default {
       isAvailable,
       activeDeliveries,
       completedDeliveries,
+      deliveredTodayDeliveries,
+      historyFilterDate,
+      filteredCompletedDeliveries,
+      filteredCompletedTotal,
+      filteredCashTotal,
+      getTodayDateKey,
+      getYesterdayDateKey,
+      formatFilterDisplayDate,
       totalCashToRemit,
       formatTime,
       formatDeliveryDate,
@@ -837,6 +1203,28 @@ export default {
       refreshOrders,
       handleLogout,
       toggleAvailability,
+      handleAvailabilityClick,
+      openReturnOnlineModal,
+      showUnavailableModal,
+      showReturnOnlineModal,
+      noticeReason,
+      selectedChip,
+      noticeProofImage,
+      proofFileName,
+      reasonError,
+      isSubmittingNotice,
+      returnNote,
+      lightboxImage,
+      proofFileInput,
+      currentReason,
+      currentProofImage,
+      reasonChips,
+      selectReasonChip,
+      handleProofImageUpload,
+      removeProofImage,
+      openProofPreview,
+      submitUnavailableNotice,
+      confirmReturnOnline,
       toggleGpsTracking,
       isWakeLockActive,
       recenterDriverMap,

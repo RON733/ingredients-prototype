@@ -80,6 +80,9 @@ export const GST_API = {
   assignDriver: (id, driverId) => apiClient.patch(`/orders/${id}/assign-driver`, { driver_id: driverId }),
   getDrivers: () => apiClient.get('/drivers'),
   toggleDriverAvailability: (isAvailable, driverId) => apiClient.patch('/driver/toggle-availability', { is_available: isAvailable, driver_id: driverId }),
+  submitRiderNotice: (data) => apiClient.post('/driver/notice', data),
+  getRiderNotices: (params) => apiClient.get('/driver/notices', { params }),
+  acknowledgeRiderNotice: (id) => apiClient.patch('/driver/notices/' + id + '/acknowledge'),
   getDriverOrders: (params) => apiClient.get('/driver/orders', { params }),
 
   // Authentication & Verification

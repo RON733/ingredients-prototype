@@ -1,4 +1,4 @@
-﻿// G Shot Teas � Pinia Central Store
+// G Shot Teas � Pinia Central Store
 const { defineStore } = Pinia;
 
 const DEFAULT_PRODUCTS = [
@@ -296,6 +296,12 @@ const useGShotStore = defineStore('gshot', {
     loading: false,
     backendConnected: false,
 
+    // Delivery Fleet & Rider Notices
+    riderNotices: [],
+    unreadRiderNoticesCount: 0,
+    showRiderNoticesModal: false,
+    previewProofImage: null,
+
     // Announcements (Promos, New Menus, Advisories)
     announcements: JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS)),
     announcementModalOpen: false,
@@ -447,6 +453,66 @@ const useGShotStore = defineStore('gshot', {
         this.ingredients = res.data;
       } catch (err) {
         console.error('Error fetching ingredients:', err);
+      }
+    },
+
+    async fetchRiderNotices(silent = false) {
+      try {
+        const res = await GST_API.getRiderNotices();
+        const prevCount = this.unreadRiderNoticesCount;
+        this.riderNotices = res.data.notices || [];
+        this.unreadRiderNoticesCount = res.data.unread_count ?? this.riderNotices.filter(n => !n.is_acknowledged).length;
+
+        if (!silent && this.unreadRiderNoticesCount > prevCount && prevCount >= 0 && (this.isAdminOrSuper || this.isStaffOnly)) {
+          const newest = this.riderNotices[0];
+          if (newest && !newest.is_acknowledged) {
+            this.notify('Rider Notice: ' + newest.driver_name + ' is ' + (newest.status === 'available' ? 'Available' : 'Unavailable') + ' - ' + newest.reason, 'warning');
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch rider notices:', err);
+      }
+    },
+
+    async submitRiderNotice(payload) {
+      try {
+        const res = await GST_API.submitRiderNotice(payload);
+        if (this.user) {
+          const updatedUser = res.data.driver || res.data.user;
+          if (updatedUser) {
+            this.user.is_available = updatedUser.is_available;
+            this.user.driver_status = updatedUser.driver_status;
+            this.user.availability_reason = updatedUser.availability_reason;
+            this.user.availability_proof_image = updatedUser.availability_proof_image;
+          } else {
+            this.user.is_available = payload.is_available;
+            this.user.driver_status = payload.is_available ? 'available' : 'offline';
+            this.user.availability_reason = payload.reason;
+            this.user.availability_proof_image = payload.proof_image;
+          }
+          localStorage.setItem('gst_user', JSON.stringify(this.user));
+        }
+        await this.fetchRiderNotices(true);
+        return res.data;
+      } catch (err) {
+        throw err;
+      }
+    },
+
+    async acknowledgeRiderNotice(id) {
+      try {
+        const res = await GST_API.acknowledgeRiderNotice(id);
+        const notice = this.riderNotices.find(n => n.id === id);
+        if (notice) {
+          notice.is_acknowledged = true;
+          notice.acknowledged_at = new Date().toISOString();
+        }
+        this.unreadRiderNoticesCount = Math.max(0, this.unreadRiderNoticesCount - 1);
+        this.notify('Notice marked as reviewed.', 'success');
+        return res.data;
+      } catch (err) {
+        this.notify('Failed to acknowledge notice.', 'error');
+        throw err;
       }
     },
 
