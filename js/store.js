@@ -512,19 +512,53 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    async acknowledgeRiderNotice(id) {
+    async acceptRiderNotice(id) {
       try {
-        const res = await GST_API.acknowledgeRiderNotice(id);
-        const notice = this.riderNotices.find(n => n.id === id);
+        const res = await GST_API.acceptRiderNotice(id);
+        const notice = this.riderNotices.find(n => n.id == id);
         if (notice) {
           notice.is_acknowledged = true;
+          notice.status = 'unavailable';
           notice.acknowledged_at = new Date().toISOString();
         }
         this.unreadRiderNoticesCount = Math.max(0, this.unreadRiderNoticesCount - 1);
-        this.notify('Notice marked as reviewed.', 'success');
+
+        if (this.user && notice && this.user.id == notice.driver_id) {
+          this.user.is_available = false;
+          this.user.driver_status = 'offline';
+          this.user.availability_reason = notice.reason;
+          this.user.availability_proof_image = notice.proof_image;
+          localStorage.setItem('gst_user', JSON.stringify(this.user));
+        }
+
+        this.notify('Notice accepted! Rider ' + (notice ? notice.driver_name : 'account') + ' is now flagged unavailable. Kitchen workers will not dispatch orders to him.', 'success');
+        await this.fetchRiderNotices(true);
         return res.data;
       } catch (err) {
-        this.notify('Failed to acknowledge notice.', 'error');
+        this.notify(err.response?.data?.message || 'Failed to accept notice.', 'error');
+        throw err;
+      }
+    },
+
+    async acknowledgeRiderNotice(id) {
+      return this.acceptRiderNotice(id);
+    },
+
+    async cancelRiderNotice(id) {
+      try {
+        const res = await GST_API.cancelRiderNotice(id);
+        this.riderNotices = this.riderNotices.filter(n => n.id != id);
+        this.unreadRiderNoticesCount = Math.max(0, this.unreadRiderNoticesCount - 1);
+        if (this.user) {
+          this.user.availability_reason = null;
+          this.user.availability_proof_image = null;
+          localStorage.setItem('gst_user', JSON.stringify(this.user));
+        }
+        this.notify('Pending unavailability notice cancelled.', 'info');
+        await this.fetchRiderNotices(true);
+        return res.data;
+      } catch (err) {
+        this.notify(err.response?.data?.message || 'Could not cancel notice.', 'error');
         throw err;
       }
     },

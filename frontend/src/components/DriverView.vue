@@ -12,8 +12,10 @@
               <h2 class="text-lg font-black text-white">{{ store.user?.name || 'Delivery Rider' }}</h2>
               <span 
                 class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
-                :class="isAvailable ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'">
-                {{ isAvailable ? 'ON DUTY' : 'ON BREAK' }}
+                :class="hasPendingNotice 
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                  : (isAvailable ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30')">
+                {{ hasPendingNotice ? 'PENDING APPROVAL' : (isAvailable ? 'ON DUTY' : 'ON BREAK') }}
               </span>
             </div>
             <p class="text-xs text-gray-400">
@@ -23,14 +25,21 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <!-- Rider Availability Toggle Switch (Flag Not Available) -->
+          <!-- Rider Availability Toggle Switch / Notice Status -->
           <button 
             type="button"
             @click="handleAvailabilityClick"
             class="px-3.5 py-2 rounded-xl text-xs font-black border transition-all flex items-center gap-2 shadow-md cursor-pointer"
-            :class="isAvailable ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'">
-            <span class="w-2.5 h-2.5 rounded-full" :class="isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span>
-            <span>{{ isAvailable ? 'Available for Orders' : 'On Break / Offline' }}</span>
+            :class="hasPendingNotice 
+              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30' 
+              : (isAvailable 
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' 
+                : 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30')">
+            <span class="w-2.5 h-2.5 rounded-full" 
+              :class="hasPendingNotice 
+                ? 'bg-amber-400 animate-ping' 
+                : (isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400')"></span>
+            <span>{{ hasPendingNotice ? 'Pending Staff Acceptance' : (isAvailable ? 'Available for Orders' : 'On Break / Offline') }}</span>
           </button>
 
           <!-- Return to Admin Console (Admin Only) -->
@@ -54,20 +63,64 @@
         </div>
       </div>
 
-      <!-- Unavailable / On Break Warning Notice -->
-      <div v-if="!isAvailable" class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+      <!-- Case 1: Unavailable Request Pending Acceptance Notice Banner -->
+      <div v-if="hasPendingNotice" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">⏳</span>
+          <div>
+            <p class="font-black text-sm text-white">Unavailable Notice Pending Staff Acceptance</p>
+            <p class="text-[11px] text-amber-300/90 mt-0.5">
+              Reason: <strong class="text-white">"{{ currentPendingNotice?.reason || store.user?.availability_reason }}"</strong>
+            </p>
+            <p class="text-[10px] text-amber-400/80 mt-0.5">
+              Awaiting kitchen staff, admin, or super admin to click <strong>Accept Notice</strong> so orders will not be dispatched to you.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button 
+            v-if="currentPendingNotice?.proof_image || store.user?.availability_proof_image"
+            type="button"
+            @click="openProofPreview(currentPendingNotice?.proof_image || store.user?.availability_proof_image)"
+            class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-750 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer flex items-center gap-1.5">
+            <i class="pi pi-image text-xs"></i> Proof Photo
+          </button>
+          <button 
+            type="button"
+            @click="cancelNotice" 
+            class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer">
+            ✕ Cancel Request
+          </button>
+        </div>
+      </div>
+
+      <!-- Case 2: Accepted & Flagged Unavailable Banner -->
+      <div v-else-if="!isAvailable" class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
           <span class="text-2xl">☕</span>
           <div>
-            <p class="font-black text-sm text-white">You are currently flagged as On Break / Unavailable</p>
-            <p class="text-[11px] text-rose-300/80">Kitchen staff cannot assign new orders to you while you take your break.</p>
+            <p class="font-black text-sm text-white">Account Flagged Unavailable / On Break</p>
+            <p v-if="store.user?.availability_reason" class="text-[11px] text-rose-200 mt-0.5">
+              Reason: <strong class="text-white">"{{ store.user.availability_reason }}"</strong>
+            </p>
+            <p class="text-[10px] text-rose-300/80 mt-0.5">Notice accepted by staff/admin. Kitchen workers will not dispatch orders to you while unavailable.</p>
           </div>
         </div>
-        <button 
-          @click="toggleAvailability" 
-          class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs transition-colors shadow-md cursor-pointer shrink-0">
-          I'm Back • Go Online
-        </button>
+        <div class="flex items-center gap-2 shrink-0">
+          <button 
+            v-if="store.user?.availability_proof_image"
+            type="button"
+            @click="openProofPreview(store.user.availability_proof_image)"
+            class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-750 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer flex items-center gap-1.5">
+            <i class="pi pi-image text-xs"></i> Proof Photo
+          </button>
+          <button 
+            type="button"
+            @click="openReturnOnlineModal" 
+            class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-colors shadow-md cursor-pointer shrink-0 flex items-center gap-1.5">
+            <i class="pi pi-check text-xs"></i> I'm Back • Go Online
+          </button>
+        </div>
       </div>
 
       <!-- Quick Delivery KPIs (Responsive 4-Card Fleet Metric Grid) -->
@@ -120,7 +173,7 @@
         
         <!-- Empty State -->
         <div v-if="activeDeliveries.length === 0" class="text-center py-16 bg-surface-900/60 border border-surface-700 rounded-3xl p-6">
-          <div class="text-4xl mb-3">🛵âœ¨</div>
+          <div class="text-4xl mb-3">🛵✨</div>
           <h3 class="text-base font-bold text-white">No Dispatches Right Now</h3>
           <p class="text-xs text-gray-400 mt-1">When kitchen staff dispatches a delivery to you, it will appear here immediately.</p>
           <button 
@@ -468,6 +521,234 @@
           </div>
         </div>
       </div>
+
+      <!-- ================= UNAVAILABLE NOTICE MODAL ================= -->
+      <div 
+        v-if="showUnavailableModal" 
+        class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="showUnavailableModal = false">
+        
+        <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative overflow-hidden flex flex-col max-h-[92vh]">
+          
+          <!-- Ambient Glow -->
+          <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-surface-800 relative z-10">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-xl">
+                🛵
+              </div>
+              <div>
+                <h3 class="text-base font-black text-white">Flag Account Unavailable</h3>
+                <p class="text-xs text-gray-400">State your reason and optionally attach proof</p>
+              </div>
+            </div>
+            <button 
+              type="button"
+              @click="showUnavailableModal = false" 
+              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
+              ✕
+            </button>
+          </div>
+
+          <!-- Modal Body (Scrollable) -->
+          <div class="space-y-4 overflow-y-auto pr-1 relative z-10 text-xs">
+
+            <!-- Information Alert -->
+            <div class="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 leading-relaxed">
+              <p class="font-bold flex items-center gap-1.5 text-amber-300 mb-1">
+                <i class="pi pi-info-circle"></i> Requires Staff/Admin Acceptance
+              </p>
+              <p class="text-[11px] text-amber-200/90">
+                Before your account can be flagged unavailable, you must state your reason below. Kitchen staff, admin, or super admin will review and click <strong>Accept Notice</strong> so workers will not dispatch orders to you.
+              </p>
+            </div>
+
+            <!-- Predefined Reason Chips -->
+            <div>
+              <label class="block text-xs font-bold text-gray-300 mb-2">
+                Quick Reason Select:
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button 
+                  v-for="chip in reasonChips" 
+                  :key="chip.label"
+                  type="button"
+                  @click="selectReasonChip(chip.text)"
+                  class="px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer"
+                  :class="selectedChip === chip.text ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm' : 'bg-surface-800 text-gray-300 border-surface-700 hover:border-gray-500'">
+                  {{ chip.label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Reason Textarea (MANDATORY) -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-bold text-white flex items-center gap-1">
+                  Reason for Unavailability <span class="text-rose-400">*</span>
+                </label>
+                <span class="text-[10px] text-gray-400">Required</span>
+              </div>
+              <textarea 
+                v-model="noticeReason"
+                rows="3"
+                placeholder="State your exact reason (e.g. flat tire at repair shop along highway, refueling gas, lunch break, etc.)..."
+                class="w-full px-3.5 py-2.5 rounded-2xl bg-surface-950 border text-white text-xs placeholder:text-gray-500 focus:outline-none transition-colors"
+                :class="reasonError ? 'border-rose-500 focus:border-rose-400' : 'border-surface-700 focus:border-brand-500'"></textarea>
+              <p v-if="reasonError" class="text-[11px] text-rose-400 font-bold mt-1 flex items-center gap-1">
+                <i class="pi pi-exclamation-circle text-xs"></i> {{ reasonError }}
+              </p>
+            </div>
+
+            <!-- Optional Image as Proof -->
+            <div class="p-3.5 rounded-2xl bg-surface-950 border border-surface-800 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="text-xs font-bold text-white flex items-center gap-1.5">
+                    <i class="pi pi-camera text-brand-400"></i> Proof Photo
+                    <span class="text-gray-400 font-normal text-[11px]">(Optional)</span>
+                  </label>
+                  <p class="text-[10px] text-gray-400 mt-0.5">Attach photo proof in case of a flat tire, motorcycle repair, or emergency.</p>
+                </div>
+              </div>
+
+              <!-- Hidden File Input -->
+              <input 
+                type="file" 
+                ref="proofFileInput" 
+                accept="image/*" 
+                class="hidden" 
+                @change="handleProofImageUpload" />
+
+              <!-- Upload Button if no image yet -->
+              <div v-if="!noticeProofImage">
+                <button 
+                  type="button"
+                  @click="$refs.proofFileInput ? $refs.proofFileInput.click() : null"
+                  class="w-full py-3 px-4 rounded-xl border-2 border-dashed border-surface-700 hover:border-brand-500/60 bg-surface-900/60 hover:bg-surface-850 text-gray-300 hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer text-xs font-bold">
+                  <i class="pi pi-upload text-sm text-brand-400"></i>
+                  <span>Take Photo or Upload Proof Image</span>
+                </button>
+              </div>
+
+              <!-- Uploaded Image Preview Card -->
+              <div v-else class="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-surface-900 border border-surface-750">
+                <div class="flex items-center gap-3 min-w-0">
+                  <img 
+                    :src="noticeProofImage" 
+                    @click="openProofPreview(noticeProofImage)"
+                    alt="Proof Preview" 
+                    class="w-14 h-14 object-cover rounded-xl border border-surface-700 cursor-pointer shadow-md hover:opacity-90" />
+                  <div class="min-w-0">
+                    <p class="text-xs font-bold text-white truncate">{{ proofFileName || 'Proof Image Attached' }}</p>
+                    <button 
+                      type="button" 
+                      @click="openProofPreview(noticeProofImage)"
+                      class="text-[10px] text-brand-400 hover:underline flex items-center gap-1 mt-0.5 cursor-pointer">
+                      <i class="pi pi-eye text-[10px]"></i> View Preview
+                    </button>
+                  </div>
+                </div>
+                <button 
+                  type="button" 
+                  @click="removeProofImage"
+                  class="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 shrink-0">
+                  <i class="pi pi-trash text-[10px]"></i> Remove
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-surface-800 relative z-10">
+            <button 
+              type="button"
+              @click="showUnavailableModal = false"
+              class="px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold transition-colors cursor-pointer">
+              Cancel
+            </button>
+            <button 
+              type="button"
+              :disabled="isSubmittingNotice"
+              @click="submitUnavailableNotice"
+              class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center gap-2 cursor-pointer">
+              <i v-if="isSubmittingNotice" class="pi pi-spin pi-spinner text-xs"></i>
+              <i v-else class="pi pi-send text-xs"></i>
+              <span>Submit Notice for Acceptance</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= RETURN ONLINE CONFIRMATION MODAL ================= -->
+      <div 
+        v-if="showReturnOnlineModal" 
+        class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="showReturnOnlineModal = false">
+        
+        <div class="w-full max-w-md bg-surface-900 border border-surface-750 rounded-3xl p-6 shadow-2xl space-y-4 relative overflow-hidden text-xs">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl">
+              🛵
+            </div>
+            <div>
+              <h3 class="text-base font-black text-white">Return to Active Duty</h3>
+              <p class="text-xs text-gray-400">Ready to accept new delivery orders?</p>
+            </div>
+          </div>
+
+          <p class="text-gray-300 leading-relaxed">
+            Confirming will set your status back to <strong>Available for Orders</strong> so kitchen staff and workers can dispatch deliveries to you immediately.
+          </p>
+
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 mb-1">Optional Note (e.g. Tire repaired, back on road):</label>
+            <input 
+              v-model="returnNote" 
+              type="text" 
+              placeholder="Back on duty and ready for dispatches" 
+              class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white text-xs focus:outline-none focus:border-brand-500" />
+          </div>
+
+          <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-surface-800">
+            <button 
+              type="button" 
+              @click="showReturnOnlineModal = false"
+              class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold transition-colors cursor-pointer">
+              Cancel
+            </button>
+            <button 
+              type="button" 
+              :disabled="isSubmittingNotice"
+              @click="confirmReturnOnline"
+              class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+              <i v-if="isSubmittingNotice" class="pi pi-spin pi-spinner text-xs"></i>
+              <span>✓ Confirm & Go Online</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= LIGHTBOX PREVIEW ================= -->
+      <div 
+        v-if="lightboxImage" 
+        class="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-4"
+        @click="lightboxImage = null">
+        <div class="relative max-w-3xl max-h-[90vh] p-2" @click.stop>
+          <img :src="lightboxImage" class="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl border border-surface-700" alt="Proof Preview" />
+          <button 
+            type="button" 
+            @click="lightboxImage = null"
+            class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-surface-800 text-white font-bold flex items-center justify-center shadow-lg border border-surface-600 hover:bg-surface-700 cursor-pointer">
+            ✕
+          </button>
+        </div>
+      </div>
+
     </div>
 </template>
 
@@ -484,8 +765,68 @@ export default {
     const store = useGShotStore();
     const activeTab = Vue.ref('active');
     const isGpsBroadcasting = Vue.ref(true);
-    const isAvailable = Vue.ref(store.user?.is_available !== false);
+    const isAvailable = Vue.ref(Boolean(store.user?.is_available));
+    const pendingNotice = Vue.ref(null);
     let gpsWatchId = null;
+    let statusPoller = null;
+
+    Vue.watch(() => store.user?.is_available, (val) => {
+      if (val !== undefined && val !== null) {
+        isAvailable.value = Boolean(val);
+      }
+    }, { immediate: true });
+
+    const hasPendingNotice = Vue.computed(() => {
+      return Boolean(
+        pendingNotice.value || 
+        (store.user?.availability_reason && isAvailable.value) ||
+        (store.riderNotices && store.riderNotices.some(n => n.driver_id == currentDriverId.value && !n.is_acknowledged))
+      );
+    });
+
+    const currentPendingNotice = Vue.computed(() => {
+      if (pendingNotice.value) return pendingNotice.value;
+      return (store.riderNotices || []).find(n => n.driver_id == currentDriverId.value && !n.is_acknowledged) || null;
+    });
+
+    const checkRiderNoticeStatus = async () => {
+      try {
+        const res = await GST_API.getActiveRiderNotice({ driver_id: currentDriverId.value });
+        if (res.data) {
+          pendingNotice.value = res.data.pending_notice || null;
+          if (res.data.driver) {
+            isAvailable.value = Boolean(res.data.driver.is_available);
+            if (store.user) {
+              store.user.is_available = res.data.driver.is_available;
+              store.user.driver_status = res.data.driver.driver_status;
+              store.user.availability_reason = res.data.driver.availability_reason;
+              store.user.availability_proof_image = res.data.driver.availability_proof_image;
+              localStorage.setItem('gst_user', JSON.stringify(store.user));
+            }
+          }
+        }
+      } catch (e) {}
+    };
+
+    const cancelNotice = async () => {
+      const noticeId = currentPendingNotice.value?.id;
+      if (!noticeId) {
+        pendingNotice.value = null;
+        if (store.user) {
+          store.user.availability_reason = null;
+          store.user.availability_proof_image = null;
+          localStorage.setItem('gst_user', JSON.stringify(store.user));
+        }
+        return;
+      }
+      try {
+        await store.cancelRiderNotice(noticeId);
+        pendingNotice.value = null;
+        await checkRiderNoticeStatus();
+      } catch (e) {
+        store.notify('Could not cancel notice.', 'error');
+      }
+    };
 
     const historyFilterDate = Vue.ref('');
 
@@ -727,10 +1068,11 @@ export default {
     };
 
     const handleAvailabilityClick = () => {
+      if (hasPendingNotice.value) {
+        store.notify('Your unavailable notice is pending acceptance by staff or admin. You remain on duty until accepted.', 'info');
+        return;
+      }
       if (isAvailable.value) {
-        // When clicking "Available for Orders" (currently available):
-        // DO NOT automatically make rider not available!
-        // Open the notice modal so he states the reason and can upload proof.
         noticeReason.value = '';
         selectedChip.value = '';
         noticeProofImage.value = null;
@@ -818,23 +1160,24 @@ export default {
     const submitUnavailableNotice = async () => {
       const trimmed = noticeReason.value.trim();
       if (!trimmed) {
-        reasonError.value = 'Please state the reason why you are taking a break or unavailable.';
+        reasonError.value = 'Please state the reason why you are unavailable before submitting.';
         return;
       }
       reasonError.value = '';
       isSubmittingNotice.value = true;
 
       try {
-        await store.submitRiderNotice({
+        const res = await store.submitRiderNotice({
           reason: trimmed,
           proof_image: noticeProofImage.value,
           is_available: false,
-          driver_id: store.user?.id,
+          driver_id: currentDriverId.value,
         });
 
-        isAvailable.value = false;
+        pendingNotice.value = res.notice;
         showUnavailableModal.value = false;
-        store.notify('Notice submitted! Admin dashboard has been notified.', 'info');
+        store.notify('Notice submitted! Waiting for kitchen staff, admin, or super admin to click Accept Notice.', 'info');
+        await checkRiderNoticeStatus();
       } catch (err) {
         store.notify(err.response?.data?.message || 'Failed to submit notice.', 'error');
       } finally {
@@ -850,12 +1193,14 @@ export default {
           reason: note,
           proof_image: null,
           is_available: true,
-          driver_id: store.user?.id,
+          driver_id: currentDriverId.value,
         });
 
         isAvailable.value = true;
+        pendingNotice.value = null;
         showReturnOnlineModal.value = false;
         store.notify('Welcome back! You are now Available for orders.', 'success');
+        await checkRiderNoticeStatus();
       } catch (err) {
         store.notify(err.response?.data?.message || 'Failed to update status.', 'error');
       } finally {
@@ -908,7 +1253,8 @@ export default {
 
     const refreshOrders = async () => {
       await store.fetchOrders();
-      store.notify('Dispatches updated', 'info');
+      await checkRiderNoticeStatus();
+      store.notify('Queue & status refreshed', 'info');
     };
 
     const handleLogout = async () => {
@@ -1173,11 +1519,17 @@ export default {
     Vue.onMounted(() => {
       store.fetchOrders();
       startGpsBroadcast();
+      checkRiderNoticeStatus();
+      statusPoller = setInterval(() => {
+        checkRiderNoticeStatus();
+        store.fetchOrders();
+      }, 5000);
       document.addEventListener('visibilitychange', handleVisibilityChange);
     });
 
     Vue.onBeforeUnmount(() => {
       stopGpsBroadcast();
+      if (statusPoller) clearInterval(statusPoller);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       Object.values(driverMaps).forEach(entry => {
         try { entry.map.remove(); } catch (e) {}
@@ -1238,6 +1590,11 @@ export default {
       toggleGpsTracking,
       isWakeLockActive,
       recenterDriverMap,
+      hasPendingNotice,
+      currentPendingNotice,
+      pendingNotice,
+      cancelNotice,
+      checkRiderNoticeStatus,
     };
   },
 };

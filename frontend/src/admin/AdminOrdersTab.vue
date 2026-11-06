@@ -108,6 +108,55 @@
         </button>
       </div>
 
+      <!-- Pending Rider Notice Alert Banner (Alerts Kitchen Staff & Admins) -->
+      <div 
+        v-if="pendingRiderNotices.length > 0" 
+        class="p-4 rounded-2xl bg-amber-950/50 border border-amber-500/50 text-amber-200 text-xs shadow-xl space-y-2.5 animate-fade-in">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">⚠️</span>
+            <span class="font-extrabold text-sm text-white">
+              {{ pendingRiderNotices.length }} Delivery Rider {{ pendingRiderNotices.length === 1 ? 'Notice' : 'Notices' }} Awaiting Acceptance
+            </span>
+          </div>
+          <span class="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+            Action Required
+          </span>
+        </div>
+        <div class="space-y-2 pt-1">
+          <div 
+            v-for="notice in pendingRiderNotices" 
+            :key="notice.id"
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-surface-900/80 border border-amber-500/30">
+            <div>
+              <p class="font-bold text-white text-xs">
+                🛵 {{ notice.driver_name || 'Rider' }}: 
+                <span class="text-amber-300 font-medium">"{{ notice.reason }}"</span>
+              </p>
+              <p class="text-[10px] text-gray-400 mt-0.5">
+                Rider requested to be flagged unavailable. Orders will not be dispatched to him once accepted.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button 
+                v-if="notice.proof_image"
+                type="button" 
+                @click="ordersProofLightbox = notice.proof_image"
+                class="px-2.5 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 text-amber-300 border border-surface-700 text-[11px] font-bold flex items-center gap-1 cursor-pointer">
+                <i class="pi pi-image text-[10px]"></i> Proof
+              </button>
+              <button 
+                type="button" 
+                @click="handleAcceptNotice(notice.id)"
+                class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition-all shadow-md flex items-center gap-1 cursor-pointer">
+                <i class="pi pi-check text-xs font-black"></i>
+                <span>Accept Notice</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Orders List / Cards (Matches Figure 14) -->
       <div v-if="filteredOrders.length > 0" class="space-y-4">
         <div 
@@ -387,6 +436,17 @@
                     </span>
                   </div>
                   <p class="text-[10px] text-gray-400 mt-0.5">{{ driver.phone || driver.email }}</p>
+                  <div v-if="driver.pending_notice && driver.is_available" class="mt-1 flex flex-wrap items-center gap-2">
+                    <span class="text-[10px] text-amber-300 font-bold bg-amber-500/20 px-2 py-0.5 rounded-lg border border-amber-500/30">
+                      ⏳ Notice Pending: "{{ driver.pending_notice.reason }}"
+                    </span>
+                    <button 
+                      type="button" 
+                      @click.stop="handleAcceptNotice(driver.pending_notice.id)"
+                      class="px-2 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-black cursor-pointer shadow-sm">
+                      Accept Notice
+                    </button>
+                  </div>
                   <p v-if="!driver.is_available && driver.availability_reason" class="text-[11px] text-rose-300 font-medium mt-1">
                     Reason: "{{ driver.availability_reason }}"
                   </p>
@@ -600,22 +660,42 @@ export default {
       }
     };
 
+    const pendingRiderNotices = Vue.computed(() => {
+      return (store.riderNotices || []).filter(n => !n.is_acknowledged && n.status !== 'available');
+    });
+
+    const handleAcceptNotice = async (noticeId) => {
+      try {
+        await store.acceptRiderNotice(noticeId);
+        const res = await GST_API.getDrivers();
+        driversList.value = res.data;
+        if (selectedDriverId.value && !driversList.value.find(d => d.id === selectedDriverId.value)?.is_available) {
+          const nextAvail = driversList.value.find(d => d.is_available);
+          selectedDriverId.value = nextAvail ? nextAvail.id : null;
+        }
+      } catch (err) {}
+    };
+
     const autoAssignRider = () => {
-      const avail = driversList.value.filter(d => d.is_available);
+      const avail = driversList.value.filter(d => d.is_available && !d.pending_notice);
       if (avail.length > 0) {
         avail.sort((a, b) => (a.active_deliveries_count || 0) - (b.active_deliveries_count || 0));
         selectedDriverId.value = avail[0].id;
         store.notify('Auto-selected least busy rider: ' + avail[0].name, 'info');
       } else {
-        store.notify('No available riders on duty right now.', 'warning');
+        store.notify('No available riders on duty right now. All riders are offline or on break.', 'warning');
       }
     };
 
     const confirmDispatch = async () => {
       if (!dispatchModalOrder.value || !selectedDriverId.value) return;
+      const assignedDriver = driversList.value.find(d => d.id === selectedDriverId.value);
+      if (assignedDriver && !assignedDriver.is_available) {
+        store.notify('Cannot dispatch: Rider ' + (assignedDriver ? assignedDriver.name : 'selected') + ' is flagged unavailable.', 'error');
+        return;
+      }
       isDispatching.value = true;
       try {
-        const assignedDriver = driversList.value.find(d => d.id === selectedDriverId.value);
         await GST_API.assignDriver(dispatchModalOrder.value.id, selectedDriverId.value);
         
         dispatchModalOrder.value.status = 'Out for Delivery';
@@ -665,6 +745,8 @@ export default {
       isSyncingLoyverse,
       handleSyncLoyverse,
       ordersProofLightbox,
+      pendingRiderNotices,
+      handleAcceptNotice,
     };
   },
 };

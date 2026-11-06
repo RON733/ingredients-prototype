@@ -890,7 +890,7 @@
               @click="noticesFilter = 'unread'"
               class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
               :class="noticesFilter === 'unread' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
-              Unread ({{ store.unreadRiderNoticesCount }})
+              Pending Acceptance ({{ store.unreadRiderNoticesCount }})
             </button>
             <button 
               type="button" 
@@ -938,27 +938,31 @@
                       <span class="font-extrabold text-xs text-white">{{ notice.driver_name || 'Rider' }}</span>
                       <span 
                         class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider"
-                        :class="notice.status === 'available' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'">
-                        {{ notice.status === 'available' ? 'Available' : 'On Break / Unavailable' }}
+                        :class="notice.is_acknowledged 
+                          ? (notice.status === 'available' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300') 
+                          : 'bg-amber-500/20 text-amber-300 animate-pulse'">
+                        {{ notice.is_acknowledged ? (notice.status === 'available' ? 'Available' : 'Unavailable') : '⏳ Pending Acceptance' }}
                       </span>
                     </div>
                     <p class="text-[10px] text-neutral-400">{{ formatNoticeTime(notice.created_at) }}</p>
                   </div>
                 </div>
 
-                <!-- Acknowledge Button -->
+                <!-- Accept Notice Button -->
                 <button 
                   v-if="!notice.is_acknowledged" 
                   type="button"
-                  @click="store.acknowledgeRiderNotice(notice.id)"
-                  class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-black transition-all cursor-pointer shadow-sm">
-                  Mark Reviewed
+                  :disabled="acceptingNoticeId === notice.id"
+                  @click="handleAcceptNotice(notice.id)"
+                  class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition-all cursor-pointer shadow-md flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <i :class="acceptingNoticeId === notice.id ? 'pi pi-spin pi-spinner text-xs font-black' : 'pi pi-check text-xs font-black'"></i>
+                  <span>{{ acceptingNoticeId === notice.id ? 'Accepting...' : 'Accept Notice' }}</span>
                 </button>
                 <span 
                   v-else 
-                  class="text-[10px] font-semibold text-neutral-500 flex items-center gap-1">
-                  <i class="pi pi-check text-[9px] text-emerald-400"></i>
-                  <span>Reviewed</span>
+                  class="text-[11px] font-bold text-rose-300 bg-rose-500/20 border border-rose-500/30 px-2.5 py-1 rounded-xl flex items-center gap-1">
+                  <i class="pi pi-check text-[10px] text-emerald-400"></i>
+                  <span>Notice Accepted • Flagged Unavailable</span>
                 </span>
               </div>
 
@@ -1085,6 +1089,18 @@ export default {
     const showRiderNoticesModal = ref(false);
     const noticesFilter = ref('all');
     const dashboardLightboxImage = ref(null);
+    const acceptingNoticeId = ref(null);
+    const handleAcceptNotice = async (noticeId) => {
+      if (acceptingNoticeId.value) return;
+      acceptingNoticeId.value = noticeId;
+      try {
+        await store.acceptRiderNotice(noticeId);
+      } catch (err) {
+        console.error('Failed to accept rider notice:', err);
+      } finally {
+        acceptingNoticeId.value = null;
+      }
+    };
 
     const filteredRiderNotices = computed(() => {
       const list = store.riderNotices || [];
@@ -1250,6 +1266,8 @@ export default {
       filteredRiderNotices,
       formatNoticeTime,
       openDashboardProof,
+      acceptingNoticeId,
+      handleAcceptNotice,
     };
   },
 };

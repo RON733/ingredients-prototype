@@ -69,7 +69,10 @@
     toggleDriverAvailability: (isAvailable, driverId) => apiClient.patch('/v1/driver/toggle-availability', { is_available: isAvailable, driver_id: driverId }),
     submitRiderNotice: (data) => apiClient.post('/v1/driver/notice', data),
     getRiderNotices: (params) => apiClient.get('/v1/driver/notices', { params }),
-    acknowledgeRiderNotice: (id) => apiClient.patch(/v1/driver/notices//acknowledge),
+    acknowledgeRiderNotice: (id) => apiClient.post('/v1/driver/notices/' + id + '/acknowledge'),
+    acceptRiderNotice: (id) => apiClient.post('/v1/driver/notices/' + id + '/accept'),
+    cancelRiderNotice: (id) => apiClient.delete('/v1/driver/notices/' + id),
+    getActiveRiderNotice: (params) => apiClient.get('/v1/driver/active-notice', { params }),
     getDriverOrders: (params) => apiClient.get('/v1/driver/orders', { params }),
 
     // Bookings

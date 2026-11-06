@@ -92,7 +92,10 @@ export const GST_API = {
   },
   submitRiderNotice: (data) => apiClient.post('/driver/notice', data),
   getRiderNotices: (params) => apiClient.get('/driver/notices', { params }),
-  acknowledgeRiderNotice: (id) => apiClient.post('/driver/notices/' + id + '/acknowledge'),
+  acknowledgeRiderNotice: (id) => apiClient.post('/driver/notices/' + id + '/accept'),
+  acceptRiderNotice: (id) => apiClient.post('/driver/notices/' + id + '/accept'),
+  cancelRiderNotice: (id) => apiClient.delete('/driver/notices/' + id),
+  getActiveRiderNotice: (params) => apiClient.get('/driver/active-notice', { params }),
   getDriverOrders: (params) => apiClient.get('/driver/orders', { params }),
 
   // Authentication & Verification

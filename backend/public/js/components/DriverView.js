@@ -53,20 +53,64 @@ const DriverView = {
         </div>
       </div>
 
-      <!-- Unavailable / On Break Warning Notice -->
-      <div v-if="!isAvailable" class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+      <!-- Case 1: Unavailable Request Pending Acceptance Notice Banner -->
+      <div v-if="hasPendingNotice" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">⏳</span>
+          <div>
+            <p class="font-black text-sm text-white">Unavailable Notice Pending Staff Acceptance</p>
+            <p class="text-[11px] text-amber-300/90 mt-0.5">
+              Reason: <strong class="text-white">"{{ currentPendingNotice?.reason || store.user?.availability_reason }}"</strong>
+            </p>
+            <p class="text-[10px] text-amber-400/80 mt-0.5">
+              Awaiting kitchen staff, admin, or super admin to click <strong>Accept Notice</strong> so orders will not be dispatched to you.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button 
+            v-if="currentPendingNotice?.proof_image || store.user?.availability_proof_image"
+            type="button"
+            @click="openProofPreview(currentPendingNotice?.proof_image || store.user?.availability_proof_image)"
+            class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-750 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer flex items-center gap-1.5">
+            <i class="pi pi-image text-xs"></i> Proof Photo
+          </button>
+          <button 
+            type="button"
+            @click="cancelNotice" 
+            class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer">
+            ✕ Cancel Request
+          </button>
+        </div>
+      </div>
+
+      <!-- Case 2: Accepted & Flagged Unavailable Banner -->
+      <div v-else-if="!isAvailable" class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
           <span class="text-2xl">☕</span>
           <div>
-            <p class="font-black text-sm text-white">You are currently flagged as On Break / Unavailable</p>
-            <p class="text-[11px] text-rose-300/80">Kitchen staff cannot assign new orders to you while you take your break.</p>
+            <p class="font-black text-sm text-white">Account Flagged Unavailable / On Break</p>
+            <p v-if="store.user?.availability_reason" class="text-[11px] text-rose-200 mt-0.5">
+              Reason: <strong class="text-white">"{{ store.user.availability_reason }}"</strong>
+            </p>
+            <p class="text-[10px] text-rose-300/80 mt-0.5">Notice accepted by staff/admin. Kitchen workers will not dispatch orders to you while unavailable.</p>
           </div>
         </div>
-        <button 
-          @click="toggleAvailability" 
-          class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-black text-xs transition-colors shadow-md cursor-pointer shrink-0">
-          I'm Back • Go Online
-        </button>
+        <div class="flex items-center gap-2 shrink-0">
+          <button 
+            v-if="store.user?.availability_proof_image"
+            type="button"
+            @click="openProofPreview(store.user.availability_proof_image)"
+            class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-750 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer flex items-center gap-1.5">
+            <i class="pi pi-image text-xs"></i> Proof Photo
+          </button>
+          <button 
+            type="button"
+            @click="openReturnOnlineModal" 
+            class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-colors shadow-md cursor-pointer shrink-0 flex items-center gap-1.5">
+            <i class="pi pi-check text-xs"></i> I'm Back • Go Online
+          </button>
+        </div>
       </div>
 
       <!-- Quick Delivery KPIs (Responsive 4-Card Fleet Metric Grid) -->
@@ -119,7 +163,7 @@ const DriverView = {
         
         <!-- Empty State -->
         <div v-if="activeDeliveries.length === 0" class="text-center py-16 bg-surface-900/60 border border-surface-700 rounded-3xl p-6">
-          <div class="text-4xl mb-3">🛵âœ¨</div>
+          <div class="text-4xl mb-3">🛵✨</div>
           <h3 class="text-base font-bold text-white">No Dispatches Right Now</h3>
           <p class="text-xs text-gray-400 mt-1">When kitchen staff dispatches a delivery to you, it will appear here immediately.</p>
           <button 
@@ -472,8 +516,68 @@ const DriverView = {
     const store = useGShotStore();
     const activeTab = Vue.ref('active');
     const isGpsBroadcasting = Vue.ref(true);
-    const isAvailable = Vue.ref(store.user?.is_available !== false);
+    const isAvailable = Vue.ref(Boolean(store.user?.is_available));
+    const pendingNotice = Vue.ref(null);
     let gpsWatchId = null;
+    let statusPoller = null;
+
+    Vue.watch(() => store.user?.is_available, (val) => {
+      if (val !== undefined && val !== null) {
+        isAvailable.value = Boolean(val);
+      }
+    }, { immediate: true });
+
+    const hasPendingNotice = Vue.computed(() => {
+      return Boolean(
+        pendingNotice.value || 
+        (store.user?.availability_reason && isAvailable.value) ||
+        (store.riderNotices && store.riderNotices.some(n => n.driver_id == currentDriverId.value && !n.is_acknowledged))
+      );
+    });
+
+    const currentPendingNotice = Vue.computed(() => {
+      if (pendingNotice.value) return pendingNotice.value;
+      return (store.riderNotices || []).find(n => n.driver_id == currentDriverId.value && !n.is_acknowledged) || null;
+    });
+
+    const checkRiderNoticeStatus = async () => {
+      try {
+        const res = await GST_API.getActiveRiderNotice({ driver_id: currentDriverId.value });
+        if (res.data) {
+          pendingNotice.value = res.data.pending_notice || null;
+          if (res.data.driver) {
+            isAvailable.value = Boolean(res.data.driver.is_available);
+            if (store.user) {
+              store.user.is_available = res.data.driver.is_available;
+              store.user.driver_status = res.data.driver.driver_status;
+              store.user.availability_reason = res.data.driver.availability_reason;
+              store.user.availability_proof_image = res.data.driver.availability_proof_image;
+              localStorage.setItem('gst_user', JSON.stringify(store.user));
+            }
+          }
+        }
+      } catch (e) {}
+    };
+
+    const cancelNotice = async () => {
+      const noticeId = currentPendingNotice.value?.id;
+      if (!noticeId) {
+        pendingNotice.value = null;
+        if (store.user) {
+          store.user.availability_reason = null;
+          store.user.availability_proof_image = null;
+          localStorage.setItem('gst_user', JSON.stringify(store.user));
+        }
+        return;
+      }
+      try {
+        await store.cancelRiderNotice(noticeId);
+        pendingNotice.value = null;
+        await checkRiderNoticeStatus();
+      } catch (e) {
+        store.notify('Could not cancel notice.', 'error');
+      }
+    };
 
     const historyFilterDate = Vue.ref('');
 
@@ -802,23 +906,24 @@ const DriverView = {
     const submitUnavailableNotice = async () => {
       const trimmed = noticeReason.value.trim();
       if (!trimmed) {
-        reasonError.value = 'Please state the reason why you are taking a break or unavailable.';
+        reasonError.value = 'Please state the reason why you are unavailable before submitting.';
         return;
       }
       reasonError.value = '';
       isSubmittingNotice.value = true;
 
       try {
-        await store.submitRiderNotice({
+        const res = await store.submitRiderNotice({
           reason: trimmed,
           proof_image: noticeProofImage.value,
           is_available: false,
-          driver_id: store.user?.id,
+          driver_id: currentDriverId.value,
         });
 
-        isAvailable.value = false;
+        pendingNotice.value = res.notice;
         showUnavailableModal.value = false;
-        store.notify('Notice submitted! Admin dashboard has been notified.', 'info');
+        store.notify('Notice submitted! Waiting for kitchen staff, admin, or super admin to click Accept Notice.', 'info');
+        await checkRiderNoticeStatus();
       } catch (err) {
         store.notify(err.response?.data?.message || 'Failed to submit notice.', 'error');
       } finally {
@@ -834,12 +939,14 @@ const DriverView = {
           reason: note,
           proof_image: null,
           is_available: true,
-          driver_id: store.user?.id,
+          driver_id: currentDriverId.value,
         });
 
         isAvailable.value = true;
+        pendingNotice.value = null;
         showReturnOnlineModal.value = false;
         store.notify('Welcome back! You are now Available for orders.', 'success');
+        await checkRiderNoticeStatus();
       } catch (err) {
         store.notify(err.response?.data?.message || 'Failed to update status.', 'error');
       } finally {
@@ -892,7 +999,8 @@ const DriverView = {
 
     const refreshOrders = async () => {
       await store.fetchOrders();
-      store.notify('Dispatches updated', 'info');
+      await checkRiderNoticeStatus();
+      store.notify('Queue & status refreshed', 'info');
     };
 
     const handleLogout = async () => {
@@ -1156,11 +1264,17 @@ const DriverView = {
     Vue.onMounted(() => {
       store.fetchOrders();
       startGpsBroadcast();
+      checkRiderNoticeStatus();
+      statusPoller = setInterval(() => {
+        checkRiderNoticeStatus();
+        store.fetchOrders();
+      }, 5000);
       document.addEventListener('visibilitychange', handleVisibilityChange);
     });
 
     Vue.onBeforeUnmount(() => {
       stopGpsBroadcast();
+      if (statusPoller) clearInterval(statusPoller);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       Object.values(driverMaps).forEach(entry => {
         try { entry.map.remove(); } catch (e) {}
@@ -1221,6 +1335,11 @@ const DriverView = {
       toggleGpsTracking,
       isWakeLockActive,
       recenterDriverMap,
+      hasPendingNotice,
+      currentPendingNotice,
+      pendingNotice,
+      cancelNotice,
+      checkRiderNoticeStatus,
     };
   },
 };

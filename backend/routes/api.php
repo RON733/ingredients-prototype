@@ -43,6 +43,9 @@ Route::match(['put', 'patch'], '/driver/toggle-availability', [OrderController::
 Route::post('/driver/notice', [OrderController::class, 'submitRiderNotice']);
 Route::get('/driver/notices', [OrderController::class, 'getRiderNotices']);
 Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/acknowledge', [OrderController::class, 'acknowledgeRiderNotice']);
+Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/accept', [OrderController::class, 'acknowledgeRiderNotice']);
+Route::delete('/driver/notices/{id}', [OrderController::class, 'cancelRiderNotice']);
+Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNotice']);
 Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
 
 Route::get('/ingredients', [IngredientController::class, 'index']);
@@ -119,6 +122,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/driver/notice', [OrderController::class, 'submitRiderNotice']);
     Route::get('/driver/notices', [OrderController::class, 'getRiderNotices']);
     Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/acknowledge', [OrderController::class, 'acknowledgeRiderNotice']);
+Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/accept', [OrderController::class, 'acknowledgeRiderNotice']);
+Route::delete('/driver/notices/{id}', [OrderController::class, 'cancelRiderNotice']);
+Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNotice']);
     Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
     Route::post('/ingredients', [IngredientController::class, 'store']);
     Route::match(['put', 'patch'], '/ingredients/{id}', [IngredientController::class, 'update']);

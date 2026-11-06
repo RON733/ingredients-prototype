@@ -534,12 +534,22 @@ class OrderController extends Controller
             'driver_id' => 'required|exists:users,id',
         ]);
 
+        $driver = User::find($validated['driver_id']);
+        if (!$driver) {
+            return response()->json(['message' => 'Driver not found.'], 404);
+        }
+
+        if (!$driver->is_available) {
+            $reasonText = $driver->availability_reason ? ": {$driver->availability_reason}" : '';
+            return response()->json([
+                'message' => "Cannot dispatch order to {$driver->name}. Rider is currently flagged unavailable{$reasonText}.",
+            ], 422);
+        }
+
         $order = Order::findOrFail($id);
         $order->driver_id = $validated['driver_id'];
         $order->status = 'Out for Delivery';
         $order->save();
-
-        $driver = User::find($validated['driver_id']);
 
         try {
             broadcast(new \App\Events\OrderStatusUpdated(
@@ -682,18 +692,62 @@ class OrderController extends Controller
             }
         }
 
+        if ($isAvailable) {
+            // Rider returning online / available
+            $driver->is_available = true;
+            $driver->driver_status = 'available';
+            $driver->availability_reason = null;
+            $driver->availability_proof_image = null;
+            $driver->availability_updated_at = now();
+            $driver->save();
+
+            RiderNotice::where('driver_id', $driver->id)
+                ->where('is_acknowledged', false)
+                ->update([
+                    'is_acknowledged' => true,
+                    'status' => 'resolved_online',
+                    'acknowledged_at' => now(),
+                ]);
+
+            $notice = RiderNotice::create([
+                'driver_id' => $driver->id,
+                'driver_name' => $driver->name,
+                'driver_phone' => $driver->phone,
+                'status' => 'available',
+                'reason' => $reason ?: 'Rider returned to duty / Available for orders',
+                'proof_image' => null,
+                'is_acknowledged' => true,
+                'acknowledged_at' => now(),
+            ]);
+
+            AuditLog::create([
+                'user_id' => $driver->id,
+                'user_name' => $driver->name,
+                'user_role' => 'driver',
+                'action' => 'Rider Back Online',
+                'details' => "Rider {$driver->name} returned to duty and is now available for orders.",
+                'ip_address' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'message' => 'Welcome back! You are now Available for orders.',
+                'notice' => $notice,
+                'driver' => $driver,
+            ], 200);
+        }
+
+        // Rider requesting to flag account unavailable:
+        // Notice is recorded as pending acceptance by staff, admin or super admin!
         $notice = RiderNotice::create([
             'driver_id' => $driver->id,
             'driver_name' => $driver->name,
             'driver_phone' => $driver->phone,
-            'status' => $isAvailable ? 'available' : 'unavailable',
+            'status' => 'pending_unavailable',
             'reason' => $reason,
             'proof_image' => $proofImageUrl,
             'is_acknowledged' => false,
         ]);
 
-        $driver->is_available = $isAvailable;
-        $driver->driver_status = $isAvailable ? 'available' : 'offline';
         $driver->availability_reason = $reason;
         $driver->availability_proof_image = $proofImageUrl;
         $driver->availability_updated_at = now();
@@ -703,15 +757,16 @@ class OrderController extends Controller
             'user_id' => $driver->id,
             'user_name' => $driver->name,
             'user_role' => 'driver',
-            'action' => 'Rider Availability Notice Submitted',
-            'details' => "Rider {$driver->name} submitted notice: " . ($isAvailable ? 'Back Available' : 'Unavailable / On Break') . " | Reason: {$reason}" . ($proofImageUrl ? ' [Proof Photo Attached]' : ''),
+            'action' => 'Rider Unavailable Notice Submitted',
+            'details' => "Rider {$driver->name} submitted notice requesting unavailability: '{$reason}'" . ($proofImageUrl ? ' [Proof Photo Attached]' : '') . ". Awaiting staff acceptance.",
             'ip_address' => $request->ip(),
         ]);
 
         return response()->json([
-            'message' => 'Notice submitted successfully.',
+            'message' => 'Notice submitted successfully. Waiting for staff, admin, or super admin to click Accept Notice.',
             'notice' => $notice,
             'driver' => $driver,
+            'pending' => true,
         ], 201);
     }
 
@@ -719,7 +774,7 @@ class OrderController extends Controller
     {
         $query = RiderNotice::query()->orderBy('created_at', 'desc');
 
-        if ($request->query('unread_only')) {
+        if ($request->query('unread_only') || $request->query('pending_only')) {
             $query->where('is_acknowledged', false);
         }
 
@@ -739,13 +794,87 @@ class OrderController extends Controller
         $user = $request->user();
 
         $notice->is_acknowledged = true;
+        $notice->status = 'unavailable';
         $notice->acknowledged_by = $user?->id;
         $notice->acknowledged_at = now();
         $notice->save();
 
+        // Flag the rider's account unavailable so workers will not dispatch orders to him
+        $driver = User::find($notice->driver_id);
+        if ($driver) {
+            $driver->is_available = false;
+            $driver->driver_status = 'offline';
+            $driver->availability_reason = $notice->reason;
+            $driver->availability_proof_image = $notice->proof_image;
+            $driver->availability_updated_at = now();
+            $driver->save();
+        }
+
+        $operatorName = $user ? $user->name : 'Staff / Admin';
+        $operatorRole = $user ? $user->role : 'staff';
+
+        AuditLog::create([
+            'user_id' => $user?->id,
+            'user_name' => $operatorName,
+            'user_role' => $operatorRole,
+            'action' => 'Rider Notice Accepted',
+            'details' => "{$operatorRole} {$operatorName} accepted notice for rider {$notice->driver_name}. Account is now flagged unavailable so workers will not dispatch orders to him. Reason: {$notice->reason}",
+            'ip_address' => $request->ip(),
+        ]);
+
         return response()->json([
-            'message' => 'Notice acknowledged.',
+            'message' => "Notice accepted. {$notice->driver_name}'s account has been flagged unavailable.",
             'notice' => $notice,
+            'driver' => $driver,
+        ]);
+    }
+
+    public function cancelRiderNotice(Request $request, $id)
+    {
+        $notice = RiderNotice::findOrFail($id);
+        if (!$notice->is_acknowledged) {
+            $driver = User::find($notice->driver_id);
+            if ($driver && $driver->availability_reason === $notice->reason) {
+                $driver->availability_reason = null;
+                $driver->availability_proof_image = null;
+                $driver->save();
+            }
+            $notice->delete();
+
+            return response()->json([
+                'message' => 'Pending notice cancelled successfully.',
+                'driver' => $driver,
+            ]);
+        }
+
+        return response()->json(['message' => 'Cannot cancel a notice that has already been accepted.'], 400);
+    }
+
+    public function getActiveRiderNotice(Request $request)
+    {
+        $user = $request->user();
+        $driverId = $user ? $user->id : $request->query('driver_id');
+        if (!$driverId) {
+            $firstDriver = User::where('role', 'driver')->first();
+            $driverId = $firstDriver?->id;
+        }
+
+        $pendingNotice = RiderNotice::where('driver_id', $driverId)
+            ->where('is_acknowledged', false)
+            ->latest()
+            ->first();
+
+        $latestNotice = RiderNotice::where('driver_id', $driverId)
+            ->latest()
+            ->first();
+
+        $driver = User::find($driverId);
+
+        return response()->json([
+            'pending_notice' => $pendingNotice,
+            'latest_notice' => $latestNotice,
+            'is_available' => $driver ? (bool)$driver->is_available : true,
+            'driver' => $driver,
         ]);
     }
 
