@@ -459,6 +459,11 @@ export default {
       store.logout();
     };
 
+    const togglePortal = () => {
+      mobileMenuOpen.value = false;
+      window.location.href = '/admin';
+    };
+
     return {
       store,
       currentTime,
