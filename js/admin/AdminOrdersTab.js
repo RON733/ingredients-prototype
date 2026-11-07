@@ -1,4 +1,4 @@
-// G Shot Teas â€” Admin & Staff Active Orders Tab (Matches Figure 14)
+// G Shot Teas - Admin & Staff Active Orders Tab (Matches Figure 14)
 const AdminOrdersTab = {
   template: `
     <div class="space-y-8 animate-fade-in">
@@ -178,10 +178,10 @@ const AdminOrdersTab = {
                 <i class="pi pi-bolt text-[10px]"></i> Loyverse POS
               </span>
               <span v-if="order.driver" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
-                ðŸ›µ {{ order.driver.name }}
+                <i class="pi pi-send text-[10px]"></i> {{ order.driver.name }}
               </span>
               <span class="text-xs text-gray-400">
-                â€¢ {{ formatTime(order.created_at) }}
+                &bull; {{ formatTime(order.created_at) }}
               </span>
             </div>
 
@@ -240,12 +240,12 @@ const AdminOrdersTab = {
                     ({{ item.customization.size }}<span v-if="item.customization.sugar">, {{ item.customization.sugar }} sugar</span>)
                   </span>
                 </div>
-                <span class="font-bold text-gray-300">â‚±{{ Number(item.subtotal).toFixed(2) }}</span>
+                <span class="font-bold text-gray-300">₱{{ Number(item.subtotal).toFixed(2) }}</span>
               </div>
 
               <div class="flex justify-between text-sm font-black text-white pt-2">
                 <span>Total Amount:</span>
-                <span class="text-brand-400">â‚±{{ Number(order.total_amount).toFixed(2) }}</span>
+                <span class="text-brand-400">₱{{ Number(order.total_amount).toFixed(2) }}</span>
               </div>
             </div>
 
@@ -302,7 +302,7 @@ const AdminOrdersTab = {
               v-if="order.order_type === 'Delivery' && order.status === 'Out for Delivery'"
               class="px-3 py-1.5 rounded-xl bg-sky-950/60 border border-sky-500/30 text-sky-300 text-[11px] font-bold flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
-              <span>ðŸ›µ Dispatched to {{ order.driver?.name || 'Rider' }} â€¢ Awaiting Rider Completion</span>
+              <i class="pi pi-send text-xs"></i><span>Dispatched to {{ order.driver?.name || 'Rider' }} &bull; Awaiting Rider Completion</span>
             </div>
 
             <button 
@@ -343,7 +343,7 @@ const AdminOrdersTab = {
             <button 
               @click="selectedReceiptImage = null" 
               class="w-7 h-7 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors">
-              âœ•
+              <i class="pi pi-times"></i>
             </button>
           </div>
           <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
@@ -370,8 +370,8 @@ const AdminOrdersTab = {
           <!-- Header -->
           <div class="flex items-center justify-between pb-3 border-b border-surface-800">
             <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
-                ðŸ›µ
+              <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-lg">
+                <i class="pi pi-send text-brand-400"></i>
               </div>
               <div>
                 <h3 class="text-sm font-black text-white">Dispatch Order {{ dispatchModalOrder.order_number }}</h3>
@@ -381,7 +381,7 @@ const AdminOrdersTab = {
             <button 
               @click="dispatchModalOrder = null" 
               class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors">
-              âœ•
+              <i class="pi pi-times"></i>
             </button>
           </div>
 
@@ -389,10 +389,10 @@ const AdminOrdersTab = {
           <div class="p-3 rounded-2xl bg-surface-950 border border-surface-800 text-xs space-y-1">
             <p class="font-bold text-white flex items-center justify-between">
               <span>Customer: {{ dispatchModalOrder.customer_name }}</span>
-              <span class="text-brand-400">â‚±{{ Number(dispatchModalOrder.total_amount).toFixed(2) }} ({{ dispatchModalOrder.payment_method }})</span>
+              <span class="text-brand-400">₱{{ Number(dispatchModalOrder.total_amount).toFixed(2) }} ({{ dispatchModalOrder.payment_method }})</span>
             </p>
             <p class="text-[11px] text-gray-400 truncate" :title="dispatchModalOrder.delivery_address">
-              ðŸ“ {{ dispatchModalOrder.delivery_address || 'Santa Rosa, Laguna' }}
+              <i class="pi pi-map-marker text-brand-400 text-xs"></i> {{ dispatchModalOrder.delivery_address || 'Santa Rosa, Laguna' }}
             </p>
           </div>
 
@@ -426,7 +426,7 @@ const AdminOrdersTab = {
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-md"
                   :class="driver.is_available ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'">
-                  ðŸ›µ
+                  <i class="pi pi-send text-xs"></i>
                 </div>
                 <div class="min-w-0">
                   <div class="flex items-center gap-2">

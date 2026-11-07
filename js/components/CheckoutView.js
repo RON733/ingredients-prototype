@@ -117,7 +117,7 @@ const CheckoutView = {
                 :disabled="isLocatingGPS"
                 class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                 <i class="pi" :class="isLocatingGPS ? 'pi-spin pi-spinner text-emerald-300' : 'pi-compass text-emerald-400'"></i>
-                <span>{{ isLocatingGPS ? 'Requesting Device GPS...' : 'Use Device GPS' }}</span>
+                <span>{{ isLocatingGPS ? 'Scanning Device Location...' : 'Use Device Location' }}</span>
               </button>
 
               <span v-if="form.customer_lat && form.customer_lng" class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
@@ -712,7 +712,7 @@ const CheckoutView = {
             </div>
             <div class="flex items-start gap-2.5">
               <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
-              <span>Your location will appear on the map. You can <strong>drag the pin or tap anywhere on the map</strong> to point to your exact door or gate!</span>
+              <span>Your location will <strong>automatically appear on the address text box</strong> and on the map. You can drag the pin or tap anywhere on the map to fine-tune your exact door or gate!</span>
             </div>
           </div>
 
@@ -1011,7 +1011,46 @@ const CheckoutView = {
       store.notify(`Delivery pin placed at ${item.display_name.split(',')[0]}!`, 'success');
     };
 
-    const updatePinLocation = (lat, lng, doReverseGeocode = true) => {
+    const getQuickLocationHint = (lat, lng) => {
+      const barangays = [
+        { name: 'Sinalhan', lat: 14.3167, lng: 121.1111 },
+        { name: 'Balibago / Complex', lat: 14.2934, lng: 121.1082 },
+        { name: 'Tagapo / SM City', lat: 14.3101, lng: 121.1035 },
+        { name: 'Nuvali / Don Jose', lat: 14.2415, lng: 121.0583 },
+        { name: 'Caingin', lat: 14.3262, lng: 121.1172 },
+        { name: 'Dila', lat: 14.3005, lng: 121.1070 },
+        { name: 'Macabling', lat: 14.3023, lng: 121.0965 },
+        { name: 'Poblacion', lat: 14.3140, lng: 121.1130 },
+        { name: 'Market Area', lat: 14.3150, lng: 121.1120 },
+        { name: 'Malitlit', lat: 14.2750, lng: 121.0880 },
+        { name: 'Pulong Santa Cruz', lat: 14.2880, lng: 121.0850 },
+        { name: 'Aplaya', lat: 14.3292, lng: 121.1273 },
+        { name: 'Labas', lat: 14.3045, lng: 121.1167 },
+        { name: 'Pooc', lat: 14.3083, lng: 121.1189 },
+        { name: 'Malusak', lat: 14.3160, lng: 121.1145 },
+        { name: 'Kanluran', lat: 14.3175, lng: 121.1105 },
+        { name: 'Ibaba', lat: 14.3190, lng: 121.1120 },
+        { name: 'Santo Domingo', lat: 14.2541, lng: 121.0620 },
+        { name: 'Dita', lat: 14.2885, lng: 121.1020 },
+      ];
+
+      let closest = null;
+      let minDist = Infinity;
+      for (const b of barangays) {
+        const d = Math.hypot(lat - b.lat, lng - b.lng);
+        if (d < minDist) {
+          minDist = d;
+          closest = b;
+        }
+      }
+
+      if (closest && minDist < 0.15) {
+        return `Near Brgy. ${closest.name}, Santa Rosa, Laguna`;
+      }
+      return `Pinned Delivery Location (${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)})`;
+    };
+
+        const updatePinLocation = (lat, lng, doReverseGeocode = true) => {
       form.customer_lat = Number(lat).toFixed(7);
       form.customer_lng = Number(lng).toFixed(7);
       if (pinMarker) {
@@ -1019,34 +1058,58 @@ const CheckoutView = {
         pinMarker.setPopupContent(`<b>📍 Pinned Delivery Location</b><br>${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}<br><span class="text-[10px] text-gray-400">Drag to adjust exact door/gate</span>`);
       }
       if (doReverseGeocode) {
+        const initial = getQuickLocationHint(lat, lng);
+        form.delivery_address = initial;
+        pinnedAddressPreview.value = initial.split(',')[0];
         reverseGeocode(lat, lng);
       }
     };
 
     const reverseGeocode = async (lat, lng) => {
+      let resolvedAddress = '';
+      let shortAddr = '';
+
+      // 1. Primary: Backend endpoint (uses OpenStreetMap Nominatim with valid User-Agent, zero CORS issues)
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
-          headers: { 'Accept-Language': 'en' }
-        });
+        const res = await fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`);
         if (res.ok) {
           const data = await res.json();
-          if (data && data.display_name) {
-            const road = data.address?.road || data.address?.pedestrian || data.address?.suburb || '';
-            const brgy = data.address?.neighbourhood || data.address?.quarter || data.address?.village || '';
-            const city = data.address?.city || data.address?.town || 'Santa Rosa';
-            const shortAddr = [road, brgy, city].filter(Boolean).join(', ');
-
-            pinnedAddressPreview.value = shortAddr || data.display_name;
-
-            // If empty or default, populate delivery_address
-            if (!form.delivery_address || form.delivery_address.trim() === '' || form.delivery_address.includes('Amira Townhomes, Brgy. Sinalhan')) {
-              form.delivery_address = data.display_name;
-            }
+          if (data && data.address) {
+            resolvedAddress = data.address;
+            shortAddr = data.short_address || data.address.split(',')[0];
           }
         }
       } catch (err) {
-        console.warn('Reverse geocode error:', err);
+        console.warn('Backend reverse geocode error:', err);
       }
+
+      // 2. Client-side Fallback: BigDataCloud (open CORS, client-friendly)
+      if (!resolvedAddress) {
+        try {
+          const bdcRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
+          if (bdcRes.ok) {
+            const bdc = await bdcRes.json();
+            const locality = bdc.locality || bdc.city || '';
+            const city = bdc.city || 'Santa Rosa';
+            const state = bdc.principalSubdivision || 'Laguna';
+            const parts = [locality, city, state].filter(Boolean);
+            resolvedAddress = [...new Set(parts)].join(', ');
+            shortAddr = locality || city;
+          }
+        } catch (bErr) {
+          console.warn('BigDataCloud reverse geocode error:', bErr);
+        }
+      }
+
+      // 3. Geometric Santa Rosa Barangay matcher fallback
+      if (!resolvedAddress) {
+        resolvedAddress = getQuickLocationHint(lat, lng);
+        shortAddr = resolvedAddress.split(',')[0];
+      }
+
+      pinnedAddressPreview.value = shortAddr || resolvedAddress;
+      // Automatically place the resolved address into the delivery address text box!
+      form.delivery_address = resolvedAddress;
     };
 
     const initCheckoutMap = () => {
@@ -1127,23 +1190,38 @@ const CheckoutView = {
       isLocatingGPS.value = true;
       gpsErrorMessage.value = '';
 
-      store.notify('Detecting high-precision GPS location... Tap Allow when prompted.', 'info');
+      // Provide immediate feedback in delivery address text box
+      if (!form.delivery_address || form.delivery_address.trim() === '') {
+        form.delivery_address = 'Detecting device location... Please tap Allow on browser prompt.';
+      }
+
+      store.notify('Detecting high-precision location... Tap Allow when prompted.', 'info');
 
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           isLocatingGPS.value = false;
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           const accuracy = Math.round(pos.coords.accuracy || 0);
           gpsAccuracyMeters.value = accuracy;
 
-          initCheckoutMap();
+          // 1. Immediately store coordinates
+          form.customer_lat = Number(lat).toFixed(7);
+          form.customer_lng = Number(lng).toFixed(7);
 
+          // 2. Immediately put the initial detected location in the text box!
+          const quickHint = getQuickLocationHint(lat, lng);
+          form.delivery_address = quickHint;
+          pinnedAddressPreview.value = quickHint.split(',')[0];
+
+          // 3. Center and display Leaflet map
+          initCheckoutMap();
           if (checkoutMap) {
             checkoutMap.setView([lat, lng], 17);
-            updatePinLocation(lat, lng, true);
-
-            // Draw accuracy circle
+            if (pinMarker) {
+              pinMarker.setLatLng([lat, lng]);
+              pinMarker.bindPopup(`<b>📍 Detected Device Location (±${accuracy}m)</b><br>Drag pin or tap map to fine-tune exact gate/door.`).openPopup();
+            }
             if (accuracyCircle) {
               checkoutMap.removeLayer(accuracyCircle);
             }
@@ -1154,17 +1232,19 @@ const CheckoutView = {
               fillColor: '#10b981',
               fillOpacity: 0.12
             }).addTo(checkoutMap);
-
-            if (pinMarker) {
-              pinMarker.bindPopup(`<b>📍 High-Accuracy GPS (±${accuracy}m)</b><br>Drag pin or tap map to fine-tune exact gate/door.`).openPopup();
-            }
             setTimeout(() => { if (checkoutMap) checkoutMap.invalidateSize(); }, 200);
           }
 
-          store.notify(`✅ GPS Detected! Accurate within ±${accuracy}m. Fine-tune your gate on the map.`, 'success');
+          store.notify(`✅ Location Detected! Accurate within ±${accuracy}m. Your address has been updated.`, 'success');
+
+          // 4. Refine to full street/subdivision address in the text box
+          await reverseGeocode(lat, lng);
         },
         (err) => {
           isLocatingGPS.value = false;
+          if (form.delivery_address && form.delivery_address.includes('Detecting device location...')) {
+            form.delivery_address = '';
+          }
           let friendlyMsg = '';
 
           if (err.code === 1) { // PERMISSION_DENIED
@@ -1172,7 +1252,7 @@ const CheckoutView = {
           } else if (err.code === 2) { // POSITION_UNAVAILABLE
             friendlyMsg = 'GPS location is unavailable. Please make sure your device GPS / Location is turned ON and try again.';
           } else if (err.code === 3) { // TIMEOUT
-            friendlyMsg = 'GPS request timed out. Please check that device Location is enabled and tap "High-Accuracy GPS" again.';
+            friendlyMsg = 'GPS request timed out. Please check that device Location is enabled and tap "Use Device Location" again.';
           } else {
             friendlyMsg = 'Could not access device GPS (' + (err.message || 'Unknown error') + '). You can still drag the pin or search your address.';
           }

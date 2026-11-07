@@ -729,9 +729,11 @@
             </div>
 
             <button 
+              type="button"
               @click="showShutdownModal = false" 
-              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs cursor-pointer">
-              âœ•
+              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs cursor-pointer transition-colors"
+              title="Close">
+              <i class="pi pi-times"></i>
             </button>
           </div>
 
@@ -827,7 +829,7 @@
               class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-black text-xs transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               :class="shutdownForm.maintenance_mode ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/30' : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/30'">
               <i class="pi" :class="isTogglingShutdown ? 'pi-spin pi-spinner' : 'pi-check'"></i>
-              <span>{{ shutdownForm.maintenance_mode ? 'Confirm & Shut Down Website' : 'Apply & Keep Website Online' }}</span>
+              <span>{{ isTogglingShutdown ? (shutdownForm.maintenance_mode ? 'Shutting Down Website...' : 'Applying Changes...') : (shutdownForm.maintenance_mode ? 'Confirm & Shut Down Website' : 'Apply & Keep Website Online') }}</span>
             </button>
           </div>
 
@@ -867,8 +869,10 @@
 
             <button 
               @click="showRiderNoticesModal = false" 
-              class="w-8 h-8 rounded-full bg-surface-800 text-neutral-400 hover:text-white flex items-center justify-center text-xs cursor-pointer">
-              ✕
+              type="button"
+              class="w-8 h-8 rounded-full bg-surface-800 text-neutral-400 hover:text-white flex items-center justify-center text-xs cursor-pointer transition-colors"
+              title="Close">
+              <i class="pi pi-times"></i>
             </button>
           </div>
 
@@ -996,8 +1000,9 @@
               <button 
                 type="button" 
                 @click="dashboardLightboxImage = null"
-                class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-surface-800 text-white font-bold flex items-center justify-center shadow-lg border border-surface-600 hover:bg-surface-700 cursor-pointer">
-                ✕
+                class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-surface-800 text-white font-bold flex items-center justify-center shadow-lg border border-surface-600 hover:bg-surface-700 cursor-pointer transition-colors"
+                title="Close">
+                <i class="pi pi-times"></i>
               </button>
             </div>
           </div>
@@ -1026,7 +1031,7 @@ import AdminAuditTab from './AdminAuditTab.vue';
 import AdminSettingsTab from './AdminSettingsTab.vue';
 import StaffPinModal from '@/components/StaffPinModal.vue';
 
-// G Shot Teas â€” Admin & Staff Dashboard Shell (Matches Figures 14â€“17 + Prototype Tabs)
+// G Shot Teas - Admin & Staff Dashboard Shell (Matches Figures 14-17 + Prototype Tabs)
 export default {
   name: 'AdminDashboard',
   components: {
@@ -1198,15 +1203,13 @@ export default {
 
     const handleSaveShutdown = async () => {
       isTogglingShutdown.value = true;
+      showShutdownModal.value = false;
       try {
-        const success = await store.setMaintenanceMode(shutdownForm.maintenance_mode, {
+        await store.setMaintenanceMode(shutdownForm.maintenance_mode, {
           title: shutdownForm.maintenance_title,
           message: shutdownForm.maintenance_message,
           until: shutdownForm.maintenance_until,
         });
-        if (success) {
-          showShutdownModal.value = false;
-        }
       } finally {
         isTogglingShutdown.value = false;
       }

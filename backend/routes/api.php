@@ -50,6 +50,8 @@ Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
 
 Route::get('/ingredients', [IngredientController::class, 'index']);
 Route::get('/settings', [SystemController::class, 'settings']);
+Route::get('/reverse-geocode', [SystemController::class, 'reverseGeocode']);
+Route::get('/geocode-search', [SystemController::class, 'searchAddress']);
 Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::post('/bookings', [EventBookingController::class, 'store']);

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use App\Models\SystemSetting;
 use App\Models\AuditLog;
 use App\Models\Product;
@@ -64,12 +66,32 @@ class SystemController extends Controller
             $data['gcash_qr_code'] = './uploads/' . $filename;
         }
 
+        $records = [];
+        $keysToDelete = [];
+        $now = now();
+
         foreach ($data as $key => $value) {
-            if ($value === null) {
-                SystemSetting::where('key', $key)->delete();
-            } else {
-                SystemSetting::updateOrCreate(['key' => $key], ['value' => (string)$value]);
+            if (is_array($value) || is_object($value)) {
+                continue;
             }
+            if ($value === null) {
+                $keysToDelete[] = $key;
+            } else {
+                $records[] = [
+                    'key' => (string)$key,
+                    'value' => (string)$value,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        if (!empty($keysToDelete)) {
+            SystemSetting::whereIn('key', $keysToDelete)->delete();
+        }
+
+        if (!empty($records)) {
+            SystemSetting::upsert($records, ['key'], ['value', 'updated_at']);
         }
 
         $action = 'System Settings Updated';
@@ -92,18 +114,45 @@ class SystemController extends Controller
             $details = "Updated GCash payment settings: Mobile No. {$num}, QR code updated.";
         }
 
-        AuditLog::create([
-            'user_name' => $user?->name ?? 'Admin',
-            'user_role' => $user?->role ?? 'admin',
-            'action' => $action,
-            'details' => $details,
-            'ip_address' => $request->ip(),
-        ]);
+        try {
+            AuditLog::create([
+                'user_name' => $user?->name ?? 'Admin',
+                'user_role' => $user?->role ?? 'admin',
+                'action' => $action,
+                'details' => $details,
+                'ip_address' => $request->ip(),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Could not record audit log: " . $e->getMessage());
+        }
 
         Cache::forget('system_settings_all');
+        $allSettings = Cache::remember('system_settings_all', 60, function () {
+            $s = SystemSetting::all()->pluck('value', 'key')->toArray();
+            if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
+                $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
+            }
+            if (!isset($s['gcash_available'])) {
+                $s['gcash_available'] = 'true';
+            }
+            if (!isset($s['maintenance_mode'])) {
+                $s['maintenance_mode'] = 'false';
+            }
+            if (!isset($s['maintenance_title'])) {
+                $s['maintenance_title'] = 'Website Under Scheduled Maintenance';
+            }
+            if (!isset($s['maintenance_message'])) {
+                $s['maintenance_message'] = 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!';
+            }
+            if (!isset($s['maintenance_until'])) {
+                $s['maintenance_until'] = '';
+            }
+            return $s;
+        });
+
         return response()->json([
             'message' => 'Settings updated successfully.',
-            'settings' => SystemSetting::all()->pluck('value', 'key')
+            'settings' => $allSettings,
         ]);
     }
 
@@ -272,5 +321,228 @@ class SystemController extends Controller
             'ai_powered' => false
         ]);
     }
+
+    public function reverseGeocode(Request $request)
+    {
+        $lat = filter_var($request->query('lat'), FILTER_VALIDATE_FLOAT);
+        $lng = filter_var($request->query('lng') ?? $request->query('lon'), FILTER_VALIDATE_FLOAT);
+
+        if ($lat === false || $lng === false || $lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+            return response()->json(['error' => 'Invalid coordinates provided.'], 422);
+        }
+
+        $cacheKey = 'rev_geo_' . round($lat, 4) . '_' . round($lng, 4);
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return response()->json($cached);
+        }
+
+        $resolvedAddress = null;
+        $shortAddress = null;
+
+        // 1. OpenStreetMap Nominatim with valid User-Agent
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'GShotTeas/1.0 (sti-santa-rosa-capstone; info@gshotteas.ph)',
+                'Accept-Language' => 'en',
+            ])->timeout(4)->get('https://nominatim.openstreetmap.org/reverse', [
+                'format' => 'json',
+                'lat' => $lat,
+                'lon' => $lng,
+                'zoom' => 18,
+                'addressdetails' => 1,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['address'])) {
+                    $addr = $data['address'];
+                    $road = $addr['road'] ?? $addr['pedestrian'] ?? $addr['street'] ?? $addr['suburb'] ?? '';
+                    $subdivision = $addr['neighbourhood'] ?? $addr['residential'] ?? '';
+                    $brgy = $addr['quarter'] ?? $addr['village'] ?? $addr['hamlet'] ?? '';
+                    $city = $addr['city'] ?? $addr['town'] ?? $addr['municipality'] ?? 'Santa Rosa';
+                    $state = $addr['state'] ?? $addr['province'] ?? 'Laguna';
+
+                    $parts = array_unique(array_filter([$road, $subdivision, $brgy, $city, $state]));
+                    if (!empty($parts)) {
+                        $resolvedAddress = implode(', ', $parts);
+                        $shortAddress = implode(', ', array_filter([$road ?: $subdivision, $brgy ?: $city]));
+                    }
+                }
+                if (!$resolvedAddress && !empty($data['display_name'])) {
+                    $resolvedAddress = $data['display_name'];
+                    $shortAddress = explode(',', $resolvedAddress)[0] ?? $resolvedAddress;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Nominatim reverse geocode error: ' . $e->getMessage());
+        }
+
+        // 2. High-speed Fallback: Photon Komoot
+        if (!$resolvedAddress) {
+            try {
+                $pRes = Http::timeout(3)->get('https://photon.komoot.io/reverse', [
+                    'lat' => $lat,
+                    'lon' => $lng,
+                ]);
+                if ($pRes->successful()) {
+                    $pData = $pRes->json();
+                    $props = $pData['features'][0]['properties'] ?? null;
+                    if ($props) {
+                        $name = $props['name'] ?? '';
+                        $street = $props['street'] ?? '';
+                        $locality = $props['locality'] ?? $props['district'] ?? '';
+                        $city = $props['city'] ?? 'Santa Rosa';
+                        $state = $props['state'] ?? 'Laguna';
+                        $parts = array_unique(array_filter([$name, $street, $locality, $city, $state]));
+                        if (!empty($parts)) {
+                            $resolvedAddress = implode(', ', $parts);
+                            $shortAddress = $name ?: ($street ?: $city);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore fallback error
+            }
+        }
+
+        // 3. Fallback: BigDataCloud Reverse Geocoder
+        if (!$resolvedAddress) {
+            try {
+                $bdcRes = Http::timeout(3)->get('https://api.bigdatacloud.net/data/reverse-geocode-client', [
+                    'latitude' => $lat,
+                    'longitude' => $lng,
+                    'localityLanguage' => 'en',
+                ]);
+                if ($bdcRes->successful()) {
+                    $bdc = $bdcRes->json();
+                    $locality = $bdc['locality'] ?? $bdc['city'] ?? '';
+                    $city = $bdc['city'] ?? 'Santa Rosa';
+                    $state = $bdc['principalSubdivision'] ?? 'Laguna';
+                    $parts = array_unique(array_filter([$locality, $city, $state]));
+                    if (!empty($parts)) {
+                        $resolvedAddress = implode(', ', $parts);
+                        $shortAddress = $locality ?: $city;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore fallback error
+            }
+        }
+
+        // 4. Local Santa Rosa Nearest Barangay Geometric Fallback
+        if (!$resolvedAddress) {
+            $barangays = [
+                ['name' => 'Sinalhan', 'lat' => 14.3167, 'lng' => 121.1111],
+                ['name' => 'Balibago', 'lat' => 14.2934, 'lng' => 121.1082],
+                ['name' => 'Tagapo', 'lat' => 14.3101, 'lng' => 121.1035],
+                ['name' => 'Nuvali / Don Jose', 'lat' => 14.2415, 'lng' => 121.0583],
+                ['name' => 'Caingin', 'lat' => 14.3262, 'lng' => 121.1172],
+                ['name' => 'Dila', 'lat' => 14.3005, 'lng' => 121.1070],
+                ['name' => 'Macabling', 'lat' => 14.3023, 'lng' => 121.0965],
+                ['name' => 'Poblacion', 'lat' => 14.3140, 'lng' => 121.1130],
+                ['name' => 'Market Area', 'lat' => 14.3150, 'lng' => 121.1120],
+                ['name' => 'Malitlit', 'lat' => 14.2750, 'lng' => 121.0880],
+                ['name' => 'Pulong Santa Cruz', 'lat' => 14.2880, 'lng' => 121.0850],
+                ['name' => 'Aplaya', 'lat' => 14.3292, 'lng' => 121.1273],
+                ['name' => 'Labas', 'lat' => 14.3045, 'lng' => 121.1167],
+                ['name' => 'Pooc', 'lat' => 14.3083, 'lng' => 121.1189],
+                ['name' => 'Malusak', 'lat' => 14.3160, 'lng' => 121.1145],
+                ['name' => 'Kanluran', 'lat' => 14.3175, 'lng' => 121.1105],
+                ['name' => 'Ibaba', 'lat' => 14.3190, 'lng' => 121.1120],
+                ['name' => 'Santo Domingo', 'lat' => 14.2541, 'lng' => 121.0620],
+                ['name' => 'Dita', 'lat' => 14.2885, 'lng' => 121.1020],
+            ];
+
+            $closest = null;
+            $minDist = PHP_FLOAT_MAX;
+            foreach ($barangays as $b) {
+                $d = hypot($lat - $b['lat'], $lng - $b['lng']);
+                if ($d < $minDist) {
+                    $minDist = $d;
+                    $closest = $b;
+                }
+            }
+
+            if ($closest && $minDist < 0.15) {
+                $resolvedAddress = "Near Brgy. {$closest['name']}, Santa Rosa, Laguna";
+                $shortAddress = "Brgy. {$closest['name']}";
+            } else {
+                $resolvedAddress = sprintf('Pinned Delivery Location (%.5f, %.5f), Laguna', $lat, $lng);
+                $shortAddress = sprintf('%.4f, %.4f', $lat, $lng);
+            }
+        }
+
+        $result = [
+            'address' => $resolvedAddress,
+            'short_address' => $shortAddress ?: $resolvedAddress,
+            'lat' => $lat,
+            'lng' => $lng,
+        ];
+
+        Cache::put($cacheKey, $result, 3600);
+
+        return response()->json($result);
+    }
+
+    public function searchAddress(Request $request)
+    {
+        $q = trim($request->query('q', ''));
+        if (!$q) {
+            return response()->json([]);
+        }
+
+        $queryWithContext = str_contains(strtolower($q), 'santa rosa') ? $q : "{$q}, Santa Rosa, Laguna";
+        $cacheKey = 'geo_search_' . md5(strtolower($queryWithContext));
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return response()->json($cached);
+        }
+
+        $results = [];
+
+        try {
+            $res = Http::withHeaders([
+                'User-Agent' => 'GShotTeas/1.0 (sti-santa-rosa-capstone; info@gshotteas.ph)',
+                'Accept-Language' => 'en',
+            ])->timeout(4)->get('https://nominatim.openstreetmap.org/search', [
+                'format' => 'json',
+                'q' => $queryWithContext,
+                'addressdetails' => 1,
+                'limit' => 5,
+            ]);
+
+            if ($res->successful()) {
+                $list = $res->json();
+                if (!empty($list)) {
+                    $results = $list;
+                }
+            }
+
+            if (empty($results) && $queryWithContext !== $q) {
+                $res2 = Http::withHeaders([
+                    'User-Agent' => 'GShotTeas/1.0 (sti-santa-rosa-capstone; info@gshotteas.ph)',
+                    'Accept-Language' => 'en',
+                ])->timeout(4)->get('https://nominatim.openstreetmap.org/search', [
+                    'format' => 'json',
+                    'q' => $q,
+                    'addressdetails' => 1,
+                    'limit' => 5,
+                ]);
+                if ($res2->successful()) {
+                    $results = $res2->json();
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Nominatim search error: ' . $e->getMessage());
+        }
+
+        if (!empty($results)) {
+            Cache::put($cacheKey, $results, 3600);
+        }
+
+        return response()->json($results);
+    }
 }
+
 

@@ -1,4 +1,4 @@
-// G Shot Teas â€” Admin & Staff Dashboard Shell (Matches Figures 14â€“17 + Prototype Tabs)
+// G Shot Teas - Admin & Staff Dashboard Shell (Matches Figures 14-17 + Prototype Tabs)
 const AdminDashboard = {
   template: `
     <div class="min-h-screen bg-surface-950 flex flex-col lg:flex-row">

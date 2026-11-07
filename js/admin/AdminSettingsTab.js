@@ -1,4 +1,4 @@
-// G Shot Teas � Store & GCash Payment Settings (Admin & Super Admin)
+// G Shot Teas - Store & GCash Payment Settings (Admin & Super Admin)
 const AdminSettingsTab = {
   template: `
     <div class="space-y-8 animate-fade-in">

@@ -103,7 +103,7 @@ class ProductController extends Controller
             'user_name' => $request->user()?->name ?? 'Admin',
             'user_role' => $request->user()?->role ?? 'admin',
             'action' => 'Product Created',
-            'details' => "Added {$product->name} (â‚±{$product->price}) under category {$product->category}",
+            'details' => "Added {$product->name} (₱{$product->price}) under category {$product->category}",
             'ip_address' => $request->ip(),
         ]);
 

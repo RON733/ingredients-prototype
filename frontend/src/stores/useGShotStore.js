@@ -1,4 +1,4 @@
-// G Shot Teas ÃƒÂ¯Ã‚Â¿Ã‚Â½ Pinia Central Store
+// G Shot Teas - Pinia Central Store
 import { defineStore } from 'pinia';
 import GST_API from '../services/api.js';
 import initEcho from '../services/echo.js';
@@ -10,7 +10,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 89,
     description: 'Juicy grilled beef patty, golden brioche bun, fresh lettuce, and melted rich cheddar cheese.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬Â',
+    emoji: '🍔',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 23,
@@ -28,7 +28,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Burgers',
     price: 149,
     description: 'Double-stacked beef smash patties with double layers of cheddar and toasted brioche.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬Â',
+    emoji: '🍔',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 21,
@@ -45,7 +45,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 169,
     description: 'Loaded with savory pepperoni cuts, premium mozzarella cheese blend, and signature Italian sauce.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬Â¢',
+    emoji: '🍕',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -63,7 +63,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Pizzas',
     price: 159,
     description: 'A cheesy paradise featuring melted mozzarella and cheddar cheese over seasoned tomato sauce.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚Â§Ã¢â€šÂ¬',
+    emoji: '🧀',
     image: './assets/menu-pizza.png',
     is_available: true,
     max_portions: 10,
@@ -81,7 +81,7 @@ const DEFAULT_PRODUCTS = [
     category: 'RiceMeals',
     price: 129,
     description: 'Crispy flavorful glazed chicken wings served with fragrant steamed rice and dipping sauce.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ¢â‚¬â€',
+    emoji: '🍗',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 12,
@@ -97,7 +97,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 79,
     description: 'Crispy golden fries generously topped with warm melted cheddar cheese sauce.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ…Â¸',
+    emoji: '🍟',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 24,
@@ -113,7 +113,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 49,
     description: 'Timeless brewed black tea infused with creamy milk and loaded with chewy brown sugar tapioca pearls.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚Â§Ã¢â‚¬Â¹',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 44,
@@ -130,7 +130,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Warm tiger-striped brown sugar drizzle, fresh dairy milk, and slow-cooked boba pearls.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚Â§Ã¢â‚¬Â¹',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 34,
@@ -147,7 +147,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 79,
     description: 'Fine Japanese ceremonial matcha layered over cold fresh milk and sweet pearls.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ‚Âµ',
+    emoji: '🍵',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -164,7 +164,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Drinks',
     price: 69,
     description: 'Rich velvety purple taro with tea essence, creamy dairy, and bouncy pearls.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚Â§Ã¢â‚¬Â¹',
+    emoji: '🧋',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 12,
@@ -182,7 +182,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Coffee',
     price: 89,
     description: 'Freshly extracted espresso shot combined with vanilla-infused milk and buttery caramel drizzle.',
-    emoji: 'ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¢',
+    emoji: '☕',
     image: './assets/menu-coffee.png',
     is_available: true,
     max_portions: 40,
@@ -198,7 +198,7 @@ const DEFAULT_PRODUCTS = [
     category: 'Sides',
     price: 99,
     description: 'Filipino shaved ice delicacy loaded with sweet jellies, leche flan, ube, and rich milk.',
-    emoji: 'ÃƒÂ°Ã…Â¸Ã‚ÂÃ‚Â§',
+    emoji: '🍧',
     image: './assets/hero-banner.png',
     is_available: true,
     max_portions: 30,
@@ -1120,10 +1120,7 @@ const useGShotStore = defineStore('gshot', {
           this.settings = { ...this.settings, ...res.data.settings };
         }
         this.notify(
-          enable 
-            ? 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â¨ WEBSITE SHUTDOWN ACTIVATED! Customers now see the Under Maintenance screen.' 
-            : 'ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ WEBSITE RESTORED ONLINE! Customer store ordering and access are back live.',
-          enable ? 'info' : 'success'
+          enable ? 'WEBSITE SHUTDOWN ACTIVATED! Customers now see the Under Maintenance screen.' : 'WEBSITE RESTORED ONLINE! Customer store ordering and access are back live.', enable ? 'info' : 'success'
         );
         return true;
       } catch (err) {
@@ -1141,7 +1138,7 @@ const useGShotStore = defineStore('gshot', {
       this.settings.store_open = valStr;
       try {
         await GST_API.updateSettings({ store_open: valStr });
-        this.notify(next ? 'ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¢ Store is now OPEN for customer orders!' : 'ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â´ Store is now CLOSED. Ordering paused.', next ? 'success' : 'info');
+        this.notify(next ? 'Store is now OPEN for customer orders!' : 'Store is now CLOSED. Ordering paused.', next ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status on backend:', err);
         this.notify(next ? 'Store opened locally.' : 'Store closed locally.', 'info');
@@ -1153,7 +1150,7 @@ const useGShotStore = defineStore('gshot', {
       this.settings.store_open = valStr;
       try {
         await GST_API.updateSettings({ store_open: valStr });
-        this.notify(isOpen ? 'ÃƒÂ°Ã…Â¸Ã…Â¸Ã‚Â¢ Store is now OPEN!' : 'ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â´ Store is now CLOSED.', isOpen ? 'success' : 'info');
+        this.notify(isOpen ? 'Store is now OPEN!' : 'Store is now CLOSED.', isOpen ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status:', err);
       }
@@ -1400,7 +1397,7 @@ const useGShotStore = defineStore('gshot', {
           this.fetchProducts(),
         ]);
         if (count > 0) {
-          this.notify(`ÃƒÂ¢Ã…Â¡Ã‚Â¡ Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
+          this.notify(`Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
         } else {
           this.notify('Loyverse POS is up to date. No new un-synced sales.', 'info');
         }

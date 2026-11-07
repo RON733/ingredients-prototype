@@ -1,4 +1,4 @@
-// G Shot Teas â€” Driver & Delivery Portal Component (Mobile-First GPS Hub)
+// G Shot Teas - Driver & Delivery Portal Component (Mobile-First GPS Hub)
 const DriverView = {
   template: `
     <div class="min-h-screen bg-surface-950 text-gray-100 py-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
@@ -193,10 +193,10 @@ const DriverView = {
                 {{ order.payment_method }}: ₱{{ Number(order.total_amount).toFixed(2) }}
               </span>
               <p v-if="order.payment_method === 'Cash'" class="text-[10px] text-amber-400 font-bold mt-1">
-                ⚠️ï¸ Collect ₱{{ Number(order.total_amount).toFixed(2) }} Cash
+                <i class="pi pi-exclamation-triangle text-amber-400 mr-1 text-[10px]"></i>Collect ₱{{ Number(order.total_amount).toFixed(2) }} Cash
               </p>
               <p v-else class="text-[10px] text-emerald-400 font-bold mt-1">
-                âœ“ Paid via GCash
+                <i class="pi pi-check text-emerald-400 mr-1 text-[10px]"></i>Paid via GCash
               </p>
             </div>
           </div>
@@ -223,7 +223,7 @@ const DriverView = {
               <div>
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Destination Address</p>
                 <p class="font-medium text-gray-200 line-clamp-2 mt-0.5" :title="order.delivery_address">
-                  ðŸ“ {{ order.delivery_address || 'Santa Rosa, Laguna' }}
+                  <i class="pi pi-map-marker text-emerald-400 text-xs mr-1"></i>{{ order.delivery_address || 'Santa Rosa, Laguna' }}
                 </p>
                 <p v-if="order.customer_lat && order.customer_lng" class="text-[11px] text-emerald-400 font-mono mt-1 flex items-center gap-1">
                   <i class="pi pi-check-circle text-[10px]"></i>
@@ -240,7 +240,7 @@ const DriverView = {
                   :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/50' : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
                   <span class="w-2.5 h-2.5 rounded-full" :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-400 animate-ping' : 'bg-white'"></span>
                   <i class="pi pi-send text-xs"></i>
-                  <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? 'ðŸŸ¢ Sharing Real-Time GPS (Tap to Refresh)' : 'ðŸ“¡ Share My Location Real-Time with Customer' }}</span>
+                  <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? 'Sharing Real-Time GPS (Tap to Refresh)' : 'Share My Location Real-Time with Customer' }}</span>
                 </button>
                 <div v-if="order.isBroadcastingGps || isGpsBroadcasting" class="flex items-center justify-between px-1 text-[10px] text-emerald-400 font-mono">
                   <span>GPS: {{ order.driver_lat || 'Acquiring...' }}, {{ order.driver_lng || 'Acquiring...' }}</span>
@@ -269,47 +269,6 @@ const DriverView = {
               </div>
             </div>
 
-          </div>
-
-          <!-- Rider Turn-by-Turn Road Map with Direction Line -->
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <i class="pi pi-map text-emerald-400"></i>
-                  <span>Live Road Directions to Customer</span>
-                </span>
-                <span v-if="order.driverDistance" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {{ order.driverDistance }}
-                </span>
-              </div>
-              <button 
-                type="button"
-                @click="recenterDriverMap(order.id)"
-                class="px-2.5 py-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-[11px] font-bold text-emerald-400 border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
-                <i class="pi pi-compass text-[10px]"></i>
-                <span>Recenter</span>
-              </button>
-            </div>
-
-            <!-- Rider Map Container -->
-            <div class="relative w-full h-72 sm:h-80 rounded-2xl overflow-hidden border border-surface-700 shadow-2xl bg-surface-950">
-              <div :id="'driver-map-' + order.id" class="w-full h-full"></div>
-
-              <!-- Floating Navigation Telemetry Banner on Rider Map -->
-              <div class="absolute top-2.5 left-2.5 right-2.5 bg-surface-900/95 backdrop-blur-md border border-surface-700/80 rounded-xl px-3.5 py-2 shadow-lg flex items-center justify-between z-[15] pointer-events-none">
-                <div class="flex items-center gap-2.5">
-                  <span class="text-lg">🛵</span>
-                  <div>
-                    <p class="text-xs font-black text-white leading-tight">{{ order.driverDistance || 'Calculating road route...' }}</p>
-                    <p class="text-[10px] text-gray-300 font-mono">{{ order.driverEta || 'Heading to customer gate' }}</p>
-                  </div>
-                </div>
-                <span class="text-[10px] text-emerald-300 font-bold bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1 font-mono">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live Route
-                </span>
-              </div>
-            </div>
           </div>
 
           <!-- Items in Bag -->
@@ -757,7 +716,7 @@ const DriverView = {
               driver_lng: lng,
               driver_notes: order.driver_notes || null
             });
-            store.notify('âœ… Real-time GPS shared! Customer can now track you live on Google Maps.', 'success');
+            store.notify('Real-time GPS shared! Customer can now track you live on Google Maps.', 'success');
           } catch (err) {
             console.warn('Driver location broadcast error:', err);
           }
@@ -1002,152 +961,6 @@ const DriverView = {
       store.currentView = 'customer';
     };
 
-    // --- Interactive Rider Road Map & Turn-by-Turn Direction Line ---
-    const driverMaps = {};
-
-    const getDriverRiderIcon = (bearing) => {
-      if (typeof L === 'undefined') return null;
-      return L.divIcon({
-        className: 'custom-grab-rider-pin',
-        html: `
-          <div class="relative flex items-center justify-center">
-            <div class="grab-rider-pulse"></div>
-            <div class="rider-heading-cone" style="transform: rotate(${Math.round(bearing || 0)}deg)">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <polygon points="12,2 18,14 12,10 6,14" fill="#facc15" stroke="#000000" stroke-width="1.5" />
-              </svg>
-            </div>
-            <div class="grab-rider-disc" style="width:34px;height:34px;">
-              <div class="grab-rider-inner-dot"></div>
-            </div>
-          </div>
-        `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20]
-      });
-    };
-
-    const getDriverDestinationIcon = () => {
-      if (typeof L === 'undefined') return null;
-      return L.divIcon({
-        className: 'custom-grab-destination-pin',
-        html: `
-          <div class="relative flex items-center justify-center -translate-y-4">
-            <svg viewBox="0 0 32 42" width="30" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26c0-8.837-7.163-16-16-16z" fill="#facc15"/>
-              <circle cx="16" cy="15" r="5" fill="#000000"/>
-            </svg>
-          </div>
-        `,
-        iconSize: [30, 40],
-        iconAnchor: [15, 40]
-      });
-    };
-
-    const fetchDriverRoadRoute = async (startLat, startLng, endLat, endLng) => {
-      try {
-        const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.routes && data.routes[0]) {
-            const r = data.routes[0];
-            return {
-              coordinates: r.geometry.coordinates.map(c => [c[1], c[0]]),
-              distance: r.distance,
-              duration: r.duration
-            };
-          }
-        }
-      } catch (e) {}
-      return {
-        coordinates: [[startLat, startLng], [endLat, endLng]],
-        distance: 1000,
-        duration: 180
-      };
-    };
-
-    const initDriverMap = async (order) => {
-      if (typeof L === 'undefined') return;
-      const mapEl = document.getElementById('driver-map-' + order.id);
-      if (!mapEl) return;
-
-      const custLat = order.customer_lat ? Number(order.customer_lat) : 14.3218;
-      const custLng = order.customer_lng ? Number(order.customer_lng) : 121.1192;
-      const riderLat = order.driver_lat ? Number(order.driver_lat) : 14.3167;
-      const riderLng = order.driver_lng ? Number(order.driver_lng) : 121.1111;
-
-      if (driverMaps[order.id]) {
-        driverMaps[order.id].map.invalidateSize();
-        return;
-      }
-
-      const map = L.map('driver-map-' + order.id, {
-        zoomControl: true,
-        scrollWheelZoom: false,
-        attributionControl: false
-      }).setView([riderLat, riderLng], 15);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-      }).addTo(map);
-
-      // Customer Destination Pin
-      const destMarker = L.marker([custLat, custLng], { icon: getDriverDestinationIcon() })
-        .addTo(map)
-        .bindPopup(`<b>ðŸ“ Delivery Destination</b><br>${order.customer_name}<br>${order.delivery_address || ''}`);
-
-      // Turn-by-Turn Road Route Polyline
-      const roadData = await fetchDriverRoadRoute(riderLat, riderLng, custLat, custLng);
-      const points = roadData.coordinates;
-
-      const routeLineCasing = L.polyline(points, {
-        color: '#ffffff',
-        weight: 7,
-        opacity: 0.9,
-        lineJoin: 'round',
-        lineCap: 'round'
-      }).addTo(map);
-
-      const routeLine = L.polyline(points, {
-        color: '#facc15', // Vibrant Yellow Route
-        weight: 4.5,
-        opacity: 1,
-        lineJoin: 'round',
-        lineCap: 'round'
-      }).addTo(map);
-
-      // Rider Live Motorcycle Pin
-      const riderMarker = L.marker([riderLat, riderLng], { icon: getDriverRiderIcon(45) }).addTo(map);
-
-      map.fitBounds([[riderLat, riderLng], [custLat, custLng]], { padding: [35, 35] });
-
-      const distMeters = roadData.distance;
-      order.driverDistance = distMeters >= 1000 ? (distMeters / 1000).toFixed(1) + ' km to customer' : Math.round(distMeters) + ' m to customer';
-      order.driverEta = `~${Math.max(1, Math.round(roadData.duration / 60))} mins driving`;
-
-      driverMaps[order.id] = {
-        map,
-        riderMarker,
-        destMarker,
-        routeLine,
-        routeLineCasing,
-        custLat,
-        custLng
-      };
-
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 300);
-    };
-
-    const recenterDriverMap = (orderId) => {
-      const entry = driverMaps[orderId];
-      if (entry) {
-        const rPos = entry.riderMarker.getLatLng();
-        entry.map.fitBounds([[rPos.lat, rPos.lng], [entry.custLat, entry.custLng]], { padding: [35, 35] });
-      }
-    };
 
     // Screen Wake Lock API (keeps mobile display awake on handlebar mounts during active deliveries)
     let wakeLockSentinel = null;
@@ -1163,7 +976,7 @@ const DriverView = {
           });
           console.log('🔋 [WakeLock] Screen Wake Lock acquired for delivery rider.');
         } catch (err) {
-          console.warn('⚠️ï¸ [WakeLock] Could not acquire screen wake lock:', err);
+          console.warn('[WakeLock] Could not acquire screen wake lock:', err);
         }
       }
     };
@@ -1199,21 +1012,6 @@ const DriverView = {
               order.driver_lat = lat;
               order.driver_lng = lng;
 
-              // Dynamically update the rider's own map & route
-              const dEntry = driverMaps[order.id];
-              if (dEntry) {
-                dEntry.riderMarker.setLatLng([lat, lng]);
-                fetchDriverRoadRoute(lat, lng, dEntry.custLat, dEntry.custLng).then(newRoad => {
-                  if (dEntry.routeLine && dEntry.routeLineCasing && newRoad.coordinates) {
-                    dEntry.routeLine.setLatLngs(newRoad.coordinates);
-                    dEntry.routeLineCasing.setLatLngs(newRoad.coordinates);
-                    const dM = newRoad.distance;
-                    order.driverDistance = dM >= 1000 ? (dM / 1000).toFixed(1) + ' km to customer' : Math.round(dM) + ' m to customer';
-                    order.driverEta = `~${Math.max(1, Math.round(newRoad.duration / 60))} mins driving`;
-                  }
-                }).catch(() => {});
-              }
-
               GST_API.updateDriverLocation(order.id, {
                 driver_lat: lat,
                 driver_lng: lng
@@ -1247,14 +1045,6 @@ const DriverView = {
       }
     };
 
-    Vue.watch(activeDeliveries, (newOrders) => {
-      if (newOrders && newOrders.length > 0) {
-        Vue.nextTick(() => {
-          newOrders.forEach(o => initDriverMap(o));
-        });
-      }
-    }, { immediate: true, deep: true });
-
     Vue.onMounted(() => {
       store.fetchOrders();
       startGpsBroadcast();
@@ -1270,9 +1060,6 @@ const DriverView = {
       stopGpsBroadcast();
       if (statusPoller) clearInterval(statusPoller);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      Object.values(driverMaps).forEach(entry => {
-        try { entry.map.remove(); } catch (e) {}
-      });
     });
 
     return {
@@ -1328,7 +1115,6 @@ const DriverView = {
       confirmReturnOnline,
       toggleGpsTracking,
       isWakeLockActive,
-      recenterDriverMap,
       hasPendingNotice,
       currentPendingNotice,
       pendingNotice,

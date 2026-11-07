@@ -392,7 +392,7 @@ class AuthController extends Controller
             Mail::send([], [], function ($message) use ($email, $code, $user) {
                 $userName = htmlspecialchars($user->name);
                 $message->to($email)
-                    ->subject("G Shot Teas â€” Password Reset Code: {$code}")
+                    ->subject("G Shot Teas — Password Reset Code: {$code}")
                     ->html("
                         <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
                             <div style='text-align: center; margin-bottom: 24px;'>
@@ -407,7 +407,7 @@ class AuthController extends Controller
                             </div>
                             <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not make this request, you can safely ignore this email. Your account remains secure.</p>
                             <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
-                                G Shot Teas â€¢ STI College Santa Rosa Capstone Project
+                                G Shot Teas • STI College Santa Rosa Capstone Project
                             </div>
                         </div>
                     ");
