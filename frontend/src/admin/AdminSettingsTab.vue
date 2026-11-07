@@ -51,10 +51,21 @@
             </div>
           </div>
 
-          <!-- Active QR Type Badge -->
-          <div class="flex items-center gap-2 shrink-0">
-            <span v-if="hasCustomQr" class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <!-- Badges: GCash Availability Status & Active QR Type -->
+          <div class="flex items-center gap-2 flex-wrap shrink-0">
+            <!-- GCash Availability Live Status Badge -->
+            <span v-if="isGcashAvailable" class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>GCash Available</span>
+            </span>
+            <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              <span>GCash Flagged Unavailable</span>
+            </span>
+
+            <!-- Active QR Type Badge -->
+            <span v-if="hasCustomQr" class="px-3 py-1.5 rounded-full text-xs font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
               <span>Custom Uploaded QR Code Active</span>
             </span>
             <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5 shadow-sm">
@@ -62,6 +73,30 @@
               <span>Default System QR Active</span>
             </span>
           </div>
+        </div>
+
+        <!-- GCash Unavailable Warning Alert Banner -->
+        <div v-if="!isGcashAvailable" class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-fade-in">
+          <div class="flex items-start sm:items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center justify-center text-sm shrink-0">
+              <i class="pi pi-ban"></i>
+            </div>
+            <div>
+              <p class="font-extrabold text-rose-200">GCash Payment is currently flagged as UNAVAILABLE</p>
+              <p class="text-rose-300/80 text-[11px] mt-0.5">
+                Customers checking out cannot select GCash right now. Ordering will automatically proceed with Cash on Delivery (COD) or Cash at Counter.
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            @click="toggleGcashAvailability(true)"
+            :disabled="isTogglingAvailability"
+            class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 shadow-sm active:scale-95 disabled:opacity-50">
+            <i v-if="isTogglingAvailability" class="pi pi-spin pi-spinner"></i>
+            <i v-else class="pi pi-check-circle"></i>
+            <span>Re-enable GCash Now</span>
+          </button>
         </div>
 
         <!-- 2-Column Grid: Left Edit Controls, Right Live Customer Checkout Preview -->
@@ -169,16 +204,30 @@
               </div>
             </div>
 
-            <!-- Save GCash Settings Button -->
-            <div class="pt-2">
+            <!-- Action Buttons: Save GCash Settings & Flag Unavailable -->
+            <div class="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">
               <button 
                 type="button"
                 @click="saveGcashSettings"
-                :disabled="isSavingGcash"
+                :disabled="isSavingGcash || isTogglingAvailability"
                 class="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50">
                 <i v-if="isSavingGcash" class="pi pi-spin pi-spinner"></i>
                 <i v-else class="pi pi-check"></i>
                 <span>Save GCash Payment Settings</span>
+              </button>
+
+              <!-- Button where the user can flag GCash unavailable / available -->
+              <button 
+                type="button"
+                @click="toggleGcashAvailability()"
+                :disabled="isTogglingAvailability || isSavingGcash"
+                class="w-full sm:w-auto px-5 py-3.5 rounded-xl font-bold text-sm border transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50 shadow-sm"
+                :class="isGcashAvailable 
+                  ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/40 hover:border-rose-500/60 shadow-rose-500/10' 
+                  : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/40 hover:border-emerald-500/60 shadow-emerald-500/10'">
+                <i v-if="isTogglingAvailability" class="pi pi-spin pi-spinner"></i>
+                <i v-else :class="isGcashAvailable ? 'pi pi-ban' : 'pi pi-check-circle'"></i>
+                <span>{{ isGcashAvailable ? 'Flag as Unavailable' : 'Flag as Available' }}</span>
               </button>
             </div>
 
@@ -188,14 +237,24 @@
           <div class="lg:col-span-5 bg-surface-950 rounded-2xl border border-surface-750 p-5 space-y-4 shadow-xl">
             <div class="flex items-center justify-between pb-3 border-b border-surface-800">
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="w-2.5 h-2.5 rounded-full" :class="isGcashAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
                 <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Checkout Preview</span>
+                <span v-if="!isGcashAvailable" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  Unavailable
+                </span>
               </div>
               <span class="text-[10px] text-gray-400 font-mono">Customer Perspective</span>
             </div>
 
             <!-- Sleek Authentic GCash Checkout Mockup Card -->
-            <div class="rounded-2xl bg-surface-900 border border-surface-700/80 overflow-hidden shadow-lg space-y-0">
+            <div class="rounded-2xl bg-surface-900 border overflow-hidden shadow-lg space-y-0 transition-all relative"
+              :class="isGcashAvailable ? 'border-surface-700/80' : 'border-rose-500/40 opacity-90'">
+              
+              <!-- GCash Flagged Unavailable Overlay Banner in Preview -->
+              <div v-if="!isGcashAvailable" class="bg-rose-600 text-white px-3 py-1.5 text-center text-xs font-extrabold flex items-center justify-center gap-1.5 shadow">
+                <i class="pi pi-ban text-xs"></i>
+                <span>GCash Payment Unavailable at Checkout</span>
+              </div>
               
               <!-- GCash Branded Top Bar -->
               <div class="bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 p-3.5 text-white flex items-center justify-between shadow-sm">
@@ -245,13 +304,21 @@
                     <img 
                       :src="activeQrPreview" 
                       alt="GCash QR Code" 
-                      class="w-full h-full object-contain select-none"
+                      class="w-full h-full object-contain select-none transition-all"
+                      :class="!isGcashAvailable ? 'grayscale opacity-30 blur-[1px]' : ''"
                       @error="(e) => { e.target.src = '/assets/gcash-qr-default.png'; }"
                     />
+
+                    <!-- Unavailable Watermark Overlay -->
+                    <div v-if="!isGcashAvailable" class="absolute inset-0 flex flex-col items-center justify-center p-3 bg-black/40 backdrop-blur-[1px]">
+                      <span class="px-2.5 py-1 rounded-xl bg-rose-600 text-white font-black text-[10px] uppercase tracking-wider shadow-lg flex items-center gap-1">
+                        <i class="pi pi-ban text-[10px]"></i> Unavailable
+                      </span>
+                    </div>
                   </div>
                   <p class="text-[11px] font-semibold text-gray-400 flex items-center justify-center gap-1.5">
-                    <i class="pi pi-camera text-sky-400 text-xs"></i>
-                    <span>Scan with GCash app to transfer</span>
+                    <i class="pi" :class="isGcashAvailable ? 'pi-camera text-sky-400' : 'pi-ban text-rose-400 text-xs'"></i>
+                    <span>{{ isGcashAvailable ? 'Scan with GCash app to transfer' : 'QR Scan Temporarily Paused' }}</span>
                   </p>
                 </div>
 
@@ -279,8 +346,8 @@
 
             </div>
 
-            <p class="text-[11px] text-center text-gray-500">
-              Changes saved here update immediately across the customer checkout view.
+            <p class="text-[11px] text-center" :class="isGcashAvailable ? 'text-gray-500' : 'text-rose-400/90 font-medium'">
+              {{ isGcashAvailable ? 'Changes saved here update immediately across the customer checkout view.' : 'GCash is flagged unavailable: customers will be guided to pay via Cash upon checkout.' }}
             </p>
           </div>
 
@@ -814,11 +881,15 @@ export default {
 
     const defaultQrPath = '/assets/gcash-qr-default.png';
 
+    const isTogglingAvailability = Vue.ref(false);
+    const isGcashAvailable = Vue.computed(() => store.isGcashAvailable);
+
     // GCash specific form state
     const gcashForm = Vue.reactive({
       gcash_account_name: store.settings?.gcash_account_name || 'Jefferson A.',
       gcash_account_number: store.settings?.gcash_account_number || '0912 345 6789',
       gcash_qr_code: store.settings?.gcash_qr_code || '',
+      gcash_available: store.isGcashAvailable,
     });
 
     // General store settings form state
@@ -838,6 +909,9 @@ export default {
         if (newSettings.gcash_account_name !== undefined) gcashForm.gcash_account_name = newSettings.gcash_account_name;
         if (newSettings.gcash_account_number !== undefined) gcashForm.gcash_account_number = newSettings.gcash_account_number;
         if (newSettings.gcash_qr_code !== undefined) gcashForm.gcash_qr_code = newSettings.gcash_qr_code;
+        if (newSettings.gcash_available !== undefined) {
+          gcashForm.gcash_available = newSettings.gcash_available === 'true' || newSettings.gcash_available === true || newSettings.gcash_available === '1' || newSettings.gcash_available === 1;
+        }
 
         if (newSettings.store_name !== undefined) storeForm.store_name = newSettings.store_name;
         if (newSettings.store_tagline !== undefined) storeForm.store_tagline = newSettings.store_tagline;
@@ -958,6 +1032,19 @@ export default {
       store.notify('Reverted to default QR code. Click "Save GCash Payment Settings" to apply.', 'info');
     };
 
+    const toggleGcashAvailability = async (targetVal = null) => {
+      const nextState = targetVal !== null ? targetVal : !isGcashAvailable.value;
+      isTogglingAvailability.value = true;
+      try {
+        await store.setGcashAvailability(nextState);
+        gcashForm.gcash_available = nextState;
+      } catch (err) {
+        // error notification handled by store
+      } finally {
+        isTogglingAvailability.value = false;
+      }
+    };
+
     const saveGcashSettings = async () => {
       if (!gcashForm.gcash_account_number.trim()) {
         store.notify('Please enter a valid GCash mobile number.', 'error');
@@ -970,8 +1057,9 @@ export default {
           gcash_account_name: gcashForm.gcash_account_name.trim(),
           gcash_account_number: gcashForm.gcash_account_number.trim(),
           gcash_qr_code: gcashForm.gcash_qr_code || '',
+          gcash_available: gcashForm.gcash_available ? 'true' : 'false',
         });
-        store.notify('GCash QR Code and Payment Number successfully updated and live!', 'success');
+        store.notify('GCash QR Code and Payment settings successfully updated and live!', 'success');
       } catch (err) {
         // error notification handled by store.updateStoreSettings
       } finally {
@@ -1125,6 +1213,9 @@ export default {
       isLoading,
       isSavingGcash,
       isSavingStore,
+      isTogglingAvailability,
+      isGcashAvailable,
+      toggleGcashAvailability,
       qrFileName,
       gcashForm,
       storeForm,

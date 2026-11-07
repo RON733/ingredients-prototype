@@ -1,12 +1,17 @@
 <template>
 <div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-amber-400 selection:text-black">
       
-      <!-- 1. Authenticated Delivery Rider: Render Dedicated Driver View -->
-      <div v-if="isLoggedIn && store.user && (store.user.role === 'driver' || (store.isAdminOrSuper && store.currentView === 'driver'))" class="flex-1 flex flex-col">
+      <!-- 1. Authenticated Delivery Rider: Render Dedicated Driver View for actual drivers -->
+      <div v-if="isLoggedIn && store.user && store.user.role === 'driver'" class="flex-1 flex flex-col">
         <DriverView />
       </div>
 
-      <!-- 2. Authenticated Staff, Admin, or Super Admin: Render Full Management Dashboard -->
+      <!-- 2. Authenticated Staff, Admin, or Super Admin: Render Dedicated Delivery Rider Fleet View -->
+      <div v-else-if="isLoggedIn && store.user && store.isStaffOrAdmin && (store.currentView === 'driver' || store.currentView === 'fleet')" class="flex-1 flex flex-col">
+        <DeliveryFleetView />
+      </div>
+
+      <!-- 3. Authenticated Staff, Admin, or Super Admin: Render Full Management Dashboard -->
       <div v-else-if="isLoggedIn && store.user && (store.isStaffOrAdmin || store.currentView === 'admin')" class="flex-1 flex flex-col">
         <AdminDashboard />
       </div>

@@ -42,23 +42,15 @@
             <span>{{ hasPendingNotice ? 'Pending Staff Acceptance' : (isAvailable ? 'Available for Orders' : 'On Break / Offline') }}</span>
           </button>
 
-          <!-- Return to Admin Console (Admin Only) -->
+          <!-- Return to Management Console (Staff & Admin) -->
           <button 
-            v-if="store.isAdminOrSuper"
+            v-if="store.isStaffOrAdmin"
             type="button"
             @click="store.currentView = 'admin'"
             class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm">
             <i class="pi pi-arrow-left text-xs"></i>
-            <span>Back to Admin</span>
+            <span>{{ store.isStaffOnly ? 'Back to Console' : 'Back to Admin' }}</span>
           </button>
-
-          <!-- Customer Storefront Link -->
-          <a 
-            href="/"
-            class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold border border-surface-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm">
-            <i class="pi pi-home text-xs text-amber-400"></i>
-            <span>Storefront</span>
-          </a>
 
           <!-- Sign Out from Operations Portal -->
           <button 
@@ -840,20 +832,22 @@ export default {
 
     const currentDriverId = Vue.computed(() => store.user?.id);
 
-    // Filter ONLY orders dispatched to this logged-in rider!
+    // Filter orders: for riders, ONLY orders dispatched to this logged-in rider. For staff/admin, all delivery dispatches.
     const activeDeliveries = Vue.computed(() => {
+      const isOpsFleetViewer = store.isStaffOrAdmin;
       return store.orders.filter(o => 
         o.order_type === 'Delivery' && 
         o.status === 'Out for Delivery' &&
-        (!o.driver_id || o.driver_id == currentDriverId.value)
+        (isOpsFleetViewer || !o.driver_id || o.driver_id == currentDriverId.value)
       );
     });
 
     const completedDeliveries = Vue.computed(() => {
+      const isOpsFleetViewer = store.isStaffOrAdmin;
       return store.orders.filter(o => 
         o.order_type === 'Delivery' && 
         o.status === 'Completed' &&
-        o.driver_id == currentDriverId.value
+        (isOpsFleetViewer || o.driver_id == currentDriverId.value)
       );
     });
 

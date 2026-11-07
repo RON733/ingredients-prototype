@@ -33,6 +33,14 @@ class OrderController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
+        if ($request->filled('driver_id')) {
+            $query->where('driver_id', $request->driver_id);
+        }
+
+        if ($request->filled('order_type')) {
+            $query->where('order_type', $request->order_type);
+        }
+
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
@@ -147,6 +155,12 @@ class OrderController extends Controller
 
         // 3. GCash Payment verification: BOTH Reference Number AND Receipt Screenshot are strictly required
         if ($validated['payment_method'] === 'GCash') {
+            $gcashAvailable = \App\Models\SystemSetting::where('key', 'gcash_available')->value('value');
+            if ($gcashAvailable !== null && in_array(strtolower((string)$gcashAvailable), ['false', '0', 'no', 'off'], true)) {
+                return response()->json([
+                    'message' => 'GCash payment is currently unavailable. Please select Cash on Delivery or Cash at Counter.'
+                ], 422);
+            }
             $ref = trim($validated['gcash_ref'] ?? '');
             $proof = trim($validated['proof_image'] ?? '');
 
@@ -591,6 +605,24 @@ class OrderController extends Controller
                 $driver->active_deliveries_count = Order::where('driver_id', $driver->id)
                     ->where('status', 'Out for Delivery')
                     ->count();
+                $driver->active_orders = Order::with('items')
+                    ->where('driver_id', $driver->id)
+                    ->where('status', 'Out for Delivery')
+                    ->latest()
+                    ->get();
+                $driver->completed_today_count = Order::where('driver_id', $driver->id)
+                    ->where('order_type', 'Delivery')
+                    ->where('status', 'Completed')
+                    ->whereDate('created_at', today())
+                    ->count();
+                $driver->total_completed_count = Order::where('driver_id', $driver->id)
+                    ->where('order_type', 'Delivery')
+                    ->where('status', 'Completed')
+                    ->count();
+                $driver->pending_notice = \App\Models\RiderNotice::where('driver_id', $driver->id)
+                    ->where('is_acknowledged', false)
+                    ->latest()
+                    ->first();
                 return $driver;
             });
 

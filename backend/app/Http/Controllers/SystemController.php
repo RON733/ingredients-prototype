@@ -18,6 +18,9 @@ class SystemController extends Controller
             if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
                 $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
             }
+            if (!isset($s['gcash_available'])) {
+                $s['gcash_available'] = 'true';
+            }
             if (!isset($s['maintenance_mode'])) {
                 $s['maintenance_mode'] = 'false';
             }
@@ -78,6 +81,12 @@ class SystemController extends Controller
             $details = $isShutdown 
                 ? 'EMERGENCY: Super Admin initiated website shutdown. Customer access placed into Maintenance Mode.' 
                 : 'Super Admin deactivated Maintenance Mode. Public website and customer ordering restored.';
+        } elseif (isset($data['gcash_available'])) {
+            $isAvail = in_array($data['gcash_available'], ['true', true, '1', 1], true);
+            $action = $isAvail ? 'GCash Marked Available' : 'GCash Flagged Unavailable';
+            $details = $isAvail 
+                ? 'GCash online payment option enabled for customer checkout.' 
+                : 'GCash online payment flagged unavailable. Customers restricted to Cash on Delivery / Counter.';
         } elseif (isset($data['gcash_account_number']) || isset($data['gcash_qr_code'])) {
             $num = $data['gcash_account_number'] ?? 'unchanged';
             $details = "Updated GCash payment settings: Mobile No. {$num}, QR code updated.";

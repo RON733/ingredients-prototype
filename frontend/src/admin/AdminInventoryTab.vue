@@ -172,14 +172,14 @@
           <table class="w-full text-left text-xs text-gray-300">
             <thead class="bg-surface-900/80 text-gray-400 uppercase text-[10px] tracking-wider border-b border-surface-700">
               <tr>
-                <th class="px-6 py-4">Ingredient Name</th>
-                <th class="px-6 py-4">Category</th>
-                <th class="px-6 py-4">Current Stock</th>
-                <th class="px-6 py-4">Status</th>
-                <th class="px-6 py-4">Loyverse Sync</th>
-                <th class="px-6 py-4">Low Threshold</th>
-                <th class="px-6 py-4 text-center">Quick Restock</th>
-                <th class="px-6 py-4 text-right">Actions</th>
+                <th class="px-6 py-4 whitespace-nowrap">Ingredient Name</th>
+                <th class="px-6 py-4 whitespace-nowrap">Category</th>
+                <th class="px-6 py-4 whitespace-nowrap">Current Stock</th>
+                <th class="px-6 py-4 whitespace-nowrap">Status</th>
+                <th class="px-6 py-4 whitespace-nowrap">Loyverse Sync</th>
+                <th class="px-6 py-4 whitespace-nowrap">Low Threshold</th>
+                <th class="px-6 py-4 text-center whitespace-nowrap">Quick Restock</th>
+                <th class="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-surface-700/50">
@@ -191,7 +191,7 @@
                 <!-- Name -->
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full" :class="getStatusDot(ing)"></span>
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="getStatusDot(ing)"></span>
                     <div>
                       <p class="font-bold text-white text-sm">{{ ing.name }}</p>
                       <p class="text-[10px] text-gray-500 font-mono">{{ ing.id }}</p>
@@ -200,7 +200,7 @@
                 </td>
 
                 <!-- Category -->
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <span class="px-2.5 py-1 rounded-full text-[10px] font-bold"
                     :class="getCategoryBadge(ing.category)">
                     {{ ing.category }}
@@ -208,7 +208,7 @@
                 </td>
 
                 <!-- Stock Level -->
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-base font-black text-white">
                     {{ ing.stock }}
                   </span>
@@ -219,28 +219,29 @@
                 </td>
 
                 <!-- Status Badge -->
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <span 
-                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shadow-xs"
                     :class="getStatusBadge(ing)">
-                    {{ getStatusText(ing) }}
+                    <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="getStatusDot(ing)"></span>
+                    <span>{{ getStatusText(ing) }}</span>
                   </span>
                 </td>
 
                 <!-- Loyverse Sync Badge -->
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 whitespace-nowrap">
                   <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <i class="pi pi-check text-[9px]"></i> Tracked
                   </span>
                 </td>
 
                 <!-- Threshold -->
-                <td class="px-6 py-4 text-gray-400">
+                <td class="px-6 py-4 text-gray-400 whitespace-nowrap">
                   Min: <span class="text-white font-bold">{{ ing.low_threshold }}</span> {{ ing.unit }}
                 </td>
 
                 <!-- Quick Restock Actions -->
-                <td class="px-6 py-4 text-center">
+                <td class="px-6 py-4 text-center whitespace-nowrap">
                   <div class="inline-flex items-center gap-1.5 bg-surface-900 px-2 py-1 rounded-xl border border-surface-700">
                     <button 
                       @click="quickAdjust(ing, 10)"
@@ -261,7 +262,7 @@
                 </td>
 
                 <!-- Actions -->
-                <td class="px-6 py-4 text-right">
+                <td class="px-6 py-4 text-right whitespace-nowrap">
                   <div class="flex items-center justify-end gap-2">
                     <button 
                       @click="openEditModal(ing)"
@@ -452,9 +453,9 @@ export default {
     };
 
     const getStatusBadge = (ing) => {
-      if (ing.stock <= 0) return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
-      if (ing.stock <= ing.low_threshold) return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
-      return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      if (ing.stock <= 0) return 'bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-xs shadow-rose-950/40';
+      if (ing.stock <= ing.low_threshold) return 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-xs shadow-amber-950/40';
+      return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs shadow-emerald-950/40';
     };
 
     const getStatusDot = (ing) => {

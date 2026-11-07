@@ -243,7 +243,7 @@ const AdminApp = {
           <div class="text-center text-[11px] text-gray-500 space-y-1">
             <p>Protected System — All staff logins & inventory adjustments are audited.</p>
             <div class="flex items-center justify-center gap-2 text-[10px]">
-              <a href="/" class="text-gray-400 hover:text-yellow-400 hover:underline">← Customer Storefront</a>
+              <span class="text-neutral-400 font-semibold">G Shot Teas Operations Terminal</span>
               <span>•</span>
               <span>STI College Santa Rosa Capstone</span>
             </div>

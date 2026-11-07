@@ -265,6 +265,18 @@ const AdminDashboard = {
                   {{ store.lowStockAlerts.length }}
                 </span>
               </button>
+
+              <!-- Delivery Fleet (Live Driver View) -->
+              <button 
+                @click="store.currentView = 'driver'"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent cursor-pointer"
+                title="Open Delivery Fleet Dispatch & Rider Navigation">
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-compass text-sm text-emerald-400"></i>
+                  <span>Delivery Rider Fleet</span>
+                </div>
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">FLEET</span>
+              </button>
             </div>
 
             <!-- MANAGEMENT -->

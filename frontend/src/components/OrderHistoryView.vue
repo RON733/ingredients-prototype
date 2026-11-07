@@ -211,7 +211,7 @@
                 <span class="text-gray-200 font-medium">
                   <span class="text-yellow-400 font-black mr-1">x{{ item.quantity }}</span> {{ item.product_name }}
                 </span>
-                <span class="text-white font-bold">?{{ Number(item.subtotal || (item.unit_price * item.quantity)).toFixed(2) }}</span>
+                <span class="text-white font-bold">₱{{ Number(item.subtotal || (item.unit_price * item.quantity)).toFixed(2) }}</span>
               </div>
               <div v-if="item.customization" class="text-[11px] text-gray-400 pl-5">
                 {{ formatCustomization(item.customization) }}
@@ -231,11 +231,11 @@
             <div class="flex items-center gap-3 text-xs">
               <div v-if="Number(order.delivery_fee) > 0" class="text-gray-400">
                 <span>Delivery: </span>
-                <span class="text-gray-200 font-semibold">?{{ Number(order.delivery_fee).toFixed(2) }}</span>
+                <span class="text-gray-200 font-semibold">₱{{ Number(order.delivery_fee).toFixed(2) }}</span>
               </div>
               <div class="flex items-baseline gap-1.5">
                 <span class="text-gray-400 text-[11px] uppercase font-bold tracking-wider">Total:</span>
-                <span class="text-base sm:text-lg font-black text-yellow-400">?{{ Number(order.total_amount).toFixed(2) }}</span>
+                <span class="text-base sm:text-lg font-black text-yellow-400">₱{{ Number(order.total_amount).toFixed(2) }}</span>
               </div>
             </div>
 
@@ -266,7 +266,7 @@
       <!-- Empty State -->
       <div v-else class="text-center py-12 sm:py-16 bg-surface-900/60 rounded-3xl border border-surface-800 p-6 sm:p-8 space-y-4">
         <div class="w-16 h-16 rounded-3xl bg-surface-800/80 border border-surface-700 flex items-center justify-center mx-auto text-3xl text-yellow-400 shadow-inner">
-          ??
+          <i class="pi pi-inbox text-3xl"></i>
         </div>
 
         <div class="max-w-sm mx-auto">
@@ -481,7 +481,7 @@ export default {
       if (c.toppings && Array.isArray(c.toppings) && c.toppings.length) {
         parts.push(`Toppings: ${c.toppings.join(', ')}`);
       }
-      return parts.join(' ? ');
+      return parts.join(' • ');
     };
 
     const getStatusBadgeClass = (status) => {

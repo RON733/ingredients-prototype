@@ -3,7 +3,24 @@
       
       
 
-      <div class="relative z-10 flex flex-col flex-1">
+      <!-- Operations Personnel Redirection Screen (Workers strictly access their own dashboards only) -->
+      <div v-if="isWorker" class="flex-1 flex flex-col items-center justify-center p-6 text-center animate-fade-in min-h-[70vh]">
+        <div class="w-16 h-16 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-3xl mb-4 shadow-xl animate-pulse">
+          <i class="pi pi-shield"></i>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-white mb-2">Store Personnel Access Restricted</h2>
+        <p class="text-xs sm:text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
+          Store personnel (Staff, Delivery Riders, and Administrators) only access their operational dashboard. Redirecting you to your portal...
+        </p>
+        <a 
+          :href="(store.user?.role === 'driver' || store.user?.role === 'rider') ? '/driver' : '/admin'" 
+          class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs inline-flex items-center gap-2 transition-all shadow-lg shadow-amber-400/20">
+          <i class="pi pi-arrow-right text-xs"></i>
+          <span>Open Dashboard</span>
+        </a>
+      </div>
+
+      <div v-else class="relative z-10 flex flex-col flex-1">
         <!-- Navigation Header (Always Visible) -->
         <Navbar />
 
@@ -232,8 +249,26 @@ export default {
   setup() {
     const store = useGShotStore();
 
+    const isWorker = computed(() => {
+      const role = store.user?.role;
+      return !!role && ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'].includes(role);
+    });
+
+    const enforceWorkerDashboardOnly = () => {
+      if (isWorker.value) {
+        const target = (store.user?.role === 'driver' || store.user?.role === 'rider') ? '/driver' : '/admin';
+        window.location.replace(target);
+      }
+    };
+
     onMounted(async () => {
+      enforceWorkerDashboardOnly();
       await store.init();
+      enforceWorkerDashboardOnly();
+    });
+
+    watch(() => store.user, () => {
+      enforceWorkerDashboardOnly();
     });
 
     const getToastClass = (type) => {
@@ -296,6 +331,7 @@ export default {
 
     return {
       store,
+      isWorker,
       hasOngoingOrders,
       navToSection,
       getToastClass,

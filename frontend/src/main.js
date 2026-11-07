@@ -23,6 +23,7 @@ import AuthModal from './components/AuthModal.vue';
 import StaffPinModal from './components/StaffPinModal.vue';
 import AboutSection from './components/AboutSection.vue';
 import DriverView from './components/DriverView.vue';
+import DeliveryFleetView from './components/DeliveryFleetView.vue';
 import ContactSection from './components/ContactSection.vue';
 import MaintenanceView from './components/MaintenanceView.vue';
 
@@ -64,6 +65,7 @@ app.component('AuthModal', AuthModal);
 app.component('StaffPinModal', StaffPinModal);
 app.component('AboutSection', AboutSection);
 app.component('DriverView', DriverView);
+app.component('DeliveryFleetView', DeliveryFleetView);
 app.component('ContactSection', ContactSection);
 app.component('MaintenanceView', MaintenanceView);
 

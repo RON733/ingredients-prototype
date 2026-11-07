@@ -27,24 +27,18 @@ const DriverView = {
         <div class="flex flex-wrap items-center gap-2">
           <!-- Rider Availability Toggle Switch (Flag Not Available) -->
           <button 
+            v-if="!store.isStaffOrAdmin"
             type="button"
             @click="toggleAvailability"
             class="px-3.5 py-2 rounded-xl text-xs font-black border transition-all flex items-center gap-2 shadow-md cursor-pointer"
             :class="isAvailable ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'">
             <span class="w-2.5 h-2.5 rounded-full" :class="isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'"></span>
             <span>{{ isAvailable ? 'Available for Orders' : 'On Break / Offline' }}</span>
-          </button>
-
-          <!-- Back to Store / Customer View -->
-          <button 
-            type="button"
-            @click="store.currentView = 'customer'"
-            class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold border border-surface-700 transition-colors cursor-pointer">
-            Storefront
-          </button>
+          </button>
 
           <!-- Logout Button -->
           <button 
+            v-if="!store.isStaffOrAdmin"
             type="button"
             @click="handleLogout"
             class="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer">

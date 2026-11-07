@@ -363,6 +363,13 @@ const useGShotStore = defineStore('gshot', {
       return state.ingredients.filter(ing => ing.stock <= ing.low_threshold);
     },
 
+    isGcashAvailable: (state) => {
+      if (state.settings && state.settings.gcash_available !== undefined && state.settings.gcash_available !== null) {
+        return state.settings.gcash_available === 'true' || state.settings.gcash_available === true || state.settings.gcash_available === '1' || state.settings.gcash_available === 1;
+      }
+      return true;
+    },
+
     gcashQrCode: (state) => state.settings?.gcash_qr_code || './assets/gcash-qr-default.png',
     gcashAccountNumber: (state) => state.settings?.gcash_account_number || '0912 345 6789',
     gcashAccountName: (state) => state.settings?.gcash_account_name || 'Jefferson A.',
@@ -997,6 +1004,27 @@ const useGShotStore = defineStore('gshot', {
         this.notify(isOpen ? '?? Store is now OPEN!' : '?? Store is now CLOSED.', isOpen ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status:', err);
+      }
+    },
+
+    async setGcashAvailability(isAvailable) {
+      const valStr = isAvailable ? 'true' : 'false';
+      if (!this.settings) this.settings = {};
+      this.settings.gcash_available = valStr;
+      try {
+        await GST_API.updateSettings({ gcash_available: valStr });
+        this.notify(
+          isAvailable 
+            ? 'GCash payment marked as AVAILABLE for customer checkout.' 
+            : 'GCash payment flagged as UNAVAILABLE for customer checkout.', 
+          isAvailable ? 'success' : 'info'
+        );
+        return true;
+      } catch (err) {
+        console.error('Failed to update GCash availability on backend:', err);
+        const msg = err.response?.data?.message || 'Failed to update GCash availability.';
+        this.notify(msg, 'error');
+        throw err;
       }
     },
 

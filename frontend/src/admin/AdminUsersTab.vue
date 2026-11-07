@@ -225,9 +225,10 @@
                 <!-- Status -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span 
-                    class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase"
-                    :class="u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'">
-                    {{ u.status || 'active' }}
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shadow-xs"
+                    :class="u.status === 'active' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'">
+                    <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="u.status === 'active' ? 'bg-emerald-400' : 'bg-rose-400'"></span>
+                    <span>{{ u.status || 'active' }}</span>
                   </span>
                 </td>
 

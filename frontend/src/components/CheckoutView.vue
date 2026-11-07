@@ -226,10 +226,20 @@
               <!-- GCash Option -->
               <button 
                 type="button"
-                @click="form.payment_method = 'GCash'"
-                class="py-3 px-4 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs sm:text-sm transition-all cursor-pointer"
-                :class="form.payment_method === 'GCash' ? 'border-sky-500 bg-sky-500/15 text-sky-400 shadow-md ring-1 ring-sky-500/50' : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600'">
-                <span class="text-sky-400 font-black tracking-wider">GCash</span>
+                @click="store.isGcashAvailable ? (form.payment_method = 'GCash') : store.notify('GCash payments are currently unavailable. Please select Cash.', 'info')"
+                :disabled="!store.isGcashAvailable"
+                class="py-3 px-4 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs sm:text-sm transition-all relative"
+                :class="[
+                  !store.isGcashAvailable 
+                    ? 'border-surface-800 bg-surface-950/60 text-gray-500 cursor-not-allowed opacity-60' 
+                    : form.payment_method === 'GCash' 
+                      ? 'border-sky-500 bg-sky-500/15 text-sky-400 shadow-md ring-1 ring-sky-500/50 cursor-pointer' 
+                      : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600 cursor-pointer'
+                ]">
+                <span :class="store.isGcashAvailable ? 'text-sky-400' : 'text-gray-500'" class="font-black tracking-wider">GCash</span>
+                <span v-if="!store.isGcashAvailable" class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
+                  Unavailable
+                </span>
               </button>
               
               <!-- Cash / COD Option -->
@@ -241,6 +251,12 @@
                 <i class="pi pi-money-bill"></i>
                 <span>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</span>
               </button>
+            </div>
+
+            <!-- Notice when GCash is unavailable -->
+            <div v-if="!store.isGcashAvailable" class="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center gap-2.5 text-xs text-rose-300 animate-fade-in">
+              <i class="pi pi-info-circle text-rose-400 text-sm shrink-0"></i>
+              <span>GCash payment is currently unavailable. Please proceed with <strong>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</strong>.</span>
             </div>
 
             <!-- GCash Payment & Scan-to-Pay Card -->
@@ -773,7 +789,7 @@ export default {
       delivery_address: store.user?.address || '',
       customer_lat: null,
       customer_lng: null,
-      payment_method: 'GCash',
+      payment_method: store.isGcashAvailable ? 'GCash' : 'Cash',
       gcash_ref: '',
       proof_image: '',
       notes: '',
@@ -786,6 +802,13 @@ export default {
     const grandTotal = Vue.computed(() => {
       return store.cartSubtotal + deliveryFee.value;
     });
+
+    // Auto-fallback payment method to Cash if GCash is flagged unavailable
+    Vue.watch(() => store.isGcashAvailable, (avail) => {
+      if (!avail && form.payment_method === 'GCash') {
+        form.payment_method = 'Cash';
+      }
+    }, { immediate: true });
 
     // Enforce numbers only and standard 11 digits for Phone Number
     const onPhoneInput = (e) => {
@@ -899,6 +922,9 @@ export default {
 
       // GCash Strict Requirement: BOTH Reference Number AND Receipt Screenshot are required
       if (form.payment_method === 'GCash') {
+        if (!store.isGcashAvailable) {
+          reasons.push('GCash payment is currently unavailable. Please choose Cash on Delivery or Cash at Counter.');
+        }
         const hasRef = Boolean(form.gcash_ref && form.gcash_ref.trim().length >= 9 && form.gcash_ref.trim().length <= 13);
         const hasProof = Boolean(form.proof_image && form.proof_image.trim().length > 0);
 
