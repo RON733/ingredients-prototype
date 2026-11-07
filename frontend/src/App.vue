@@ -3,27 +3,9 @@
       
       
 
-      <!-- Operations Personnel Redirection Screen (Workers strictly access Operations Dashboard only) -->
-      <div v-if="isWorker" class="flex-1 flex flex-col items-center justify-center p-6 text-center animate-fade-in min-h-[70vh]">
-        <div class="w-16 h-16 rounded-3xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-3xl mb-4 shadow-xl animate-pulse">
-          <i class="pi pi-shield"></i>
-        </div>
-        <h2 class="text-xl sm:text-2xl font-black text-white mb-2">Store Personnel Access Restricted</h2>
-        <p class="text-xs sm:text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
-          Store personnel (Staff, Delivery Riders, and Administrators) only access the Operations Dashboard and Terminal. Redirecting you to your portal...
-        </p>
-        <a 
-          href="/admin" 
-          class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs inline-flex items-center gap-2 transition-all shadow-lg shadow-amber-400/20">
-          <i class="pi pi-arrow-right text-xs"></i>
-          <span>Open Operations Dashboard</span>
-        </a>
-      </div>
-
-      <div v-else class="relative z-10 flex flex-col flex-1">
-        
-        <!-- Navigation Header (Customer Views) -->
-        <Navbar v-if="store.currentView !== 'admin' && store.currentView !== 'driver'" />
+      <div class="relative z-10 flex flex-col flex-1">
+        <!-- Navigation Header (Always Visible) -->
+        <Navbar />
 
         <!-- Main Content Area -->
         <main class="flex-1">
@@ -80,7 +62,7 @@
         </main>
 
         <!-- Footer (Customer Views) -->
-        <footer v-if="!store.isMaintenanceMode && store.currentView !== 'admin' && store.currentView !== 'driver'" class="py-10 pb-24 lg:pb-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
+        <footer v-if="!store.isMaintenanceMode" class="py-10 pb-24 lg:pb-10 bg-surface-950 border-t border-surface-800 text-xs text-gray-500 text-center">
           <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <span class="font-extrabold text-white text-sm">G SHOT TEAS</span>
@@ -93,8 +75,7 @@
         </footer>
 
         <!-- Mobile Bottom App Bar (Customer Cellphone Navigation) -->
-        <nav 
-          v-if="!store.isMaintenanceMode && store.currentView !== 'admin' && store.currentView !== 'driver'"
+        <nav v-if="!store.isMaintenanceMode"
           class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-1 py-1.5 flex items-center justify-around shadow-2xl">
           
           <!-- 1. Home -->
@@ -251,25 +232,8 @@ export default {
   setup() {
     const store = useGShotStore();
 
-    const isWorker = computed(() => {
-      const role = store.user?.role;
-      return !!role && ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'].includes(role);
-    });
-
-    const enforceWorkerDashboardOnly = () => {
-      if (isWorker.value) {
-        window.location.replace('/admin');
-      }
-    };
-
     onMounted(async () => {
-      enforceWorkerDashboardOnly();
       await store.init();
-      enforceWorkerDashboardOnly();
-    });
-
-    watch(() => store.user, () => {
-      enforceWorkerDashboardOnly();
     });
 
     const getToastClass = (type) => {
@@ -332,7 +296,6 @@ export default {
 
     return {
       store,
-      isWorker,
       hasOngoingOrders,
       navToSection,
       getToastClass,

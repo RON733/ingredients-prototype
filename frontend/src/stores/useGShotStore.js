@@ -281,17 +281,7 @@ const useGShotStore = defineStore('gshot', {
       window.location.pathname.includes('rider')
     )) ? (
       (window.location.pathname.includes('driver') || window.location.pathname.includes('rider')) ? 'driver' : 'admin'
-    ) : (
-      (function() {
-        try {
-          const u = JSON.parse(localStorage.getItem('gst_user') || 'null');
-          if (u && ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'].includes(u.role)) {
-            return u.role === 'driver' ? 'driver' : 'admin';
-          }
-        } catch (e) {}
-        return 'customer';
-      })()
-    ), // 'customer' | 'admin' | 'checkout' | 'track' | 'history'
+    ) : 'customer', // 'customer' | 'admin' | 'checkout' | 'track' | 'history'
     activeSection: 'home',   // 'home' | 'menu' | 'about' | 'contact'
     adminTab: 'orders',      // 'orders' | 'analytics' | 'products' | 'inventory' | 'recipes' | 'bookings' | 'users' | 'audit'
     cartOpen: false,

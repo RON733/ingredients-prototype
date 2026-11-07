@@ -15,7 +15,7 @@
         </div>
 
         <!-- 2. Center: Primary Navigation Links (Customer View) -->
-        <nav v-if="!store.isMaintenanceMode" class="hidden lg:flex items-center gap-2 xl:gap-3 font-semibold text-xs tracking-wider">
+        <nav v-if="!store.isMaintenanceMode || store.isStaffOrAdmin" class="hidden lg:flex items-center gap-2 xl:gap-3 font-semibold text-xs tracking-wider">
           <button 
             @click="navTo('home')" 
             class="px-3.5 py-2 rounded-xl transition-all"
@@ -60,22 +60,35 @@
         <!-- 3. Right: Staff Tools & Customer Actions -->
         <div class="flex items-center gap-3 xl:gap-4 flex-shrink-0">
           
-          <!-- Store Status & Live Clock Capsule (Customer View) -->
+          <!-- Staff Controls Capsule -->
           <div class="hidden sm:flex items-center bg-surface-950/80 border border-surface-700/60 rounded-xl p-1 gap-1.5 shadow-inner">
-            <!-- Store Open / Close Status Badge (Desktop View) -->
-            <div 
+            <!-- Operations Console Shortcut for Staff, Admin, Rider -->
+            <a 
+              v-if="store.isStaffOrAdmin || store.isDriver"
+              href="/admin"
+              class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-yellow-400/20 text-yellow-300 border border-yellow-400/40 hover:bg-yellow-400 hover:text-black transition-all cursor-pointer shadow-sm"
+              title="Return to Operations Management Console">
+              <i class="pi pi-shield text-[10px]"></i>
+              <span>Console</span>
+            </a>
+
+            <!-- Store Open / Close Status Badge & Toggle (Desktop) -->
+            <button 
+              @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
               :class="[
-                'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-default',
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all',
                 store.isStoreOpen 
                   ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' 
-                  : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                  : 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+                store.isStaffOrAdmin ? 'cursor-pointer hover:scale-105 active:scale-95' : 'cursor-default'
               ]"
-              :title="'Store is currently ' + (store.isStoreOpen ? 'Open' : 'Closed')">
+              :title="store.isStaffOrAdmin ? 'Store status: Click to toggle OPEN / CLOSED' : 'Store is currently ' + (store.isStoreOpen ? 'Open' : 'Closed')">
               <span class="w-2 h-2 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
               <span>{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
-            </div>
+              <i v-if="store.isStaffOrAdmin" class="pi pi-sync text-[9px] opacity-70 ml-0.5"></i>
+            </button>
 
-            <!-- Live Clock -->
+            <!-- Live Clock (Preserved & Visible) -->
             <div class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono text-gray-300 border-l border-surface-800" title="Live Store Clock">
               <i class="pi pi-clock text-[10px] text-brand-400"></i>
               <span>{{ currentTime }}</span>
@@ -148,6 +161,12 @@
                 </div>
 
                 <div class="py-1.5">
+                  <a 
+                    v-if="store.isStaffOrAdmin || store.isDriver"
+                    href="/admin"
+                    class="w-full text-left px-4 py-2 text-xs text-yellow-400 hover:bg-surface-700/70 hover:text-yellow-300 font-bold flex items-center gap-2.5 transition-colors border-b border-surface-700/60 mb-1">
+                    <i class="pi pi-shield text-yellow-400"></i> Operations Portal (/admin)
+                  </a>
                   <button 
                     v-if="store.user"
                     @click="goToView('history')" 
@@ -274,6 +293,16 @@
 
         <!-- Operations Portal Button (Mobile) -->
 
+        <!-- Operations Portal Button (Mobile) -->
+        <a 
+          v-if="store.isStaffOrAdmin || store.isDriver"
+          href="/admin"
+          @click="mobileMenuOpen = false"
+          class="w-full py-2.5 px-4 rounded-xl bg-yellow-400 text-black font-extrabold text-xs flex items-center justify-center gap-2 shadow-md">
+          <i class="pi pi-shield text-xs"></i>
+          <span>Operations Console (/admin)</span>
+        </a>
+
         <!-- Operations Card: Live Clock & Store Status -->
         <div class="p-3.5 rounded-2xl bg-surface-950/80 border border-surface-700/60 flex items-center justify-between text-xs">
           <div class="flex items-center gap-2 font-mono text-gray-300">
@@ -281,12 +310,17 @@
             <span>{{ currentTime }}</span>
           </div>
 
-          <div 
+          <button 
+            @click="store.isStaffOrAdmin ? store.toggleStoreStatus() : null"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all"
-            :class="store.isStoreOpen ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'">
+            :class="[
+              store.isStoreOpen ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+              store.isStaffOrAdmin ? 'cursor-pointer hover:scale-105 active:scale-95' : 'cursor-default'
+            ]">
             <span class="w-2 h-2 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
             <span>{{ store.isStoreOpen ? 'Store is OPEN' : 'Store is CLOSED' }}</span>
-          </div>
+            <i v-if="store.isStaffOrAdmin" class="pi pi-sync text-[10px] ml-1"></i>
+          </button>
         </div>
 
         <!-- Account quick actions -->

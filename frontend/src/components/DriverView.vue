@@ -52,6 +52,14 @@
             <span>Back to Admin</span>
           </button>
 
+          <!-- Customer Storefront Link -->
+          <a 
+            href="/"
+            class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold border border-surface-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm">
+            <i class="pi pi-home text-xs text-amber-400"></i>
+            <span>Storefront</span>
+          </a>
+
           <!-- Sign Out from Operations Portal -->
           <button 
             type="button"

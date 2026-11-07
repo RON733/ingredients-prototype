@@ -2,12 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Public Customer Storefront (Guarded: Workers and operational personnel are strictly redirected to /admin)
-Route::get('/', function (\Illuminate\Http\Request $request) {
-    $role = $request->cookie('gst_role') ?? ($_COOKIE['gst_role'] ?? null);
-    if ($role && in_array($role, ['staff', 'admin', 'super_admin', 'driver'])) {
-        return redirect('/admin');
-    }
+// Public Customer Storefront
+Route::get('/', function () {
     return response()->file(public_path('index.html'));
 });
 
@@ -56,7 +52,7 @@ Route::get('/portal', function () {
     return response()->file(public_path('admin.html'));
 });
 
-// Fallback: If URL matches staff, admin, superadmin, rider, or driver routes, serve admin.html, otherwise check worker role before serving customer storefront
+// Fallback: If URL matches staff, admin, superadmin, rider, or driver routes, serve admin.html, otherwise serve customer storefront
 Route::fallback(function (\Illuminate\Http\Request $request) {
     $path = strtolower($request->path());
     if (
@@ -73,11 +69,6 @@ Route::fallback(function (\Illuminate\Http\Request $request) {
         str_starts_with($path, 'portal')
     ) {
         return response()->file(public_path('admin.html'));
-    }
-
-    $role = $request->cookie('gst_role') ?? ($_COOKIE['gst_role'] ?? null);
-    if ($role && in_array($role, ['staff', 'admin', 'super_admin', 'driver'])) {
-        return redirect('/admin');
     }
 
     return response()->file(public_path('index.html'));
