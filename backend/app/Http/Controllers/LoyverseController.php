@@ -108,6 +108,31 @@ class LoyverseController extends Controller
     }
 
     /**
+     * Pull menu items from Loyverse into website catalog.
+     */
+    public function pullItems(Request $request)
+    {
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
+        try {
+            $forceFresh = $request->boolean('fresh', true);
+            $results = $this->loyverse->pullItemsFromLoyverse($forceFresh);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Imported {$results['created_count']} new item(s) and updated {$results['updated_count']} item(s) from Loyverse POS.",
+                'results' => $results
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Loyverse pull items error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Export raw ingredients to Loyverse with track_stock = true.
      */
     public function exportIngredients(Request $request)

@@ -422,7 +422,7 @@
           </label>
         </div>
 
-        <!-- Note Text Input & Quick Presets -->
+        <!-- Note Text Input -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
             <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
@@ -439,29 +439,6 @@
             placeholder="Orders are only available in Santa Rosa bayan."
             class="w-full px-4 py-3 rounded-2xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all font-medium resize-none shadow-inner"
           ></textarea>
-
-          <!-- Quick Presets -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Quick Presets:</span>
-            <button 
-              type="button"
-              @click="setPresetNote('Orders are only available in Santa Rosa bayan.')"
-              class="px-2.5 py-1 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 hover:text-white border border-surface-700 text-xs font-medium transition-all cursor-pointer">
-              Orders are only available in Santa Rosa bayan.
-            </button>
-            <button 
-              type="button"
-              @click="setPresetNote('Orders are strictly available within Santa Rosa Bayan only.')"
-              class="px-2.5 py-1 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 hover:text-white border border-surface-700 text-xs font-medium transition-all cursor-pointer">
-              Orders are strictly available within Santa Rosa Bayan only.
-            </button>
-            <button 
-              type="button"
-              @click="setPresetNote('Delivery orders are available in Santa Rosa Bayan and nearby subdivisions.')"
-              class="px-2.5 py-1 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 hover:text-white border border-surface-700 text-xs font-medium transition-all cursor-pointer">
-              Santa Rosa Bayan & nearby subdivisions
-            </button>
-          </div>
         </div>
 
         <!-- Live Customer Preview Box -->
@@ -861,14 +838,10 @@
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
-            <button 
-              type="button"
-              @click="handleFullSync"
-              :disabled="isFullSyncing"
-              class="px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-neutral-950 shadow-md shadow-emerald-500/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50">
-              <i class="pi" :class="isFullSyncing ? 'pi-spin pi-spinner' : 'pi-cloud-upload'"></i>
-              <span>{{ isFullSyncing ? 'Synchronizing Everything...' : 'Master Full Sync' }}</span>
-            </button>
+            <div class="px-3.5 py-2 rounded-xl font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>2-Way Auto-Sync Active</span>
+            </div>
           </div>
         </div>
 
@@ -901,50 +874,16 @@
           
           <!-- Left Col: Actions (lg:col-span-7) -->
           <div class="lg:col-span-7 space-y-4">
-            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Synchronization Controls</h4>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Automated Synchronization</h4>
             
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <button 
-                type="button"
-                @click="handlePullInventory"
-                :disabled="isPulling"
-                class="p-3 rounded-xl bg-surface-950 hover:bg-surface-850 border border-surface-800 text-left transition-all cursor-pointer group">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
-                    <i class="pi" :class="isPulling ? 'pi-spin pi-spinner' : 'pi-download'"></i> Pull Stock
-                  </span>
-                  <span class="text-[9px] bg-sky-500/10 text-sky-300 px-1.5 py-0.5 rounded">From POS</span>
-                </div>
-                <p class="text-[11px] text-neutral-400">Pull stock adjustments, counts & POs from Loyverse into website.</p>
-              </button>
-
-              <button 
-                type="button"
-                @click="handlePushInventory"
-                :disabled="isPushing"
-                class="p-3 rounded-xl bg-surface-950 hover:bg-surface-850 border border-surface-800 text-left transition-all cursor-pointer group">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                    <i class="pi" :class="isPushing ? 'pi-spin pi-spinner' : 'pi-upload'"></i> Push Stock
-                  </span>
-                  <span class="text-[9px] bg-amber-500/10 text-amber-300 px-1.5 py-0.5 rounded">To POS</span>
-                </div>
-                <p class="text-[11px] text-neutral-400">Push current website ingredient stock levels to Loyverse.</p>
-              </button>
-
-              <button 
-                type="button"
-                @click="handleSyncLoyverse"
-                :disabled="isSyncingLoyverse"
-                class="p-3 rounded-xl bg-surface-950 hover:bg-surface-850 border border-surface-800 text-left transition-all cursor-pointer group">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                    <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner' : 'pi-sync'"></i> Sync Sales
-                  </span>
-                  <span class="text-[9px] bg-emerald-500/10 text-emerald-300 px-1.5 py-0.5 rounded">Receipts</span>
-                </div>
-                <p class="text-[11px] text-neutral-400">Sync walk-in cashier receipts and deduct recipe ingredients.</p>
-              </button>
+            <div class="p-4 rounded-2xl bg-surface-950 border border-emerald-500/30 space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-xs font-bold text-white uppercase tracking-wider">Background Real-Time Sync Active</span>
+              </div>
+              <p class="text-xs text-neutral-400">
+                Menu items, POS sales, kitchen raw ingredients, and stock levels are continuously synchronized between Loyverse POS and your website in the background via live webhooks and scheduled worker. No manual clicks required.
+              </p>
             </div>
 
             <!-- Webhook Registration Bar -->
@@ -1060,10 +999,6 @@ export default {
       order_area_note: store.orderAreaNote || 'Orders are only available in Santa Rosa bayan.',
       order_area_note_enabled: store.isOrderAreaNoteEnabled,
     });
-
-    const setPresetNote = (text) => {
-      areaNoteForm.order_area_note = text;
-    };
 
     const saveAreaNoteSettings = async () => {
       if (!areaNoteForm.order_area_note.trim()) {
@@ -1426,7 +1361,6 @@ export default {
       saveGeneralSettings,
       areaNoteForm,
       isSavingAreaNote,
-      setPresetNote,
       saveAreaNoteSettings,
       reloadSettings,
       loyverseConnected,

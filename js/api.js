@@ -99,6 +99,7 @@
     getLoyverseStatus: () => apiClient.get('/loyverse/status'),
     syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}),
     exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu'),
+    pullLoyverseItems: (params) => apiClient.post('/loyverse/pull-items', params || {}),
     registerLoyverseWebhook: (url) => apiClient.post('/loyverse/register-webhook', { url }),
   };
 })();

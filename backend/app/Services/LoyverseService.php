@@ -499,6 +499,331 @@ class LoyverseService
     }
 
     /**
+     * Instantly push a single product created/updated on website to Loyverse POS.
+     */
+    public function pushSingleProductToLoyverse(Product $product): ?array
+    {
+        if (empty($this->token)) return null;
+
+        try {
+            $storeId = $this->getEffectiveStoreId();
+            $product->loadMissing('recipes.ingredient');
+
+            $catName = $product->category ?: 'General';
+            $catId = $this->findOrCreateCategory($catName);
+
+            $allIngredients = Ingredient::all()->keyBy('id');
+
+            $components = [];
+            foreach ($product->recipes as $recipe) {
+                $ing = $allIngredients->get($recipe->ingredient_id);
+                if ($ing && !empty($ing->loyverse_variant_id)) {
+                    $components[] = [
+                        'variant_id' => $ing->loyverse_variant_id,
+                        'quantity' => (float) $recipe->qty
+                    ];
+                }
+            }
+
+            $isComposite = count($components) > 0;
+            $itemId = $product->loyverse_item_id;
+            $variantId = $product->loyverse_variant_id;
+
+            if (!$itemId) {
+                $existing = $this->getItems();
+                foreach ($existing as $it) {
+                    if (strcasecmp(trim($it['item_name']), trim($product->name)) === 0) {
+                        $itemId = $it['id'];
+                        $variantId = $it['variants'][0]['variant_id'] ?? null;
+                        break;
+                    }
+                    foreach ($it['variants'] ?? [] as $v) {
+                        if (($v['sku'] ?? '') === $product->id) {
+                            $itemId = $it['id'];
+                            $variantId = $v['variant_id'] ?? null;
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            $itemPayload = [
+                'item_name' => $product->name,
+                'category_id' => $catId,
+                'description' => $product->description ?? '',
+                'is_composite' => $isComposite,
+                'use_production' => false,
+                'components' => $isComposite ? $components : [],
+                'variants' => [
+                    [
+                        'variant_name' => 'Regular',
+                        'sku' => $product->id,
+                        'default_pricing_type' => 'FIXED',
+                        'default_price' => (float) $product->price,
+                        'stores' => [
+                            [
+                                'store_id' => $storeId,
+                                'pricing_type' => 'FIXED',
+                                'price' => (float) $product->price,
+                                'available_for_sale' => (bool) $product->is_available
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+            if ($itemId) {
+                $itemPayload['id'] = $itemId;
+                if ($variantId) {
+                    $itemPayload['variants'][0]['variant_id'] = $variantId;
+                }
+            }
+
+            $res = Http::withHeaders($this->headers())->post("{" . $this->apiUrl . "}/items", $itemPayload);
+
+            if ($res->successful()) {
+                $savedItem = $res->json();
+                $product->loyverse_item_id = $savedItem['id'] ?? $itemId;
+                $product->loyverse_variant_id = $savedItem['variants'][0]['variant_id'] ?? $variantId;
+                $product->saveQuietly();
+                $this->cachedItems = null;
+
+                Log::info("Loyverse Auto-Push: Product '{" . $product->name . "}' successfully synced to Loyverse POS.");
+                return $savedItem;
+            } else {
+                Log::error("Loyverse Auto-Push error for '{" . $product->name . "}': " . $res->body());
+                return null;
+            }
+        } catch (\Exception $e) {
+            Log::error("Loyverse Auto-Push exception for '{" . $product->name . "}': " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Delete or archive a product in Loyverse when removed from the website catalog.
+     */
+    public function deleteProductFromLoyverse(Product $product): bool
+    {
+        if (empty($this->token) || empty($product->loyverse_item_id)) {
+            return false;
+        }
+
+        try {
+            $res = Http::withHeaders($this->headers())->delete("{" . $this->apiUrl . "}/items/{" . $product->loyverse_item_id . "}");
+            $this->cachedItems = null;
+            return $res->successful();
+        } catch (\Exception $e) {
+            Log::warning("Could not delete product '{" . $product->name . "}' from Loyverse: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Pulls and imports new or updated products from Loyverse into the website catalog.
+     * Raw ingredients are automatically excluded.
+     */
+    public function pullItemsFromLoyverse(bool $forceFresh = false): array
+    {
+        if (empty($this->token)) {
+            return ['created' => [], 'updated' => [], 'created_count' => 0, 'updated_count' => 0, 'skipped_count' => 0];
+        }
+
+        $loyverseItems = $this->getItems(250, $forceFresh);
+        $categories = collect($this->getCategories($forceFresh))->keyBy('id');
+
+        // Identify raw ingredient IDs, variant IDs, and names to avoid importing them as sellable products
+        $rawIngredientItemIds = Ingredient::whereNotNull('loyverse_item_id')->pluck('loyverse_item_id')->all();
+        $rawIngredientVariantIds = Ingredient::whereNotNull('loyverse_variant_id')->pluck('loyverse_variant_id')->all();
+        $rawIngredientNames = Ingredient::pluck('name')->map(fn($n) => strtolower(trim($n)))->all();
+
+        // Also identify 'Raw Ingredients' category ID in Loyverse
+        $rawCategory = $categories->first(function ($c) {
+            return strcasecmp(trim($c['name'] ?? ''), 'Raw Ingredients') === 0;
+        });
+        $rawCategoryId = $rawCategory['id'] ?? null;
+
+        $created = [];
+        $updated = [];
+        $skipped = 0;
+
+        foreach ($loyverseItems as $item) {
+            // Skip deleted items
+            if (!empty($item['deleted_at'])) {
+                $skipped++;
+                continue;
+            }
+
+            // Skip raw ingredients category
+            if ($rawCategoryId && ($item['category_id'] ?? null) === $rawCategoryId) {
+                $skipped++;
+                continue;
+            }
+
+            // Skip if this item or variant is tracked as a raw ingredient
+            if (in_array($item['id'], $rawIngredientItemIds)) {
+                $skipped++;
+                continue;
+            }
+
+            if (in_array(strtolower(trim($item['item_name'] ?? '')), $rawIngredientNames)) {
+                $skipped++;
+                continue;
+            }
+
+            $primaryVariant = $item['variants'][0] ?? null;
+            if ($primaryVariant && in_array($primaryVariant['variant_id'] ?? '', $rawIngredientVariantIds)) {
+                $skipped++;
+                continue;
+            }
+
+            // Determine price
+            $price = (float) ($primaryVariant['default_price'] ?? 0);
+            if (!empty($primaryVariant['stores'])) {
+                $effStoreId = $this->getEffectiveStoreId();
+                foreach ($primaryVariant['stores'] as $st) {
+                    if (($st['store_id'] ?? '') === $effStoreId && isset($st['price'])) {
+                        $price = (float) $st['price'];
+                        break;
+                    }
+                }
+            }
+
+            // Determine category
+            $catId = $item['category_id'] ?? null;
+            $catName = ($catId && isset($categories[$catId])) ? $categories[$catId]['name'] : 'Specialties';
+
+            $sku = $primaryVariant['sku'] ?? null;
+
+            // Match product in website DB
+            $product = Product::where('loyverse_item_id', $item['id'])->first();
+            if (!$product && !empty($sku)) {
+                $product = Product::where('id', $sku)->first();
+            }
+            if (!$product) {
+                $product = Product::whereRaw('LOWER(name) = ?', [strtolower(trim($item['item_name']))])->first();
+            }
+
+            if ($product) {
+                // Update product details
+                $changed = false;
+                if ($product->loyverse_item_id !== $item['id']) {
+                    $product->loyverse_item_id = $item['id'];
+                    $changed = true;
+                }
+                if ($primaryVariant && $product->loyverse_variant_id !== ($primaryVariant['variant_id'] ?? null)) {
+                    $product->loyverse_variant_id = $primaryVariant['variant_id'] ?? null;
+                    $changed = true;
+                }
+                if (strcasecmp(trim($product->name), trim($item['item_name'])) !== 0) {
+                    $product->name = trim($item['item_name']);
+                    $changed = true;
+                }
+                if ($price > 0 && abs((float)$product->price - $price) > 0.01) {
+                    $product->price = $price;
+                    $changed = true;
+                }
+                if ($changed) {
+                    $product->saveQuietly();
+                    $updated[] = $product->name;
+                }
+            } else {
+                // Create brand new product!
+                $baseId = !empty($sku) ? preg_replace('/[^a-zA-Z0-9_\-]/', '', strtolower($sku)) : '';
+                if (empty($baseId)) {
+                    $baseId = \Illuminate\Support\Str::slug($item['item_name']);
+                }
+                if (empty($baseId)) {
+                    $baseId = 'prod-' . substr(md5($item['id']), 0, 8);
+                }
+
+                $newId = $baseId;
+                $c = 1;
+                while (Product::where('id', $newId)->exists()) {
+                    $newId = "{" . $baseId . "}-{" . $c . "}";
+                    $c++;
+                }
+
+                $emoji = $this->detectEmoji($item['item_name'], $catName);
+
+                $newProduct = Product::create([
+                    'id' => $newId,
+                    'name' => trim($item['item_name']),
+                    'category' => $catName,
+                    'price' => $price,
+                    'description' => $item['description'] ?? ("Freshly prepared " . $item['item_name'] . "."),
+                    'emoji' => $emoji,
+                    'image' => '/assets/hero-banner.png',
+                    'is_available' => true,
+                    'loyverse_item_id' => $item['id'],
+                    'loyverse_variant_id' => $primaryVariant['variant_id'] ?? null,
+                ]);
+
+                AuditLog::create([
+                    'user_name' => 'Loyverse Auto-Sync',
+                    'user_role' => 'system',
+                    'action' => 'Product Auto-Imported',
+                    'details' => "Auto-imported new menu item '" . $newProduct->name . "' (₱" . $newProduct->price . ") under category '" . $newProduct->category . "' from Loyverse POS.",
+                    'ip_address' => request()->ip() ?? '127.0.0.1',
+                ]);
+
+                $created[] = $newProduct->name;
+            }
+        }
+
+        if (!empty($created) || !empty($updated)) {
+            Cache::forget('products_catalog_default');
+        }
+
+        return [
+            'created' => $created,
+            'updated' => $updated,
+            'created_count' => count($created),
+            'updated_count' => count($updated),
+            'skipped_count' => $skipped
+        ];
+    }
+
+    /**
+     * Choose an appropriate emoji based on food/drink name and category.
+     */
+    public function detectEmoji(string $name, string $category = ''): string
+    {
+        $text = strtolower($name . ' ' . $category);
+        if (str_contains($text, 'boba') || str_contains($text, 'milk tea') || str_contains($text, 'milktea')) {
+            return '🧋';
+        }
+        if (str_contains($text, 'coffee') || str_contains($text, 'espresso') || str_contains($text, 'latte') || str_contains($text, 'macchiato') || str_contains($text, 'cappuccino')) {
+            return '☕';
+        }
+        if (str_contains($text, 'matcha') || str_contains($text, 'tea') || str_contains($text, 'green tea')) {
+            return '🍵';
+        }
+        if (str_contains($text, 'pizza')) {
+            return '🍕';
+        }
+        if (str_contains($text, 'burger')) {
+            return '🍔';
+        }
+        if (str_contains($text, 'fries') || str_contains($text, 'potato')) {
+            return '🍟';
+        }
+        if (str_contains($text, 'chicken') || str_contains($text, 'wing')) {
+            return '🍗';
+        }
+        if (str_contains($text, 'rice') || str_contains($text, 'meal') || str_contains($text, 'bowl')) {
+            return '🍱';
+        }
+        if (str_contains($text, 'dessert') || str_contains($text, 'cake') || str_contains($text, 'halo') || str_contains($text, 'sweet')) {
+            return '🍧';
+        }
+        if (str_contains($text, 'shake') || str_contains($text, 'smoothie') || str_contains($text, 'juice')) {
+            return '🥤';
+        }
+        return '🍽️';
+    }
+
+    /**
      * ==============================================================
      * INVENTORY LEVELS: PULL FROM LOYVERSE (Loyverse -> Website)
      * ==============================================================
@@ -1152,7 +1477,7 @@ class LoyverseService
     public function registerAllWebhooks(string $webhookUrl): array
     {
         $results = [];
-        $types = ['receipts.update', 'inventory_levels.update'];
+        $types = ['receipts.update', 'inventory_levels.update', 'items.update'];
 
         foreach ($types as $type) {
             try {
@@ -1177,6 +1502,16 @@ class LoyverseService
     public function processWebhookPayload(array $payload): array
     {
         $type = $payload['type'] ?? null;
+
+        // 0. Items Update Webhook (Real-time Loyverse item added / modified)
+        if ($type === 'items.update' || isset($payload['items'])) {
+            $pullRes = $this->pullItemsFromLoyverse(true);
+            return [
+                'type' => 'items.update',
+                'status' => 'processed',
+                'results' => $pullRes
+            ];
+        }
 
         // 1. Inventory Level Update Webhook (from Purchase orders, Stock Adjustments, Inventory Counts)
         if ($type === 'inventory_levels.update' || isset($payload['inventory_levels'])) {

@@ -33,6 +33,29 @@ class SyncLoyverseReceipts extends Command
                 }
             }
 
+            // 2. Auto-pull inventory levels from Loyverse (PO receipts & counts)
+            try {
+                $invRes = $loyverse->pullInventoryFromLoyverse();
+                if (!empty($invRes['updated_count'])) {
+                    $this->info("Stock levels updated for {$invRes['updated_count']} ingredient(s).");
+                }
+            } catch (\Exception $e) {
+                // Non-blocking
+            }
+
+            // 3. Auto-pull new or updated menu items from Loyverse into website catalog
+            try {
+                $itemsRes = $loyverse->pullItemsFromLoyverse();
+                if (!empty($itemsRes['created_count'])) {
+                    $this->info("Auto-imported {$itemsRes['created_count']} new menu item(s) from Loyverse: " . implode(', ', $itemsRes['created']));
+                }
+                if (!empty($itemsRes['updated_count'])) {
+                    $this->info("Updated {$itemsRes['updated_count']} menu item(s) from Loyverse: " . implode(', ', $itemsRes['updated']));
+                }
+            } catch (\Exception $e) {
+                // Non-blocking
+            }
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $this->error('Loyverse sync failed: ' . $e->getMessage());

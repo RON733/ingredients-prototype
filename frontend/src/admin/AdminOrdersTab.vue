@@ -13,14 +13,10 @@
         </div>
 
         <div class="flex items-center gap-2.5 flex-wrap">
-          <button 
-            @click="handleSyncLoyverse"
-            :disabled="isSyncingLoyverse"
-            class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-            title="Sync latest sales and receipts from Loyverse POS tablet">
-            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner text-amber-400' : 'pi-sync text-emerald-400'"></i>
-            <span>{{ isSyncingLoyverse ? 'Syncing...' : 'Sync Loyverse' }}</span>
-          </button>
+          <div class="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2" title="Loyverse POS sales automatically sync every minute in the background">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="hidden sm:inline">POS Auto-Sync Active</span>
+          </div>
 
           <button 
             v-if="store.isAdminOrSuper"

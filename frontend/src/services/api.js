@@ -174,6 +174,7 @@ export const GST_API = {
   exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu', {}, { timeout: 120000 }),
   exportIngredientsToLoyverse: () => apiClient.post('/loyverse/export-ingredients', {}, { timeout: 120000 }),
   pullLoyverseInventory: () => apiClient.post('/loyverse/pull-inventory', {}, { timeout: 60000 }),
+  pullLoyverseItems: (params) => apiClient.post('/loyverse/pull-items', params || {}, { timeout: 60000 }),
   pushLoyverseInventory: (data) => apiClient.post('/loyverse/push-inventory', data || {}, { timeout: 60000 }),
   fullLoyverseSync: (data) => apiClient.post('/loyverse/full-sync', data || {}, { timeout: 180000 }),
   getLoyverseSuppliers: () => apiClient.get('/loyverse/suppliers'),

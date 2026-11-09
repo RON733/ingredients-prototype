@@ -84,16 +84,11 @@
             </button>
           </div>
 
-          <!-- Sync Loyverse POS Sales Button -->
-          <button 
-            @click="syncLoyverseAndReload"
-            :disabled="isSyncing"
-            class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-xs font-bold border border-surface-700 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            :class="isSyncing ? 'text-amber-400' : 'text-emerald-400 hover:text-white'"
-            title="Pull and sync the latest in-store sales from Loyverse POS tablet/phone">
-            <i class="pi" :class="isSyncing ? 'pi-spin pi-spinner' : 'pi-sync'"></i>
-            <span>{{ isSyncing ? 'Syncing...' : 'Sync POS' }}</span>
-          </button>
+          <!-- Loyverse POS Live Indicator -->
+          <div class="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1.5" title="POS sales automatically synchronize every minute in the background">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>POS Auto-Sync Active</span>
+          </div>
 
           <!-- Refresh Button -->
           <button 

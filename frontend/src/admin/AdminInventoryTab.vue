@@ -14,32 +14,10 @@
         </div>
 
         <div class="flex items-center gap-2.5 flex-wrap">
-          <button 
-            @click="handleFullAdvancedSync"
-            :disabled="isFullSyncingLoyverse"
-            class="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-            title="Full synchronization: exports all ingredients, composite recipes, and stocks to Loyverse">
-            <i class="pi" :class="isFullSyncingLoyverse ? 'pi-spin pi-spinner' : 'pi-cloud-upload'"></i>
-            <span>{{ isFullSyncingLoyverse ? 'Syncing All...' : 'Full Loyverse Sync' }}</span>
-          </button>
-
-          <button 
-            @click="handlePullLoyverseInventory"
-            :disabled="isPullingLoyverse"
-            class="px-3 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-            title="Pull latest stock counts & purchase orders from Loyverse Back Office into the website">
-            <i class="pi" :class="isPullingLoyverse ? 'pi-spin pi-spinner text-sky-400' : 'pi-download text-sky-400'"></i>
-            <span>{{ isPullingLoyverse ? 'Pulling...' : 'Pull Stock' }}</span>
-          </button>
-
-          <button 
-            @click="handleSyncLoyverse"
-            :disabled="isSyncingLoyverse"
-            class="px-3 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-            title="Sync latest POS sales and deduct raw ingredients">
-            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner text-amber-400' : 'pi-sync text-emerald-400'"></i>
-            <span>{{ isSyncingLoyverse ? 'Syncing...' : 'Sync POS Sales' }}</span>
-          </button>
+          <div class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2" title="Loyverse POS & Kitchen Inventory are automatically synchronized in real time">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Loyverse Auto-Sync Active</span>
+          </div>
 
           <button 
             @click="openAddModal"

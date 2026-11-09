@@ -62,6 +62,7 @@ Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
 Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
 Route::post('/loyverse/export-ingredients', [LoyverseController::class, 'exportIngredients']);
 Route::post('/loyverse/pull-inventory', [LoyverseController::class, 'pullInventory']);
+Route::post('/loyverse/pull-items', [LoyverseController::class, 'pullItems']);
 Route::post('/loyverse/push-inventory', [LoyverseController::class, 'pushInventory']);
 Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
 Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);
@@ -168,6 +169,7 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
     Route::post('/loyverse/export-ingredients', [LoyverseController::class, 'exportIngredients']);
     Route::post('/loyverse/pull-inventory', [LoyverseController::class, 'pullInventory']);
+Route::post('/loyverse/pull-items', [LoyverseController::class, 'pullItems']);
     Route::post('/loyverse/push-inventory', [LoyverseController::class, 'pushInventory']);
     Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
     Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);

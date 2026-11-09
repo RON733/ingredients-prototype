@@ -1463,6 +1463,28 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
+        async pullLoyverseItems() {
+      this.loading = true;
+      try {
+        const res = await GST_API.pullLoyverseItems();
+        const created = res.data?.results?.created_count ?? 0;
+        const updated = res.data?.results?.updated_count ?? 0;
+        await this.fetchProducts();
+        if (created > 0 || updated > 0) {
+          this.notify(`Imported ${created} new and updated ${updated} item(s) from Loyverse POS!`, 'success');
+        } else {
+          this.notify('Website menu is already in sync with Loyverse POS.', 'info');
+        }
+        return res.data;
+      } catch (err) {
+        console.error('Loyverse pull items failed:', err);
+        this.notify(err.response?.data?.message || 'Failed to pull menu items from Loyverse.', 'error');
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async pullLoyverseInventory() {
       this.loading = true;
       try {
