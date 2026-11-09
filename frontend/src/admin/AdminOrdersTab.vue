@@ -642,6 +642,34 @@ export default {
     const ordersProofLightbox = Vue.ref(null);
     const isSyncingLoyverse = Vue.ref(false);
 
+    // Quick Order Availability Notice Modal State (Staff, Admin, Super Admin)
+    const showAreaNoteModal = Vue.ref(false);
+    const editAreaNoteText = Vue.ref(store.orderAreaNote || 'Orders are only available in Santa Rosa bayan.');
+    const editAreaNoteEnabled = Vue.ref(store.isOrderAreaNoteEnabled);
+    const isSavingQuickAreaNote = Vue.ref(false);
+
+    const openAreaNoteModal = () => {
+      editAreaNoteText.value = store.orderAreaNote || 'Orders are only available in Santa Rosa bayan.';
+      editAreaNoteEnabled.value = store.isOrderAreaNoteEnabled;
+      showAreaNoteModal.value = true;
+    };
+
+    const saveQuickAreaNote = async () => {
+      if (!editAreaNoteText.value.trim()) {
+        store.notify('Please provide notice text.', 'error');
+        return;
+      }
+      isSavingQuickAreaNote.value = true;
+      try {
+        await store.updateOrderAreaNote(editAreaNoteText.value.trim(), editAreaNoteEnabled.value);
+        showAreaNoteModal.value = false;
+      } catch (err) {
+        // Handled by store
+      } finally {
+        isSavingQuickAreaNote.value = false;
+      }
+    };
+
     const handleSyncLoyverse = async () => {
       isSyncingLoyverse.value = true;
       try {
@@ -751,6 +779,12 @@ export default {
       ordersProofLightbox,
       pendingRiderNotices,
       handleAcceptNotice,
+      showAreaNoteModal,
+      editAreaNoteText,
+      editAreaNoteEnabled,
+      isSavingQuickAreaNote,
+      openAreaNoteModal,
+      saveQuickAreaNote,
     };
   },
 };

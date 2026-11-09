@@ -31,6 +31,14 @@
           </button>
         </div>
 
+        <!-- Order Area Notice Strip (Editable by Staff, Admin, Super Admin) -->
+        <div 
+          v-if="store.isOrderAreaNoteEnabled && store.orderAreaNote" 
+          class="px-5 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2 text-xs text-amber-300">
+          <i class="pi pi-map-marker text-amber-400 shrink-0 text-xs"></i>
+          <span class="text-[11px] font-semibold leading-snug">{{ store.orderAreaNote }}</span>
+        </div>
+
         <!-- Cart Items List -->
         <div class="flex-1 overflow-y-auto p-6 space-y-4">
           <div v-if="store.cart.length === 0" class="h-full flex flex-col items-center justify-center text-center py-12">

@@ -35,6 +35,12 @@ class SystemController extends Controller
             if (!isset($s['maintenance_until'])) {
                 $s['maintenance_until'] = '';
             }
+            if (!isset($s['order_area_note'])) {
+                $s['order_area_note'] = 'Orders are only available in Santa Rosa bayan.';
+            }
+            if (!isset($s['order_area_note_enabled'])) {
+                $s['order_area_note_enabled'] = 'true';
+            }
             return $s;
         });
         return response()->json($settings);
@@ -109,6 +115,10 @@ class SystemController extends Controller
             $details = $isAvail 
                 ? 'GCash online payment option enabled for customer checkout.' 
                 : 'GCash online payment flagged unavailable. Customers restricted to Cash on Delivery / Counter.';
+        } elseif (isset($data['order_area_note']) || isset($data['order_area_note_enabled'])) {
+            $action = 'Order Area Notice Updated';
+            $noteText = $data['order_area_note'] ?? 'Santa Rosa Bayan notice';
+            $details = 'Updated customer order availability note: ' . $noteText;
         } elseif (isset($data['gcash_account_number']) || isset($data['gcash_qr_code'])) {
             $num = $data['gcash_account_number'] ?? 'unchanged';
             $details = "Updated GCash payment settings: Mobile No. {$num}, QR code updated.";
@@ -146,6 +156,12 @@ class SystemController extends Controller
             }
             if (!isset($s['maintenance_until'])) {
                 $s['maintenance_until'] = '';
+            }
+            if (!isset($s['order_area_note'])) {
+                $s['order_area_note'] = 'Orders are only available in Santa Rosa bayan.';
+            }
+            if (!isset($s['order_area_note_enabled'])) {
+                $s['order_area_note_enabled'] = 'true';
             }
             return $s;
         });
@@ -544,5 +560,6 @@ class SystemController extends Controller
         return response()->json($results);
     }
 }
+
 
 

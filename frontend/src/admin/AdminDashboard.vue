@@ -155,7 +155,7 @@
         </button>
 
         <button 
-          v-if="store.isAdminOrSuper"
+          v-if="store.isStaffOrAdmin"
           @click="selectTab('settings')" 
           class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
           :class="store.adminTab === 'settings' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
@@ -392,9 +392,9 @@
                 </div>
               </button>
 
-              <!-- Store & GCash Payment Settings (Admin & Super Admin Exclusive) -->
+              <!-- Store & GCash Payment Settings (Staff, Admin, Super Admin) -->
               <button 
-                v-if="store.isAdminOrSuper"
+                v-if="store.isStaffOrAdmin"
                 @click="selectTab('settings')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'settings' 
@@ -1053,10 +1053,13 @@ export default {
 
     const mobileNavOpen = ref(false);
     const selectTab = (tab) => {
-      if ((tab === 'users' || tab === 'settings' || tab === 'recipes' || tab === 'analytics') && !store.isAdminOrSuper) {
+      if ((tab === 'users' || tab === 'recipes' || tab === 'analytics') && !store.isAdminOrSuper) {
         return;
       }
       if (tab === 'audit' && !store.isSuperAdmin) {
+        return;
+      }
+      if (tab === 'settings' && !store.isStaffOrAdmin) {
         return;
       }
       store.adminTab = tab;
@@ -1139,7 +1142,7 @@ export default {
         case 'announcements': return 'AdminAnnouncementsTab';
         case 'users': return store.isAdminOrSuper ? 'AdminUsersTab' : 'AdminOrdersTab';
         case 'audit': return store.isSuperAdmin ? 'AdminAuditTab' : 'AdminOrdersTab';
-        case 'settings': return store.isAdminOrSuper ? 'AdminSettingsTab' : 'AdminOrdersTab';
+        case 'settings': return store.isStaffOrAdmin ? 'AdminSettingsTab' : 'AdminOrdersTab';
         default: return 'AdminOrdersTab';
       }
     });
@@ -1148,7 +1151,7 @@ export default {
     watch(
       () => [store.user?.role, store.adminTab],
       ([role, tab]) => {
-        if (role === 'staff' && ['users', 'audit', 'settings', 'recipes', 'analytics'].includes(tab)) {
+        if (role === 'staff' && ['users', 'audit', 'recipes', 'analytics'].includes(tab)) {
           store.adminTab = 'orders';
         }
       },

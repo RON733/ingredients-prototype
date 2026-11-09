@@ -42,6 +42,24 @@
     </p>
   </div>
 
+  <!-- Order Availability Note Banner (Editable by Staff, Admin, Super Admin) -->
+  <div 
+    v-if="store.isOrderAreaNoteEnabled && store.orderAreaNote" 
+    class="p-3.5 sm:p-4 rounded-2xl bg-surface-900/90 border border-amber-500/30 text-amber-200 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-lg mb-6 animate-fade-in backdrop-blur-md">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-sm shrink-0">
+        <i class="pi pi-map-marker"></i>
+      </div>
+      <div class="min-w-0">
+        <p class="font-extrabold text-amber-300 text-[11px] sm:text-xs uppercase tracking-wider">Service Coverage Notice</p>
+        <p class="text-xs sm:text-sm text-gray-200 font-medium truncate sm:whitespace-normal">{{ store.orderAreaNote }}</p>
+      </div>
+    </div>
+    <span class="hidden md:inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+      Coverage Notice
+    </span>
+  </div>
+
   <!-- 3. COMPREHENSIVE FILTER SYSTEM (Search, Categories, Stock & Price Filters) -->
   <div class="space-y-3 mb-6">
     

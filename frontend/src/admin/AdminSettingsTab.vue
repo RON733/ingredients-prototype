@@ -355,6 +355,168 @@
 
       </div>
 
+      <!-- MAIN SECTION: Customer Order Availability & Area Notice (Staff, Admin, Super Admin) -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-amber-500/30 shadow-2xl relative overflow-hidden space-y-6">
+        
+        <!-- Ambient subtle accent glow -->
+        <div class="absolute -top-24 right-0 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Section Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-surface-800">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black text-xl shadow-md shrink-0">
+              <i class="pi pi-map-marker"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-black text-white flex items-center gap-2 flex-wrap">
+                <span>Customer Order Availability & Area Notice</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  Customer & Checkout Banner
+                </span>
+              </h3>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Configure the coverage note visible to customers on the landing page, menu, and checkout page.
+              </p>
+            </div>
+          </div>
+
+          <!-- Badges & Role permissions -->
+          <div class="flex items-center gap-2 flex-wrap shrink-0">
+            <span v-if="areaNoteForm.order_area_note_enabled" class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Notice Active</span>
+            </span>
+            <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-surface-800 text-gray-400 border border-surface-700 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+              <span>Notice Hidden</span>
+            </span>
+
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
+              <i class="pi pi-users text-[10px] mr-1"></i>Staff, Admin & Super Admin
+            </span>
+          </div>
+        </div>
+
+        <!-- Toggle Row -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-surface-950/70 border border-surface-800">
+          <div class="space-y-0.5">
+            <h4 class="text-sm font-extrabold text-white flex items-center gap-2">
+              <i class="pi pi-eye text-amber-400"></i>
+              <span>Display Notice on Storefront & Checkout</span>
+            </h4>
+            <p class="text-xs text-gray-400">
+              When enabled, a prominent notice alert is displayed on the Customer landing page, menu view, and checkout page.
+            </p>
+          </div>
+
+          <label class="relative inline-flex items-center cursor-pointer shrink-0">
+            <input 
+              type="checkbox" 
+              v-model="areaNoteForm.order_area_note_enabled" 
+              class="sr-only peer"
+            />
+            <div class="w-12 h-6 bg-surface-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+            <span class="ml-3 text-xs font-bold text-gray-300">
+              {{ areaNoteForm.order_area_note_enabled ? 'Active' : 'Disabled' }}
+            </span>
+          </label>
+        </div>
+
+        <!-- Note Text Input & Quick Presets -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
+              Notice Text Message <span class="text-amber-400">*</span>
+            </label>
+            <span class="text-[11px] text-gray-500 font-mono">
+              {{ areaNoteForm.order_area_note.length }} chars
+            </span>
+          </div>
+
+          <textarea 
+            v-model="areaNoteForm.order_area_note" 
+            rows="2" 
+            placeholder="Orders are only available in Santa Rosa bayan."
+            class="w-full px-4 py-3 rounded-2xl bg-surface-950 border border-surface-700 text-sm text-white focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-all font-medium resize-none shadow-inner"
+          ></textarea>
+
+          <!-- Quick Presets -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Quick Presets:</span>
+            <button 
+              type="button"
+              @click="setPresetNote('Orders are only available in Santa Rosa bayan.')"
+              class="px-2.5 py-1 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 hover:text-white border border-surface-700 text-xs font-medium transition-all cursor-pointer">
+              Orders are only available in Santa Rosa bayan.
+            </button>
+            <button 
+              type="button"
+              @click="setPresetNote('Orders are strictly available within Santa Rosa Bayan only.')"
+              class="px-2.5 py-1 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 hover:text-white border border-surface-700 text-xs font-medium transition-all cursor-pointer">
+              Orders are strictly available within Santa Rosa Bayan only.
+            </button>
+            <button 
+              type="button"
+              @click="setPresetNote('Delivery orders are available in Santa Rosa Bayan and nearby subdivisions.')"
+              class="px-2.5 py-1 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 hover:text-white border border-surface-700 text-xs font-medium transition-all cursor-pointer">
+              Santa Rosa Bayan & nearby subdivisions
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Customer Preview Box -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-surface-950 border border-surface-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+              <i class="pi pi-desktop text-amber-400"></i>
+              <span>Live Customer Storefront & Checkout Preview</span>
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-surface-800 text-gray-400 border border-surface-700">Real-time</span>
+          </div>
+
+          <!-- Preview on Customer Page -->
+          <div class="space-y-2">
+            <p class="text-[10px] uppercase font-bold text-gray-500">How it looks on Customer Landing & Menu:</p>
+            <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-semibold backdrop-blur-md">
+              <span class="flex h-2 w-2 relative shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <i class="pi pi-map-marker text-amber-400 text-xs"></i>
+              <span>{{ areaNoteForm.order_area_note || 'Orders are only available in Santa Rosa bayan.' }}</span>
+            </div>
+          </div>
+
+          <!-- Preview on Checkout Page -->
+          <div class="space-y-2 pt-2 border-t border-surface-800">
+            <p class="text-[10px] uppercase font-bold text-gray-500">How it looks on Checkout Page:</p>
+            <div class="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-xs text-amber-200 flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-amber-400 text-black flex items-center justify-center text-sm font-black shrink-0">
+                <i class="pi pi-map-marker"></i>
+              </div>
+              <div>
+                <p class="text-[10px] font-black uppercase text-amber-300">Order Availability Notice</p>
+                <p class="text-sm font-bold text-white mt-0.5">{{ areaNoteForm.order_area_note || 'Orders are only available in Santa Rosa bayan.' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="pt-2 flex items-center gap-3">
+          <button 
+            type="button"
+            @click="saveAreaNoteSettings"
+            :disabled="isSavingAreaNote"
+            class="px-6 py-3 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50">
+            <i v-if="isSavingAreaNote" class="pi pi-spin pi-spinner"></i>
+            <i v-else class="pi pi-save"></i>
+            <span>Save Order Availability Notice</span>
+          </button>
+        </div>
+
+      </div>
+
       <!-- MAIN SECTION 2: General Store & Operations Settings -->
       <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-750 shadow-xl space-y-6">
         
@@ -892,6 +1054,36 @@ export default {
       gcash_available: store.isGcashAvailable,
     });
 
+    // Customer order availability & area note form state (Staff, Admin, Super Admin)
+    const isSavingAreaNote = Vue.ref(false);
+    const areaNoteForm = Vue.reactive({
+      order_area_note: store.orderAreaNote || 'Orders are only available in Santa Rosa bayan.',
+      order_area_note_enabled: store.isOrderAreaNoteEnabled,
+    });
+
+    const setPresetNote = (text) => {
+      areaNoteForm.order_area_note = text;
+    };
+
+    const saveAreaNoteSettings = async () => {
+      if (!areaNoteForm.order_area_note.trim()) {
+        store.notify('Please enter notice text or turn off the notice toggle.', 'error');
+        return;
+      }
+      isSavingAreaNote.value = true;
+      try {
+        await store.updateStoreSettings({
+          order_area_note: areaNoteForm.order_area_note.trim(),
+          order_area_note_enabled: areaNoteForm.order_area_note_enabled ? 'true' : 'false',
+        });
+        store.notify('Customer order availability notice saved and live on customer & checkout pages!', 'success');
+      } catch (err) {
+        // Handled by store
+      } finally {
+        isSavingAreaNote.value = false;
+      }
+    };
+
     // General store settings form state
     const storeForm = Vue.reactive({
       store_name: store.settings?.store_name || 'G Shot Teas',
@@ -920,6 +1112,11 @@ export default {
         if (newSettings.store_email !== undefined) storeForm.store_email = newSettings.store_email;
         if (newSettings.delivery_fee !== undefined) storeForm.delivery_fee = newSettings.delivery_fee;
         if (newSettings.business_hours !== undefined) storeForm.business_hours = newSettings.business_hours;
+
+        if (newSettings.order_area_note !== undefined) areaNoteForm.order_area_note = newSettings.order_area_note;
+        if (newSettings.order_area_note_enabled !== undefined) {
+          areaNoteForm.order_area_note_enabled = newSettings.order_area_note_enabled === 'true' || newSettings.order_area_note_enabled === true;
+        }
 
         maintForm.maintenance_mode = store.isMaintenanceMode;
         maintForm.maintenance_title = store.maintenanceTitle;
@@ -1078,6 +1275,8 @@ export default {
           store_email: storeForm.store_email.trim(),
           delivery_fee: storeForm.delivery_fee,
           business_hours: storeForm.business_hours.trim(),
+          order_area_note: areaNoteForm.order_area_note.trim(),
+          order_area_note_enabled: areaNoteForm.order_area_note_enabled ? 'true' : 'false',
         });
       } finally {
         isSavingStore.value = false;
@@ -1225,6 +1424,10 @@ export default {
       resetToDefaultQr,
       saveGcashSettings,
       saveGeneralSettings,
+      areaNoteForm,
+      isSavingAreaNote,
+      setPresetNote,
+      saveAreaNoteSettings,
       reloadSettings,
       loyverseConnected,
       isSyncingLoyverse,

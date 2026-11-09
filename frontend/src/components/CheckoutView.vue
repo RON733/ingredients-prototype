@@ -12,6 +12,26 @@
         <span class="text-xs font-mono text-gray-500">Secure 256-bit Encrypted Checkout</span>
       </div>
 
+      <!-- Order Availability Notice Banner (Editable by Staff, Admin, Super Admin) -->
+      <div 
+        v-if="store.isOrderAreaNoteEnabled && store.orderAreaNote" 
+        class="p-4 sm:p-5 rounded-3xl bg-amber-500/15 border-2 border-amber-500/40 shadow-xl flex items-start sm:items-center justify-between gap-4 animate-fade-in backdrop-blur-md">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-lg sm:text-xl font-black shrink-0 shadow-md">
+            <i class="pi pi-map-marker"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black text-amber-300 uppercase tracking-wider">Order Availability Notice</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-200 border border-amber-400/30">Coverage</span>
+            </div>
+            <p class="text-sm sm:text-base font-bold text-white mt-1">
+              {{ store.orderAreaNote }}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Main Checkout Layout Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
@@ -121,6 +141,14 @@
               <span v-if="form.customer_lat && form.customer_lng" class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
                 <i class="pi pi-check-circle"></i> Pinned ({{ Number(form.customer_lat).toFixed(4) }}, {{ Number(form.customer_lng).toFixed(4) }})
               </span>
+            </div>
+
+            <!-- Delivery Area Notice Reminder -->
+            <div 
+              v-if="store.isOrderAreaNoteEnabled && store.orderAreaNote" 
+              class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2.5 text-xs text-amber-200 mb-2">
+              <i class="pi pi-info-circle text-amber-400 text-sm shrink-0"></i>
+              <span class="font-medium"><strong>Delivery Notice:</strong> {{ store.orderAreaNote }}</span>
             </div>
 
             <textarea 

@@ -480,6 +480,8 @@ class DatabaseSeeder extends Seeder
             'gcash_account_name' => 'Jefferson A.',
             'gcash_account_number' => '0912 345 6789',
             'store_open' => 'true',
+            'order_area_note' => 'Orders are only available in Santa Rosa bayan.',
+            'order_area_note_enabled' => 'true',
             'announcement' => 'Welcome to G Shot Teas! Free delivery on orders over ₱500.',
         ];
         foreach ($settings as $k => $v) {

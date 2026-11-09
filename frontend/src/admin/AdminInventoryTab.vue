@@ -149,9 +149,14 @@
             v-for="cat in ['All', 'Bakery', 'Meat', 'Dairy', 'Produce']" 
             :key="cat"
             @click="selectedCategory = cat"
-            class="px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap"
+            class="px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer"
             :class="selectedCategory === cat ? 'bg-amber-500 text-surface-950 font-black shadow-md' : 'bg-surface-800 text-gray-400 hover:text-white border border-surface-700/60'">
-            {{ cat }}
+            <span>{{ cat }}</span>
+            <span 
+              class="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+              :class="selectedCategory === cat ? 'bg-black/20 text-surface-950' : 'bg-surface-700/80 text-gray-300'">
+              {{ getCategoryCount(cat) }}
+            </span>
           </button>
         </div>
 
@@ -186,7 +191,7 @@
             </thead>
             <tbody class="divide-y divide-surface-700/50">
               <tr 
-                v-for="ing in filteredIngredients" 
+                v-for="ing in paginatedIngredients" 
                 :key="ing.id"
                 class="hover:bg-surface-700/30 transition-colors">
                 
@@ -311,8 +316,79 @@
                 </td>
 
               </tr>
+
+              <!-- Empty State -->
+              <tr v-if="paginatedIngredients.length === 0">
+                <td colspan="10" class="px-6 py-12 text-center text-gray-500">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <i class="pi pi-box text-3xl text-gray-600"></i>
+                    <p class="font-bold text-gray-400 text-sm">No raw ingredients found</p>
+                    <p class="text-xs text-gray-500">Try selecting another category or clearing your search filter.</p>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination & Footer Strip -->
+        <div class="px-6 py-4 bg-surface-900/90 border-t border-surface-700/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+          <div class="flex flex-wrap items-center gap-3 text-gray-400">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-box text-xs text-amber-400"></i>
+              <span v-if="filteredIngredients.length > 0">
+                Showing <strong class="text-white">{{ (currentPage - 1) * pageSize + 1 }}</strong> to <strong class="text-white">{{ Math.min(currentPage * pageSize, filteredIngredients.length) }}</strong> of <strong class="text-white">{{ filteredIngredients.length }}</strong> ingredients
+              </span>
+              <span v-else>No ingredients to display</span>
+            </div>
+
+            <!-- Items Per Page Selector -->
+            <div v-if="filteredIngredients.length > 0" class="flex items-center gap-1.5 sm:pl-3 sm:border-l sm:border-surface-700/60">
+              <span class="text-gray-400">Per page:</span>
+              <select 
+                v-model.number="pageSize" 
+                class="bg-surface-800 text-white rounded-lg px-2 py-1 border border-surface-700 focus:outline-none focus:border-amber-500 font-bold text-xs cursor-pointer">
+                <option :value="6">6</option>
+                <option :value="8">8</option>
+                <option :value="10">10</option>
+                <option :value="15">15</option>
+                <option :value="25">25</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div v-if="totalPages > 1" class="flex items-center gap-1.5 select-none">
+            <button 
+              type="button"
+              @click="prevPage" 
+              :disabled="currentPage === 1"
+              class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+              title="Previous Page">
+              <i class="pi pi-chevron-left text-[10px]"></i>
+              <span>Prev</span>
+            </button>
+
+            <button 
+              v-for="page in visiblePages" 
+              :key="page"
+              type="button"
+              @click="goToPage(page)"
+              class="w-8 h-8 rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer border"
+              :class="currentPage === page ? 'bg-amber-500/20 text-amber-300 border-amber-500 font-bold shadow-sm' : 'bg-surface-800 text-gray-300 border-surface-700 hover:bg-surface-700 hover:text-white'">
+              {{ page }}
+            </button>
+
+            <button 
+              type="button"
+              @click="nextPage" 
+              :disabled="currentPage === totalPages"
+              class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+              title="Next Page">
+              <span>Next</span>
+              <i class="pi pi-chevron-right text-[10px]"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -483,6 +559,68 @@ export default {
       return list;
     });
 
+    // Pagination State (default 8 items per page to keep the list clean and compact)
+    const currentPage = Vue.ref(1);
+    const pageSize = Vue.ref(8);
+
+    // Reset pagination to page 1 on category, search, or page size changes
+    Vue.watch([selectedCategory, searchQuery, pageSize], () => {
+      currentPage.value = 1;
+    });
+
+    const totalPages = Vue.computed(() => Math.max(1, Math.ceil(filteredIngredients.value.length / pageSize.value)));
+
+    const paginatedIngredients = Vue.computed(() => {
+      const start = (currentPage.value - 1) * pageSize.value;
+      return filteredIngredients.value.slice(start, start + pageSize.value);
+    });
+
+    Vue.watch(totalPages, (newTotal) => {
+      if (currentPage.value > newTotal) {
+        currentPage.value = Math.max(1, newTotal);
+      }
+    });
+
+    const visiblePages = Vue.computed(() => {
+      const pages = [];
+      const total = totalPages.value;
+      const cur = currentPage.value;
+
+      let start = Math.max(1, cur - 2);
+      let end = Math.min(total, start + 4);
+      if (end - start < 4) {
+        start = Math.max(1, end - 4);
+      }
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      return pages;
+    });
+
+    const prevPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--;
+      }
+    };
+
+    const nextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+      }
+    };
+
+    const goToPage = (p) => {
+      if (p >= 1 && p <= totalPages.value) {
+        currentPage.value = p;
+      }
+    };
+
+    const getCategoryCount = (cat) => {
+      if (!store.ingredients || !Array.isArray(store.ingredients)) return 0;
+      if (cat === 'All') return store.ingredients.length;
+      return store.ingredients.filter(i => i.category === cat).length;
+    };
+
     const getStatusText = (ing) => {
       if (ing.stock <= 0) return 'Depleted';
       if (ing.stock <= ing.low_threshold) return 'Low Stock';
@@ -630,6 +768,15 @@ export default {
       lowCount,
       depletedCount,
       filteredIngredients,
+      paginatedIngredients,
+      currentPage,
+      pageSize,
+      totalPages,
+      visiblePages,
+      prevPage,
+      nextPage,
+      goToPage,
+      getCategoryCount,
       getStatusText,
       getStatusBadge,
       getStatusDot,

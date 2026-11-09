@@ -307,7 +307,10 @@ const useGShotStore = defineStore('gshot', {
     ingredients: JSON.parse(JSON.stringify(DEFAULT_INGREDIENTS)),
     orders: [],
     activeOrder: null,
-    settings: {},
+    settings: {
+      order_area_note: 'Orders are only available in Santa Rosa bayan.',
+      order_area_note_enabled: 'true',
+    },
     auditLogs: [],
     usersList: [],
     bookingsList: [],
@@ -381,6 +384,14 @@ const useGShotStore = defineStore('gshot', {
     maintenanceTitle: (state) => state.settings?.maintenance_title || 'Website Under Scheduled Maintenance',
     maintenanceMessage: (state) => state.settings?.maintenance_message || 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!',
     maintenanceUntil: (state) => state.settings?.maintenance_until || '',
+
+    orderAreaNote: (state) => state.settings?.order_area_note || 'Orders are only available in Santa Rosa bayan.',
+    isOrderAreaNoteEnabled: (state) => {
+      if (state.settings && state.settings.order_area_note_enabled !== undefined && state.settings.order_area_note_enabled !== null) {
+        return state.settings.order_area_note_enabled === 'true' || state.settings.order_area_note_enabled === true || state.settings.order_area_note_enabled === '1' || state.settings.order_area_note_enabled === 1;
+      }
+      return true;
+    },
 
     isStoreOpen: (state) => {
       if (state.settings && state.settings.store_open !== undefined) {
@@ -1175,6 +1186,13 @@ const useGShotStore = defineStore('gshot', {
         this.notify(msg, 'error');
         throw err;
       }
+    },
+
+    async updateOrderAreaNote(note, enabled = true) {
+      return await this.updateStoreSettings({
+        order_area_note: note,
+        order_area_note_enabled: enabled ? 'true' : 'false',
+      });
     },
 
     async updateStoreSettings(newSettings) {

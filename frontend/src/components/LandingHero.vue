@@ -15,17 +15,34 @@
       <!-- Hero Content -->
       <div class="relative z-10 max-w-4xl mx-auto py-10 sm:py-16 animate-fade-in w-full px-2">
         
-        <!-- Category Pill Strip (Responsive wrap) -->
-        <div class="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-surface-900 border border-surface-700 text-gray-300 text-[10px] sm:text-xs font-medium tracking-wider uppercase mb-4 sm:mb-6 max-w-full">
-          <span>MILKTEA</span>
-          <span class="text-gray-600">•</span>
-          <span>COFFEE</span>
-          <span class="text-gray-600">•</span>
-          <span>PIZZA</span>
-          <span class="text-gray-600">•</span>
-          <span>BURGERS</span>
-          <span class="text-gray-600">•</span>
-          <span>RICE MEALS</span>
+        <!-- Top Badges / Info Stacks: Note Banner directly ABOVE the Category Pill Strip -->
+        <div class="flex flex-col items-center justify-center gap-3 sm:gap-3.5 mb-5 sm:mb-6">
+          
+          <!-- Order Availability Note Banner (Editable by Staff, Admin, Super Admin) -->
+          <div 
+            v-if="store.isOrderAreaNoteEnabled && store.orderAreaNote" 
+            class="inline-flex items-center gap-2.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs sm:text-sm font-semibold backdrop-blur-md shadow-lg shadow-amber-500/10 animate-fade-in max-w-full">
+            <span class="flex h-2.5 w-2.5 relative shrink-0">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+            </span>
+            <i class="pi pi-map-marker text-amber-400 text-xs sm:text-sm shrink-0"></i>
+            <span class="tracking-wide">{{ store.orderAreaNote }}</span>
+          </div>
+
+          <!-- Category Pill Strip (Responsive wrap) -->
+          <div class="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-surface-900 border border-surface-700 text-gray-300 text-[10px] sm:text-xs font-medium tracking-wider uppercase max-w-full">
+            <span>MILKTEA</span>
+            <span class="text-gray-600">•</span>
+            <span>COFFEE</span>
+            <span class="text-gray-600">•</span>
+            <span>PIZZA</span>
+            <span class="text-gray-600">•</span>
+            <span>BURGERS</span>
+            <span class="text-gray-600">•</span>
+            <span>RICE MEALS</span>
+          </div>
+
         </div>
 
         <!-- Main Headline (Satisfy Yourself) -->
