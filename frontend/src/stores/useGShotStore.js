@@ -1516,7 +1516,8 @@ const useGShotStore = defineStore('gshot', {
         return res.data;
       } catch (err) {
         console.error('Loyverse full sync failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to full sync with Loyverse.', 'error');
+        const errorMsg = err.response?.data?.message || (err.code === 'ECONNABORTED' ? 'Sync timed out. Loyverse took too long to respond.' : 'Failed to full sync with Loyverse.');
+        this.notify(errorMsg, 'error');
         throw err;
       } finally {
         this.loading = false;

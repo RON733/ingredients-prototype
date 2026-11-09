@@ -170,12 +170,12 @@ export const GST_API = {
 
   // Loyverse Advanced Inventory Integration
   getLoyverseStatus: (params) => apiClient.get('/loyverse/status', { params }),
-  syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}),
-  exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu'),
-  exportIngredientsToLoyverse: () => apiClient.post('/loyverse/export-ingredients'),
-  pullLoyverseInventory: () => apiClient.post('/loyverse/pull-inventory'),
-  pushLoyverseInventory: (data) => apiClient.post('/loyverse/push-inventory', data || {}),
-  fullLoyverseSync: (data) => apiClient.post('/loyverse/full-sync', data || {}),
+  syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}, { timeout: 60000 }),
+  exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu', {}, { timeout: 120000 }),
+  exportIngredientsToLoyverse: () => apiClient.post('/loyverse/export-ingredients', {}, { timeout: 120000 }),
+  pullLoyverseInventory: () => apiClient.post('/loyverse/pull-inventory', {}, { timeout: 60000 }),
+  pushLoyverseInventory: (data) => apiClient.post('/loyverse/push-inventory', data || {}, { timeout: 60000 }),
+  fullLoyverseSync: (data) => apiClient.post('/loyverse/full-sync', data || {}, { timeout: 180000 }),
   getLoyverseSuppliers: () => apiClient.get('/loyverse/suppliers'),
   saveLoyverseSupplier: (data) => apiClient.post('/loyverse/suppliers', data),
   registerLoyverseWebhook: (url) => apiClient.post('/loyverse/register-webhook', { url }),

@@ -18,6 +18,11 @@ class LoyverseService
     protected string $storeId;
     protected string $apiUrl;
 
+    protected ?array $cachedSuppliers = null;
+    protected ?array $cachedCategories = null;
+    protected ?array $cachedStores = null;
+    protected ?array $cachedItems = null;
+
     public function __construct()
     {
         $this->token = (string) config('services.loyverse.token', env('LOYVERSE_API_TOKEN', ''));
@@ -37,13 +42,18 @@ class LoyverseService
     /**
      * Test connection and retrieve store information.
      */
-    public function getStores(): array
+    public function getStores(bool $fresh = false): array
     {
+        if (!$fresh && $this->cachedStores !== null) {
+            return $this->cachedStores;
+        }
+
         $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/stores");
         if (!$response->successful()) {
             throw new \Exception("Loyverse API Error: " . $response->body());
         }
-        return $response->json('stores') ?? [];
+        $this->cachedStores = $response->json('stores') ?? [];
+        return $this->cachedStores;
     }
 
     /**
@@ -67,8 +77,12 @@ class LoyverseService
     /**
      * Fetch list of items currently in Loyverse.
      */
-    public function getItems(int $limit = 250): array
+    public function getItems(int $limit = 250, bool $fresh = false): array
     {
+        if (!$fresh && $this->cachedItems !== null) {
+            return $this->cachedItems;
+        }
+
         $allItems = [];
         $cursor = null;
 
@@ -89,16 +103,22 @@ class LoyverseService
             $cursor = $data['cursor'] ?? null;
         } while ($cursor && count($items) === $limit && count($allItems) < 1000);
 
+        $this->cachedItems = $allItems;
         return $allItems;
     }
 
     /**
      * Fetch categories in Loyverse.
      */
-    public function getCategories(): array
+    public function getCategories(bool $fresh = false): array
     {
+        if (!$fresh && $this->cachedCategories !== null) {
+            return $this->cachedCategories;
+        }
+
         $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/categories");
-        return $response->json('categories') ?? [];
+        $this->cachedCategories = $response->json('categories') ?? [];
+        return $this->cachedCategories;
     }
 
     /**
@@ -111,7 +131,7 @@ class LoyverseService
 
         $existing = $this->getCategories();
         foreach ($existing as $cat) {
-            if (strcasecmp(trim($cat['name']), trim($name)) === 0 && empty($cat['deleted_at'])) {
+            if (strcasecmp(trim($cat['name'] ?? ''), trim($name)) === 0 && empty($cat['deleted_at'])) {
                 return $cat['id'];
             }
         }
@@ -121,7 +141,20 @@ class LoyverseService
             'color' => $color,
         ]);
 
-        return $res->json('id');
+        $createdId = $res->json('id');
+        if ($createdId) {
+            if ($this->cachedCategories === null) {
+                $this->cachedCategories = [];
+            }
+            $this->cachedCategories[] = [
+                'id' => $createdId,
+                'name' => $name,
+                'color' => $color,
+                'deleted_at' => null,
+            ];
+        }
+
+        return $createdId;
     }
 
     /**
@@ -129,15 +162,20 @@ class LoyverseService
      * SUPPLIERS (Loyverse Advanced Inventory)
      * ==========================================
      */
-    public function getSuppliers(int $limit = 100): array
+    public function getSuppliers(int $limit = 100, bool $fresh = false): array
     {
+        if (!$fresh && $this->cachedSuppliers !== null) {
+            return $this->cachedSuppliers;
+        }
+
         $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/suppliers", [
             'limit' => $limit
         ]);
         if (!$response->successful()) {
             throw new \Exception("Loyverse Suppliers Error: " . $response->body());
         }
-        return $response->json('suppliers') ?? [];
+        $this->cachedSuppliers = $response->json('suppliers') ?? [];
+        return $this->cachedSuppliers;
     }
 
     public function createOrUpdateSupplier(array $data): array
@@ -146,14 +184,21 @@ class LoyverseService
         if (!$response->successful()) {
             throw new \Exception("Loyverse Supplier Save Error: " . $response->body());
         }
-        return $response->json();
+        $supplier = $response->json();
+        if (!empty($supplier['id'])) {
+            if ($this->cachedSuppliers === null) {
+                $this->cachedSuppliers = [];
+            }
+            $this->cachedSuppliers[] = $supplier;
+        }
+        return $supplier;
     }
 
     public function findOrCreateSupplier(string $name, ?string $contact = null, ?string $phone = null): ?string
     {
         $suppliers = $this->getSuppliers();
         foreach ($suppliers as $s) {
-            if (strcasecmp(trim($s['name']), trim($name)) === 0 && empty($s['deleted_at'])) {
+            if (strcasecmp(trim($s['name'] ?? ''), trim($name)) === 0 && empty($s['deleted_at'])) {
                 return $s['id'];
             }
         }
@@ -326,12 +371,12 @@ class LoyverseService
      * Exports all menu items as Composite Items linking their exact
      * component raw ingredients with quantities.
      */
-    public function exportMenuToLoyverse(): array
+    public function exportMenuToLoyverse(bool $syncIngredients = true): array
     {
         $storeId = $this->getEffectiveStoreId();
 
-        // 1. First ensure all raw ingredients are synced to have their Loyverse variant IDs
-        $ingResults = $this->exportIngredientsToLoyverse();
+        // 1. First ensure all raw ingredients are synced to have their Loyverse variant IDs (skip if already done in full sync)
+        $ingResults = $syncIngredients ? $this->exportIngredientsToLoyverse() : null;
 
         $products = Product::with('recipes.ingredient')->get();
         $existingItems = collect($this->getItems());
@@ -664,17 +709,22 @@ class LoyverseService
         // 1. Export Ingredients
         $ingredientsSync = $this->exportIngredientsToLoyverse();
 
-        // 2. Export Products with Composite Recipes
-        $menuSync = $this->exportMenuToLoyverse();
+        // 2. Export Products with Composite Recipes (skip redundant ingredient export)
+        $menuSync = $this->exportMenuToLoyverse(false);
 
-        // 3. Register Webhooks if URL provided
+        // 3. Register Webhooks if valid public HTTPS URL provided (skip localhost or plain HTTP)
         $webhookResult = null;
-        if ($webhookBaseUrl) {
+        if ($webhookBaseUrl && str_starts_with(strtolower($webhookBaseUrl), 'https://') && !str_contains($webhookBaseUrl, 'localhost') && !str_contains($webhookBaseUrl, '127.0.0.1')) {
             try {
                 $webhookResult = $this->registerAllWebhooks($webhookBaseUrl);
             } catch (\Exception $e) {
                 $webhookResult = ['error' => $e->getMessage()];
             }
+        } else {
+            $webhookResult = [
+                'skipped' => true,
+                'reason' => 'Webhooks require a public HTTPS URL (localhost/HTTP skipped)'
+            ];
         }
 
         // 4. Also sync any recent receipts

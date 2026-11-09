@@ -87,6 +87,8 @@ class LoyverseController extends Controller
      */
     public function sync(Request $request)
     {
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
         try {
             $since = $request->input('since');
             $results = $this->loyverse->syncRecentReceipts($since);
@@ -110,6 +112,8 @@ class LoyverseController extends Controller
      */
     public function exportIngredients(Request $request)
     {
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
         try {
             $results = $this->loyverse->exportIngredientsToLoyverse();
 
@@ -132,6 +136,8 @@ class LoyverseController extends Controller
      */
     public function exportMenu(Request $request)
     {
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
         try {
             $results = $this->loyverse->exportMenuToLoyverse();
 
@@ -154,6 +160,8 @@ class LoyverseController extends Controller
      */
     public function pullInventory(Request $request)
     {
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
         try {
             $results = $this->loyverse->pullInventoryFromLoyverse();
 
@@ -176,6 +184,8 @@ class LoyverseController extends Controller
      */
     public function pushInventory(Request $request)
     {
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
         try {
             $ids = $request->input('ingredient_ids');
             $results = $this->loyverse->pushInventoryToLoyverse($ids);
@@ -199,6 +209,8 @@ class LoyverseController extends Controller
      */
     public function fullSync(Request $request)
     {
+        set_time_limit(300);
+        ini_set('max_execution_time', '300');
         try {
             $webhookUrl = $request->input('webhook_url', url('/api/loyverse/webhook'));
             $results = $this->loyverse->fullAdvancedSync($webhookUrl);
