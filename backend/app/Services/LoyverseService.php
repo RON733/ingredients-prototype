@@ -218,11 +218,27 @@ class LoyverseService
                 $lowStock = (float) ($ing->low_threshold ?? 5.0);
                 $optimalStock = $lowStock * 3.0;
 
+                $supplierId = null;
+                if (!empty($ing->supplier_name)) {
+                    $supplierId = $this->findOrCreateSupplier($ing->supplier_name);
+                }
+
+                $descParts = ["Kitchen Raw Ingredient ({$ing->unit})"];
+                if (!empty($ing->supplier_name)) {
+                    $descParts[] = "Supplier: {$ing->supplier_name}";
+                }
+                if (!empty($ing->expiration_date)) {
+                    $expStr = is_string($ing->expiration_date) ? $ing->expiration_date : (is_object($ing->expiration_date) ? $ing->expiration_date->format('Y-m-d') : (string)$ing->expiration_date);
+                    $descParts[] = "Exp: {$expStr}";
+                }
+                $descParts[] = "Category: {$ing->category}";
+
                 $itemPayload = [
                     'item_name' => $ing->name,
                     'category_id' => $catId,
-                    'description' => "Kitchen Raw Ingredient ({$ing->unit}). Category: {$ing->category}",
+                    'description' => implode(' | ', $descParts),
                     'track_stock' => true,
+                    'primary_supplier_id' => $supplierId,
                     'variants' => [
                         [
                             'variant_name' => $ing->unit ?: 'Regular',
@@ -864,7 +880,7 @@ class LoyverseService
                 'user_name' => 'Loyverse POS Sync',
                 'user_role' => 'system',
                 'action' => 'POS Order Synced',
-                'details' => "Loyverse Sale #{$receiptNumber} recorded for ₱{$totalMoney}. Kitchen inventory deducted: " . (empty($deductedSummary) ? 'None (no recipe matches)' : implode(', ', $deductedSummary)),
+                'details' => "Loyverse Sale #{$receiptNumber} recorded for â‚±{$totalMoney}. Kitchen inventory deducted: " . (empty($deductedSummary) ? 'None (no recipe matches)' : implode(', ', $deductedSummary)),
                 'ip_address' => request()->ip() ?? '127.0.0.1',
             ]);
 
@@ -986,7 +1002,7 @@ class LoyverseService
                 'user_name' => 'Website POS Sync',
                 'user_role' => 'system',
                 'action' => 'Pushed to Loyverse POS',
-                'details' => "Website order {$order->order_number} synchronized to Loyverse POS as Receipt #{$receiptNumber} for ₱{$order->total_amount}.",
+                'details' => "Website order {$order->order_number} synchronized to Loyverse POS as Receipt #{$receiptNumber} for â‚±{$order->total_amount}.",
                 'ip_address' => request()->ip() ?? '127.0.0.1',
             ]);
         }
@@ -1209,3 +1225,4 @@ class LoyverseService
         ];
     }
 }
+

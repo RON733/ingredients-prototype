@@ -43,6 +43,7 @@ class IngredientController extends Controller
             'name' => 'required|string',
             'category' => 'required|string',
             'supplier_name' => 'nullable|string',
+            'expiration_date' => 'nullable|date',
             'stock' => 'required|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
             'unit' => 'required|string',
@@ -77,6 +78,7 @@ class IngredientController extends Controller
             'name' => 'sometimes|string',
             'category' => 'sometimes|string',
             'supplier_name' => 'nullable|string',
+            'expiration_date' => 'nullable|date',
             'stock' => 'sometimes|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
             'unit' => 'sometimes|string',
@@ -153,3 +155,4 @@ class IngredientController extends Controller
         return response()->json(['message' => 'Ingredient deleted successfully']);
     }
 }
+

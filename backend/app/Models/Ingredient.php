@@ -17,6 +17,7 @@ class Ingredient extends Model
         'name',
         'category',
         'supplier_name',
+        'expiration_date',
         'stock',
         'cost',
         'unit',
@@ -29,6 +30,7 @@ class Ingredient extends Model
         'stock' => 'float',
         'cost' => 'float',
         'low_threshold' => 'float',
+        'expiration_date' => 'date:Y-m-d',
     ];
 
     public function recipes()
@@ -36,3 +38,4 @@ class Ingredient extends Model
         return $this->hasMany(Recipe::class, 'ingredient_id', 'id');
     }
 }
+

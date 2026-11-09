@@ -174,7 +174,9 @@
               <tr>
                 <th class="px-6 py-4 whitespace-nowrap">Ingredient Name</th>
                 <th class="px-6 py-4 whitespace-nowrap">Category</th>
-                <th class="px-6 py-4 whitespace-nowrap">Current Stock</th>
+                <th class="px-6 py-4 whitespace-nowrap">Supplier</th>
+                <th class="px-6 py-4 whitespace-nowrap">Current Stock & Cost</th>
+                <th class="px-6 py-4 whitespace-nowrap">Expiration Date</th>
                 <th class="px-6 py-4 whitespace-nowrap">Status</th>
                 <th class="px-6 py-4 whitespace-nowrap">Loyverse Sync</th>
                 <th class="px-6 py-4 whitespace-nowrap">Low Threshold</th>
@@ -207,15 +209,44 @@
                   </span>
                 </td>
 
-                <!-- Stock Level -->
+                <!-- Supplier -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                      <i class="pi pi-building text-[10px]"></i>
+                    </div>
+                    <div>
+                      <p class="font-bold text-neutral-200 text-xs">{{ ing.supplier_name || 'Ferabby Mercantile Inc.' }}</p>
+                      <span class="text-[9px] text-gray-400">Balibago, Santa Rosa</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Stock Level & Cost -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-base font-black text-white">
                     {{ ing.stock }}
                   </span>
                   <span class="text-gray-400 ml-1 font-medium">{{ ing.unit }}</span>
-                  <span v-if="ing.cost > 0" class="block text-[10px] text-neutral-400 mt-0.5">
-                    ₱{{ Number(ing.cost).toFixed(2) }} / {{ ing.unit }}
+                  <span class="block text-[10px] text-amber-300 font-semibold mt-0.5">
+                    ₱{{ Number(ing.cost || 0).toFixed(2) }} / {{ ing.unit }}
                   </span>
+                </td>
+
+                <!-- Expiration Date -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div v-if="ing.expiration_date" class="space-y-1">
+                    <span class="font-mono text-xs text-white font-bold block">
+                      {{ formatDate(ing.expiration_date) }}
+                    </span>
+                    <span 
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold"
+                      :class="getExpiryBadge(ing.expiration_date)">
+                      <i class="pi pi-clock text-[8px]"></i>
+                      {{ getExpiryStatus(ing.expiration_date) }}
+                    </span>
+                  </div>
+                  <span v-else class="text-gray-500 text-[11px] italic">Not set</span>
                 </td>
 
                 <!-- Status Badge -->
@@ -335,8 +366,13 @@
               </div>
               <div>
                 <label class="block text-gray-400 mb-1">Supplier Name</label>
-                <input v-model="form.supplier_name" placeholder="e.g. San Miguel" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
+                <input v-model="form.supplier_name" placeholder="e.g. Ferabby Mercantile Inc." class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
               </div>
+            </div>
+
+            <div>
+              <label class="block text-gray-400 mb-1">Expiration Date</label>
+              <input v-model="form.expiration_date" type="date" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
             </div>
           </div>
 
@@ -408,7 +444,8 @@ export default {
       unit: 'cups',
       stock: 20,
       cost: 0,
-      supplier_name: '',
+      supplier_name: 'Ferabby Mercantile Inc.',
+      expiration_date: '',
       low_threshold: 5,
     });
 
@@ -489,7 +526,8 @@ export default {
       form.unit = 'cups';
       form.stock = 25;
       form.cost = 0;
-      form.supplier_name = '';
+      form.supplier_name = 'Ferabby Mercantile Inc.';
+      form.expiration_date = '';
       form.low_threshold = 8;
       modalOpen.value = true;
     };
@@ -502,9 +540,49 @@ export default {
       form.unit = ing.unit;
       form.stock = ing.stock;
       form.cost = ing.cost || 0;
-      form.supplier_name = ing.supplier_name || '';
+      form.supplier_name = ing.supplier_name || 'Ferabby Mercantile Inc.';
+      form.expiration_date = ing.expiration_date ? String(ing.expiration_date).split('T')[0] : '';
       form.low_threshold = ing.low_threshold;
       modalOpen.value = true;
+    };
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const clean = String(dateStr).split('T')[0];
+      const [year, month, day] = clean.split('-');
+      if (!year || !month || !day) return dateStr;
+      const d = new Date(Number(year), Number(month) - 1, Number(day));
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    const getExpiryStatus = (dateStr) => {
+      if (!dateStr) return '';
+      const clean = String(dateStr).split('T')[0];
+      const [year, month, day] = clean.split('-');
+      const exp = new Date(Number(year), Number(month) - 1, Number(day));
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const diffTime = exp.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays < 0) return 'Expired';
+      if (diffDays === 0) return 'Expires Today';
+      if (diffDays <= 7) return diffDays + 'd left (Soon)';
+      if (diffDays <= 30) return diffDays + 'd left';
+      return 'Fresh';
+    };
+
+    const getExpiryBadge = (dateStr) => {
+      if (!dateStr) return '';
+      const clean = String(dateStr).split('T')[0];
+      const [year, month, day] = clean.split('-');
+      const exp = new Date(Number(year), Number(month) - 1, Number(day));
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const diffTime = exp.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (diffDays < 0) return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+      if (diffDays <= 7) return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
     };
 
     const saveIngredient = async () => {
@@ -562,6 +640,9 @@ export default {
       saveIngredient,
       deleteIngredient,
       refresh,
+      formatDate,
+      getExpiryStatus,
+      getExpiryBadge,
       isSyncingLoyverse,
       handleSyncLoyverse,
       isPullingLoyverse,
