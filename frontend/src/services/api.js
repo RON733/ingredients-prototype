@@ -82,6 +82,7 @@ export const GST_API = {
   updateOrderStatus: (id, status, notes = '') => apiClient.patch(`/orders/${id}/status`, { status, notes }),
   verifyPayment: (id) => apiClient.patch(`/orders/${id}/verify-payment`),
   updateDriverLocation: (id, coords) => apiClient.patch(`/orders/${id}/driver-location`, coords),
+  notifyDriverOnTheWay: (id, payload = {}) => apiClient.post(`/orders/${id}/notify-on-the-way`, payload),
   updateCustomerLocation: (id, data) => apiClient.patch(`/orders/${id}/customer-location`, data),
   assignDriver: (id, driverId) => apiClient.patch(`/orders/${id}/assign-driver`, { driver_id: driverId }),
   getDrivers: () => apiClient.get('/drivers'),

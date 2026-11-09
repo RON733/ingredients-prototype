@@ -105,6 +105,34 @@
             </div>
           </div>
 
+          <!-- Rider En Route High-Priority Alert Banner -->
+          <div v-if="order.on_the_way_notified_at && order.status === 'Out for Delivery'"
+            class="p-4 rounded-2xl bg-amber-400/15 border-2 border-amber-400/40 text-amber-200 shadow-lg shadow-amber-400/5 animate-fade-in space-y-2 mb-6">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-amber-400/25 border border-amber-400/40 text-amber-300 flex items-center justify-center text-xl shrink-0 shadow-inner animate-pulse">
+                  🛵
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="font-black text-white text-sm">Rider Is Heading To Your Doorstep!</h4>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-black">
+                      En Route
+                    </span>
+                  </div>
+                  <p class="text-xs text-amber-200/90 mt-0.5">
+                    <strong>{{ order.driver_name || 'Your rider' }}</strong> departed for your address at 
+                    <span class="font-bold underline">{{ formatTime(order.on_the_way_notified_at) }}</span>.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-amber-400/20 text-[11px] text-gray-300 flex items-center gap-2">
+              <i class="pi pi-bell text-amber-400 text-xs"></i>
+              <span>Please keep your phone active and have your cash / payment ready for quick delivery handover.</span>
+            </div>
+          </div>
+
           <!-- Delivery Destination & Dispatch Info Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Destination Address -->
@@ -461,7 +489,7 @@ export default {
         case 'Preparing':
           return 'Kitchen Brewing & Packing Drinks';
         case 'Out for Delivery':
-          return 'Rider On The Way To Your Doorstep';
+          return order.value.on_the_way_notified_at ? 'Rider Is Heading To Your Doorstep' : 'Out for Delivery (Dispatched from Hub)';
         case 'Completed':
           return 'Order Delivered';
         default:
@@ -477,7 +505,7 @@ export default {
         case 'Preparing':
           return 'Our baristas are preparing your tea drinks with exact sweetness and ice levels.';
         case 'Out for Delivery':
-          return 'Your drinks have been safely packed and handed to our rider. Please keep your phone available for delivery arrival.';
+          return order.value.on_the_way_notified_at ? ('Rider ' + (order.value.driver_name || 'courier') + ' is on the way to your doorstep (' + formatTime(order.value.on_the_way_notified_at) + '). Please keep your phone reachable.') : 'Your drinks have been safely packed and handed to our rider. Rider is prepping to depart.';
         case 'Completed':
           return 'Delivered to your address! Thank you for ordering at G Shot Teas!';
         default:
@@ -991,6 +1019,22 @@ export default {
             } else {
               initOrUpdateMap();
             }
+          }
+        })
+        .listen('.DriverOnTheWay', (e) => {
+          console.log('🛵 [Reverb] Live Driver On The Way Notice Received:', e);
+          if (order.value && Number(order.value.id) === Number(e.order_id)) {
+            order.value.on_the_way_notified_at = e.notified_at;
+            if (e.driver_lat && e.driver_lng) {
+              order.value.driver_lat = e.driver_lat;
+              order.value.driver_lng = e.driver_lng;
+              lastGpsTimestamp.value = Date.now();
+            }
+            if (e.driver_name) order.value.driver_name = e.driver_name;
+            if (e.driver_phone) order.value.driver_phone = e.driver_phone;
+            playArrivalChime();
+            store.notify('🛵 ' + (e.message || 'Rider is now on the way to your doorstep!'), 'success');
+            store.refreshActiveOrder(order.value.id);
           }
         })
         .listen('.OrderStatusUpdated', (e) => {

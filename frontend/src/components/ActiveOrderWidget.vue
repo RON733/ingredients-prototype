@@ -18,7 +18,9 @@
             <span>{{ store.activeOrder.order_number }}</span>
             <span class="text-brand-400">• {{ store.activeOrder.status }}</span>
           </p>
-          <p class="text-[10px] text-gray-400 font-medium">Click to track fulfillment in real-time</p>
+          <p class="text-[10px] font-medium" :class="store.activeOrder?.on_the_way_notified_at && store.activeOrder?.status === 'Out for Delivery' ? 'text-amber-300 font-bold animate-pulse' : 'text-gray-400'">
+            {{ store.activeOrder?.on_the_way_notified_at && store.activeOrder?.status === 'Out for Delivery' ? '🛵 Rider is heading to your doorstep! Tap to track' : 'Click to track fulfillment in real-time' }}
+          </p>
         </div>
 
         <div class="w-7 h-7 rounded-full bg-brand-600/30 text-brand-400 flex items-center justify-center text-xs group-hover:bg-brand-600 group-hover:text-white transition-colors">

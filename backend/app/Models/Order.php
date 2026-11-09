@@ -30,6 +30,7 @@ class Order extends Model
         'proof_image',
         'status',
         'delivered_at',
+        'on_the_way_notified_at',
         'subtotal',
         'delivery_fee',
         'total_amount',
@@ -45,6 +46,7 @@ class Order extends Model
         'driver_lat' => 'float',
         'driver_lng' => 'float',
         'delivered_at' => 'datetime',
+        'on_the_way_notified_at' => 'datetime',
     ];
 
     public function user()

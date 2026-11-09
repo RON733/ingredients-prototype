@@ -63,6 +63,7 @@
     updateOrderStatus: (id, status) => apiClient.patch(`/v1/orders/${id}/status`, { status }),
     verifyPayment: (id) => apiClient.patch(`/v1/orders/${id}/verify-payment`),
     updateDriverLocation: (id, coords) => apiClient.patch(`/v1/orders/${id}/driver-location`, coords),
+    notifyDriverOnTheWay: (id, payload = {}) => apiClient.post(`/v1/orders/${id}/notify-on-the-way`, payload),
     updateCustomerLocation: (id, data) => apiClient.patch(`/v1/orders/${id}/customer-location`, data),
     assignDriver: (id, driverId) => apiClient.patch(`/v1/orders/${id}/assign-driver`, { driver_id: driverId }),
     getDrivers: () => apiClient.get('/v1/drivers'),

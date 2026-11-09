@@ -520,6 +520,103 @@ class OrderController extends Controller
         ]);
     }
 
+    public function notifyOnTheWay(Request $request, $id)
+    {
+        $user = auth('sanctum')->user() ?? $request->user();
+        $order = Order::with(['items', 'driver:id,name,phone,avatar'])->findOrFail($id);
+
+        $validated = $request->validate([
+            'driver_lat' => 'nullable|numeric',
+            'driver_lng' => 'nullable|numeric',
+            'nav_app' => 'nullable|string',
+            'force' => 'nullable|boolean',
+        ]);
+
+        $alreadyNotified = !empty($order->on_the_way_notified_at);
+        $shouldNotify = !$alreadyNotified || (!empty($validated['force']) && $validated['force'] === true);
+
+        // If driver coordinates are passed, update location
+        if (isset($validated['driver_lat']) && isset($validated['driver_lng'])) {
+            $order->driver_lat = $validated['driver_lat'];
+            $order->driver_lng = $validated['driver_lng'];
+        }
+
+        // If driver wasn't explicitly assigned yet, assign the requesting driver
+        if ($user && ($user->role === 'driver' || $user->role === 'rider') && empty($order->driver_id)) {
+            $order->driver_id = $user->id;
+        }
+
+        // Ensure order status is Out for Delivery
+        if ($order->status === 'Preparing' || $order->status === 'Ready for Pickup') {
+            $order->status = 'Out for Delivery';
+        }
+
+        if ($shouldNotify) {
+            $order->on_the_way_notified_at = now();
+        }
+
+        $order->save();
+        $order->load(['driver:id,name,phone,avatar']);
+
+        $driverName = $order->driver?->name ?? ($user?->name ?? 'G Shot Delivery Partner');
+        $driverPhone = $order->driver?->phone ?? ($user?->phone ?? null);
+
+        // Broadcast if newly notified or forced
+        if ($shouldNotify) {
+            try {
+                broadcast(new \App\Events\DriverOnTheWay(
+                    $order->id,
+                    $order->order_number,
+                    $order->driver_id,
+                    $driverName,
+                    $driverPhone,
+                    $order->driver_lat,
+                    $order->driver_lng,
+                    $order->on_the_way_notified_at ? $order->on_the_way_notified_at->toIso8601String() : now()->toIso8601String(),
+                    false,
+                    "Rider {$driverName} is on the way to your doorstep!"
+                ));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Reverb DriverOnTheWay broadcast warning: ' . $e->getMessage());
+            }
+
+            try {
+                broadcast(new \App\Events\OrderStatusUpdated(
+                    $order->id,
+                    $order->status,
+                    $order->driver_id,
+                    $order->driver ? [
+                        'id' => $order->driver->id,
+                        'name' => $order->driver->name,
+                        'phone' => $order->driver->phone,
+                    ] : null
+                ));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Reverb OrderStatusUpdated broadcast warning: ' . $e->getMessage());
+            }
+
+            // Create audit log
+            try {
+                AuditLog::create([
+                    'user_id' => $user?->id,
+                    'user_name' => $user?->name ?? $driverName,
+                    'user_role' => $user?->role ?? 'driver',
+                    'action' => 'driver_on_the_way',
+                    'details' => "Rider {$driverName} alerted customer for Order {$order->order_number} (On the way via " . ($validated['nav_app'] ?? 'Navigation') . ")",
+                ]);
+            } catch (\Throwable $e) {}
+        }
+
+        return response()->json([
+            'message' => $alreadyNotified && !$shouldNotify
+                ? 'Navigation resumed. Customer was previously notified.'
+                : 'Customer successfully notified that driver is on the way!',
+            'order' => $order,
+            'already_notified' => $alreadyNotified,
+            'on_the_way_notified_at' => $order->on_the_way_notified_at,
+        ]);
+    }
+
     public function updateCustomerLocation(Request $request, $id)
     {
         $validated = $request->validate([

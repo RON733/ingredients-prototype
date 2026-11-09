@@ -266,22 +266,70 @@
                 </div>
               </div>
 
-              <!-- Quick Launch Navigation (Opens Google Maps App directly to exact pin) -->
-              <div class="flex flex-wrap items-center gap-2 pt-0.5">
-                <a 
-                  :href="getGoogleMapsNavUrl(order)"
-                  target="_blank"
-                  class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer">
-                  <i class="pi pi-compass text-xs"></i>
-                  <span>Navigate in Google Maps (Exact Pin)</span>
-                </a>
-                <a 
-                  :href="getWazeNavUrl(order)"
-                  target="_blank"
-                  class="px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer">
-                  <i class="pi pi-map text-xs"></i>
-                  <span>Waze</span>
-                </a>
+              <!-- "On The Way" Customer Alert Status & Quick Action -->
+              <div class="p-3 rounded-2xl border transition-all"
+                :class="order.on_the_way_notified_at 
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-200'">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="order.on_the_way_notified_at ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'"></span>
+                    <div>
+                      <p v-if="order.on_the_way_notified_at" class="font-bold leading-tight">
+                        Customer Alerted: On The Way
+                      </p>
+                      <p v-else class="font-bold leading-tight">
+                        Customer Not Yet Alerted
+                      </p>
+                      <p class="text-[10px] text-gray-400">
+                        {{ order.on_the_way_notified_at ? 'Notified at ' + formatDeliveryTime(order.on_the_way_notified_at) : 'Will alert automatically upon opening maps' }}
+                      </p>
+                    </div>
+                  </div>
+                  <!-- Standalone manual alert button (or re-alert) -->
+                  <button
+                    type="button"
+                    :disabled="isNotifyingOnTheWay[order.id]"
+                    @click="notifyOrderOnTheWay(order, { openNav: null, force: Boolean(order.on_the_way_notified_at) })"
+                    class="px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer border shrink-0 flex items-center gap-1.5"
+                    :class="order.on_the_way_notified_at 
+                      ? 'bg-surface-800 hover:bg-surface-700 text-gray-300 border-surface-600' 
+                      : 'bg-amber-400 hover:bg-amber-300 text-black border-amber-400 font-extrabold shadow-md'">
+                    <i :class="isNotifyingOnTheWay[order.id] ? 'pi pi-spin pi-spinner text-xs' : (order.on_the_way_notified_at ? 'pi pi-bell text-xs' : 'pi pi-send text-xs')"></i>
+                    <span>{{ isNotifyingOnTheWay[order.id] ? 'Alerting...' : (order.on_the_way_notified_at ? 'Re-alert' : 'Alert: On The Way') }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Launch Navigation (Opens Google Maps/Waze + Auto-Alerts Customer on first launch) -->
+              <div class="space-y-1.5 pt-0.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <!-- Google Maps Button -->
+                  <button 
+                    type="button"
+                    :disabled="isNotifyingOnTheWay[order.id]"
+                    @click="notifyOrderOnTheWay(order, { openNav: 'google_maps', force: false })"
+                    class="px-3.5 py-2.5 rounded-xl text-white font-bold text-xs inline-flex items-center gap-2 transition-all shadow-md cursor-pointer flex-1 justify-center"
+                    :class="order.on_the_way_notified_at ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-600 hover:bg-emerald-500 ring-2 ring-emerald-400/50 shadow-emerald-600/30'">
+                    <i :class="isNotifyingOnTheWay[order.id] ? 'pi pi-spin pi-spinner text-xs' : 'pi pi-compass text-xs'"></i>
+                    <span>{{ order.on_the_way_notified_at ? 'Resume in Google Maps' : 'Start & Open Google Maps' }}</span>
+                  </button>
+
+                  <!-- Waze Button -->
+                  <button 
+                    type="button"
+                    :disabled="isNotifyingOnTheWay[order.id]"
+                    @click="notifyOrderOnTheWay(order, { openNav: 'waze', force: false })"
+                    class="px-3 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                    :class="order.on_the_way_notified_at ? '' : 'ring-2 ring-sky-400/50 shadow-sky-600/30'">
+                    <i :class="isNotifyingOnTheWay[order.id] ? 'pi pi-spin pi-spinner text-xs' : 'pi pi-map text-xs'"></i>
+                    <span>{{ order.on_the_way_notified_at ? 'Waze' : 'Start & Waze' }}</span>
+                  </button>
+                </div>
+                <p v-if="!order.on_the_way_notified_at" class="text-[10px] text-gray-400 px-1 flex items-center gap-1">
+                  <i class="pi pi-info-circle text-[10px] text-amber-400"></i>
+                  <span>Tapping either map button starts navigation and notifies the customer that you are on the way.</span>
+                </p>
               </div>
             </div>
 
@@ -997,6 +1045,90 @@ export default {
       store.notify('Stopped real-time GPS sharing.', 'info');
     };
 
+    const isNotifyingOnTheWay = Vue.ref({});
+
+    const notifyOrderOnTheWay = async (order, options = { openNav: null, force: false }) => {
+      const orderId = order.id;
+      const isAlreadyNotified = Boolean(order.on_the_way_notified_at);
+      const isNavOnly = isAlreadyNotified && !options.force;
+
+      let navUrl = null;
+      if (options.openNav === 'google_maps') {
+        navUrl = getGoogleMapsNavUrl(order);
+      } else if (options.openNav === 'waze') {
+        navUrl = getWazeNavUrl(order);
+      }
+
+      // If already notified: do not spam the customer, simply resume navigation!
+      if (isNavOnly) {
+        if (navUrl) {
+          const appName = options.openNav === 'google_maps' ? 'Google Maps' : 'Waze';
+          store.notify(`Resuming ${appName} navigation... (Customer was alerted earlier)`, 'info');
+          window.open(navUrl, '_blank');
+        }
+        return;
+      }
+
+      // Fresh or forced alert
+      isNotifyingOnTheWay.value = { ...isNotifyingOnTheWay.value, [orderId]: true };
+
+      let lat = order.driver_lat || null;
+      let lng = order.driver_lng || null;
+      if ((!lat || !lng) && navigator.geolocation) {
+        try {
+          const pos = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 3000,
+              maximumAge: 5000,
+            });
+          });
+          lat = Number(pos.coords.latitude.toFixed(6));
+          lng = Number(pos.coords.longitude.toFixed(6));
+          order.driver_lat = lat;
+          order.driver_lng = lng;
+        } catch (e) {}
+      }
+
+      try {
+        const payload = {
+          driver_lat: lat,
+          driver_lng: lng,
+          nav_app: options.openNav || 'manual',
+          force: Boolean(options.force),
+        };
+
+        const res = await GST_API.notifyDriverOnTheWay(orderId, payload);
+        const notifiedIso = res.data?.on_the_way_notified_at || new Date().toISOString();
+        order.on_the_way_notified_at = notifiedIso;
+        if (res.data?.order) {
+          Object.assign(order, res.data.order);
+        }
+
+        // Auto-enable live GPS broadcasting so customer sees rider moving
+        order.isBroadcastingGps = true;
+        startGpsBroadcast();
+
+        const appName = options.openNav === 'google_maps' ? 'Google Maps' : options.openNav === 'waze' ? 'Waze' : null;
+        if (appName) {
+          store.notify(`🔔 Customer alerted that you're on the way! Launching ${appName}...`, 'success');
+        } else {
+          store.notify('🔔 Customer alerted: Rider is on the way!', 'success');
+        }
+      } catch (err) {
+        console.warn('Failed to notify customer on the way:', err);
+        if (!order.on_the_way_notified_at) {
+          order.on_the_way_notified_at = new Date().toISOString();
+        }
+        store.notify('Opening navigation (Notice saved locally)...', 'info');
+      } finally {
+        isNotifyingOnTheWay.value = { ...isNotifyingOnTheWay.value, [orderId]: false };
+        if (navUrl) {
+          window.open(navUrl, '_blank');
+        }
+      }
+    };
+
     // Modal & Availability Notice States
     const showUnavailableModal = Vue.ref(false);
     const showReturnOnlineModal = Vue.ref(false);
@@ -1346,6 +1478,8 @@ export default {
       getNavigationUrl,
       getGoogleMapsNavUrl,
       getWazeNavUrl,
+      isNotifyingOnTheWay,
+      notifyOrderOnTheWay,
       broadcastOrderGps,
       stopOrderGps,
       completeDelivery,
