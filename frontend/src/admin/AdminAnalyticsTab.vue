@@ -548,17 +548,24 @@ export default {
       const items = trendItems.value;
       const total = items.length;
       if (!total) return [];
-      if (total <= 7) {
+      const targetCount = chartFitMode.value ? 5 : 8;
+      if (total <= targetCount) {
         return items.map((it, idx) => ({ label: it.label, index: idx }));
       }
-      const targetCount = chartFitMode.value ? 5 : 8;
       const step = Math.ceil(total / targetCount);
       const sampled = [];
       for (let i = 0; i < total; i += step) {
         sampled.push({ label: items[i].label, index: i });
       }
-      if (sampled[sampled.length - 1].index !== total - 1) {
-        sampled.push({ label: items[total - 1].label, index: total - 1 });
+      const lastIndex = sampled[sampled.length - 1].index;
+      if (lastIndex !== total - 1) {
+        // If the last sampled point is too close to the end point, replace it
+        // so dates do not collide or overlap at the end of the chart.
+        if ((total - 1) - lastIndex < Math.ceil(step * 0.75)) {
+          sampled[sampled.length - 1] = { label: items[total - 1].label, index: total - 1 };
+        } else {
+          sampled.push({ label: items[total - 1].label, index: total - 1 });
+        }
       }
       return sampled;
     });
