@@ -137,7 +137,7 @@
     </div>
 
     <!-- Navigation Tabs: Who's Available Riders | In Delivery Right Now | Their History -->
-    <div class="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-surface-900 border border-surface-800 shadow-md">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 rounded-2xl bg-surface-900 border border-surface-800 shadow-md">
       <!-- Tab 1: Available Riders -->
       <button 
         type="button"
@@ -393,11 +393,11 @@
           </div>
 
           <!-- Bottom Action Buttons for Staff Control -->
-          <div class="flex items-center justify-between pt-1 gap-2 border-t border-surface-800/60">
+          <div class="flex flex-wrap items-center justify-between pt-1 gap-2 border-t border-surface-800/60">
             <button 
               type="button"
               @click="filterHistoryByRider(rider.id)"
-              class="px-3 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-300 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
+              class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-300 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5">
               <i class="pi pi-history text-[11px] text-purple-400"></i>
               <span>View History</span>
             </button>
@@ -405,7 +405,7 @@
             <a 
               v-if="rider.phone"
               :href="'tel:' + rider.phone"
-              class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
+              class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5">
               <i class="pi pi-phone text-[11px]"></i>
               <span>Call Rider</span>
             </a>
@@ -413,7 +413,7 @@
             <button 
               type="button"
               @click="toggleRiderStatus(rider)"
-              class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
+              class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer text-center"
               :class="rider.is_available 
                 ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 hover:bg-rose-500/25' 
                 : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25'">

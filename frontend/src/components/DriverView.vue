@@ -2,44 +2,44 @@
 <div class="min-h-screen bg-surface-950 text-gray-100 py-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
       
       <!-- Top Driver Profile & Operational Bar -->
-      <div class="bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3.5">
-          <div class="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-2xl shadow-lg">
+      <div class="bg-surface-900 border border-surface-700/80 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <div class="w-12 h-12 rounded-2xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center text-2xl shadow-lg shrink-0">
             🛵
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h2 class="text-lg font-black text-white">{{ store.user?.name || 'Delivery Rider' }}</h2>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-base sm:text-lg font-black text-white truncate">{{ store.user?.name || 'Delivery Rider' }}</h2>
               <span 
-                class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0"
                 :class="hasPendingNotice 
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
                   : (isAvailable ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30')">
                 {{ hasPendingNotice ? 'PENDING APPROVAL' : (isAvailable ? 'ON DUTY' : 'ON BREAK') }}
               </span>
             </div>
-            <p class="text-xs text-gray-400">
+            <p class="text-xs text-neutral-400 truncate mt-0.5">
               G Shot Teas Delivery Fleet • Santa Rosa Hub
             </p>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <!-- Rider Availability Toggle Switch / Notice Status -->
           <button 
             type="button"
             @click="handleAvailabilityClick"
-            class="px-3.5 py-2 rounded-xl text-xs font-black border transition-all flex items-center gap-2 shadow-md cursor-pointer"
+            class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-black border transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer active:scale-95"
             :class="hasPendingNotice 
               ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30' 
               : (isAvailable 
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' 
                 : 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30')">
-            <span class="w-2.5 h-2.5 rounded-full" 
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" 
               :class="hasPendingNotice 
                 ? 'bg-amber-400 animate-ping' 
                 : (isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400')"></span>
-            <span>{{ hasPendingNotice ? 'Pending Staff Acceptance' : (isAvailable ? 'Available for Orders' : 'On Break / Offline') }}</span>
+            <span class="truncate">{{ hasPendingNotice ? 'Pending Acceptance' : (isAvailable ? 'Available for Orders' : 'On Break / Offline') }}</span>
           </button>
 
           <!-- Return to Management Console (Staff & Admin) -->
@@ -47,18 +47,19 @@
             v-if="store.isStaffOrAdmin"
             type="button"
             @click="store.currentView = 'admin'"
-            class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm">
+            class="px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-95 shrink-0">
             <i class="pi pi-arrow-left text-xs"></i>
-            <span>{{ store.isStaffOnly ? 'Back to Console' : 'Back to Admin' }}</span>
+            <span class="hidden xs:inline">{{ store.isStaffOnly ? 'Console' : 'Admin' }}</span>
           </button>
 
           <!-- Sign Out from Operations Portal -->
           <button 
             type="button"
             @click="handleLogout"
-            class="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm">
+            class="px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-95 shrink-0"
+            title="Sign Out">
             <i class="pi pi-power-off text-xs"></i>
-            <span>Sign Out</span>
+            <span class="hidden xs:inline">Sign Out</span>
           </button>
         </div>
       </div>
@@ -150,21 +151,21 @@
         </div>
       </div>
 
-      <!-- Delivery Tabs (Active Deliveries vs Completed History) -->
-      <div class="flex items-center gap-2 border-b border-surface-700/60 pb-2">
+      <!-- Delivery Tabs (Segmented Controller) -->
+      <div class="grid grid-cols-2 p-1 rounded-2xl bg-surface-900 border border-surface-800 shadow-md">
         <button 
           @click="activeTab = 'active'"
-          class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
-          :class="activeTab === 'active' ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:text-white hover:bg-surface-800'">
-          <i class="pi pi-box"></i>
-          <span>My Dispatched Orders ({{ activeDeliveries.length }})</span>
+          class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
+          :class="activeTab === 'active' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
+          <i class="pi pi-box text-xs"></i>
+          <span class="truncate">Dispatched ({{ activeDeliveries.length }})</span>
         </button>
         <button 
           @click="activeTab = 'completed'"
-          class="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
-          :class="activeTab === 'completed' ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/30' : 'text-gray-400 hover:text-white hover:bg-surface-800'">
-          <i class="pi pi-check-circle"></i>
-          <span>Delivered History ({{ completedDeliveries.length }})</span>
+          class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
+          :class="activeTab === 'completed' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
+          <i class="pi pi-check-circle text-xs"></i>
+          <span class="truncate">Delivered ({{ completedDeliveries.length }})</span>
         </button>
       </div>
 
@@ -187,13 +188,13 @@
         <div 
           v-for="order in activeDeliveries" 
           :key="order.id"
-          class="bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-6 space-y-4 shadow-xl relative overflow-hidden">
+          class="bg-surface-900 border border-surface-700/80 rounded-3xl p-4 sm:p-6 space-y-4 shadow-xl relative overflow-hidden">
           
           <!-- Header: Order ID & Status Badge -->
-          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-800">
             <div>
-              <div class="flex items-center gap-2">
-                <span class="text-base font-black text-white">{{ order.order_number }}</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-base sm:text-lg font-black text-white">{{ order.order_number }}</span>
                 <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/20 text-sky-400 border border-sky-500/30 animate-pulse">
                   OUT FOR DELIVERY
                 </span>
@@ -202,9 +203,9 @@
             </div>
 
             <!-- Payment Badge -->
-            <div class="text-right">
+            <div class="text-left sm:text-right shrink-0">
               <span 
-                class="px-3 py-1 rounded-full text-[11px] font-black"
+                class="inline-block px-3 py-1 rounded-full text-[11px] font-black"
                 :class="order.payment_method === 'Cash' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
                 {{ order.payment_method }}: ₱{{ Number(order.total_amount).toFixed(2) }}
               </span>
@@ -224,10 +225,10 @@
             <div class="p-3.5 rounded-2xl bg-surface-800/70 border border-surface-700 space-y-2">
               <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Customer Contact</p>
               <p class="font-bold text-white text-sm">{{ order.customer_name }}</p>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 pt-1">
                 <a 
                   :href="'tel:' + order.customer_phone"
-                  class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors shadow-sm">
+                  class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95">
                   <i class="pi pi-phone text-xs"></i>
                   <span>Call {{ order.customer_phone }}</span>
                 </a>
@@ -271,7 +272,7 @@
                 :class="order.on_the_way_notified_at 
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
                   : 'bg-amber-500/10 border-amber-500/30 text-amber-200'">
-                <div class="flex items-center justify-between gap-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div class="flex items-center gap-2 text-xs">
                     <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="order.on_the_way_notified_at ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'"></span>
                     <div>
@@ -291,7 +292,7 @@
                     type="button"
                     :disabled="isNotifyingOnTheWay[order.id]"
                     @click="notifyOrderOnTheWay(order, { openNav: null, force: Boolean(order.on_the_way_notified_at) })"
-                    class="px-3 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer border shrink-0 flex items-center gap-1.5"
+                    class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-[11px] font-black transition-all cursor-pointer border shrink-0 flex items-center justify-center gap-1.5 active:scale-95"
                     :class="order.on_the_way_notified_at 
                       ? 'bg-surface-800 hover:bg-surface-700 text-gray-300 border-surface-600' 
                       : 'bg-amber-400 hover:bg-amber-300 text-black border-amber-400 font-extrabold shadow-md'">
@@ -303,16 +304,16 @@
 
               <!-- Quick Launch Navigation (Opens Google Maps/Waze + Auto-Alerts Customer on first launch) -->
               <div class="space-y-1.5 pt-0.5">
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <!-- Google Maps Button -->
                   <button 
                     type="button"
                     :disabled="isNotifyingOnTheWay[order.id]"
                     @click="notifyOrderOnTheWay(order, { openNav: 'google_maps', force: false })"
-                    class="px-3.5 py-2.5 rounded-xl text-white font-bold text-xs inline-flex items-center gap-2 transition-all shadow-md cursor-pointer flex-1 justify-center"
+                    class="w-full px-3.5 py-3 rounded-xl text-white font-bold text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer active:scale-95"
                     :class="order.on_the_way_notified_at ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-600 hover:bg-emerald-500 ring-2 ring-emerald-400/50 shadow-emerald-600/30'">
                     <i :class="isNotifyingOnTheWay[order.id] ? 'pi pi-spin pi-spinner text-xs' : 'pi pi-compass text-xs'"></i>
-                    <span>{{ order.on_the_way_notified_at ? 'Resume in Google Maps' : 'Start & Open Google Maps' }}</span>
+                    <span class="truncate">{{ order.on_the_way_notified_at ? 'Resume Google Maps' : 'Open Google Maps' }}</span>
                   </button>
 
                   <!-- Waze Button -->
@@ -320,14 +321,14 @@
                     type="button"
                     :disabled="isNotifyingOnTheWay[order.id]"
                     @click="notifyOrderOnTheWay(order, { openNav: 'waze', force: false })"
-                    class="px-3 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                    class="w-full px-3.5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer active:scale-95"
                     :class="order.on_the_way_notified_at ? '' : 'ring-2 ring-sky-400/50 shadow-sky-600/30'">
                     <i :class="isNotifyingOnTheWay[order.id] ? 'pi pi-spin pi-spinner text-xs' : 'pi pi-map text-xs'"></i>
-                    <span>{{ order.on_the_way_notified_at ? 'Waze' : 'Start & Waze' }}</span>
+                    <span class="truncate">{{ order.on_the_way_notified_at ? 'Resume Waze' : 'Open Waze' }}</span>
                   </button>
                 </div>
                 <p v-if="!order.on_the_way_notified_at" class="text-[10px] text-gray-400 px-1 flex items-center gap-1">
-                  <i class="pi pi-info-circle text-[10px] text-amber-400"></i>
+                  <i class="pi pi-info-circle text-[10px] text-amber-400 shrink-0"></i>
                   <span>Tapping either map button starts navigation and notifies the customer that you are on the way.</span>
                 </p>
               </div>
@@ -336,7 +337,7 @@
           </div>
 
           <!-- Items in Bag -->
-          <div class="p-3 rounded-2xl bg-surface-950 border border-surface-800 text-xs">
+          <div class="p-3.5 rounded-2xl bg-surface-950 border border-surface-800 text-xs">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Order Items to Deliver</p>
             <div class="space-y-1.5">
               <div v-for="item in order.items" :key="item.id" class="flex justify-between text-gray-300">
@@ -350,16 +351,16 @@
           </div>
 
           <!-- Mark Completed Button (Rider Exclusive Authority) -->
-          <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-surface-800">
+          <div class="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-surface-800">
             <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
               <span>Only you can mark this order delivered. Staff page will update immediately.</span>
             </div>
 
             <button 
               @click="completeDelivery(order)"
-              class="w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
-              <i class="pi pi-check-circle text-sm"></i>
+              class="w-full sm:w-auto px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98">
+              <i class="pi pi-check-circle text-base"></i>
               <span>Confirm Delivered & Complete Order</span>
             </button>
           </div>
@@ -419,14 +420,14 @@
             </div>
 
             <!-- Specific Calendar Day Picker -->
-            <div class="flex items-center gap-2">
-              <div class="flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-3 py-1.5 transition-colors">
-                <i class="pi pi-calendar text-xs text-amber-400"></i>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <div class="flex-1 sm:flex-initial flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-3 py-2 transition-colors">
+                <i class="pi pi-calendar text-xs text-amber-400 shrink-0"></i>
                 <input
                   type="date"
                   v-model="historyFilterDate"
                   style="color-scheme: dark;"
-                  class="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
+                  class="bg-transparent text-white text-xs focus:outline-none cursor-pointer w-full"
                   title="Select delivery date to view"
                 />
               </div>
@@ -436,9 +437,9 @@
                 type="button"
                 @click="historyFilterDate = ''"
                 title="Reset to All Deliveries"
-                class="px-2.5 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-xs font-bold border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
+                class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-xs font-bold border border-surface-700 transition-colors flex items-center justify-center gap-1 cursor-pointer shrink-0 active:scale-95">
                 <i class="pi pi-times text-[10px]"></i>
-                <span>Clear</span>
+                <span class="hidden xs:inline">Clear</span>
               </button>
             </div>
 
@@ -670,18 +671,18 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-surface-800 relative z-10">
+          <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-surface-800 relative z-10">
             <button 
               type="button"
               @click="showUnavailableModal = false"
-              class="px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold transition-colors cursor-pointer">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold transition-colors cursor-pointer text-center">
               Cancel
             </button>
             <button 
               type="button"
               :disabled="isSubmittingNotice"
               @click="submitUnavailableNotice"
-              class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center gap-2 cursor-pointer">
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
               <i v-if="isSubmittingNotice" class="pi pi-spin pi-spinner text-xs"></i>
               <i v-else class="pi pi-send text-xs"></i>
               <span>Submit Notice for Acceptance</span>
@@ -721,18 +722,18 @@
               class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white text-xs focus:outline-none focus:border-brand-500" />
           </div>
 
-          <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-surface-800">
+          <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-surface-800">
             <button 
               type="button" 
               @click="showReturnOnlineModal = false"
-              class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold transition-colors cursor-pointer">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold transition-colors cursor-pointer text-center">
               Cancel
             </button>
             <button 
               type="button" 
               :disabled="isSubmittingNotice"
               @click="confirmReturnOnline"
-              class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
               <i v-if="isSubmittingNotice" class="pi pi-spin pi-spinner text-xs"></i>
               <span>✓ Confirm & Go Online</span>
             </button>

@@ -149,9 +149,10 @@
         </div>
       </div>
 
-      <!-- Raw Ingredients Table -->
+      <!-- Raw Ingredients Table & Mobile Cards -->
       <div class="rounded-3xl bg-surface-800/90 border border-surface-700 overflow-hidden shadow-2xl">
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (hidden on mobile) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">
             <thead class="bg-surface-900/80 text-gray-400 uppercase text-[10px] tracking-wider border-b border-surface-700">
               <tr>
@@ -309,6 +310,106 @@
           </table>
         </div>
 
+        <!-- Mobile Card View (md:hidden) -->
+        <div class="md:hidden divide-y divide-surface-700/60 p-3.5 space-y-3.5">
+          <div 
+            v-if="paginatedIngredients.length === 0" 
+            class="py-10 text-center text-gray-500 space-y-2">
+            <i class="pi pi-box text-3xl text-gray-600"></i>
+            <p class="font-bold text-gray-400 text-sm">No raw ingredients found</p>
+            <p class="text-xs text-gray-500">Try selecting another category or clearing your search filter.</p>
+          </div>
+
+          <div 
+            v-for="ing in paginatedIngredients" 
+            :key="'mobile-' + ing.id" 
+            class="pt-3.5 first:pt-0 space-y-3">
+            
+            <!-- Card Header: Dot, Name, ID, Category & Status Badges -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="getStatusDot(ing)"></span>
+                <div class="min-w-0">
+                  <h4 class="font-bold text-white text-sm truncate">{{ ing.name }}</h4>
+                  <p class="text-[10px] text-gray-500 font-mono">{{ ing.id }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="getCategoryBadge(ing.category)">
+                  {{ ing.category }}
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider" :class="getStatusBadge(ing)">
+                  {{ getStatusText(ing) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Details Grid: Stock, Cost, Threshold, Expiry -->
+            <div class="grid grid-cols-2 gap-2 p-2.5 rounded-2xl bg-surface-900/80 border border-surface-700/60 text-xs">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-gray-400 block">Current Stock</span>
+                <span class="text-base font-black text-white">{{ ing.stock }}</span>
+                <span class="text-gray-400 text-xs ml-1">{{ ing.unit }}</span>
+                <span class="block text-[10px] text-amber-300 font-semibold">₱{{ Number(ing.cost || 0).toFixed(2) }} / {{ ing.unit }}</span>
+              </div>
+              <div>
+                <span class="text-[10px] uppercase font-bold text-gray-400 block">Safety Threshold</span>
+                <span class="text-xs text-gray-300">Min: <strong class="text-white">{{ ing.low_threshold }}</strong> {{ ing.unit }}</span>
+                <div v-if="ing.expiration_date" class="mt-1">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold" :class="getExpiryBadge(ing.expiration_date)">
+                    <i class="pi pi-clock text-[8px]"></i> {{ getExpiryStatus(ing.expiration_date) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Supplier & Restock Controls Row -->
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <div class="flex items-center gap-1 text-[11px] text-gray-400 min-w-0 truncate">
+                <i class="pi pi-building text-[10px] text-amber-400 shrink-0"></i>
+                <span class="truncate">{{ ing.supplier_name || 'Ferabby Mercantile' }}</span>
+              </div>
+
+              <!-- Quick Restock Buttons -->
+              <div class="inline-flex items-center gap-1 bg-surface-900 p-1 rounded-xl border border-surface-700 shrink-0">
+                <span class="text-[9px] font-bold text-gray-500 uppercase px-1">Restock:</span>
+                <button 
+                  @click="quickAdjust(ing, 10)"
+                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer">
+                  +10
+                </button>
+                <button 
+                  @click="quickAdjust(ing, 25)"
+                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer">
+                  +25
+                </button>
+                <button 
+                  @click="quickAdjust(ing, 50)"
+                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer">
+                  +50
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="flex items-center justify-end gap-2 pt-1 border-t border-surface-700/40">
+              <button 
+                @click="openEditModal(ing)"
+                class="px-3 py-1.5 rounded-xl bg-surface-700 hover:bg-surface-600 text-gray-200 text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer">
+                <i class="pi pi-pencil text-xs"></i>
+                <span>Edit</span>
+              </button>
+              <button 
+                @click="deleteIngredient(ing)"
+                class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500 text-rose-300 hover:text-white text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer">
+                <i class="pi pi-trash text-xs"></i>
+                <span>Delete</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
         <!-- Pagination & Footer Strip -->
         <div class="px-6 py-4 bg-surface-900/90 border-t border-surface-700/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <div class="flex flex-wrap items-center gap-3 text-gray-400">
@@ -371,8 +472,8 @@
       </div>
 
       <!-- Add/Edit Ingredient Modal -->
-      <div v-if="modalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-surface-900 border border-surface-700 rounded-3xl p-6 space-y-4 shadow-2xl">
+      <div v-if="modalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+        <div class="w-full max-w-md max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-scale-up">
           <div class="flex justify-between items-center border-b border-surface-700 pb-3">
             <h3 class="text-lg font-black text-white">
               {{ isEditing ? 'Edit Ingredient' : 'Add Raw Ingredient' }}

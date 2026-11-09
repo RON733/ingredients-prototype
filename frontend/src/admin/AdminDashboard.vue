@@ -2,28 +2,28 @@
 <div class="min-h-screen bg-surface-950 flex flex-col lg:flex-row">
       
       <!-- Mobile & Tablet Admin Top Bar (< 1024px) -->
-      <header class="lg:hidden bg-surface-900 border-b border-surface-800 p-4 sticky top-0 z-40 flex items-center justify-between gap-3 shadow-lg">
-        <div class="flex items-center gap-2.5 cursor-pointer" @click="selectTab(store.isAdminOrSuper ? 'analytics' : 'orders')">
-          <div class="w-8 h-8 rounded-lg bg-surface-800 border border-surface-700/80 flex items-center justify-center font-bold text-sm text-amber-400">G'</div>
-          <div>
-            <h1 class="text-sm font-black text-white leading-none">G SHOT TEAS</h1>
-            <p class="text-[9px] text-brand-400 font-bold uppercase mt-0.5">{{ (store.user?.role || "operations").toUpperCase() }}</p>
+      <header class="lg:hidden bg-surface-900 border-b border-surface-800 px-3 sm:px-4 py-3 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-lg backdrop-blur-md bg-surface-900/95">
+        <div class="flex items-center gap-2.5 cursor-pointer min-w-0" @click="selectTab(store.isAdminOrSuper ? 'analytics' : 'orders')">
+          <div class="w-8 h-8 rounded-xl bg-surface-800 border border-surface-700/80 flex items-center justify-center font-black text-sm text-amber-400 shrink-0 shadow-sm">G'</div>
+          <div class="min-w-0">
+            <h1 class="text-xs sm:text-sm font-black text-white leading-none tracking-tight truncate">G SHOT TEAS</h1>
+            <p class="text-[9px] text-amber-400 font-bold uppercase tracking-wider mt-0.5 truncate">{{ (store.user?.role || "operations").toUpperCase() }}</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <!-- Live Store Status Badge -->
-          <div class="px-2.5 py-1.5 rounded-lg text-[10px] font-bold border flex items-center gap-1.5"
+          <div class="px-2 sm:px-2.5 py-1.5 rounded-lg text-[10px] font-bold border flex items-center gap-1.5"
             :class="store.isStoreOpen ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border-rose-500/30'">
             <span class="w-1.5 h-1.5 rounded-full" :class="store.isStoreOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
-            <span>{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
+            <span class="hidden xs:inline">{{ store.isStoreOpen ? 'OPEN' : 'CLOSED' }}</span>
           </div>
 
           <!-- Mobile Rider Notices Button -->
           <button 
             @click="showRiderNoticesModal = true"
             type="button"
-            class="relative p-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs flex items-center justify-center cursor-pointer transition-colors"
+            class="relative p-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-200 border border-surface-700 text-xs flex items-center justify-center cursor-pointer transition-colors active:scale-95"
             title="Rider Notices">
             <span class="text-xs">🛵</span>
             <span 
@@ -33,18 +33,18 @@
             </span>
           </button>
 
-          <!-- Mobile Quick Lock Button -->
+          <!-- Quick Lock Button (Visible on sm+) -->
           <button 
             @click="handleLockTerminal"
-            class="p-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs flex items-center justify-center cursor-pointer transition-colors"
+            class="hidden sm:flex p-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs items-center justify-center cursor-pointer transition-colors active:scale-95"
             title="Lock Terminal">
             <i class="pi pi-lock text-xs"></i>
           </button>
 
-          <!-- Mobile Quick Logout Button -->
+          <!-- Quick Logout Button (Visible on sm+) -->
           <button 
             @click="handleLogout"
-            class="p-2 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs flex items-center justify-center cursor-pointer transition-colors"
+            class="hidden sm:flex p-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs items-center justify-center cursor-pointer transition-colors active:scale-95"
             title="Logout">
             <i class="pi pi-sign-out text-xs"></i>
           </button>
@@ -52,16 +52,16 @@
           <!-- Mobile Sidebar Drawer Toggle -->
           <button 
             @click="mobileNavOpen = !mobileNavOpen"
-            class="p-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs flex items-center gap-1.5 cursor-pointer"
+            class="p-2 sm:px-2.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-200 border border-surface-700 text-xs flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-sm"
             aria-label="Toggle Admin Menu">
             <i class="pi" :class="mobileNavOpen ? 'pi-times' : 'pi-bars'"></i>
-            <span class="text-xs font-bold hidden sm:inline">Tabs</span>
+            <span class="text-xs font-bold hidden sm:inline">Menu</span>
           </button>
         </div>
       </header>
 
       <!-- Quick Tab Scroll Strip on Mobile & Tablet (< 1024px) -->
-      <div class="lg:hidden bg-surface-950/90 border-b border-surface-800/80 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar sticky top-[61px] z-30 backdrop-blur-md">
+      <div class="lg:hidden bg-surface-950/95 border-b border-surface-800/80 px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar sticky top-[57px] z-30 backdrop-blur-md touch-pan-x" style="-webkit-overflow-scrolling: touch;">
         <button 
           v-if="store.isAdminOrSuper"
           @click="selectTab('analytics')" 
@@ -439,7 +439,7 @@
       <main class="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto space-y-6">
         
         <!-- Store Operations & Status Control Header (Staff, Admin, Super Admin) -->
-        <div class="p-4 sm:p-5 rounded-2xl border border-surface-750/80 bg-surface-900/90 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="p-4 sm:p-5 rounded-2xl border border-surface-750/80 bg-surface-900/90 shadow-md flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           
           <!-- Status Info & Description -->
           <div class="flex items-center gap-3.5 min-w-0">
@@ -456,7 +456,7 @@
             </div>
 
             <!-- Store Status Labels -->
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-400 whitespace-nowrap">Store Status:</span>
                 <span class="text-sm sm:text-base font-extrabold tracking-tight whitespace-nowrap"
@@ -477,24 +477,24 @@
           </div>
 
           <!-- Store Status Flag Toggle & Quick Action Controls -->
-          <div class="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-wrap">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full xl:w-auto">
             <!-- Active Staff Operator PIN Chip on Shared Counter Laptop (Staff Only) -->
             <button 
               v-if="store.isStaffOnly"
               @click="store.openStaffPinModal()"
-              class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-xs text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
+              class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-xs text-neutral-200 border border-surface-700 transition-all flex items-center justify-center sm:justify-start gap-2 cursor-pointer shadow-sm active:scale-95"
               title="Shared laptop terminal: Click to switch active staff operator via 4-digit PIN">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
               <span class="text-neutral-400 text-[11px] hidden sm:inline">On Duty:</span>
-              <span class="font-bold text-white text-xs truncate max-w-[110px]">{{ store.user?.name || 'Staff' }}</span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono font-bold">SWITCH PIN</span>
+              <span class="font-bold text-white text-xs truncate max-w-[100px]">{{ store.user?.name || 'Staff' }}</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono font-bold shrink-0">PIN</span>
             </button>
 
             <!-- Rider Fleet Notices Indicator Button -->
             <button 
               @click="showRiderNoticesModal = true"
               type="button"
-              class="relative flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-800/80 hover:bg-surface-700 border border-surface-700/60 text-xs font-bold text-neutral-300 hover:text-white transition-all shadow-sm cursor-pointer"
+              class="relative flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-surface-800/80 hover:bg-surface-700 border border-surface-700/60 text-xs font-bold text-neutral-300 hover:text-white transition-all shadow-sm cursor-pointer active:scale-95"
               title="View Notices & Availability Updates from Delivery Riders">
               <span class="text-sm">🛵</span>
               <span class="hidden sm:inline">Rider Notices</span>
@@ -506,7 +506,7 @@
             </button>
 
             <!-- Live Clock in Admin Console -->
-            <div class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-800/80 border border-surface-700/60 text-xs font-mono text-neutral-300 shadow-sm" title="Live Store Clock">
+            <div class="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-800/80 border border-surface-700/60 text-xs font-mono text-neutral-300 shadow-sm" title="Live Store Clock">
               <i class="pi pi-clock text-amber-400 text-xs"></i>
               <span>{{ currentTime }}</span>
             </div>
@@ -514,12 +514,12 @@
             <!-- Store Open/Close Toggle Button -->
             <button 
               @click="store.toggleStoreStatus()"
-              class="px-3.5 py-2 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               :class="store.isStoreOpen 
                 ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30' 
                 : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
               <i class="text-xs" :class="store.isStoreOpen ? 'pi pi-power-off text-rose-400' : 'pi pi-check-circle text-emerald-400'"></i>
-              <span>{{ store.isStoreOpen ? 'Flag as Closed' : 'Flag as Open' }}</span>
+              <span>{{ store.isStoreOpen ? 'Close Store' : 'Open Store' }}</span>
             </button>
 
             <!-- Super Admin Exclusive: Website Emergency Shutdown Toggle Button -->
@@ -527,17 +527,17 @@
               v-if="store.isSuperAdmin"
               @click="openShutdownModal"
               type="button"
-              class="px-3 py-2 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              class="w-full sm:w-auto px-3.5 py-2 rounded-xl font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               :class="store.isMaintenanceMode 
                 ? 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/30 ring-2 ring-purple-400/50' 
                 : 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30'"
               title="Super Admin: Shut down website / Activate Maintenance Mode">
               <i class="text-xs" :class="store.isMaintenanceMode ? 'pi pi-wrench' : 'pi pi-shield'"></i>
-              <span>{{ store.isMaintenanceMode ? 'Maintenance Active' : 'Shutdown Website' }}</span>
+              <span>{{ store.isMaintenanceMode ? 'Maintenance Active' : 'Shutdown' }}</span>
             </button>
 
-            <!-- Quick Utility Buttons: Lock & Logout -->
-            <div class="flex items-center gap-1 pl-1 border-l border-surface-750">
+            <!-- Quick Utility Buttons: Lock & Logout (Desktop) -->
+            <div class="hidden sm:flex items-center gap-1 pl-1 border-l border-surface-750">
               <button 
                 @click="handleLockTerminal"
                 type="button"
@@ -924,8 +924,8 @@
                 ? 'bg-surface-950/60 border-surface-800 text-neutral-300' 
                 : 'bg-surface-850 border-amber-500/40 text-white shadow-md'">
               
-              <div class="flex items-start justify-between gap-3">
-                <div class="flex items-center gap-2.5">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div class="flex items-center gap-2.5 min-w-0">
                   <div 
                     class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0"
                     :class="notice.status === 'available' 
@@ -933,9 +933,9 @@
                       : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'">
                     <i class="pi" :class="notice.status === 'available' ? 'pi-check-circle' : 'pi-clock'"></i>
                   </div>
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-extrabold text-xs text-white">{{ notice.driver_name || 'Rider' }}</span>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-extrabold text-xs text-white truncate">{{ notice.driver_name || 'Rider' }}</span>
                       <span 
                         class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider"
                         :class="notice.is_acknowledged 
@@ -944,26 +944,28 @@
                         {{ notice.is_acknowledged ? (notice.status === 'available' ? 'Available' : 'Unavailable') : '⏳ Pending Acceptance' }}
                       </span>
                     </div>
-                    <p class="text-[10px] text-neutral-400">{{ formatNoticeTime(notice.created_at) }}</p>
+                    <p class="text-[10px] text-neutral-400 mt-0.5">{{ formatNoticeTime(notice.created_at) }}</p>
                   </div>
                 </div>
 
                 <!-- Accept Notice Button -->
-                <button 
-                  v-if="!notice.is_acknowledged" 
-                  type="button"
-                  :disabled="acceptingNoticeId === notice.id"
-                  @click="handleAcceptNotice(notice.id)"
-                  class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition-all cursor-pointer shadow-md flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <i :class="acceptingNoticeId === notice.id ? 'pi pi-spin pi-spinner text-xs font-black' : 'pi pi-check text-xs font-black'"></i>
-                  <span>{{ acceptingNoticeId === notice.id ? 'Accepting...' : 'Accept Notice' }}</span>
-                </button>
-                <span 
-                  v-else 
-                  class="text-[11px] font-bold text-rose-300 bg-rose-500/20 border border-rose-500/30 px-2.5 py-1 rounded-xl flex items-center gap-1">
-                  <i class="pi pi-check text-[10px] text-emerald-400"></i>
-                  <span>Notice Accepted • Flagged Unavailable</span>
-                </span>
+                <div class="self-start sm:self-auto shrink-0">
+                  <button 
+                    v-if="!notice.is_acknowledged" 
+                    type="button"
+                    :disabled="acceptingNoticeId === notice.id"
+                    @click="handleAcceptNotice(notice.id)"
+                    class="w-full sm:w-auto px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                    <i :class="acceptingNoticeId === notice.id ? 'pi pi-spin pi-spinner text-xs font-black' : 'pi pi-check text-xs font-black'"></i>
+                    <span>{{ acceptingNoticeId === notice.id ? 'Accepting...' : 'Accept Notice' }}</span>
+                  </button>
+                  <span 
+                    v-else 
+                    class="text-[11px] font-bold text-rose-300 bg-rose-500/20 border border-rose-500/30 px-2.5 py-1 rounded-xl flex items-center gap-1">
+                    <i class="pi pi-check text-[10px] text-emerald-400"></i>
+                    <span>Notice Accepted • Flagged Unavailable</span>
+                  </span>
+                </div>
               </div>
 
               <!-- Reason Body -->

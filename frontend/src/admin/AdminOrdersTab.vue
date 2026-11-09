@@ -85,7 +85,7 @@
       </div>
 
       <!-- Filter Tabs -->
-      <div class="flex items-center gap-1.5 p-1 bg-surface-900/80 border border-surface-750/70 rounded-xl w-fit overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-1.5 p-1 bg-surface-900/80 border border-surface-750/70 rounded-xl max-w-full overflow-x-auto no-scrollbar touch-pan-x">
         <button 
           v-for="st in statusFilters" 
           :key="st.key"
@@ -162,24 +162,24 @@
           
           <!-- Order Title, Customer Name, and Current Status -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-700/60 pb-4">
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
               <span class="text-xl font-black text-white">{{ order.order_number }}</span>
-              <span class="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase"
+              <span class="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase shrink-0"
                 :class="order.order_type === 'Delivery' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
                 {{ order.order_type }}
               </span>
-              <span v-if="order.source === 'loyverse_pos' || (order.order_number && order.order_number.startsWith('LV-'))" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+              <span v-if="order.source === 'loyverse_pos' || (order.order_number && order.order_number.startsWith('LV-'))" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shrink-0">
                 <i class="pi pi-bolt text-[10px]"></i> Loyverse POS
               </span>
-              <span v-if="order.driver" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+              <span v-if="order.driver" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1 shrink-0">
                 <i class="pi pi-send text-[10px]"></i> {{ order.driver.name }}
               </span>
-              <span class="text-xs text-gray-400">
+              <span class="text-xs text-gray-400 shrink-0">
                 &bull; {{ formatTime(order.created_at) }}
               </span>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
               <!-- Payment Status Badge -->
               <span 
                 class="px-2.5 py-1 rounded-lg text-[11px] font-bold"
@@ -246,12 +246,12 @@
           </div>
 
           <!-- Workflow Action Buttons (Staff & Admin Controls) -->
-          <div class="pt-2 flex flex-wrap items-center justify-end gap-2 border-t border-surface-700/50">
+          <div class="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-end gap-2 border-t border-surface-700/50">
             <!-- Verify Payment button if GCash pending -->
             <button 
               v-if="order.payment_method === 'GCash' && order.payment_status !== 'Verified'"
               @click="verifyPayment(order)"
-              class="px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-500/20 hover:bg-sky-500 text-sky-400 hover:text-white border border-sky-500/30 transition-all flex items-center gap-1.5">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-sky-500/20 hover:bg-sky-500 text-sky-400 hover:text-white border border-sky-500/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
               <i class="pi pi-check"></i>
               <span>Verify GCash Payment</span>
             </button>
@@ -260,7 +260,7 @@
             <button 
               v-if="order.status === 'Pending'"
               @click="updateStatus(order, 'Preparing')"
-              class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
               <i class="pi pi-play"></i>
               <span>Start Preparing</span>
             </button>
@@ -269,7 +269,7 @@
             <button 
               v-if="order.status === 'Preparing' && order.order_type === 'Delivery'"
               @click="openDispatchModal(order)"
-              class="px-4 py-2 rounded-xl text-xs font-black bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/30 transition-all flex items-center gap-1.5">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-black bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
               <i class="pi pi-send"></i>
               <span>Dispatch Rider</span>
             </button>
@@ -277,7 +277,7 @@
             <button 
               v-else-if="order.status === 'Preparing'"
               @click="updateStatus(order, 'Ready for Pickup')"
-              class="px-4 py-2 rounded-xl text-xs font-black bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/30 transition-all flex items-center gap-1.5">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-black bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
               <i class="pi pi-check"></i>
               <span>Mark Ready for Pickup</span>
             </button>
@@ -286,7 +286,7 @@
             <button 
               v-if="(order.status === 'Preparing' || order.status === 'Ready for Pickup') && order.order_type !== 'Delivery'"
               @click="updateStatus(order, 'Completed')"
-              class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition-all flex items-center gap-1.5">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
               <i class="pi pi-check-circle"></i>
               <span>Complete Order</span>
             </button>
@@ -294,7 +294,7 @@
             <!-- When a Delivery order is Out for Delivery: locked for staff! Only the assigned rider can complete it! -->
             <div 
               v-if="order.order_type === 'Delivery' && order.status === 'Out for Delivery'"
-              class="px-3 py-1.5 rounded-xl bg-sky-950/60 border border-sky-500/30 text-sky-300 text-[11px] font-bold flex items-center gap-2">
+              class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-sky-950/60 border border-sky-500/30 text-sky-300 text-[11px] font-bold flex items-center justify-center gap-2">
               <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
               <i class="pi pi-send text-xs"></i><span>Dispatched to {{ order.driver?.name || 'Rider' }} &bull; Awaiting Rider Completion</span>
             </div>
@@ -302,7 +302,7 @@
             <button 
               v-if="order.status !== 'Completed' && order.status !== 'Cancelled'"
               @click="updateStatus(order, 'Cancelled')"
-              class="px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors">
+              class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors text-center cursor-pointer">
               Cancel Order
             </button>
           </div>
@@ -359,9 +359,9 @@
       <!-- Dispatch Rider Selection Modal -->
       <div 
         v-if="dispatchModalOrder"
-        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
         @click.self="dispatchModalOrder = null">
-        <div class="relative max-w-md w-full bg-surface-900 border border-surface-700 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-up">
+        <div class="relative max-w-md w-full max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 animate-scale-up">
           
           <!-- Header -->
           <div class="flex items-center justify-between pb-3 border-b border-surface-800">
@@ -473,18 +473,18 @@
           </div>
 
           <!-- Modal Action Buttons -->
-          <div class="pt-2 flex items-center justify-end gap-2 border-t border-surface-800">
+          <div class="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-surface-800">
             <button 
               type="button" 
               @click="dispatchModalOrder = null"
-              class="px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold transition-colors">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold transition-colors text-center cursor-pointer">
               Cancel
             </button>
             <button 
               type="button" 
               @click="confirmDispatch"
               :disabled="!selectedDriverId || isDispatching"
-              class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-black shadow-lg shadow-sky-600/30 transition-all flex items-center gap-2">
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-black shadow-lg shadow-sky-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
               <i class="pi pi-send"></i>
               <span>{{ isDispatching ? 'Dispatching...' : 'Confirm & Dispatch Rider' }}</span>
             </button>

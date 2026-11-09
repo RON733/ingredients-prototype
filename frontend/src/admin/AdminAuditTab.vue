@@ -129,7 +129,7 @@
       <!-- Filter Controls Strip -->
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-surface-850/80 p-3 rounded-2xl border border-surface-750">
         <!-- Role Badges Tabs -->
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
           <button 
             @click="selectedRole = 'all'"
             class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
@@ -192,9 +192,10 @@
         </div>
       </div>
 
-      <!-- Logs Table -->
+      <!-- Logs Table & Mobile Cards -->
       <div class="rounded-3xl bg-surface-800/90 border border-surface-700 overflow-hidden shadow-2xl">
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (hidden on mobile) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">
             <thead class="bg-surface-900/80 text-gray-400 uppercase text-[10px] tracking-wider border-b border-surface-700">
               <tr>
@@ -302,6 +303,91 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Cards (md:hidden) -->
+        <div class="md:hidden divide-y divide-surface-700/60 p-3.5 space-y-3.5">
+          <!-- Loading Skeleton -->
+          <div v-if="loading && filteredLogs.length === 0" class="py-10 text-center text-gray-400">
+            <i class="pi pi-spin pi-spinner text-2xl text-brand-400 mb-2"></i>
+            <p class="text-xs">Loading personnel audit trail...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="filteredLogs.length === 0" class="py-10 text-center text-gray-400">
+            <div class="w-12 h-12 rounded-2xl bg-surface-900 border border-surface-700 flex items-center justify-center mx-auto mb-3 text-gray-500">
+              <i class="pi pi-history text-lg"></i>
+            </div>
+            <p class="text-sm font-bold text-gray-200">No matching audit logs found</p>
+            <p class="text-xs text-gray-500 mt-1">
+              {{ searchQuery ? 'Try adjusting your search terms.' : 'Audit trail is strictly showing Staff, Admin, and Super Admin personnel activities.' }}
+            </p>
+          </div>
+
+          <!-- Log Card -->
+          <div 
+            v-else
+            v-for="log in paginatedLogs" 
+            :key="'mobile-' + log.id" 
+            class="pt-3.5 first:pt-0 space-y-2.5">
+            
+            <!-- Top: Timestamp & Action Badge -->
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-gray-400 text-[11px] flex items-center gap-1.5">
+                <i class="pi pi-clock text-[10px] text-gray-500"></i>
+                {{ formatDate(log.created_at) }}
+              </span>
+              <span 
+                class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0"
+                :class="getActionBadgeClass(log.action, log.user_role)">
+                {{ log.action }}
+              </span>
+            </div>
+
+            <!-- Personnel info -->
+            <div class="flex items-center gap-2 p-2 rounded-xl bg-surface-900/80 border border-surface-700/60">
+              <div 
+                class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] shrink-0"
+                :class="getRoleAvatarClass(log.user_role)">
+                {{ (log.user_name || 'U').charAt(0).toUpperCase() }}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-bold text-white text-xs truncate">{{ log.user_name || 'Authorized User' }}</div>
+                <div class="mt-0.5">
+                  <span 
+                    v-if="log.user_role === 'super_admin'" 
+                    class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                    <i class="pi pi-crown text-[8px]"></i> Super Admin
+                  </span>
+                  <span 
+                    v-else-if="log.user_role === 'admin'" 
+                    class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    <i class="pi pi-shield text-[8px]"></i> Admin (Owner)
+                  </span>
+                  <span 
+                    v-else-if="log.user_role === 'staff'" 
+                    class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-sky-500/20 text-sky-300 border border-sky-500/40">
+                    <i class="pi pi-user text-[8px]"></i> Staff (Barista)
+                  </span>
+                  <span 
+                    v-else-if="log.user_role === 'driver'" 
+                    class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    <i class="pi pi-compass text-[8px]"></i> Driver (Rider)
+                  </span>
+                  <span 
+                    v-else 
+                    class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-surface-700 text-gray-300">
+                    {{ log.user_role }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Details -->
+            <p class="text-xs text-gray-300 leading-relaxed pl-1">
+              {{ log.details }}
+            </p>
+          </div>
         </div>
 
         <!-- Pagination & Footer Strip -->

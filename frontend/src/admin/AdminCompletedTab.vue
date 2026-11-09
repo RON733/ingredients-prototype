@@ -27,7 +27,7 @@
           class="p-6 sm:p-8 rounded-3xl bg-surface-800/90 border border-surface-700/80 shadow-xl space-y-6">
           
           <!-- Header: Order ID & Completed Badge -->
-          <div class="flex items-center justify-between border-b border-surface-700/60 pb-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-700/60 pb-4">
             <div>
               <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">ORDER {{ order.order_number }}</p>
               <p class="text-xs text-gray-400 mt-0.5">Placed: {{ formatDate(order.created_at) }}</p>
@@ -37,7 +37,7 @@
               </p>
             </div>
 
-            <span class="px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span class="self-start sm:self-auto px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
               COMPLETED
             </span>
           </div>
@@ -99,9 +99,9 @@
       <!-- Receipt Screenshot Lightbox Modal -->
       <div 
         v-if="selectedReceiptImage" 
-        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
         @click.self="selectedReceiptImage = null">
-        <div class="relative max-w-lg w-full bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up">
+        <div class="relative max-w-lg w-full max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up">
           <div class="flex items-center justify-between pb-3 border-b border-surface-800">
             <h4 class="text-sm font-bold text-white flex items-center gap-2">
               <i class="pi pi-receipt text-sky-400"></i> Customer GCash Receipt Screenshot

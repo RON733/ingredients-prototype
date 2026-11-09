@@ -132,9 +132,10 @@
         </div>
       </div>
 
-      <!-- Users Table -->
+      <!-- Users Table & Mobile Cards -->
       <div class="rounded-3xl bg-surface-800/90 border border-surface-700 overflow-hidden shadow-2xl">
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (hidden on mobile) -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">
             <thead class="bg-surface-900/80 text-gray-400 uppercase text-[10px] tracking-wider border-b border-surface-700">
               <tr>
@@ -257,15 +258,119 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile Cards (md:hidden) -->
+        <div class="md:hidden divide-y divide-surface-700/60 p-3.5 space-y-3.5">
+          <div v-if="filteredUsers.length === 0" class="py-10 text-center text-gray-400">
+            <div class="w-12 h-12 rounded-2xl bg-surface-900 border border-surface-700 flex items-center justify-center mx-auto mb-3 text-gray-500">
+              <i class="pi pi-users text-lg"></i>
+            </div>
+            <p class="text-sm font-bold text-gray-200">No users match your filter</p>
+            <p class="text-xs text-gray-500 mt-1">Try clearing your search terms or filter selection.</p>
+          </div>
+
+          <div 
+            v-for="u in filteredUsers" 
+            :key="'mobile-' + u.id" 
+            class="pt-3.5 first:pt-0 space-y-3">
+            
+            <!-- User Header: Avatar, Name, Email, Badges -->
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <img v-if="u.avatar" :src="u.avatar" class="w-9 h-9 rounded-full object-cover ring-1 ring-surface-600 shrink-0" />
+                <div v-else class="w-9 h-9 rounded-full bg-surface-700 flex items-center justify-center font-bold text-white text-xs shrink-0">
+                  {{ u.name.charAt(0) }}
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <p class="font-bold text-white text-sm truncate">{{ u.name }}</p>
+                    <span v-if="u.google_id" title="Google OAuth Linked" class="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-400 font-bold">
+                      Google
+                    </span>
+                  </div>
+                  <p class="text-gray-400 text-[11px] font-mono truncate">{{ u.email }}</p>
+                </div>
+              </div>
+
+              <!-- Status Badge -->
+              <span 
+                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0"
+                :class="u.status === 'active' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'">
+                <span class="w-1.5 h-1.5 rounded-full" :class="u.status === 'active' ? 'bg-emerald-400' : 'bg-rose-400'"></span>
+                <span>{{ u.status || 'active' }}</span>
+              </span>
+            </div>
+
+            <!-- Role Badge & 4-Digit Staff PIN Grid -->
+            <div class="grid grid-cols-2 gap-2 p-2.5 rounded-2xl bg-surface-900/80 border border-surface-700/60 text-xs">
+              <div>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Assigned Role</span>
+                <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider" :class="getRoleBadge(u.role)">
+                  {{ formatRoleName(u.role) }}
+                </span>
+                <div v-if="u.phone" class="mt-1.5 flex items-center gap-1 text-[11px] text-gray-400">
+                  <i class="pi pi-phone text-[9px] text-emerald-400"></i>
+                  <a :href="'tel:' + u.phone" class="underline hover:text-white font-mono">{{ u.phone }}</a>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Staff PIN</span>
+                <div v-if="['staff', 'driver', 'admin'].includes(u.role)" class="mt-1 flex items-center gap-1.5">
+                  <span class="font-mono font-bold text-xs px-2 py-0.5 rounded-lg bg-surface-950 border border-surface-700 text-brand-400">
+                    {{ revealedPins[u.id] ? (u.pin || 'None') : (u.pin ? '••••' : 'None') }}
+                  </span>
+                  <button 
+                    v-if="u.pin"
+                    @click="togglePinReveal(u.id)"
+                    class="p-1 text-gray-400 hover:text-white text-xs cursor-pointer"
+                    :title="revealedPins[u.id] ? 'Hide PIN' : 'Reveal PIN'">
+                    <i class="pi" :class="revealedPins[u.id] ? 'pi-eye-slash' : 'pi-eye'"></i>
+                  </button>
+                  <button 
+                    @click="promptEditPin(u)"
+                    class="p-1 text-sky-400 hover:text-sky-300 text-xs cursor-pointer"
+                    title="Change PIN">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                </div>
+                <span v-else class="text-gray-600 text-[11px] mt-1 block">—</span>
+              </div>
+            </div>
+
+            <!-- Role Change Dropdown & Account Status Toggle -->
+            <div class="flex items-center justify-between gap-2 pt-1 border-t border-surface-700/40">
+              <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                <span class="text-[10px] text-gray-400 uppercase font-bold shrink-0">Role:</span>
+                <select 
+                  :value="u.role" 
+                  @change="changeRole(u, $event.target.value)"
+                  class="flex-1 min-w-0 px-2 py-1.5 rounded-xl bg-surface-900 border border-surface-700 text-xs text-gray-200 cursor-pointer focus:outline-none focus:border-brand-500">
+                  <option value="staff">Staff (Barista)</option>
+                  <option value="driver">Delivery Rider</option>
+                  <option value="admin">Admin (Owner)</option>
+                </select>
+              </div>
+
+              <button 
+                @click="toggleStatus(u)"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer shrink-0"
+                :class="u.status === 'active' ? 'border-rose-500/40 text-rose-400 hover:bg-rose-500/20' : 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20'">
+                {{ u.status === 'active' ? 'Deactivate' : 'Activate' }}
+              </button>
+            </div>
+
+          </div>
+        </div>
       </div>
 
       <!-- Create New Personnel Modal -->
       <div 
         v-if="createModalOpen" 
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
         @click.self="createModalOpen = false">
         
-        <div class="relative w-full max-w-lg bg-surface-900 border border-surface-700 rounded-3xl p-6 sm:p-7 shadow-2xl text-white space-y-5 animate-scale-up">
+        <div class="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-7 shadow-2xl text-white space-y-5 animate-scale-up">
           
           <!-- Close button -->
           <button 

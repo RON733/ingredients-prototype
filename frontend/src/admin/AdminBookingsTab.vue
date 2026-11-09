@@ -64,23 +64,23 @@
           </div>
 
           <!-- Actions -->
-          <div class="pt-2 flex items-center justify-end gap-2 border-t border-surface-700/50">
+          <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-surface-700/50">
             <button 
               v-if="b.status === 'Pending'"
               @click="updateStatus(b, 'Approved')"
-              class="px-4 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors">
+              class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer text-center">
               Approve Booking
             </button>
             <button 
               v-if="b.status === 'Approved'"
               @click="updateStatus(b, 'Completed')"
-              class="px-4 py-1.5 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white transition-colors">
+              class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer text-center">
               Mark Completed
             </button>
             <button 
               v-if="b.status === 'Pending'"
               @click="updateStatus(b, 'Declined')"
-              class="px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors">
+              class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors cursor-pointer text-center">
               Decline
             </button>
           </div>

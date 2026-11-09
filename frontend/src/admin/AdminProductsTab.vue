@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 <div class="space-y-6">
       
       <!-- Top Header & Actions -->
@@ -76,7 +76,7 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         
         <!-- Category Pills -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar touch-pan-x">
           <button 
             v-for="cat in categories" 
             :key="cat"
@@ -91,8 +91,8 @@
         </div>
 
         <!-- Search Bar and Sort -->
-        <div class="flex items-center gap-2.5 flex-wrap">
-          <div class="relative w-56 sm:w-64">
+        <div class="flex items-center gap-2.5 flex-wrap w-full md:w-auto">
+          <div class="relative flex-1 sm:w-64 min-w-[150px]">
             <i class="pi pi-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
             <input 
               v-model="searchQuery"
@@ -104,7 +104,7 @@
 
           <select 
             v-model="sortOrder"
-            class="px-3.5 py-2 rounded-xl bg-surface-800 text-gray-300 text-xs border border-surface-700 focus:outline-none focus:border-brand-500 cursor-pointer">
+            class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-surface-800 text-gray-300 text-xs border border-surface-700 focus:outline-none focus:border-brand-500 cursor-pointer">
             <option value="default">Sort by Default</option>
             <option value="discounted_first">Discounted / On Sale First</option>
             <option value="price_asc">Sort by Price: Low</option>

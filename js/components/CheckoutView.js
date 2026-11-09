@@ -99,16 +99,10 @@ const CheckoutView = {
 
           <!-- Delivery Address (Only if Delivery selected) -->
           <div v-if="form.order_type === 'Delivery'">
-            <div class="flex items-center justify-between mb-2">
+            <div class="mb-2">
               <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
                 Delivery Address <span class="text-rose-500">*</span>
               </label>
-              <button 
-                type="button"
-                @click="useCurrentLocation" 
-                class="text-[11px] text-brand-400 hover:text-brand-300 font-semibold flex items-center gap-1">
-                <i class="pi pi-building text-[10px]"></i> Reset Pin to Store Location
-              </button>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
               <button 
@@ -136,60 +130,6 @@ const CheckoutView = {
               <i class="pi pi-exclamation-circle text-[10px]"></i>
               <span>{{ addressError }}</span>
             </p>
-            <p v-else class="text-gray-500 text-[11px] mt-1">
-              Currently delivering across Santa Rosa, Laguna and nearby subdivisions.
-            </p>
-            
-            <!-- Search & High Accuracy Location Controls -->
-            <div class="mt-3 space-y-2">
-              <div class="relative flex items-center">
-                <input 
-                  v-model="geoSearchQuery" 
-                  @keydown.enter.prevent="searchAddressOnMap"
-                  type="text" 
-                  placeholder="Search subdivision, street, or landmark in Santa Rosa (e.g. Balibago, Golden City)..."
-                  class="w-full pl-9 pr-24 py-2.5 rounded-xl bg-surface-900 border border-surface-700 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-all shadow-inner"
-                />
-                <i class="pi pi-search absolute left-3 text-gray-500 text-xs"></i>
-                <button 
-                  type="button" 
-                  @click="searchAddressOnMap"
-                  :disabled="isGeoSearching"
-                  class="absolute right-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold transition-all disabled:opacity-50 flex items-center gap-1 shadow-sm cursor-pointer">
-                  <i class="pi" :class="isGeoSearching ? 'pi-spin pi-spinner' : 'pi-map-marker'"></i>
-                  <span>{{ isGeoSearching ? 'Searching...' : 'Locate' }}</span>
-                </button>
-              </div>
-
-              <!-- Quick Santa Rosa Area Chips -->
-              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-[11px]">
-                <span class="text-gray-500 shrink-0 text-[10px] font-bold uppercase tracking-wider">Quick Jump:</span>
-                <button 
-                  v-for="chip in santaRosaChips" 
-                  :key="chip.name"
-                  type="button"
-                  @click="jumpToChip(chip)"
-                  class="px-2.5 py-0.5 rounded-full bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 shrink-0 transition-all font-medium text-[11px] cursor-pointer">
-                  <i class="pi pi-map-marker text-emerald-400 mr-1 text-[10px]"></i>{{ chip.name }}
-                </button>
-              </div>
-
-              <!-- Geocoding Search Suggestions Dropdown -->
-              <div v-if="geoSearchResults && geoSearchResults.length > 0" class="rounded-xl bg-surface-900 border border-emerald-500/50 p-2 space-y-1 shadow-2xl animate-fade-in z-20">
-                <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider px-2">Select matching location:</p>
-                <div 
-                  v-for="result in geoSearchResults" 
-                  :key="result.place_id"
-                  @click="selectGeoResult(result)"
-                  class="p-2 rounded-lg hover:bg-surface-800 cursor-pointer text-xs text-gray-200 transition-colors flex items-start gap-2">
-                  <i class="pi pi-map-marker text-emerald-400 mt-0.5 shrink-0"></i>
-                  <div class="min-w-0">
-                    <p class="font-bold truncate text-white">{{ result.display_name.split(',')[0] }}</p>
-                    <p class="text-[10px] text-gray-400 truncate">{{ result.display_name }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             <!-- Estimated Delivery Time Card (Customer View) -->
             <div class="mt-3 p-4 rounded-2xl bg-surface-900 border border-surface-700/80 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
