@@ -856,6 +856,144 @@
         </div>
       </div>
 
+      <!-- Interactive PayMongo QR Ph Payment Modal (Instant In-Page Checkout) -->
+      <div 
+        v-if="paymongoModalOpen" 
+        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="dismissPaymongoModal">
+        <div class="relative max-w-md w-full bg-surface-900 border-2 border-emerald-500/50 rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-up text-center overflow-hidden">
+          
+          <div class="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <!-- Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
+            <div class="flex items-center gap-2 text-left">
+              <span class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">
+                <i class="pi pi-qrcode"></i>
+              </span>
+              <div>
+                <h4 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <span>PayMongo QR Ph</span>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    Auto-Checkout
+                  </span>
+                </h4>
+                <p class="text-[11px] text-gray-400">Order {{ activePaymongoOrder?.order_number || '' }}</p>
+              </div>
+            </div>
+            <button 
+              @click="dismissPaymongoModal" 
+              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
+              ✕
+            </button>
+          </div>
+
+          <!-- SUCCESS STATE (Once Paid) -->
+          <div v-if="paymongoPaymentConfirmed" class="py-8 space-y-4 animate-scale-up">
+            <div class="w-20 h-20 mx-auto rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 text-3xl shadow-xl shadow-emerald-500/20 animate-bounce">
+              <i class="pi pi-check text-3xl font-black"></i>
+            </div>
+            <div class="space-y-1">
+              <h3 class="text-xl font-black text-white">Payment Received!</h3>
+              <p class="text-sm text-emerald-400 font-bold">₱{{ Number(activePaymongoOrder?.total_amount || grandTotal).toFixed(2) }} Verified</p>
+              <p class="text-xs text-gray-300 mt-2">Your order has been checked out automatically and sent to the kitchen staff to prepare!</p>
+            </div>
+            <div class="pt-2">
+              <span class="inline-flex items-center gap-2 text-xs text-gray-400 font-mono">
+                <i class="pi pi-spin pi-spinner text-emerald-400 text-xs"></i>
+                <span>Redirecting to order tracker...</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- AWAITING PAYMENT STATE -->
+          <div v-else class="space-y-4">
+            <!-- QR Box -->
+            <div class="p-4 rounded-2xl bg-surface-950/90 border border-surface-800 space-y-3">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total to Pay</span>
+                <span class="text-sm font-black text-emerald-400">₱{{ Number(activePaymongoOrder?.total_amount || grandTotal).toFixed(2) }}</span>
+              </div>
+
+              <div class="relative group inline-block mx-auto">
+                <div class="w-56 h-56 sm:w-64 sm:h-64 mx-auto rounded-2xl bg-white p-3 border-2 border-emerald-400/60 shadow-xl flex items-center justify-center overflow-hidden">
+                  <img 
+                    v-if="activePaymongoQr" 
+                    :src="activePaymongoQr" 
+                    alt="PayMongo QR Ph Code" 
+                    class="w-full h-full object-contain"
+                  />
+                  <div v-else class="text-center py-10 space-y-2">
+                    <i class="pi pi-spin pi-spinner text-2xl text-emerald-500"></i>
+                    <p class="text-xs text-gray-500 font-medium">Loading QR Code...</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Badges -->
+              <div class="flex items-center justify-center gap-1.5 text-[10px] text-gray-300 font-bold flex-wrap pt-1">
+                <span class="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-400/30">GCash</span>
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Maya</span>
+                <span class="px-2 py-0.5 rounded-md bg-violet-500/20 text-violet-300 border border-violet-400/30">BDO / BPI</span>
+                <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30">Any QR Ph</span>
+              </div>
+            </div>
+
+            <!-- Live Status Radar -->
+            <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center justify-center gap-2.5 text-xs text-emerald-300">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span class="font-bold">Awaiting Payment Confirmation...</span>
+            </div>
+
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+              Open your <strong>GCash</strong> or <strong>Maya</strong> app, tap <strong>Scan QR</strong>, and scan the code. This page automatically completes checkout upon payment!
+            </p>
+
+            <!-- Actions -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+              <button 
+                type="button" 
+                @click="checkModalPaymongoStatus"
+                :disabled="isCheckingModalPayment"
+                class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50">
+                <i class="pi" :class="isCheckingModalPayment ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
+                <span>{{ isCheckingModalPayment ? 'Checking...' : 'Check Payment Status' }}</span>
+              </button>
+
+              <a 
+                v-if="activePaymongoQr" 
+                :href="activePaymongoQr" 
+                :download="`PayMongo-QR-Order-${activePaymongoOrder?.order_number || 'GST'}.png`"
+                class="w-full sm:w-auto py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+                <i class="pi pi-download"></i>
+                <span>Save QR</span>
+              </a>
+            </div>
+
+            <div class="flex items-center justify-between text-xs pt-2 border-t border-surface-800 text-gray-400">
+              <a 
+                v-if="activePaymongoCheckoutUrl" 
+                :href="activePaymongoCheckoutUrl" 
+                target="_blank" 
+                class="text-emerald-400 hover:text-emerald-300 underline font-semibold flex items-center gap-1 text-[11px]">
+                <span>Pay via Card Portal</span>
+                <i class="pi pi-external-link text-[10px]"></i>
+              </a>
+              <button 
+                type="button" 
+                @click="dismissPaymongoModal"
+                class="text-gray-400 hover:text-white text-[11px] underline ml-auto">
+                Track Order & Pay Later &rarr;
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
 </template>
 
@@ -877,6 +1015,13 @@ export default {
     const isQrModalOpen = Vue.ref(false);
     const isReceiptLightboxOpen = Vue.ref(false);
     const isCopiedNumber = Vue.ref(false);
+    const paymongoModalOpen = Vue.ref(false);
+    const activePaymongoOrder = Vue.ref(null);
+    const activePaymongoQr = Vue.ref('');
+    const activePaymongoCheckoutUrl = Vue.ref('');
+    const paymongoPaymentConfirmed = Vue.ref(false);
+    const isCheckingModalPayment = Vue.ref(false);
+    let modalPollTimer = null;
 
     // Live GPS & Map Pin State
     const isLocatingGPS = Vue.ref(false);
@@ -1498,6 +1643,90 @@ export default {
       proofFileName.value = '';
     };
 
+    const startModalPaymongoPolling = (orderId) => {
+      if (modalPollTimer) clearInterval(modalPollTimer);
+      modalPollTimer = setInterval(async () => {
+        if (!paymongoModalOpen.value || paymongoPaymentConfirmed.value) {
+          clearInterval(modalPollTimer);
+          modalPollTimer = null;
+          return;
+        }
+        try {
+          const res = await GST_API.verifyPayMongoPayment(orderId);
+          if (res.data?.paid) {
+            handlePaymongoSuccess(res.data.order || activePaymongoOrder.value);
+          }
+        } catch (e) {}
+      }, 2500);
+    };
+
+    const checkModalPaymongoStatus = async () => {
+      if (!activePaymongoOrder.value) return;
+      isCheckingModalPayment.value = true;
+      try {
+        const res = await GST_API.verifyPayMongoPayment(activePaymongoOrder.value.id);
+        if (res.data?.paid) {
+          handlePaymongoSuccess(res.data.order || activePaymongoOrder.value);
+        } else {
+          store.notify('Payment is still pending on PayMongo. Please scan the QR code to finish paying.', 'info');
+        }
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Error checking payment status.', 'error');
+      } finally {
+        isCheckingModalPayment.value = false;
+      }
+    };
+
+    const handlePaymongoSuccess = (confirmedOrder) => {
+      paymongoPaymentConfirmed.value = true;
+      if (modalPollTimer) {
+        clearInterval(modalPollTimer);
+        modalPollTimer = null;
+      }
+
+      store.clearCart();
+      store.activeOrder = confirmedOrder;
+      localStorage.setItem('gst_active_order_id', confirmedOrder.id);
+      try {
+        const localHistory = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
+        const idStr = String(confirmedOrder.id);
+        if (!localHistory.includes(idStr)) {
+          localHistory.unshift(idStr);
+          localStorage.setItem('gst_local_order_history', JSON.stringify(localHistory.slice(0, 50)));
+        }
+      } catch (e) {}
+
+      store.notify(`Payment confirmed for Order ${confirmedOrder.order_number || ''}! Your order is sent to the kitchen.`, 'success');
+
+      setTimeout(() => {
+        paymongoModalOpen.value = false;
+        store.currentView = 'track';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 1800);
+    };
+
+    const dismissPaymongoModal = () => {
+      if (modalPollTimer) {
+        clearInterval(modalPollTimer);
+        modalPollTimer = null;
+      }
+      paymongoModalOpen.value = false;
+      if (activePaymongoOrder.value) {
+        store.clearCart();
+        store.activeOrder = activePaymongoOrder.value;
+        localStorage.setItem('gst_active_order_id', activePaymongoOrder.value.id);
+        store.currentView = 'track';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    Vue.onUnmounted(() => {
+      if (modalPollTimer) {
+        clearInterval(modalPollTimer);
+        modalPollTimer = null;
+      }
+    });
+
     const backToMenu = () => {
       store.currentView = 'customer';
       store.activeSection = 'menu';
@@ -1562,25 +1791,16 @@ export default {
         store.fetchIngredients();
         store.fetchProducts();
 
-        // If PayMongo, order is confirmed with dynamic QR Ph code
+        // If PayMongo, open the interactive QR checkout modal directly in-page!
         if (form.payment_method === 'PayMongo') {
-          store.clearCart();
-          store.activeOrder = createdOrder;
-          localStorage.setItem('gst_active_order_id', createdOrder.id);
-          try {
-            const localHistory = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
-            const idStr = String(createdOrder.id);
-            if (!localHistory.includes(idStr)) {
-              localHistory.unshift(idStr);
-              localStorage.setItem('gst_local_order_history', JSON.stringify(localHistory.slice(0, 50)));
-            }
-          } catch (e) {}
+          activePaymongoOrder.value = createdOrder;
+          activePaymongoQr.value = res?.data?.qr_image || createdOrder.paymongo_qr_image;
+          activePaymongoCheckoutUrl.value = res?.data?.checkout_url || createdOrder.paymongo_checkout_url;
+          paymongoModalOpen.value = true;
+          paymongoPaymentConfirmed.value = false;
 
-          store.notify(`Order ${createdOrder.order_number || ''} created! Please scan the QR code to complete payment.`, 'success');
-
-          // Direct user immediately to Order Tracker with QR code
-          store.currentView = 'track';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          // Start polling PayMongo for payment confirmation
+          startModalPaymongoPolling(createdOrder.id);
           return;
         }
 
@@ -1639,6 +1859,14 @@ export default {
       removeProofImage,
       backToMenu,
       submitOrder,
+      paymongoModalOpen,
+      activePaymongoOrder,
+      activePaymongoQr,
+      activePaymongoCheckoutUrl,
+      paymongoPaymentConfirmed,
+      isCheckingModalPayment,
+      checkModalPaymongoStatus,
+      dismissPaymongoModal,
       isLocatingGPS,
       gpsPromptModalOpen,
       gpsErrorMessage,

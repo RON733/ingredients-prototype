@@ -422,6 +422,14 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $newStatus = $validated['status'];
 
+        // Payment Pre-condition constraint:
+        // Online orders (PayMongo & GCash) MUST be Paid/Verified before kitchen preparation can begin!
+        if ($newStatus === 'Preparing' && $order->payment_method !== 'Cash' && !in_array($order->payment_status, ['Paid', 'Verified'])) {
+            return response()->json([
+                'message' => "Cannot start preparation. Online payment for order {$order->order_number} ({$order->payment_method}) is still pending and must be verified first."
+            ], 422);
+        }
+
         // Rider delivery constraint:
         // When a delivery order is Out for Delivery, ONLY the assigned rider has the authority to confirm and complete it!
         if ($order->order_type === 'Delivery' && $oldStatus === 'Out for Delivery' && $newStatus === 'Completed') {
