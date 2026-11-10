@@ -1,0 +1,13 @@
+﻿{
+  "name": "g-shot-teas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "start": "node -e 'console.log(\"Built\")'"
+  },
+  "dependencies": {
+    "vite": "^6.1.0"
+  }
+}
