@@ -120,9 +120,11 @@
 
               <button 
                 type="submit"
-                class="w-full py-3 rounded-xl text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer">
-                <i class="pi pi-send text-xs"></i>
-                <span>Send Message</span>
+                :disabled="isSubmitting"
+                class="w-full py-3 rounded-xl text-sm font-bold bg-yellow-400 hover:bg-yellow-300 disabled:opacity-60 disabled:cursor-not-allowed text-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-yellow-400/20 active:scale-[0.99]">
+                <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-sm"></i>
+                <i v-else class="pi pi-send text-xs"></i>
+                <span>{{ isSubmitting ? 'Sending...' : 'Send Message' }}</span>
               </button>
             </form>
           </div>
@@ -135,9 +137,8 @@
 
 <script>
 import * as Vue from 'vue';
-import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
-import GST_API from '@/services/api';
 
 // G Shot Teas — Contact Us Section (Matches Figure 6)
 export default {
@@ -147,18 +148,62 @@ export default {
     const name = Vue.ref('');
     const email = Vue.ref('');
     const message = Vue.ref('');
+    const isSubmitting = Vue.ref(false);
 
-    const sendMessage = () => {
-      store.notify(`Thank you, ${name.value}! Your message has been received.`);
-      name.value = '';
-      email.value = '';
-      message.value = '';
+    const sendMessage = async () => {
+      if (isSubmitting.value) return;
+
+      const trimmedName = name.value.trim();
+      const trimmedEmail = email.value.trim();
+      const trimmedMsg = message.value.trim();
+
+      if (!trimmedName || !trimmedEmail || !trimmedMsg) {
+        store.notify('Please fill out all fields before sending.');
+        return;
+      }
+
+      isSubmitting.value = true;
+
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            access_key: '2df37454-b585-4734-be8c-60165cdee7a5',
+            from_name: 'G Shot Teas Contact Form',
+            subject: 'New Message from ' + trimmedName + ' - G Shot Teas',
+            name: trimmedName,
+            email: trimmedEmail,
+            message: trimmedMsg
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200 && data.success) {
+          store.notify('Thank you, ' + trimmedName + '! Your message has been sent successfully.');
+          name.value = '';
+          email.value = '';
+          message.value = '';
+        } else {
+          store.notify(data.message || 'Something went wrong while sending your message. Please try again.');
+        }
+      } catch (err) {
+        console.error('Web3Forms submission error:', err);
+        store.notify('Failed to send message. Please check your network connection and try again.');
+      } finally {
+        isSubmitting.value = false;
+      }
     };
 
     return {
       name,
       email,
       message,
+      isSubmitting,
       sendMessage,
     };
   },
