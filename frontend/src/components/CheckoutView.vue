@@ -338,15 +338,15 @@
                   class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
                   <span v-else class="flex items-center gap-2">
-                    <i class="pi pi-lock text-sm"></i>
-                    <span>Proceed to PayMongo Checkout (₱{{ Number(grandTotal).toFixed(2) }})</span>
+                    <i class="pi pi-qrcode text-base"></i>
+                    <span>Place Order & Generate QR Ph Code (₱{{ Number(grandTotal).toFixed(2) }})</span>
                     <i class="pi pi-arrow-right text-xs"></i>
                   </span>
                 </button>
 
-                <p class="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1.5">
+                <p class="text-[11px] text-emerald-300/90 text-center flex items-center justify-center gap-1.5 font-medium">
                   <i class="pi pi-shield text-emerald-400 text-[10px]"></i>
-                  <span>Official PayMongo portal • Instant verification</span>
+                  <span>Scan na All • No forms or receipt upload needed • Instant automated confirmation</span>
                 </p>
               </div>
 
@@ -1562,17 +1562,26 @@ export default {
         store.fetchIngredients();
         store.fetchProducts();
 
-        // If PayMongo, redirect to hosted checkout URL
+        // If PayMongo, order is confirmed with dynamic QR Ph code
         if (form.payment_method === 'PayMongo') {
-          if (res?.data?.checkout_url) {
-            store.notify(`Order ${createdOrder.order_number || ''} created! Redirecting to PayMongo...`, 'info');
-            setTimeout(() => {
-              window.location.href = res.data.checkout_url;
-            }, 300);
-            return;
-          } else {
-            throw new Error('PayMongo checkout URL was not received from the server. Please try again or select another payment method.');
-          }
+          store.clearCart();
+          store.activeOrder = createdOrder;
+          localStorage.setItem('gst_active_order_id', createdOrder.id);
+          try {
+            const localHistory = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
+            const idStr = String(createdOrder.id);
+            if (!localHistory.includes(idStr)) {
+              localHistory.unshift(idStr);
+              localStorage.setItem('gst_local_order_history', JSON.stringify(localHistory.slice(0, 50)));
+            }
+          } catch (e) {}
+
+          store.notify(`Order ${createdOrder.order_number || ''} created! Please scan the QR code to complete payment.`, 'success');
+
+          // Direct user immediately to Order Tracker with QR code
+          store.currentView = 'track';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
         }
 
         store.notify(`Order ${createdOrder.order_number || ''} confirmed! Ingredients deducted.`, 'success');

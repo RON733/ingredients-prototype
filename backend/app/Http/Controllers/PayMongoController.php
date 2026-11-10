@@ -79,6 +79,14 @@ class PayMongoController extends Controller
         $cancelUrl = "{$origin}/?paymongo_status=cancelled&order_id={$order->id}";
 
         try {
+            // Generate QR Ph dynamic QR code
+            $qrData = $this->paymongo->createQrPhPayment($order);
+            if ($qrData && !empty($qrData['qr_image'])) {
+                $order->paymongo_qr_image = $qrData['qr_image'];
+                $order->paymongo_payment_id = $qrData['payment_intent_id'];
+            }
+
+            // Generate hosted checkout URL
             $sessionData = $this->paymongo->createCheckoutSession($order, $successUrl, $cancelUrl);
 
             $order->paymongo_session_id = $sessionData['session_id'];
@@ -89,6 +97,7 @@ class PayMongoController extends Controller
                 'message' => 'Checkout session created successfully.',
                 'checkout_url' => $sessionData['checkout_url'],
                 'session_id' => $sessionData['session_id'],
+                'qr_image' => $order->paymongo_qr_image,
                 'order' => $order,
             ]);
         } catch (\Throwable $e) {
@@ -117,10 +126,10 @@ class PayMongoController extends Controller
             ]);
         }
 
-        if (empty($order->paymongo_session_id)) {
+        if (empty($order->paymongo_session_id) && empty($order->paymongo_payment_id)) {
             return response()->json([
                 'paid' => false,
-                'message' => 'No PayMongo session found for this order.',
+                'message' => 'No active PayMongo session or QR payment found for this order.',
                 'order' => $order,
             ], 404);
         }

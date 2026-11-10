@@ -340,19 +340,31 @@ class OrderController extends Controller
             $order->items()->createMany($itemsData);
 
             $checkoutUrl = null;
+            $qrImage = null;
             if ($validated['payment_method'] === 'PayMongo') {
                 try {
+                    $paymongoService = app(\App\Services\PayMongoService::class);
+
+                    // 1. Generate Direct QR Ph payment code (Instant scan with GCash / Maya)
+                    $qrData = $paymongoService->createQrPhPayment($order);
+                    if ($qrData && !empty($qrData['qr_image'])) {
+                        $qrImage = $qrData['qr_image'];
+                    }
+
+                    // 2. Generate Hosted Checkout URL as fallback/alternative
                     $origin = $request->header('origin') ?: $request->header('referer') ?: config('app.url', 'http://127.0.0.1:8000');
                     $origin = rtrim($origin, '/');
                     if (filter_var($origin, FILTER_VALIDATE_URL)) {
                         $parsed = parse_url($origin);
                         $port = !empty($parsed['port']) ? (':' . $parsed['port']) : '';
-                        $origin = $parsed['scheme'] . '://' . $parsed['host'] . $port;
+                        $scheme = !empty($parsed['scheme']) ? $parsed['scheme'] : 'https';
+                        $origin = $scheme . '://' . $parsed['host'] . $port;
+                    } else {
+                        $origin = config('app.url', 'http://127.0.0.1:8000');
                     }
                     $successUrl = $origin . '/?paymongo_status=success&order_id=' . $order->id;
                     $cancelUrl = $origin . '/?paymongo_status=cancelled&order_id=' . $order->id;
 
-                    $paymongoService = app(\App\Services\PayMongoService::class);
                     $sessionData = $paymongoService->createCheckoutSession($order, $successUrl, $cancelUrl);
 
                     $order->paymongo_session_id = $sessionData['session_id'];
@@ -361,8 +373,10 @@ class OrderController extends Controller
 
                     $checkoutUrl = $sessionData['checkout_url'];
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error("PayMongo checkout session creation error: " . $e->getMessage());
-                    throw new \Exception("Unable to initialize PayMongo checkout: " . $e->getMessage());
+                    \Illuminate\Support\Facades\Log::error("PayMongo initialization error: " . $e->getMessage());
+                    if (!$qrImage) {
+                        throw new \Exception("Unable to initialize PayMongo checkout: " . $e->getMessage());
+                    }
                 }
             }
 
@@ -392,6 +406,7 @@ class OrderController extends Controller
                 'message' => 'Order placed successfully!',
                 'order' => $order->load('items'),
                 'checkout_url' => $checkoutUrl,
+                'qr_image' => $qrImage ?? $order->paymongo_qr_image,
             ], 201);
         });
     }
