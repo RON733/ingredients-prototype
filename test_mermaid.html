@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body {
+      background: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="mermaid">
+flowchart TD
+    START([START]) --> LANDING[LANDING PAGE]
+    LANDING --> DEC1{LOGIN AS<br/>ADMIN/STAFF/DRIVER/CUSTOMER}
+  </div>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
+</body>
+</html>
