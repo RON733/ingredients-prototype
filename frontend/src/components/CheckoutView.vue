@@ -32,6 +32,36 @@
         </div>
       </div>
 
+      <!-- Sign-In Required Notice Banner -->
+      <div 
+        v-if="!store.user" 
+        class="p-5 sm:p-6 rounded-3xl bg-amber-500/15 border-2 border-amber-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in backdrop-blur-md">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-lg sm:text-xl font-black shrink-0 shadow-md">
+            <i class="pi pi-lock"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black text-amber-300 uppercase tracking-wider">Account Required</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-200 border border-amber-400/30">Sign In to Continue</span>
+            </div>
+            <p class="text-sm sm:text-base font-bold text-white mt-1">
+              Customers must be signed in to place and check out orders.
+            </p>
+            <p class="text-xs text-gray-300 mt-0.5">
+              Signing in connects your order to real-time live GPS driver tracking, SMS status updates, and order history.
+            </p>
+          </div>
+        </div>
+        <button 
+          type="button"
+          @click="promptSignIn"
+          class="px-5 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+          <i class="pi pi-sign-in text-xs"></i>
+          <span>Sign In / Register</span>
+        </button>
+      </div>
+
       <!-- Main Checkout Layout Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
@@ -338,8 +368,8 @@
                   class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
                   <span v-else class="flex items-center gap-2">
-                    <i class="pi pi-qrcode text-base"></i>
-                    <span>Place Order & Generate QR Ph Code (₱{{ Number(grandTotal).toFixed(2) }})</span>
+                    <i class="pi" :class="!store.user ? 'pi-lock text-base' : 'pi-qrcode text-base'"></i>
+                    <span>{{ !store.user ? 'Sign In to Pay with PayMongo' : ('Place Order & Generate QR Ph Code (₱' + Number(grandTotal).toFixed(2) + ')') }}</span>
                     <i class="pi pi-arrow-right text-xs"></i>
                   </span>
                 </button>
@@ -708,7 +738,10 @@
             :disabled="isSubmitting || store.cart.length === 0"
             class="w-full py-3.5 rounded-xl text-sm sm:text-base font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
-            <span v-else>{{ form.payment_method === 'PayMongo' ? 'Proceed to PayMongo Checkout' : 'Confirm & Place Order' }}</span>
+            <span v-else class="flex items-center gap-2">
+              <i v-if="!store.user" class="pi pi-lock text-sm"></i>
+              <span>{{ !store.user ? 'Sign In to Place Order' : (form.payment_method === 'PayMongo' ? 'Proceed to PayMongo Checkout' : 'Confirm & Place Order') }}</span>
+            </span>
           </button>
 
           <p class="text-[11px] text-center text-gray-500">
@@ -1158,6 +1191,9 @@ export default {
     // Aggregated list stating all exact reasons why order cannot be placed
     const checkoutBlockReasons = Vue.computed(() => {
       const reasons = [];
+      if (!store.user) {
+        reasons.push('You must be signed in to check out. Please sign in or create an account.');
+      }
       if (store.cart.length === 0) {
         reasons.push('Your cart is empty. Please add items to your cart.');
       }
@@ -1734,7 +1770,27 @@ export default {
       if (el) el.scrollIntoView({ behavior: 'smooth' });
     };
 
+    const promptSignIn = () => {
+      store.pendingCheckout = true;
+      store.authMode = 'login';
+      store.authModalOpen = true;
+    };
+
+    Vue.watch(() => store.user, (u) => {
+      if (u) {
+        if (!form.customer_name && u.name) form.customer_name = u.name;
+        if (!form.customer_phone && u.phone) form.customer_phone = u.phone;
+        if (!form.delivery_address && u.address) form.delivery_address = u.address;
+      }
+    }, { immediate: true });
+
     const submitOrder = async () => {
+      if (!store.user) {
+        promptSignIn();
+        store.notify('You must be signed in to check out and place an order.', 'warning');
+        return;
+      }
+
       isValidationTriggered.value = true;
       serverErrorMessage.value = '';
 
@@ -1881,6 +1937,7 @@ export default {
       jumpToChip,
       searchAddressOnMap,
       selectGeoResult,
+      promptSignIn,
     };
   },
 };

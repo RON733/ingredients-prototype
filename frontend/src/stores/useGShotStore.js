@@ -297,6 +297,7 @@ const useGShotStore = defineStore('gshot', {
     cartOpen: false,
     authModalOpen: false,
     authMode: 'login', // 'login' | 'register'
+    pendingCheckout: false,
     customizeModalOpen: false,
     selectedProductForCustomize: null,
     bookingModalOpen: false,
@@ -947,7 +948,13 @@ const useGShotStore = defineStore('gshot', {
             return;
           }
         } else {
-          this.currentView = 'customer';
+          if (this.pendingCheckout && this.cart.length > 0) {
+            this.currentView = 'checkout';
+            this.pendingCheckout = false;
+            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            this.currentView = 'customer';
+          }
         }
         this.fetchUserActiveOrder();
       } catch (err) {
@@ -978,7 +985,13 @@ const useGShotStore = defineStore('gshot', {
         this.authModalOpen = false;
 
         this.notify(res.data.message || 'Account verified! Welcome to G Shot Teas.');
-        this.currentView = 'customer';
+        if (this.pendingCheckout && this.cart.length > 0) {
+          this.currentView = 'checkout';
+          this.pendingCheckout = false;
+          if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          this.currentView = 'customer';
+        }
         return res.data;
       } catch (err) {
         const msg = err.response?.data?.message || err.message || 'Verification failed.';
@@ -1018,7 +1031,13 @@ const useGShotStore = defineStore('gshot', {
           localStorage.setItem('gst_auth_token', this.token);
           this.authModalOpen = false;
           this.notify(res.data.message || 'Password reset successfully! Welcome back.');
-          this.currentView = 'customer';
+          if (this.pendingCheckout && this.cart.length > 0) {
+            this.currentView = 'checkout';
+            this.pendingCheckout = false;
+            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            this.currentView = 'customer';
+          }
           this.fetchUserActiveOrder();
         }
         return res.data;
@@ -1067,7 +1086,13 @@ const useGShotStore = defineStore('gshot', {
             return;
           }
         } else {
-          this.currentView = 'customer';
+          if (this.pendingCheckout && this.cart.length > 0) {
+            this.currentView = 'checkout';
+            this.pendingCheckout = false;
+            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            this.currentView = 'customer';
+          }
         }
         this.fetchUserActiveOrder();
         return res.data;

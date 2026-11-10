@@ -18,3 +18,7 @@ backend/storage/*.key
 # Frontend dependencies
 frontend/node_modules/
 frontend/dist/
+
+# Root env & archives
+.env*
+*.zip

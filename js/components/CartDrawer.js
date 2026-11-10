@@ -141,6 +141,14 @@ const CartDrawer = {
     };
 
     const proceedToCheckout = () => {
+      if (!store.user) {
+        store.cartOpen = false;
+        store.pendingCheckout = true;
+        store.authMode = 'login';
+        store.authModalOpen = true;
+        store.notify('Please sign in or create an account to proceed to checkout.', 'info');
+        return;
+      }
       store.cartOpen = false;
       store.currentView = 'checkout';
       window.scrollTo({ top: 0, behavior: 'smooth' });

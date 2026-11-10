@@ -100,9 +100,22 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        // Workers and operational personnel cannot place customer storefront orders (POS orders permitted)
+        // Resolve acting user via Sanctum token, session, or verified user_id
         $actingUser = auth('sanctum')->user() ?? $request->user();
+        if (!$actingUser && $request->filled('user_id')) {
+            $actingUser = User::find($request->input('user_id'));
+        }
+
         $isPosOrder = $request->boolean('is_pos') || $request->input('source') === 'pos' || $request->input('order_type') === 'Walk-in';
+
+        // 1. Customer storefront checkout strictly requires being signed in
+        if (!$isPosOrder && !$actingUser) {
+            return response()->json([
+                'message' => 'You must be signed in to check out and place an order. Please log in or create an account.'
+            ], 401);
+        }
+
+        // 2. Workers and operational personnel cannot place customer storefront orders (POS orders permitted)
         if (!$isPosOrder && $actingUser && in_array($actingUser->role, ['staff', 'admin', 'super_admin', 'driver'])) {
             return response()->json([
                 'message' => 'Store personnel and operational accounts cannot place customer storefront orders. Workers only require the Operations Dashboard.'
@@ -319,7 +332,7 @@ class OrderController extends Controller
             // 5. Create Order
             $order = Order::create([
                 'order_number' => $orderNumber,
-                'user_id' => auth('sanctum')->user()?->id ?? $request->user()?->id ?? $request->input('user_id') ?? null,
+                'user_id' => $actingUser?->id ?? auth('sanctum')->user()?->id ?? $request->user()?->id ?? $request->input('user_id') ?? null,
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
                 'order_type' => $validated['order_type'],

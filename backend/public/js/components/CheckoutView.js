@@ -1297,6 +1297,13 @@ const CheckoutView = {
     };
 
     const submitOrder = async () => {
+      if (!store.user) {
+        store.pendingCheckout = true;
+        store.authMode = 'login';
+        store.authModalOpen = true;
+        store.notify('You must be signed in to check out and place an order.', 'warning');
+        return;
+      }
       isValidationTriggered.value = true;
       serverErrorMessage.value = '';
 

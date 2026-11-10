@@ -129,9 +129,10 @@
 
           <button 
             @click="proceedToCheckout"
-            class="w-full py-3.5 rounded-xl text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <span>Checkout</span>
-            <i class="pi pi-arrow-right text-xs"></i>
+            class="w-full py-3.5 rounded-xl text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-yellow-400/20">
+            <i v-if="!store.user" class="pi pi-lock text-xs"></i>
+            <span>{{ !store.user ? 'Sign In to Check Out' : 'Checkout' }}</span>
+            <i class="pi" :class="!store.user ? 'pi-arrow-right' : 'pi-arrow-right'" text-xs></i>
           </button>
         </div>
 
@@ -174,6 +175,14 @@ export default {
     };
 
     const proceedToCheckout = () => {
+      if (!store.user) {
+        store.cartOpen = false;
+        store.pendingCheckout = true;
+        store.authMode = 'login';
+        store.authModalOpen = true;
+        store.notify('Please sign in or create an account to proceed to checkout.', 'info');
+        return;
+      }
       store.cartOpen = false;
       store.currentView = 'checkout';
       window.scrollTo({ top: 0, behavior: 'smooth' });
