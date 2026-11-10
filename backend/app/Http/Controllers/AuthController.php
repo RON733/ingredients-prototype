@@ -604,39 +604,31 @@ class AuthController extends Controller
             $q->orWhere('email', $email);
         })->first();
 
-        if ($user && empty($user->google_id) && $googleId) {
-            $user->google_id = $googleId;
-            if ($avatar && empty($user->avatar)) $user->avatar = $avatar;
-            $user->save();
-        }
-
-        if (false) {
-            if ($user) {
-                // Link Google account to existing user
-                if ($googleId) $user->google_id = $googleId;
-                if ($avatar && empty($user->avatar)) $user->avatar = $avatar;
-                if (empty($user->email_verified_at)) $user->email_verified_at = now();
-                $user->save();
-            } else {
-                // Register new customer account
-                $user = User::create([
-                    'name' => $name,
-                    'email' => $email,
-                    'google_id' => $googleId,
-                    'avatar' => $avatar,
-                    'password' => Hash::make(Str::random(32)),
-                    'role' => 'customer',
-                    'status' => 'active',
-                    'email_verified_at' => now(),
-                ]);
-                $isNew = true;
+        if ($user) {
+            // Link Google account to existing user if needed
+            if ($googleId && empty($user->google_id)) {
+                $user->google_id = $googleId;
             }
-        } else {
-            // Update avatar if provided and not set
             if ($avatar && empty($user->avatar)) {
                 $user->avatar = $avatar;
-                $user->save();
             }
+            if (empty($user->email_verified_at)) {
+                $user->email_verified_at = now();
+            }
+            $user->save();
+        } else {
+            // Register new customer account
+            $user = User::create([
+                'name' => $name,
+                'email' => $email,
+                'google_id' => $googleId,
+                'avatar' => $avatar,
+                'password' => Hash::make(Str::random(32)),
+                'role' => 'customer',
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]);
+            $isNew = true;
         }
 
         if ($user->status === 'deactivated') {
