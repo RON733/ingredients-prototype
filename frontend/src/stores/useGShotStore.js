@@ -410,6 +410,13 @@ const useGShotStore = defineStore('gshot', {
       return state.ingredients.filter(ing => ing.stock <= ing.low_threshold);
     },
 
+    isPaymongoAvailable: (state) => {
+      if (state.settings && state.settings.paymongo_available !== undefined && state.settings.paymongo_available !== null) {
+        return state.settings.paymongo_available === 'true' || state.settings.paymongo_available === true || state.settings.paymongo_available === '1' || state.settings.paymongo_available === 1;
+      }
+      return true;
+    },
+
     isGcashAvailable: (state) => {
       if (state.settings && state.settings.gcash_available !== undefined && state.settings.gcash_available !== null) {
         return state.settings.gcash_available === 'true' || state.settings.gcash_available === true || state.settings.gcash_available === '1' || state.settings.gcash_available === 1;
@@ -1164,6 +1171,27 @@ const useGShotStore = defineStore('gshot', {
         this.notify(isOpen ? 'Store is now OPEN!' : 'Store is now CLOSED.', isOpen ? 'success' : 'info');
       } catch (err) {
         console.error('Failed to update store status:', err);
+      }
+    },
+
+    async setPaymongoAvailability(isAvailable) {
+      const valStr = isAvailable ? 'true' : 'false';
+      if (!this.settings) this.settings = {};
+      this.settings.paymongo_available = valStr;
+      try {
+        await GST_API.updateSettings({ paymongo_available: valStr });
+        this.notify(
+          isAvailable 
+            ? 'PayMongo online payments marked as AVAILABLE for customer checkout.' 
+            : 'PayMongo online payments flagged as UNAVAILABLE for customer checkout.', 
+          isAvailable ? 'success' : 'info'
+        );
+        return true;
+      } catch (err) {
+        console.error('Failed to update PayMongo availability on backend:', err);
+        const msg = err.response?.data?.message || 'Failed to update PayMongo availability.';
+        this.notify(msg, 'error');
+        throw err;
       }
     },
 

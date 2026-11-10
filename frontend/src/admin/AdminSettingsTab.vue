@@ -26,6 +26,88 @@
         </div>
       </div>
 
+      <!-- MAIN SECTION 0: PayMongo Online Payment Gateway -->
+      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-750 shadow-2xl relative overflow-hidden space-y-6">
+        <div class="absolute -top-24 right-0 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-emerald-500/20 shrink-0">
+              <i class="pi pi-credit-card"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-black text-white flex items-center gap-2 flex-wrap">
+                <span>PayMongo Payment Gateway</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  Automated Hosted Checkout
+                </span>
+              </h3>
+              <p class="text-xs text-gray-400 mt-0.5">
+                Enables customers to pay online directly using GCash, Maya, Debit/Credit Card (Visa, Mastercard), GrabPay, and BillEase.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap shrink-0">
+            <span v-if="isPaymongoAvailable" class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>PayMongo Active</span>
+            </span>
+            <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1.5 shadow-sm">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              <span>PayMongo Disabled</span>
+            </span>
+
+            <button
+              type="button"
+              @click="togglePaymongoAvailability"
+              :disabled="isTogglingPaymongo"
+              class="px-4 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+              :class="isPaymongoAvailable ? 'bg-surface-800 hover:bg-rose-500/20 text-rose-300 border border-surface-700 hover:border-rose-500/40' : 'bg-emerald-500 hover:bg-emerald-400 text-black'">
+              <i v-if="isTogglingPaymongo" class="pi pi-spin pi-spinner"></i>
+              <i v-else class="pi" :class="isPaymongoAvailable ? 'pi-power-off' : 'pi-check'"></i>
+              <span>{{ isPaymongoAvailable ? 'Disable PayMongo' : 'Enable PayMongo' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl bg-surface-950/60 border border-surface-800 space-y-2">
+            <p class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+              <i class="pi pi-key text-emerald-400"></i> Public API Key
+            </p>
+            <p class="font-mono text-xs text-white bg-surface-900 p-2.5 rounded-xl border border-surface-750 select-all">
+              pk_test_BGTyBKi9iXHVsforUZ2WyCLz
+            </p>
+            <p class="text-[11px] text-gray-500">Public key for client-side authentication and session tokenization.</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-surface-950/60 border border-surface-800 space-y-2">
+            <p class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+              <i class="pi pi-lock text-emerald-400"></i> Secret API Key
+            </p>
+            <p class="font-mono text-xs text-emerald-300 bg-surface-900 p-2.5 rounded-xl border border-surface-750">
+              sk_test_••••••••••••••••••••4e1e <span class="text-[10px] text-gray-400 font-sans">(Active & Encrypted in .env)</span>
+            </p>
+            <p class="text-[11px] text-gray-500">Authenticated server-to-server HTTP Basic Auth with PayMongo API.</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-surface-950/40 border border-surface-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div>
+            <p class="font-bold text-white flex items-center gap-1.5">
+              <i class="pi pi-bolt text-amber-400"></i> Webhook Notification Endpoint (For Automated Order Confirmation)
+            </p>
+            <p class="text-gray-400 text-[11px] mt-0.5 font-mono select-all">
+              /api/paymongo/webhook
+            </p>
+          </div>
+          <span class="text-[11px] text-emerald-400 font-semibold px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+            Auto Loyverse POS Sync on Payment
+          </span>
+        </div>
+      </div>
+
       <!-- MAIN SECTION 1: GCash Online Payment & Scan-to-Pay Settings -->
       <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-750 shadow-2xl relative overflow-hidden space-y-6">
         
@@ -1347,6 +1429,9 @@ export default {
       isLoading,
       isSavingGcash,
       isSavingStore,
+      isPaymongoAvailable,
+      isTogglingPaymongo,
+      togglePaymongoAvailability,
       isTogglingAvailability,
       isGcashAvailable,
       toggleGcashAvailability,

@@ -124,7 +124,7 @@ class OrderController extends Controller
             'delivery_address' => 'nullable|string',
             'customer_lat' => 'nullable|numeric',
             'customer_lng' => 'nullable|numeric',
-            'payment_method' => 'required|in:Cash,GCash',
+            'payment_method' => 'required|in:Cash,GCash,PayMongo',
             'gcash_ref' => 'nullable|string',
             'proof_image' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -151,6 +151,16 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Delivery address is required for Delivery orders.'
             ], 422);
+        }
+
+        // 2.5 PayMongo Availability check
+        if ($validated['payment_method'] === 'PayMongo') {
+            $pmAvail = \App\Models\SystemSetting::where('key', 'paymongo_available')->value('value');
+            if ($pmAvail !== null && in_array(strtolower((string)$pmAvail), ['false', '0', 'no', 'off'], true)) {
+                return response()->json([
+                    'message' => 'Online payment is currently unavailable. Please select Cash on Delivery or Cash at Counter.'
+                ], 422);
+            }
         }
 
         // 3. GCash Payment verification: BOTH Reference Number AND Receipt Screenshot are strictly required
@@ -329,6 +339,32 @@ class OrderController extends Controller
 
             $order->items()->createMany($itemsData);
 
+            $checkoutUrl = null;
+            if ($validated['payment_method'] === 'PayMongo') {
+                try {
+                    $origin = $request->header('origin') ?: $request->header('referer') ?: config('app.url', 'http://127.0.0.1:8000');
+                    $origin = rtrim($origin, '/');
+                    if (filter_var($origin, FILTER_VALIDATE_URL)) {
+                        $parsed = parse_url($origin);
+                        $port = !empty($parsed['port']) ? (':' . $parsed['port']) : '';
+                        $origin = $parsed['scheme'] . '://' . $parsed['host'] . $port;
+                    }
+                    $successUrl = $origin . '/?paymongo_status=success&order_id=' . $order->id;
+                    $cancelUrl = $origin . '/?paymongo_status=cancelled&order_id=' . $order->id;
+
+                    $paymongoService = app(\App\Services\PayMongoService::class);
+                    $sessionData = $paymongoService->createCheckoutSession($order, $successUrl, $cancelUrl);
+
+                    $order->paymongo_session_id = $sessionData['session_id'];
+                    $order->paymongo_checkout_url = $sessionData['checkout_url'];
+                    $order->save();
+
+                    $checkoutUrl = $sessionData['checkout_url'];
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error("PayMongo checkout session creation error: " . $e->getMessage());
+                }
+            }
+
             // Automatically push order to Loyverse POS ONLY if already Completed or Paid (e.g. staff created POS order)
             // Online pending orders will sync upon approval / completion
             if ($order->status === 'Completed' || in_array($order->payment_status, ['Paid', 'Verified'])) {
@@ -354,6 +390,7 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Order placed successfully!',
                 'order' => $order->load('items'),
+                'checkout_url' => $checkoutUrl,
             ], 201);
         });
     }

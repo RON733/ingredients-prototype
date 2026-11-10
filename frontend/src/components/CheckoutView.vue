@@ -190,22 +190,53 @@
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Payment Method <span class="text-rose-500">*</span>
             </label>
-            <div class="grid grid-cols-2 gap-3 mb-4">
-              <!-- GCash Option -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <!-- PayMongo Online Payment Option -->
               <button 
                 type="button"
-                @click="store.isGcashAvailable ? (form.payment_method = 'GCash') : store.notify('GCash payments are currently unavailable. Please select Cash.', 'info')"
+                @click="store.isPaymongoAvailable ? (form.payment_method = 'PayMongo') : store.notify('Online payments via PayMongo are currently unavailable. Please select Cash or GCash.', 'info')"
+                :disabled="!store.isPaymongoAvailable"
+                class="py-3 px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all relative text-center"
+                :class="[
+                  !store.isPaymongoAvailable 
+                    ? 'border-surface-800 bg-surface-950/60 text-gray-500 cursor-not-allowed opacity-60' 
+                    : form.payment_method === 'PayMongo' 
+                      ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 shadow-md ring-1 ring-emerald-500/50 cursor-pointer' 
+                      : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600 cursor-pointer'
+                ]">
+                <div class="flex items-center gap-1.5">
+                  <i class="pi pi-credit-card text-emerald-400"></i>
+                  <span class="font-extrabold tracking-wide text-xs">PayMongo</span>
+                </div>
+                <span class="text-[9px] text-emerald-300/80 font-semibold leading-tight">
+                  GCash • Maya • Cards
+                </span>
+                <span v-if="!store.isPaymongoAvailable" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
+                  Unavailable
+                </span>
+              </button>
+
+              <!-- Manual GCash Option -->
+              <button 
+                type="button"
+                @click="store.isGcashAvailable ? (form.payment_method = 'GCash') : store.notify('Manual GCash transfer is currently unavailable. Please select PayMongo or Cash.', 'info')"
                 :disabled="!store.isGcashAvailable"
-                class="py-3 px-4 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs sm:text-sm transition-all relative"
+                class="py-3 px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all relative text-center"
                 :class="[
                   !store.isGcashAvailable 
                     ? 'border-surface-800 bg-surface-950/60 text-gray-500 cursor-not-allowed opacity-60' 
                     : form.payment_method === 'GCash' 
                       ? 'border-sky-500 bg-sky-500/15 text-sky-400 shadow-md ring-1 ring-sky-500/50 cursor-pointer' 
-                      : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600 cursor-pointer'
+                      : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600 cursor-pointer'
                 ]">
-                <span :class="store.isGcashAvailable ? 'text-sky-400' : 'text-gray-500'" class="font-black tracking-wider">GCash</span>
-                <span v-if="!store.isGcashAvailable" class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
+                <div class="flex items-center gap-1.5">
+                  <i class="pi pi-qrcode text-sky-400"></i>
+                  <span class="font-black tracking-wide text-xs">Manual GCash</span>
+                </div>
+                <span class="text-[9px] text-sky-300/80 font-semibold leading-tight">
+                  Scan QR & Upload
+                </span>
+                <span v-if="!store.isGcashAvailable" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
                   Unavailable
                 </span>
               </button>
@@ -214,10 +245,15 @@
               <button 
                 type="button"
                 @click="form.payment_method = 'Cash'"
-                class="py-3 px-4 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs sm:text-sm transition-all cursor-pointer"
-                :class="form.payment_method === 'Cash' ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 shadow-md ring-1 ring-emerald-500/50' : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600'">
-                <i class="pi pi-money-bill"></i>
-                <span>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</span>
+                class="py-3 px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer text-center"
+                :class="form.payment_method === 'Cash' ? 'border-amber-500 bg-amber-500/15 text-amber-400 shadow-md ring-1 ring-amber-500/50' : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600'">
+                <div class="flex items-center gap-1.5">
+                  <i class="pi pi-money-bill text-amber-400"></i>
+                  <span class="font-extrabold text-xs">Cash</span>
+                </div>
+                <span class="text-[9px] text-gray-400 font-medium leading-tight">
+                  {{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}
+                </span>
               </button>
             </div>
 
@@ -225,6 +261,73 @@
             <div v-if="!store.isGcashAvailable" class="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center gap-2.5 text-xs text-rose-300 animate-fade-in">
               <i class="pi pi-info-circle text-rose-400 text-sm shrink-0"></i>
               <span>GCash payment is currently unavailable. Please proceed with <strong>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</strong>.</span>
+            </div>
+
+            <!-- PayMongo Online Checkout Card -->
+            <div v-if="form.payment_method === 'PayMongo'" class="p-5 sm:p-6 rounded-3xl bg-surface-900 border border-emerald-500/40 space-y-4 relative overflow-hidden animate-fade-in shadow-xl mb-4">
+              <div class="absolute -top-16 -right-16 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div class="flex items-center justify-between pb-3 border-b border-surface-800">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-lg shadow-inner">
+                    <i class="pi pi-shield"></i>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <p class="text-xs font-black uppercase tracking-wider text-emerald-300">PayMongo Secure Checkout</p>
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                        Automated & Instant
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Pay via GCash, Maya, Debit/Credit Card, or GrabPay</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs text-gray-400">Total:</span>
+                  <span class="text-base font-black text-emerald-400 ml-1">₱{{ Number(grandTotal).toFixed(2) }}</span>
+                </div>
+              </div>
+
+              <!-- Supported Channels -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-black text-[10px]">G</span>
+                  <div>
+                    <p class="text-xs font-bold text-white leading-tight">GCash</p>
+                    <p class="text-[10px] text-gray-500">Direct debit</p>
+                  </div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">M</span>
+                  <div>
+                    <p class="text-xs font-bold text-white leading-tight">Maya</p>
+                    <p class="text-[10px] text-gray-500">Wallet / QR</p>
+                  </div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-violet-500/20 text-violet-400 flex items-center justify-center text-[11px]">
+                    <i class="pi pi-credit-card"></i>
+                  </span>
+                  <div>
+                    <p class="text-xs font-bold text-white leading-tight">Cards</p>
+                    <p class="text-[10px] text-gray-500">Visa / Mastercard</p>
+                  </div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-[11px]">
+                    <i class="pi pi-wallet"></i>
+                  </span>
+                  <div>
+                    <p class="text-xs font-bold text-white leading-tight">BillEase</p>
+                    <p class="text-[10px] text-gray-500">GrabPay / Buy Now</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-2xl bg-surface-950/60 border border-emerald-500/20 text-xs text-emerald-200/90 flex items-start gap-2.5">
+                <i class="pi pi-check-circle text-emerald-400 text-sm shrink-0 mt-0.5"></i>
+                <span>Clicking <strong>Proceed to PayMongo Checkout</strong> below will take you to PayMongo's official secure portal. No manual reference number or receipt upload is needed!</span>
+              </div>
             </div>
 
             <!-- GCash Payment & Scan-to-Pay Card -->
@@ -569,7 +672,7 @@
             :disabled="isSubmitting || store.cart.length === 0"
             class="w-full py-3.5 rounded-xl text-sm sm:text-base font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
-            <span v-else>Confirm & Place Order</span>
+            <span v-else>{{ form.payment_method === 'PayMongo' ? 'Proceed to PayMongo Checkout' : 'Confirm & Place Order' }}</span>
           </button>
 
           <p class="text-[11px] text-center text-gray-500">
@@ -757,7 +860,7 @@ export default {
       delivery_address: store.user?.address || '',
       customer_lat: null,
       customer_lng: null,
-      payment_method: store.isGcashAvailable ? 'GCash' : 'Cash',
+      payment_method: store.isPaymongoAvailable ? 'PayMongo' : (store.isGcashAvailable ? 'GCash' : 'Cash'),
       gcash_ref: '',
       proof_image: '',
       notes: '',
@@ -771,10 +874,13 @@ export default {
       return store.cartSubtotal + deliveryFee.value;
     });
 
-    // Auto-fallback payment method to Cash if GCash is flagged unavailable
-    Vue.watch(() => store.isGcashAvailable, (avail) => {
-      if (!avail && form.payment_method === 'GCash') {
-        form.payment_method = 'Cash';
+    // Auto-fallback payment method if selected method is flagged unavailable
+    Vue.watch(() => [store.isPaymongoAvailable, store.isGcashAvailable], ([pmAvail, gcashAvail]) => {
+      if (!pmAvail && form.payment_method === 'PayMongo') {
+        form.payment_method = gcashAvail ? 'GCash' : 'Cash';
+      }
+      if (!gcashAvail && form.payment_method === 'GCash') {
+        form.payment_method = pmAvail ? 'PayMongo' : 'Cash';
       }
     }, { immediate: true });
 
@@ -886,6 +992,11 @@ export default {
       }
       if (form.order_type === 'Delivery' && !form.delivery_address.trim()) {
         reasons.push('Delivery Address is required for Delivery orders.');
+      }
+
+      // PayMongo Online Payment Check
+      if (form.payment_method === 'PayMongo' && !store.isPaymongoAvailable) {
+        reasons.push('Online payment via PayMongo is currently unavailable. Please select Cash or Manual GCash.');
       }
 
       // GCash Strict Requirement: BOTH Reference Number AND Receipt Screenshot are required
@@ -1410,11 +1521,20 @@ export default {
         } catch (e) {
           // ignore
         }
-        store.notify(`Order ${createdOrder.order_number || ''} confirmed! Ingredients deducted.`, 'success');
-
         // Immediately refresh ingredients & products inventory in background
         store.fetchIngredients();
         store.fetchProducts();
+
+        // If PayMongo, redirect to hosted checkout URL
+        if (form.payment_method === 'PayMongo' && res?.data?.checkout_url) {
+          store.notify(`Order ${createdOrder.order_number || ''} created! Redirecting to PayMongo...`, 'info');
+          setTimeout(() => {
+            window.location.href = res.data.checkout_url;
+          }, 350);
+          return;
+        }
+
+        store.notify(`Order ${createdOrder.order_number || ''} confirmed! Ingredients deducted.`, 'success');
 
         // Direct user to Track Order (Figure 11)
         store.currentView = 'track';

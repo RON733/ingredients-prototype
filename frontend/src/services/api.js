@@ -81,6 +81,11 @@ export const GST_API = {
   placeOrder: (data) => apiClient.post('/orders', data),
   updateOrderStatus: (id, status, notes = '') => apiClient.patch(`/orders/${id}/status`, { status, notes }),
   verifyPayment: (id) => apiClient.patch(`/orders/${id}/verify-payment`),
+
+  // PayMongo Online Payment Gateway
+  getPayMongoConfig: () => apiClient.get('/paymongo/config'),
+  createPayMongoCheckout: (id) => apiClient.post(`/paymongo/checkout/${id}`),
+  verifyPayMongoPayment: (id) => apiClient.post(`/paymongo/verify/${id}`),
   updateDriverLocation: (id, coords) => apiClient.patch(`/orders/${id}/driver-location`, coords),
   notifyDriverOnTheWay: (id, payload = {}) => apiClient.post(`/orders/${id}/notify-on-the-way`, payload),
   updateCustomerLocation: (id, data) => apiClient.patch(`/orders/${id}/customer-location`, data),

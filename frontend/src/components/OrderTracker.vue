@@ -543,6 +543,45 @@ export default {
       return `Updated ${min}m ago`;
     });
 
+    const openPayMongoCheckout = async (targetOrder) => {
+      const o = targetOrder || order.value;
+      if (o.paymongo_checkout_url) {
+        window.location.href = o.paymongo_checkout_url;
+        return;
+      }
+      try {
+        store.notify('Preparing PayMongo checkout session...', 'info');
+        const res = await GST_API.createPayMongoCheckout(o.id);
+        if (res.data?.checkout_url) {
+          window.location.href = res.data.checkout_url;
+        } else {
+          store.notify('Unable to generate checkout URL. Please try again.', 'error');
+        }
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to initialize PayMongo checkout.', 'error');
+      }
+    };
+
+    const verifyPayMongoStatus = async (targetOrder) => {
+      const o = targetOrder || order.value;
+      try {
+        store.notify('Checking payment status with PayMongo...', 'info');
+        const res = await GST_API.verifyPayMongoPayment(o.id);
+        if (res.data?.paid) {
+          o.payment_status = 'Paid';
+          if (res.data.order) {
+            Object.assign(o, res.data.order);
+            store.activeOrder = o;
+          }
+          store.notify('Online payment verified! Order confirmed.', 'success');
+        } else {
+          store.notify('Payment is still pending on PayMongo. Please complete checkout.', 'info');
+        }
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Verification check failed.', 'error');
+      }
+    };
+
     const playArrivalChime = () => {
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1141,6 +1180,8 @@ export default {
       isRiderArrivedNear,
       gpsFreshnessText,
       playArrivalChime,
+      openPayMongoCheckout,
+      verifyPayMongoStatus,
     };
   },
 };

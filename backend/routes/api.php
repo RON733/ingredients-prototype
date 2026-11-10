@@ -11,6 +11,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LoyverseController;
+use App\Http\Controllers\PayMongoController;
 
 // --- Public Endpoints ---
 Route::post('/auth/login', [AuthController::class, 'login'])->name('login');
@@ -56,6 +57,13 @@ Route::get('/geocode-search', [SystemController::class, 'searchAddress']);
 Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
+
+// PayMongo Online Payment Gateway
+Route::get('/paymongo/config', [PayMongoController::class, 'config']);
+Route::post('/paymongo/checkout/{id}', [PayMongoController::class, 'createCheckout']);
+Route::get('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
+Route::post('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
+Route::post('/paymongo/webhook', [PayMongoController::class, 'webhook']);
 
 // Loyverse Advanced Inventory Integration
 Route::get('/loyverse/status', [LoyverseController::class, 'status']);
@@ -165,7 +173,14 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::match(['put', 'patch'], '/announcements/{id}/toggle', [AnnouncementController::class, 'toggleActive']);
     Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
 
-    // Loyverse Advanced Inventory Integration
+    // PayMongo Online Payment Gateway
+Route::get('/paymongo/config', [PayMongoController::class, 'config']);
+Route::post('/paymongo/checkout/{id}', [PayMongoController::class, 'createCheckout']);
+Route::get('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
+Route::post('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
+Route::post('/paymongo/webhook', [PayMongoController::class, 'webhook']);
+
+// Loyverse Advanced Inventory Integration
     Route::get('/loyverse/status', [LoyverseController::class, 'status']);
     Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
     Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
