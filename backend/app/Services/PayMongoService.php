@@ -107,12 +107,9 @@ class PayMongoService
                     'show_description' => true,
                     'show_line_items' => true,
                     'payment_method_types' => [
-                        'card',
                         'gcash',
                         'paymaya',
-                        'grab_pay',
                         'dob',
-                        'billease',
                     ],
                     'line_items' => $lineItems,
                     'description' => "Order {$order->order_number} — G Shot Teas",

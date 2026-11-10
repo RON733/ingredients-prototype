@@ -232,7 +232,7 @@
               </span>
               <div>
                 <h4 class="text-xs sm:text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                  <span>PayMongo QR Ph</span>
+                  <span>QR Ph Payment</span>
                   <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                     Scan na All
                   </span>
@@ -252,7 +252,7 @@
               <div class="w-56 h-56 sm:w-64 sm:h-64 mx-auto rounded-2xl bg-white p-3 border-2 border-emerald-400/60 shadow-xl flex items-center justify-center overflow-hidden">
                 <img 
                   :src="order.paymongo_qr_image" 
-                  alt="PayMongo QR Ph Code" 
+                  alt="QR Ph Payment Code" 
                   class="w-full h-full object-contain cursor-pointer"
                   @click="isPaymongoQrPreviewOpen = true"
                   title="Click to view full size"
@@ -293,7 +293,7 @@
             <a 
               v-if="order.paymongo_qr_image"
               :href="order.paymongo_qr_image"
-              :download="`PayMongo-QR-Order-${order.order_number || order.id}.png`"
+              :download="`QR-Order-${order.order_number || order.id}.png`"
               class="w-full sm:w-auto py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
               <i class="pi pi-download"></i>
               <span>Save QR</span>
@@ -301,15 +301,7 @@
           </div>
 
           <!-- Fallback link for Card / Hosted Portal -->
-          <div v-if="order.paymongo_checkout_url" class="pt-2 border-t border-surface-800">
-            <a 
-              :href="order.paymongo_checkout_url" 
-              target="_blank" 
-              class="text-xs text-emerald-400 hover:text-emerald-300 underline font-semibold inline-flex items-center gap-1">
-              <span>Or pay using Credit/Debit Card portal</span>
-              <i class="pi pi-external-link text-[10px]"></i>
-            </a>
-          </div>
+          
 
         </div>
 
@@ -649,7 +641,7 @@ export default {
         return;
       }
       try {
-        store.notify('Preparing PayMongo checkout session...', 'info');
+        store.notify('Preparing QR checkout session...', 'info');
         const res = await GST_API.createPayMongoCheckout(o.id);
         if (res.data?.checkout_url) {
           window.location.href = res.data.checkout_url;
@@ -666,7 +658,7 @@ export default {
       if (!o) return;
       isVerifyingPaymongo.value = true;
       try {
-        store.notify('Checking payment status with PayMongo...', 'info');
+        store.notify('Checking payment status...', 'info');
         const res = await GST_API.verifyPayMongoPayment(o.id);
         if (res.data?.paid) {
           o.payment_status = 'Paid';
@@ -676,7 +668,7 @@ export default {
           }
           store.notify('Online payment verified via QR Ph! Order confirmed.', 'success');
         } else {
-          store.notify('Payment is still pending on PayMongo. Please scan the QR code to pay.', 'info');
+          store.notify('Payment is still pending. Please scan the QR code to pay.', 'info');
         }
       } catch (err) {
         store.notify(err.response?.data?.message || 'Verification check failed.', 'error');

@@ -220,11 +220,11 @@
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Payment Method <span class="text-rose-500">*</span>
             </label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <!-- PayMongo Online Payment Option -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <!-- Online QR Payment Option -->
               <button 
                 type="button"
-                @click="store.isPaymongoAvailable ? (form.payment_method = 'PayMongo') : store.notify('Online payments via PayMongo are currently unavailable. Please select Cash or GCash.', 'info')"
+                @click="store.isPaymongoAvailable ? (form.payment_method = 'PayMongo') : store.notify('Online QR payment is currently unavailable. Please select Cash.', 'info')"
                 :disabled="!store.isPaymongoAvailable"
                 class="py-3 px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all relative text-center"
                 :class="[
@@ -235,42 +235,17 @@
                       : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600 cursor-pointer'
                 ]">
                 <div class="flex items-center gap-1.5">
-                  <i class="pi pi-credit-card text-emerald-400"></i>
-                  <span class="font-extrabold tracking-wide text-xs">PayMongo</span>
+                  <i class="pi pi-qrcode text-emerald-400"></i>
+                  <span class="font-extrabold tracking-wide text-xs">QR Payment</span>
                 </div>
                 <span class="text-[9px] text-emerald-300/80 font-semibold leading-tight">
-                  GCash • Maya • Cards
+                  GCash • Maya (QR Ph)
                 </span>
                 <span v-if="!store.isPaymongoAvailable" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
                   Unavailable
                 </span>
               </button>
 
-              <!-- Manual GCash Option -->
-              <button 
-                type="button"
-                @click="store.isGcashAvailable ? (form.payment_method = 'GCash') : store.notify('Manual GCash transfer is currently unavailable. Please select PayMongo or Cash.', 'info')"
-                :disabled="!store.isGcashAvailable"
-                class="py-3 px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all relative text-center"
-                :class="[
-                  !store.isGcashAvailable 
-                    ? 'border-surface-800 bg-surface-950/60 text-gray-500 cursor-not-allowed opacity-60' 
-                    : form.payment_method === 'GCash' 
-                      ? 'border-sky-500 bg-sky-500/15 text-sky-400 shadow-md ring-1 ring-sky-500/50 cursor-pointer' 
-                      : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600 cursor-pointer'
-                ]">
-                <div class="flex items-center gap-1.5">
-                  <i class="pi pi-qrcode text-sky-400"></i>
-                  <span class="font-black tracking-wide text-xs">Manual GCash</span>
-                </div>
-                <span class="text-[9px] text-sky-300/80 font-semibold leading-tight">
-                  Scan QR & Upload
-                </span>
-                <span v-if="!store.isGcashAvailable" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
-                  Unavailable
-                </span>
-              </button>
-              
               <!-- Cash / COD Option -->
               <button 
                 type="button"
@@ -287,10 +262,10 @@
               </button>
             </div>
 
-            <!-- Notice when GCash is unavailable -->
-            <div v-if="!store.isGcashAvailable" class="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center gap-2.5 text-xs text-rose-300 animate-fade-in">
+            <!-- Notice when Online QR is unavailable -->
+            <div v-if="!store.isPaymongoAvailable" class="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center gap-2.5 text-xs text-rose-300 animate-fade-in">
               <i class="pi pi-info-circle text-rose-400 text-sm shrink-0"></i>
-              <span>GCash payment is currently unavailable. Please proceed with <strong>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</strong>.</span>
+              <span>Online QR payment is currently unavailable. Please proceed with <strong>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</strong>.</span>
             </div>
 
             <!-- PayMongo Online Checkout Card -->
@@ -304,12 +279,12 @@
                   </div>
                   <div>
                     <div class="flex items-center gap-2">
-                      <p class="text-xs font-black uppercase tracking-wider text-emerald-300">PayMongo Secure Checkout</p>
+                      <p class="text-xs font-black uppercase tracking-wider text-emerald-300">QR Ph Instant Checkout</p>
                       <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                         Automated & Instant
                       </span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-0.5">Pay via GCash, Maya, Debit/Credit Card, or GrabPay</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Pay via GCash, Maya, or any QR Ph banking app</p>
                   </div>
                 </div>
                 <div class="text-right">
@@ -318,45 +293,27 @@
                 </div>
               </div>
 
-              <!-- Supported Channels -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+              <!-- Supported Channels: GCash & Maya Only -->
+              <div class="grid grid-cols-2 gap-2 pt-1">
                 <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
                   <span class="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-black text-[10px]">G</span>
                   <div>
                     <p class="text-xs font-bold text-white leading-tight">GCash</p>
-                    <p class="text-[10px] text-gray-500">Direct debit</p>
+                    <p class="text-[10px] text-gray-500">Scan QR</p>
                   </div>
                 </div>
                 <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
                   <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">M</span>
                   <div>
                     <p class="text-xs font-bold text-white leading-tight">Maya</p>
-                    <p class="text-[10px] text-gray-500">Wallet / QR</p>
-                  </div>
-                </div>
-                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-lg bg-violet-500/20 text-violet-400 flex items-center justify-center text-[11px]">
-                    <i class="pi pi-credit-card"></i>
-                  </span>
-                  <div>
-                    <p class="text-xs font-bold text-white leading-tight">Cards</p>
-                    <p class="text-[10px] text-gray-500">Visa / Mastercard</p>
-                  </div>
-                </div>
-                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-[11px]">
-                    <i class="pi pi-wallet"></i>
-                  </span>
-                  <div>
-                    <p class="text-xs font-bold text-white leading-tight">BillEase</p>
-                    <p class="text-[10px] text-gray-500">GrabPay / Buy Now</p>
+                    <p class="text-[10px] text-gray-500">Scan QR</p>
                   </div>
                 </div>
               </div>
 
               <div class="p-3 rounded-2xl bg-surface-950/60 border border-emerald-500/20 text-xs text-emerald-200/90 flex items-start gap-2.5">
                 <i class="pi pi-check-circle text-emerald-400 text-sm shrink-0 mt-0.5"></i>
-                <span>Clicking <strong>Proceed to PayMongo Checkout</strong> below will take you directly to PayMongo's official secure checkout portal. No manual reference number or receipt upload is needed!</span>
+                <span>Clicking <strong>Place Order & Generate QR Ph Code</strong> below will generate your instant scan-to-pay QR code. No manual reference number or receipt upload is needed!</span>
               </div>
 
               <!-- Direct Action Button inside PayMongo Card -->
@@ -369,7 +326,7 @@
                   <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
                   <span v-else class="flex items-center gap-2">
                     <i class="pi" :class="!store.user ? 'pi-lock text-base' : 'pi-qrcode text-base'"></i>
-                    <span>{{ !store.user ? 'Sign In to Pay with PayMongo' : ('Place Order & Generate QR Ph Code (₱' + Number(grandTotal).toFixed(2) + ')') }}</span>
+                    <span>{{ !store.user ? 'Sign In to Pay with QR' : ('Place Order & Generate QR Ph Code (₱' + Number(grandTotal).toFixed(2) + ')') }}</span>
                     <i class="pi pi-arrow-right text-xs"></i>
                   </span>
                 </button>
@@ -394,245 +351,6 @@
                   </li>
                 </ul>
               </div>
-            </div>
-
-            <!-- GCash Payment & Scan-to-Pay Card -->
-            <div v-if="form.payment_method === 'GCash'" class="p-5 sm:p-6 rounded-3xl bg-surface-900 border border-surface-700 space-y-5 relative overflow-hidden">
-              
-              <!-- Background blue glow -->
-              
-
-              <!-- Merchant Header & Mobile Number -->
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
-                <div class="flex items-center gap-3">
-                  <div class="w-11 h-11 rounded-2xl bg-sky-500/20 border border-sky-400/40 flex items-center justify-center font-black text-sky-400 text-base shadow-inner">
-                    G
-                  </div>
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <p class="text-[11px] font-bold uppercase tracking-wider text-sky-300">Official Store GCash</p>
-                      <span class="px-2 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-sky-500/20 text-sky-300 border border-sky-400/30">
-                        Verified
-                      </span>
-                    </div>
-                    <p class="text-sm sm:text-base font-black text-white font-mono mt-0.5">
-                      {{ store.gcashAccountNumber }}
-                      <span class="text-xs font-semibold text-sky-400 font-sans">({{ store.gcashAccountName }})</span>
-                    </p>
-                  </div>
-                </div>
-
-                <!-- One-Click Copy Number Button -->
-                <button 
-                  type="button"
-                  @click="copyGcashNumber"
-                  class="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500 text-sky-300 hover:text-white border border-sky-400/40 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95">
-                  <i class="pi" :class="isCopiedNumber ? 'pi-check' : 'pi-copy'"></i>
-                  <span>{{ isCopiedNumber ? 'Copied Number!' : 'Copy Number' }}</span>
-                </button>
-              </div>
-
-              <!-- GCash Scan-to-Pay QR Code Box -->
-              <div class="p-4 rounded-2xl bg-surface-950/80 border border-surface-700 text-center space-y-3">
-                <div class="flex items-center justify-between px-2">
-                  <span class="text-[11px] font-bold text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <i class="pi pi-qrcode text-sky-400"></i>
-                    <span>Scan to Pay with GCash</span>
-                  </span>
-                  <span class="text-xs font-mono font-black text-emerald-400">
-                    Amount: ₱{{ grandTotal.toFixed(2) }}
-                  </span>
-                </div>
-
-                <!-- QR Code Container -->
-                <div class="relative group inline-block mx-auto">
-                  <div class="w-52 h-52 sm:w-60 sm:h-60 mx-auto rounded-2xl bg-white p-3 border-2 border-sky-400/60 shadow-xl flex items-center justify-center overflow-hidden transition-transform group-hover:scale-[1.02]">
-                    <img 
-                      :src="store.gcashQrCode" 
-                      alt="GCash Payment QR Code" 
-                      class="w-full h-full object-contain cursor-pointer"
-                      @click="isQrModalOpen = true"
-                      title="Click to view full size"
-                    />
-                  </div>
-                  <!-- Hover overlay pill on image -->
-                  <button 
-                    type="button" 
-                    @click="isQrModalOpen = true"
-                    class="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/75 hover:bg-black text-white text-[10px] font-bold backdrop-blur-sm transition-all opacity-90 hover:opacity-100 flex items-center gap-1 cursor-pointer">
-                    <i class="pi pi-search-plus text-[10px]"></i>
-                    <span>Tap to Enlarge QR</span>
-                  </button>
-                </div>
-
-                <!-- Sub-actions for QR -->
-                <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
-                  <button 
-                    type="button"
-                    @click="isQrModalOpen = true"
-                    class="text-xs text-sky-300 hover:text-white font-semibold flex items-center gap-1.5 transition-colors cursor-pointer">
-                    <i class="pi pi-eye text-[11px]"></i>
-                    <span>Enlarge QR</span>
-                  </button>
-                  <span class="text-sky-700">•</span>
-                  <a 
-                    :href="store.gcashQrCode" 
-                    download="GShot-GCash-QR.png"
-                    class="text-xs text-sky-300 hover:text-white font-semibold flex items-center gap-1.5 transition-colors">
-                    <i class="pi pi-download text-[11px]"></i>
-                    <span>Save QR to Photos</span>
-                  </a>
-                </div>
-                <p class="text-[11px] text-gray-400">
-                  Tip: In your GCash app, tap <strong>Scan QR</strong> (or tap <em>Upload QR</em> from your photo album).
-                </p>
-              </div>
-
-              <!-- Mandatory Requirements Policy Box -->
-              <div class="p-3.5 rounded-2xl border transition-all"
-                :class="isGcashFullyVerified ? 'bg-emerald-950/40 border-emerald-500/50' : 'bg-sky-950/80 border-sky-500/40'">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center gap-2">
-                    <i class="pi" :class="isGcashFullyVerified ? 'pi-check-circle text-emerald-400' : 'pi-shield text-sky-400'"></i>
-                    <p class="text-xs font-black uppercase tracking-wider" :class="isGcashFullyVerified ? 'text-emerald-300' : 'text-sky-300'">
-                      GCash Payment Verification (Both Required)
-                    </p>
-                  </div>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    :class="isGcashFullyVerified ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'">
-                    {{ gcashRequirementStatusText }}
-                  </span>
-                </div>
-                <p class="text-[11px] text-gray-300 leading-relaxed">
-                  To complete your online order, please enter your transaction <strong>Reference Number</strong> <span class="text-rose-400 font-bold">*</span> <strong>AND</strong> upload the <strong>Receipt Screenshot</strong> <span class="text-rose-400 font-bold">*</span> from your GCash app.
-                </p>
-              </div>
-
-              <!-- REQUIRED FIELD 1: GCash Reference Number Input -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="block text-xs font-bold text-sky-300">
-                    1. GCash Reference Number <span class="text-rose-400 font-black">* REQUIRED</span>
-                  </label>
-                  <span class="text-[10px] font-mono" :class="form.gcash_ref.length >= 9 ? 'text-emerald-400 font-bold' : (form.gcash_ref.length > 0 ? 'text-amber-400 font-bold' : 'text-gray-400')">
-                    {{ form.gcash_ref.length }} / 13 digits (standard 9–13)
-                  </span>
-                </div>
-                <div class="relative">
-                  <i class="pi pi-hashtag absolute left-3.5 top-1/2 -translate-y-1/2 text-sky-400 text-xs"></i>
-                  <input 
-                    v-model="form.gcash_ref"
-                    @input="onRefInput"
-                    type="text" 
-                    inputmode="numeric"
-                    maxlength="13"
-                    placeholder="e.g. 908234819023 (Found on GCash receipt)"
-                    class="w-full pl-9 pr-4 py-3 rounded-xl bg-surface-900 border text-xs sm:text-sm font-mono font-bold text-white placeholder-gray-500 focus:outline-none transition-colors"
-                    :class="refError ? 'border-rose-500 focus:border-rose-400' : 'border-sky-700/80 focus:border-sky-400'"
-                  />
-                  <span v-if="form.gcash_ref.length >= 9" class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 text-xs font-bold flex items-center gap-1">
-                    <i class="pi pi-check"></i>
-                  </span>
-                </div>
-                <p v-if="refError" class="text-rose-400 text-[11px] mt-1 font-semibold flex items-center gap-1">
-                  <i class="pi pi-exclamation-circle text-[10px]"></i>
-                  <span>{{ refError }}</span>
-                </p>
-                <p v-else class="text-[11px] text-gray-400 mt-1">
-                  Numbers only. Enter the 9 to 13-digit reference code shown on your GCash payment confirmation.
-                </p>
-              </div>
-
-              <!-- REQUIRED FIELD 2: Upload GCash Receipt Screenshot -->
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <label class="block text-xs font-bold text-sky-300">
-                    2. GCash Receipt Screenshot <span class="text-rose-400 font-black">* REQUIRED</span>
-                  </label>
-                  <span v-if="form.proof_image" class="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                    <i class="pi pi-check"></i> Screenshot Attached
-                  </span>
-                </div>
-
-                <!-- Upload Drag/Drop Box if no proof attached -->
-                <div v-if="!form.proof_image" class="relative">
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    id="gcash_receipt_file"
-                    @change="handleImageUpload"
-                    class="hidden"
-                  />
-                  <label 
-                    for="gcash_receipt_file"
-                    class="w-full p-5 rounded-2xl border-2 border-dashed bg-surface-900/70 hover:bg-surface-900 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2 group"
-                    :class="proofError ? 'border-rose-500/80 hover:border-rose-400' : 'border-sky-700/80 hover:border-sky-400'">
-                    <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-                      <i class="pi pi-upload"></i>
-                    </div>
-                    <div>
-                      <span class="text-xs font-bold text-white group-hover:text-sky-300 block">
-                        Click or drag to upload payment receipt screenshot
-                      </span>
-                      <span class="text-[10px] text-gray-400 block mt-0.5">
-                        PNG, JPG, or WEBP (Saved directly from your GCash app)
-                      </span>
-                    </div>
-                  </label>
-                  <p v-if="proofError" class="text-rose-400 text-[11px] mt-1 font-semibold flex items-center gap-1">
-                    <i class="pi pi-exclamation-circle text-[10px]"></i>
-                    <span>{{ proofError }}</span>
-                  </p>
-                </div>
-
-                <!-- Preview Thumbnail with Full-Size Modal and Remove Button -->
-                <div v-else class="p-3.5 rounded-2xl bg-surface-900 border border-emerald-500/40 flex items-center justify-between gap-3 shadow-md">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <img 
-                      :src="form.proof_image" 
-                      alt="Receipt Preview" 
-                      @click="isReceiptLightboxOpen = true"
-                      class="w-14 h-14 rounded-xl object-cover border border-surface-700 shrink-0 cursor-pointer hover:opacity-90 transition-opacity" 
-                      title="Click to view full screenshot"
-                    />
-                    <div class="min-w-0">
-                      <p class="text-xs font-bold text-white truncate">{{ proofFileName || 'GCash Receipt Screenshot' }}</p>
-                      <button 
-                        type="button" 
-                        @click="isReceiptLightboxOpen = true"
-                        class="text-[11px] text-sky-400 hover:text-sky-300 underline font-semibold flex items-center gap-1 mt-0.5 cursor-pointer">
-                        <i class="pi pi-eye text-[10px]"></i> View Full Screenshot
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-2 shrink-0">
-                    <label 
-                      for="gcash_receipt_file_change"
-                      class="px-2.5 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-[11px] font-bold border border-surface-700 transition-colors cursor-pointer flex items-center gap-1">
-                      <i class="pi pi-refresh text-[10px]"></i>
-                      <span class="hidden sm:inline">Change</span>
-                    </label>
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      id="gcash_receipt_file_change"
-                      @change="handleImageUpload"
-                      class="hidden"
-                    />
-
-                    <button 
-                      type="button" 
-                      @click="removeProofImage"
-                      class="p-2 rounded-lg text-rose-400 hover:text-white hover:bg-rose-950/60 transition-colors cursor-pointer"
-                      title="Remove Screenshot">
-                      <i class="pi pi-trash text-xs"></i>
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-
             </div>
           </div>
 
@@ -740,7 +458,7 @@
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
             <span v-else class="flex items-center gap-2">
               <i v-if="!store.user" class="pi pi-lock text-sm"></i>
-              <span>{{ !store.user ? 'Sign In to Place Order' : (form.payment_method === 'PayMongo' ? 'Proceed to PayMongo Checkout' : 'Confirm & Place Order') }}</span>
+              <span>{{ !store.user ? 'Sign In to Place Order' : (form.payment_method === 'PayMongo' ? 'Proceed to QR Checkout' : 'Confirm & Place Order') }}</span>
             </span>
           </button>
 
@@ -750,90 +468,6 @@
 
         </div>
 
-      </div>
-
-      <!-- Lightbox Modal: Enlarge GCash QR Code -->
-      <div 
-        v-if="isQrModalOpen" 
-        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-        @click.self="isQrModalOpen = false">
-        <div class="relative max-w-md w-full bg-surface-900 border border-sky-500/40 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-up text-center">
-          
-          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
-            <div class="flex items-center gap-2">
-              <i class="pi pi-qrcode text-sky-400 text-base"></i>
-              <h4 class="text-sm font-bold text-white">Scan to Pay with GCash</h4>
-            </div>
-            <button 
-              @click="isQrModalOpen = false" 
-              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
-              ✕
-            </button>
-          </div>
-
-          <!-- Big QR Image -->
-          <div class="p-4 rounded-2xl bg-white shadow-lg mx-auto inline-block border border-sky-300">
-            <img 
-              :src="store.gcashQrCode" 
-              alt="GCash QR Code Large" 
-              class="w-64 h-64 sm:w-72 sm:h-72 object-contain mx-auto"
-            />
-          </div>
-
-          <div class="space-y-1">
-            <p class="text-sm font-black text-white font-mono">{{ store.gcashAccountNumber }}</p>
-            <p class="text-xs text-sky-400 font-semibold">{{ store.gcashAccountName }}</p>
-            <p class="text-xs text-emerald-400 font-bold pt-1">Total to Pay: ₱{{ grandTotal.toFixed(2) }}</p>
-          </div>
-
-          <div class="flex items-center justify-center gap-3 pt-2">
-            <a 
-              :href="store.gcashQrCode" 
-              download="GShot-GCash-QR.png"
-              class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-colors inline-flex items-center gap-2">
-              <i class="pi pi-download"></i>
-              <span>Save QR to Phone</span>
-            </a>
-            <button 
-              @click="isQrModalOpen = false"
-              class="px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold transition-colors">
-              Close
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Lightbox Modal: Enlarge Uploaded Receipt Screenshot -->
-      <div 
-        v-if="isReceiptLightboxOpen && form.proof_image" 
-        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-        @click.self="isReceiptLightboxOpen = false">
-        <div class="relative max-w-lg w-full bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up">
-          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
-            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="pi pi-receipt text-sky-400"></i> Your Uploaded GCash Receipt
-            </h4>
-            <button 
-              @click="isReceiptLightboxOpen = false" 
-              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
-              ✕
-            </button>
-          </div>
-
-          <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
-            <img :src="form.proof_image" alt="Uploaded GCash Receipt" class="max-h-[60vh] w-auto object-contain rounded-lg" />
-          </div>
-
-          <div class="flex items-center justify-between pt-2">
-            <span class="text-xs text-gray-400 font-mono">Ref: {{ form.gcash_ref || 'Pending' }}</span>
-            <button 
-              @click="isReceiptLightboxOpen = false"
-              class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-white text-xs font-bold transition-colors cursor-pointer">
-              Close Preview
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- Device GPS Permission & Instructions Modal -->
@@ -906,7 +540,7 @@
               </span>
               <div>
                 <h4 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                  <span>PayMongo QR Ph</span>
+                  <span>QR Ph Payment</span>
                   <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                     Auto-Checkout
                   </span>
@@ -953,7 +587,7 @@
                   <img 
                     v-if="activePaymongoQr" 
                     :src="activePaymongoQr" 
-                    alt="PayMongo QR Ph Code" 
+                    alt="QR Ph Payment Code" 
                     class="w-full h-full object-contain"
                   />
                   <div v-else class="text-center py-10 space-y-2">
@@ -982,7 +616,7 @@
             </div>
 
             <p class="text-[11px] text-gray-400 leading-relaxed">
-              Open your <strong>GCash</strong> or <strong>Maya</strong> app, tap <strong>Scan QR</strong>, and scan the code. This page automatically completes checkout upon payment!
+              Open your <strong>GCash</strong>, <strong>Maya</strong>, or banking app, tap <strong>Scan QR</strong>, and scan the code. This page automatically completes checkout upon payment!
             </p>
 
             <!-- Actions -->
@@ -999,7 +633,7 @@
               <a 
                 v-if="activePaymongoQr" 
                 :href="activePaymongoQr" 
-                :download="`PayMongo-QR-Order-${activePaymongoOrder?.order_number || 'GST'}.png`"
+                :download="`QR-Order-${activePaymongoOrder?.order_number || 'GST'}.png`"
                 class="w-full sm:w-auto py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
                 <i class="pi pi-download"></i>
                 <span>Save QR</span>
@@ -1007,14 +641,7 @@
             </div>
 
             <div class="flex items-center justify-between text-xs pt-2 border-t border-surface-800 text-gray-400">
-              <a 
-                v-if="activePaymongoCheckoutUrl" 
-                :href="activePaymongoCheckoutUrl" 
-                target="_blank" 
-                class="text-emerald-400 hover:text-emerald-300 underline font-semibold flex items-center gap-1 text-[11px]">
-                <span>Pay via Card Portal</span>
-                <i class="pi pi-external-link text-[10px]"></i>
-              </a>
+              
               <button 
                 type="button" 
                 @click="dismissPaymongoModal"
@@ -1074,7 +701,7 @@ export default {
       delivery_address: store.user?.address || '',
       customer_lat: null,
       customer_lng: null,
-      payment_method: store.isPaymongoAvailable ? 'PayMongo' : (store.isGcashAvailable ? 'GCash' : 'Cash'),
+      payment_method: store.isPaymongoAvailable ? 'PayMongo' : 'Cash',
       gcash_ref: '',
       proof_image: '',
       notes: '',
@@ -1211,28 +838,9 @@ export default {
         reasons.push('Delivery Address is required for Delivery orders.');
       }
 
-      // PayMongo Online Payment Check
+      // Online QR Payment Check
       if (form.payment_method === 'PayMongo' && !store.isPaymongoAvailable) {
-        reasons.push('Online payment via PayMongo is currently unavailable. Please select Cash or Manual GCash.');
-      }
-
-      // GCash Strict Requirement: BOTH Reference Number AND Receipt Screenshot are required
-      if (form.payment_method === 'GCash') {
-        if (!store.isGcashAvailable) {
-          reasons.push('GCash payment is currently unavailable. Please choose Cash on Delivery or Cash at Counter.');
-        }
-        const hasRef = Boolean(form.gcash_ref && form.gcash_ref.trim().length >= 9 && form.gcash_ref.trim().length <= 13);
-        const hasProof = Boolean(form.proof_image && form.proof_image.trim().length > 0);
-
-        if (!form.gcash_ref || !form.gcash_ref.trim()) {
-          reasons.push('GCash Reference Number is required (numbers only, 9 to 13 digits).');
-        } else if (form.gcash_ref.trim().length < 9) {
-          reasons.push(`GCash Reference Number is incomplete (${form.gcash_ref.trim().length}/9–13 digits entered).`);
-        }
-
-        if (!hasProof) {
-          reasons.push('GCash Receipt Screenshot is required. Please upload your payment confirmation receipt.');
-        }
+        reasons.push('Online QR payment is currently unavailable. Please select Cash.');
       }
       return reasons;
     });
