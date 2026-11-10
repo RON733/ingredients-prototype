@@ -326,7 +326,43 @@
 
               <div class="p-3 rounded-2xl bg-surface-950/60 border border-emerald-500/20 text-xs text-emerald-200/90 flex items-start gap-2.5">
                 <i class="pi pi-check-circle text-emerald-400 text-sm shrink-0 mt-0.5"></i>
-                <span>Clicking <strong>Proceed to PayMongo Checkout</strong> below will take you to PayMongo's official secure portal. No manual reference number or receipt upload is needed!</span>
+                <span>Clicking <strong>Proceed to PayMongo Checkout</strong> below will take you directly to PayMongo's official secure checkout portal. No manual reference number or receipt upload is needed!</span>
+              </div>
+
+              <!-- Direct Action Button inside PayMongo Card -->
+              <div class="pt-2 space-y-2">
+                <button 
+                  type="button"
+                  @click="submitOrder"
+                  :disabled="isSubmitting || store.cart.length === 0"
+                  class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                  <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
+                  <span v-else class="flex items-center gap-2">
+                    <i class="pi pi-lock text-sm"></i>
+                    <span>Proceed to PayMongo Checkout (₱{{ Number(grandTotal).toFixed(2) }})</span>
+                    <i class="pi pi-arrow-right text-xs"></i>
+                  </span>
+                </button>
+
+                <p class="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1.5">
+                  <i class="pi pi-shield text-emerald-400 text-[10px]"></i>
+                  <span>Official PayMongo portal • Instant verification</span>
+                </p>
+              </div>
+
+              <!-- Inline validation warning inside PayMongo card if required fields are missing -->
+              <div 
+                v-if="isValidationTriggered && checkoutBlockReasons.length > 0" 
+                class="p-3.5 rounded-2xl bg-rose-950/80 border border-rose-500/60 space-y-1.5 animate-shake">
+                <div class="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-wider">
+                  <i class="pi pi-exclamation-triangle"></i>
+                  <span>Please Complete Required Details Above:</span>
+                </div>
+                <ul class="text-xs text-rose-200/90 space-y-1 pl-4 list-disc">
+                  <li v-for="(reason, idx) in checkoutBlockReasons" :key="idx">
+                    {{ reason }}
+                  </li>
+                </ul>
               </div>
             </div>
 
@@ -1476,6 +1512,7 @@ export default {
       if (checkoutBlockReasons.value.length > 0) {
         const firstReason = checkoutBlockReasons.value[0];
         store.notify(firstReason, 'error');
+        window.scrollTo({ top: 150, behavior: 'smooth' });
         return;
       }
 
@@ -1526,12 +1563,16 @@ export default {
         store.fetchProducts();
 
         // If PayMongo, redirect to hosted checkout URL
-        if (form.payment_method === 'PayMongo' && res?.data?.checkout_url) {
-          store.notify(`Order ${createdOrder.order_number || ''} created! Redirecting to PayMongo...`, 'info');
-          setTimeout(() => {
-            window.location.href = res.data.checkout_url;
-          }, 350);
-          return;
+        if (form.payment_method === 'PayMongo') {
+          if (res?.data?.checkout_url) {
+            store.notify(`Order ${createdOrder.order_number || ''} created! Redirecting to PayMongo...`, 'info');
+            setTimeout(() => {
+              window.location.href = res.data.checkout_url;
+            }, 300);
+            return;
+          } else {
+            throw new Error('PayMongo checkout URL was not received from the server. Please try again or select another payment method.');
+          }
         }
 
         store.notify(`Order ${createdOrder.order_number || ''} confirmed! Ingredients deducted.`, 'success');

@@ -362,6 +362,7 @@ class OrderController extends Controller
                     $checkoutUrl = $sessionData['checkout_url'];
                 } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::error("PayMongo checkout session creation error: " . $e->getMessage());
+                    throw new \Exception("Unable to initialize PayMongo checkout: " . $e->getMessage());
                 }
             }
 

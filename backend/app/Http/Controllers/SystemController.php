@@ -20,6 +20,9 @@ class SystemController extends Controller
             if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
                 $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
             }
+            if (!isset($s['paymongo_available'])) {
+                $s['paymongo_available'] = 'true';
+            }
             if (!isset($s['gcash_available'])) {
                 $s['gcash_available'] = 'true';
             }
@@ -141,6 +144,9 @@ class SystemController extends Controller
             $s = SystemSetting::all()->pluck('value', 'key')->toArray();
             if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
                 $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
+            }
+            if (!isset($s['paymongo_available'])) {
+                $s['paymongo_available'] = 'true';
             }
             if (!isset($s['gcash_available'])) {
                 $s['gcash_available'] = 'true';

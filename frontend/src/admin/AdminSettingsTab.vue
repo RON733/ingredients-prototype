@@ -1414,6 +1414,20 @@ export default {
       checkLoyverse();
     });
 
+    const isTogglingPaymongo = Vue.ref(false);
+    const isPaymongoAvailable = Vue.computed(() => store.isPaymongoAvailable);
+
+    const togglePaymongoAvailability = async () => {
+      isTogglingPaymongo.value = true;
+      try {
+        await store.setPaymongoAvailability(!store.isPaymongoAvailable);
+      } catch (err) {
+        // handled in store
+      } finally {
+        isTogglingPaymongo.value = false;
+      }
+    };
+
     const reloadSettings = async () => {
       isLoading.value = true;
       try {

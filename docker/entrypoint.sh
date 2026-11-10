@@ -42,6 +42,10 @@ if [ ! -f .env ]; then
     [ -n "$REVERB_HOST" ] && echo "REVERB_HOST=$REVERB_HOST" >> .env
     [ -n "$REVERB_PORT" ] && echo "REVERB_PORT=$REVERB_PORT" >> .env
     [ -n "$REVERB_SCHEME" ] && echo "REVERB_SCHEME=$REVERB_SCHEME" >> .env
+    [ -n "$PAYMONGO_SECRET_KEY" ] && echo "PAYMONGO_SECRET_KEY=$PAYMONGO_SECRET_KEY" >> .env
+    [ -n "$PAYMONGO_PUBLIC_KEY" ] && echo "PAYMONGO_PUBLIC_KEY=$PAYMONGO_PUBLIC_KEY" >> .env
+    [ -n "$PAYMONGO_WEBHOOK_SECRET" ] && echo "PAYMONGO_WEBHOOK_SECRET=$PAYMONGO_WEBHOOK_SECRET" >> .env
+    [ -n "$PAYMONGO_API_URL" ] && echo "PAYMONGO_API_URL=$PAYMONGO_API_URL" >> .env
 fi
 
 # Fallback: If APP_KEY is still not set in environment or .env, generate one
