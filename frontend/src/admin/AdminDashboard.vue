@@ -1,5 +1,5 @@
 <template>
-<div class="min-h-screen bg-surface-950 flex flex-col lg:flex-row">
+<div class="min-h-screen lg:h-screen lg:overflow-hidden bg-surface-950 flex flex-col lg:flex-row">
       
       <!-- Mobile & Tablet Admin Top Navigation Bar (< 1024px) -->
       <div class="lg:hidden sticky top-0 z-40 bg-surface-900/95 backdrop-blur-md border-b border-surface-800 shadow-lg">
@@ -187,7 +187,7 @@
 
       <!-- Left Sidebar (Desktop Static & Mobile Drawer Overlay) -->
       <aside 
-        class="fixed inset-y-0 left-0 w-72 bg-surface-900 border-r border-surface-800 p-5 flex flex-col justify-between shrink-0 z-50 transition-transform duration-300 lg:static lg:translate-x-0 overflow-y-auto"
+        class="fixed inset-y-0 left-0 w-72 bg-surface-900 border-r border-surface-800 p-5 flex flex-col justify-between gap-4 shrink-0 z-50 transition-transform duration-300 lg:static lg:h-full lg:translate-x-0 overflow-y-auto"
         :class="mobileNavOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'">
         
         <div class="space-y-5">
@@ -465,7 +465,7 @@
         class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden animate-fade-in"></div>
 
       <!-- Main Admin Content Area -->
-      <main class="flex-1 p-3 sm:p-6 lg:p-10 overflow-y-auto space-y-4 sm:space-y-6">
+      <main class="flex-1 min-w-0 p-3 sm:p-6 lg:p-10 lg:h-full lg:overflow-y-auto space-y-4 sm:space-y-6">
         
         <!-- Store Operations & Status Control Header (Staff, Admin, Super Admin) -->
         <div class="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-surface-750/80 bg-surface-900/90 shadow-md flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
