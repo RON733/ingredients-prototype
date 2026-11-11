@@ -98,21 +98,31 @@
               <input 
                 v-model="form.client_name"
                 type="text" 
+                maxlength="80"
                 required
                 placeholder="Your full name" 
                 class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
               />
             </div>
             <div>
-              <label class="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-                Contact Phone
-              </label>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block font-bold text-gray-400 uppercase tracking-wider">
+                  Contact Phone
+                </label>
+                <span class="text-[10px] font-mono" :class="form.client_phone.length === 11 ? 'text-emerald-400 font-bold' : 'text-gray-500'">
+                  {{ form.client_phone.length }}/11
+                </span>
+              </div>
               <input 
-                v-model="form.client_phone"
+                :value="form.client_phone"
+                @input="onPhoneInput"
                 type="tel" 
+                inputmode="numeric"
+                maxlength="11"
+                pattern="09[0-9]{9}"
                 required
                 placeholder="09XXXXXXXXX" 
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 font-mono"
               />
             </div>
           </div>
@@ -133,16 +143,26 @@
               </select>
             </div>
             <div>
-              <label class="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-                Estimated Guest Count
-              </label>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block font-bold text-gray-400 uppercase tracking-wider">
+                  Estimated Guest Count
+                </label>
+                <span class="text-[10px] font-mono text-gray-500">
+                  10–500 pax
+                </span>
+              </div>
               <input 
-                v-model.number="form.guest_count"
+                :value="form.guest_count"
+                @keydown="onGuestCountKeydown"
+                @input="onGuestCountInput"
+                @blur="onGuestCountBlur"
                 type="number" 
+                inputmode="numeric"
                 min="10" 
                 max="500" 
+                step="1"
                 required
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500 tabular-nums"
               />
             </div>
           </div>
@@ -155,6 +175,7 @@
               <input 
                 v-model="form.event_date"
                 type="date" 
+                :min="minEventDate"
                 required
                 class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white focus:outline-none focus:border-brand-500"
               />
@@ -166,6 +187,7 @@
               <input 
                 v-model="form.event_time"
                 type="text" 
+                maxlength="60"
                 placeholder="e.g. 2:00 PM – 5:00 PM (3 Hours)" 
                 class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
               />
@@ -179,6 +201,7 @@
             <input 
               v-model="form.location"
               type="text" 
+              maxlength="200"
               required
               placeholder="e.g. Clubhouse / Residence, Santa Rosa, Laguna" 
               class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
@@ -186,22 +209,28 @@
           </div>
 
           <div>
-            <label class="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Special Requests or Drink Preferences
-            </label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block font-bold text-gray-400 uppercase tracking-wider">
+                Special Requests or Drink Preferences
+              </label>
+              <span class="text-[10px] font-mono text-gray-500">
+                {{ (form.notes || '').length }}/500
+              </span>
+            </div>
             <textarea 
               v-model="form.notes"
               rows="2" 
+              maxlength="500"
               placeholder="Tell us about preferred flavors, setup requirements, or venue electrical outlets..."
               class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"></textarea>
           </div>
 
           <!-- Estimated Cost Calculation -->
-          <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-800/80 border border-surface-700 space-y-2">
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-800/80 border border-surface-700 space-y-2 overflow-hidden">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
-              <div>
+              <div class="min-w-0">
                 <p class="text-[10px] sm:text-[11px] text-gray-400 uppercase font-bold">Estimated Base Price</p>
-                <p class="text-base sm:text-lg font-black text-amber-400">₱{{ estimatedCost.toLocaleString() }}.00</p>
+                <p class="text-base sm:text-lg font-black text-amber-400 break-words tabular-nums">₱{{ estimatedCost.toLocaleString() }}.00</p>
               </div>
               <div class="sm:text-right">
                 <span class="text-[10px] text-gray-400 block">Transportation fee varies by location</span>
@@ -605,9 +634,28 @@ export default {
       window.removeEventListener('mouseup', onMouseUp);
     });
 
+    const MIN_GUESTS = 10;
+    const MAX_GUESTS = 500;
+
+    const sanitizePhone = (raw) => {
+      let digits = String(raw || '').replace(/\D/g, '');
+      if (digits.startsWith('63') && digits.length === 12) {
+        digits = '0' + digits.slice(2);
+      }
+      return digits.slice(0, 11);
+    };
+
+    const minEventDate = Vue.computed(() => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    });
+
     const form = Vue.reactive({
-      client_name: store.user?.name || '',
-      client_phone: store.user?.phone || '',
+      client_name: (store.user?.name || '').slice(0, 80),
+      client_phone: sanitizePhone(store.user?.phone),
       client_email: store.user?.email || '',
       event_type: 'Coffee Package (₱3,500 / 50 pax)',
       event_date: '',
@@ -616,6 +664,46 @@ export default {
       location: '',
       notes: '',
     });
+
+    const onPhoneInput = (e) => {
+      const clean = sanitizePhone(e.target.value);
+      form.client_phone = clean;
+      e.target.value = clean;
+    };
+
+    const onGuestCountKeydown = (e) => {
+      if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+        e.preventDefault();
+      }
+    };
+
+    const onGuestCountInput = (e) => {
+      const digits = String(e.target.value || '').replace(/\D/g, '');
+      if (!digits) {
+        form.guest_count = '';
+        e.target.value = '';
+        return;
+      }
+      let count = parseInt(digits, 10);
+      if (!Number.isFinite(count)) {
+        count = MIN_GUESTS;
+      } else if (count > MAX_GUESTS) {
+        count = MAX_GUESTS;
+      }
+      form.guest_count = count;
+      e.target.value = String(count);
+    };
+
+    const onGuestCountBlur = () => {
+      const count = parseInt(form.guest_count, 10);
+      if (!Number.isFinite(count) || count < MIN_GUESTS) {
+        form.guest_count = MIN_GUESTS;
+      } else if (count > MAX_GUESTS) {
+        form.guest_count = MAX_GUESTS;
+      } else {
+        form.guest_count = count;
+      }
+    };
 
     const isCoffeePackage = Vue.computed(() => form.event_type.includes('Coffee'));
     const isFruityPackage = Vue.computed(() => form.event_type.includes('Fruity Float'));
@@ -644,12 +732,19 @@ export default {
       }
     });
 
+    const clampedGuestCount = Vue.computed(() => {
+      const parsed = Number(form.guest_count);
+      if (!Number.isFinite(parsed)) return 50;
+      return Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, Math.trunc(parsed)));
+    });
+
     const estimatedCost = Vue.computed(() => {
+      const guests = clampedGuestCount.value;
       if (isCoffeePackage.value || isFruityPackage.value) {
-        const units = Math.max(1, Math.ceil((form.guest_count || 50) / 50));
+        const units = Math.max(1, Math.ceil(guests / 50));
         return units * 3500;
       }
-      return (form.guest_count || 50) * 95;
+      return guests * 95;
     });
 
     const packageDetailsText = Vue.computed(() => {
@@ -663,10 +758,40 @@ export default {
     });
 
     const submitBooking = async () => {
+      const cleanName = form.client_name.trim().slice(0, 80);
+      if (!cleanName) {
+        store.notify('Please enter your full name.', 'warning');
+        return;
+      }
+      if (!/^09\d{9}$/.test(form.client_phone)) {
+        store.notify('Please enter a valid 11-digit mobile number starting with 09.', 'warning');
+        return;
+      }
+      const guests = parseInt(form.guest_count, 10);
+      if (!Number.isFinite(guests) || guests < MIN_GUESTS || guests > MAX_GUESTS) {
+        store.notify(`Estimated guest count must be between ${MIN_GUESTS} and ${MAX_GUESTS}.`, 'warning');
+        onGuestCountBlur();
+        return;
+      }
+      if (!form.event_date || form.event_date < minEventDate.value) {
+        store.notify('Please select a valid target date (today or later).', 'warning');
+        return;
+      }
+      const cleanLocation = form.location.trim().slice(0, 200);
+      if (!cleanLocation) {
+        store.notify('Please enter the event venue or location.', 'warning');
+        return;
+      }
+
       loading.value = true;
       try {
         await GST_API.createBooking({
           ...form,
+          client_name: cleanName,
+          guest_count: guests,
+          event_time: (form.event_time || '').trim().slice(0, 60),
+          location: cleanLocation,
+          notes: (form.notes || '').trim().slice(0, 500),
           package_name: form.event_type,
           estimated_cost: estimatedCost.value,
         });
@@ -675,7 +800,7 @@ export default {
         store.bookingModalOpen = false;
         store.selectedBookingPackage = null;
       } catch (err) {
-        store.notify('Failed to submit event booking.', 'error');
+        store.notify(err.response?.data?.message || 'Failed to submit event booking.', 'error');
       } finally {
         loading.value = false;
       }
@@ -686,6 +811,11 @@ export default {
       form,
       loading,
       enlargedPreview,
+      minEventDate,
+      onPhoneInput,
+      onGuestCountKeydown,
+      onGuestCountInput,
+      onGuestCountBlur,
       isZoomed,
       zoomScale,
       panX,
