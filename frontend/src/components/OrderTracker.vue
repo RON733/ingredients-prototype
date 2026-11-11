@@ -300,8 +300,17 @@
             </a>
           </div>
 
-          <!-- Fallback link for Card / Hosted Portal -->
-          
+          <!-- Fallback link for Hosted PayMongo Checkout Portal -->
+          <div v-if="order.paymongo_checkout_url" class="pt-2 border-t border-surface-800">
+            <a 
+              :href="order.paymongo_checkout_url" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-xs text-emerald-400 hover:text-emerald-300 underline font-semibold inline-flex items-center gap-1">
+              <span>Or pay via PayMongo Checkout Portal</span>
+              <i class="pi pi-external-link text-[10px]"></i>
+            </a>
+          </div>
 
         </div>
 

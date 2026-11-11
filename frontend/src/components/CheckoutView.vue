@@ -641,7 +641,15 @@
             </div>
 
             <div class="flex items-center justify-between text-xs pt-2 border-t border-surface-800 text-gray-400">
-              
+              <a 
+                v-if="activePaymongoCheckoutUrl" 
+                :href="activePaymongoCheckoutUrl" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="text-emerald-400 hover:text-emerald-300 underline font-semibold flex items-center gap-1 text-[11px]">
+                <span>Open PayMongo Checkout</span>
+                <i class="pi pi-external-link text-[10px]"></i>
+              </a>
               <button 
                 type="button" 
                 @click="dismissPaymongoModal"
