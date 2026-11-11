@@ -13,13 +13,14 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    # 1. If static file exists directly in root (like assets/* or images)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
 
-    # Send Requests To Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
+    # 2. If static file exists inside backend/public/
+    RewriteCond %{DOCUMENT_ROOT}/backend/public/ -f
+    RewriteRule ^(.*)$ backend/public/ [L]
+
+    # 3. All other requests go through Laravel
+    RewriteRule ^ backend/public/index.php [L]
 </IfModule>
