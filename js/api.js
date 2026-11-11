@@ -1,7 +1,7 @@
 // G Shot Teas - Axios API Client & Network Service
 (function () {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const API_BASE_URL = window.GST_BACKEND_URL || (isLocal && window.location.protocol !== 'https:' && window.location.port !== '8000' ? 'http://127.0.0.1:8000/api' : '/api');
+  const API_BASE_URL = window.GST_BACKEND_URL || (isLocal ? (window.location.port === '8000' ? '/api' : 'http://127.0.0.1:8000/api') : '/api');
 
   const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -63,7 +63,6 @@
     updateOrderStatus: (id, status) => apiClient.patch(`/v1/orders/${id}/status`, { status }),
     verifyPayment: (id) => apiClient.patch(`/v1/orders/${id}/verify-payment`),
     updateDriverLocation: (id, coords) => apiClient.patch(`/v1/orders/${id}/driver-location`, coords),
-    notifyDriverOnTheWay: (id, payload = {}) => apiClient.post(`/v1/orders/${id}/notify-on-the-way`, payload),
     updateCustomerLocation: (id, data) => apiClient.patch(`/v1/orders/${id}/customer-location`, data),
     assignDriver: (id, driverId) => apiClient.patch(`/v1/orders/${id}/assign-driver`, { driver_id: driverId }),
     getDrivers: () => apiClient.get('/v1/drivers'),
@@ -100,7 +99,6 @@
     getLoyverseStatus: () => apiClient.get('/loyverse/status'),
     syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}),
     exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu'),
-    pullLoyverseItems: (params) => apiClient.post('/loyverse/pull-items', params || {}),
     registerLoyverseWebhook: (url) => apiClient.post('/loyverse/register-webhook', { url }),
   };
 })();

@@ -1,4 +1,4 @@
-// G Shot Teas - Store & GCash Payment Settings (Admin & Super Admin)
+// G Shot Teas — Store & GCash Payment Settings (Admin & Super Admin)
 const AdminSettingsTab = {
   template: `
     <div class="space-y-8 animate-fade-in">
@@ -260,8 +260,8 @@ const AdminSettingsTab = {
                   <span>Strict Requirements Enforced:</span>
                 </p>
                 <div class="text-[10px] text-gray-300 space-y-0.5 pl-4">
-                  <p>? 1. Reference Number (9-13 digits) <span class="text-rose-400">*</span></p>
-                  <p>? 2. GCash Receipt Screenshot <span class="text-rose-400">*</span></p>
+                  <p>✓ 1. Reference Number (9-13 digits) <span class="text-rose-400">*</span></p>
+                  <p>✓ 2. GCash Receipt Screenshot <span class="text-rose-400">*</span></p>
                 </div>
               </div>
 
@@ -318,10 +318,10 @@ const AdminSettingsTab = {
           <!-- Delivery Fee -->
           <div>
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Delivery Fee (?)
+              Delivery Fee (₱)
             </label>
             <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">?</span>
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₱</span>
               <input 
                 v-model="storeForm.delivery_fee" 
                 type="number" 

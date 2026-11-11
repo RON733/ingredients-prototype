@@ -1,4 +1,4 @@
-/* G Shot Teas — Refined Minimal Styles (Slate Charcoal & Warm Honey Gold) */
+﻿/* G Shot Teas — Minimal Styles (Black, White & Yellow) */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 html, body { 
@@ -7,24 +7,24 @@ html, body {
   width: 100%; 
   max-width: 100vw; 
   overflow-x: clip; 
-  background: #0d0f12; 
-  color: #e4e7eb;
+  background: #000000; 
+  color: #f4f4f5;
   font-family: 'Inter', system-ui, sans-serif; 
   -webkit-tap-highlight-color: transparent;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #0d0f12; }
-::-webkit-scrollbar-thumb { background: #272c36; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+::-webkit-scrollbar-track { background: #000000; }
+::-webkit-scrollbar-thumb { background: #262626; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #facc15; }
 
 .glass {
-  background: #13161b;
-  border: 1px solid #272c36;
+  background: #09090b;
+  border: 1px solid #1f1f23;
 }
 .glass-card {
-  background: #181c22;
-  border: 1px solid #272c36;
+  background: #111113;
+  border: 1px solid #1f1f23;
 }
 .glow-orange, .glow-yellow, .glow-white, .glow-green { 
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); 

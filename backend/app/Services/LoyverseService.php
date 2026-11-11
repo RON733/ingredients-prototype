@@ -1219,8 +1219,8 @@ class LoyverseService
                 $firstPay = $receipt['payments'][0]['name'] ?? '';
                 if (stripos($firstPay, 'card') !== false) {
                     $payMethod = 'Card';
-                } elseif (stripos($firstPay, 'gcash') !== false) {
-                    $payMethod = 'GCash';
+                } elseif (stripos($firstPay, 'gcash') !== false || stripos($firstPay, 'paymongo') !== false || stripos($firstPay, 'qr') !== false || stripos($firstPay, 'online') !== false) {
+                    $payMethod = 'PayMongo';
                 }
             }
 
@@ -1338,9 +1338,6 @@ class LoyverseService
             : '7130f409-fcb4-442f-8fc5-0f6da70dce3f';
 
         $note = "Website Order {$order->order_number} ({$order->order_type}) - {$order->customer_name}";
-        if (!empty($order->gcash_ref)) {
-            $note .= " | GCash Ref: {$order->gcash_ref}";
-        }
 
         $orderDate = $order->created_at ? $order->created_at->toIso8601String() : now()->toIso8601String();
 

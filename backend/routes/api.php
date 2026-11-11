@@ -12,6 +12,7 @@ use App\Http\Controllers\SystemController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LoyverseController;
 use App\Http\Controllers\PayMongoController;
+use App\Http\Controllers\RemittanceController;
 
 // --- Public Endpoints ---
 Route::post('/auth/login', [AuthController::class, 'login'])->name('login');
@@ -36,7 +37,6 @@ Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::post('/orders', [OrderController::class, 'store']);
 Route::match(['put', 'patch'], '/orders/{id}/customer-location', [OrderController::class, 'updateCustomerLocation']);
 Route::match(['put', 'patch'], '/orders/{id}/status', [OrderController::class, 'updateStatus']);
-Route::match(['put', 'patch'], '/orders/{id}/verify-payment', [OrderController::class, 'verifyPayment']);
 Route::match(['put', 'patch'], '/orders/{id}/driver-location', [OrderController::class, 'updateDriverLocation']);
 Route::match(['post', 'put', 'patch'], '/orders/{id}/notify-on-the-way', [OrderController::class, 'notifyOnTheWay']);
 Route::match(['put', 'patch'], '/orders/{id}/assign-driver', [OrderController::class, 'assignDriver']);
@@ -49,6 +49,11 @@ Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/accept', [OrderCont
 Route::delete('/driver/notices/{id}', [OrderController::class, 'cancelRiderNotice']);
 Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNotice']);
 Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
+Route::get('/driver/remittances', [RemittanceController::class, 'index']);
+Route::post('/driver/remittances', [RemittanceController::class, 'store']);
+Route::post('/driver/remittances/{id}/accept', [RemittanceController::class, 'accept']);
+Route::post('/driver/remittances/{id}/reject', [RemittanceController::class, 'reject']);
+Route::delete('/driver/remittances/{id}', [RemittanceController::class, 'cancel']);
 
 Route::get('/ingredients', [IngredientController::class, 'index']);
 Route::get('/settings', [SystemController::class, 'settings']);
@@ -125,7 +130,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('v1')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::match(['put', 'patch'], '/orders/{id}/status', [OrderController::class, 'updateStatus']);
-    Route::match(['put', 'patch'], '/orders/{id}/verify-payment', [OrderController::class, 'verifyPayment']);
     Route::match(['put', 'patch'], '/orders/{id}/driver-location', [OrderController::class, 'updateDriverLocation']);
     Route::match(['post', 'put', 'patch'], '/orders/{id}/notify-on-the-way', [OrderController::class, 'notifyOnTheWay']);
     Route::match(['put', 'patch'], '/orders/{id}/customer-location', [OrderController::class, 'updateCustomerLocation']);
@@ -139,6 +143,11 @@ Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/accept', [OrderCont
 Route::delete('/driver/notices/{id}', [OrderController::class, 'cancelRiderNotice']);
 Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNotice']);
     Route::get('/driver/orders', [OrderController::class, 'driverOrders']);
+    Route::get('/driver/remittances', [RemittanceController::class, 'index']);
+    Route::post('/driver/remittances', [RemittanceController::class, 'store']);
+    Route::post('/driver/remittances/{id}/accept', [RemittanceController::class, 'accept']);
+    Route::post('/driver/remittances/{id}/reject', [RemittanceController::class, 'reject']);
+    Route::delete('/driver/remittances/{id}', [RemittanceController::class, 'cancel']);
     Route::post('/ingredients', [IngredientController::class, 'store']);
     Route::match(['put', 'patch'], '/ingredients/{id}', [IngredientController::class, 'update']);
     Route::post('/ingredients/{id}/adjust', [IngredientController::class, 'quickAdjust']);

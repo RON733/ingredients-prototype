@@ -237,7 +237,7 @@
                     Scan na All
                   </span>
                 </h4>
-                <p class="text-[11px] text-gray-400">Scan with GCash, Maya, or any Bank App</p>
+                <p class="text-[11px] text-gray-400">Scan with any QR Ph E-Wallet or Bank App</p>
               </div>
             </div>
             <div class="text-right">
@@ -267,8 +267,8 @@
 
             <!-- Supported Apps Banner -->
             <div class="flex items-center justify-center gap-1.5 text-[10px] text-gray-300 font-bold flex-wrap pt-1">
-              <span class="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-400/30">GCash</span>
-              <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Maya</span>
+              <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">PayMongo QR Ph</span>
+              <span class="px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-400/30">Maya</span>
               <span class="px-2 py-0.5 rounded-md bg-violet-500/20 text-violet-300 border border-violet-400/30">BDO / BPI</span>
               <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30">QR Ph Banks</span>
             </div>
@@ -276,7 +276,7 @@
 
           <!-- Instructions -->
           <p class="text-xs text-gray-300 leading-relaxed max-w-sm mx-auto">
-            Open your <strong>GCash</strong> or <strong>Maya</strong> app, tap <strong>Scan QR</strong>, and point your camera at the QR code. Once paid, this page updates automatically!
+            Open your <strong>e-wallet</strong> or <strong>banking</strong> app, tap <strong>Scan QR</strong>, and point your camera at the QR code. Once paid, this page updates automatically!
           </p>
 
           <!-- Status & Action Buttons -->
@@ -316,19 +316,7 @@
               </span>
             </span>
           </div>
-          <div v-if="order.gcash_ref" class="flex justify-between text-xs">
-            <span class="text-gray-400">GCash Ref No.</span>
-            <span class="font-mono font-bold text-sky-400">{{ order.gcash_ref }}</span>
-          </div>
-          <div v-if="order.proof_image" class="flex justify-between text-xs items-center">
-            <span class="text-gray-400">GCash Receipt</span>
-            <button 
-              type="button" 
-              @click="previewReceipt = order.proof_image"
-              class="font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-[11px] underline cursor-pointer">
-              <i class="pi pi-check-circle text-[10px]"></i> View Attached Receipt
-            </button>
-          </div>
+
           <div v-if="order.delivery_fee > 0" class="flex justify-between text-gray-400">
             <span>Delivery Fee</span>
             <span class="font-medium text-white">₱{{ Number(order.delivery_fee).toFixed(2) }}</span>
@@ -380,34 +368,7 @@
         </div>
       </div>
 
-      <!-- Receipt Lightbox Modal -->
-      <div 
-        v-if="previewReceipt" 
-        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-        @click.self="previewReceipt = null">
-        <div class="relative max-w-lg w-full bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up">
-          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
-            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="pi pi-receipt text-sky-400"></i> Your Uploaded GCash Receipt
-            </h4>
-            <button 
-              @click="previewReceipt = null" 
-              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
-              ✕
-            </button>
-          </div>
-          <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
-            <img :src="previewReceipt" alt="Payment Receipt" class="max-h-[60vh] w-auto object-contain rounded-lg" />
-          </div>
-          <div class="text-right">
-            <button 
-              @click="previewReceipt = null" 
-              class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-white text-xs font-bold transition-colors cursor-pointer">
-              Close Preview
-            </button>
-          </div>
-        </div>
-      </div>
+
     </div>
 </template>
 
@@ -494,8 +455,6 @@ export default {
         store.notify('Could not cancel order.', 'error');
       }
     };
-
-    const previewReceipt = Vue.ref(null);
 
     // --- Geometry & Navigation Calculations ---
     const calcBearing = (lat1, lon1, lat2, lon2) => {
@@ -1250,7 +1209,6 @@ export default {
       currentDeliveryStateTitle,
       currentDeliveryStateDesc,
       order,
-      previewReceipt,
       currentStepIndex,
       progressPercentage,
       statusBadgeClass,

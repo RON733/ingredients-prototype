@@ -26,8 +26,6 @@ class Order extends Model
         'driver_notes',
         'payment_method',
         'payment_status',
-        'gcash_ref',
-        'proof_image',
         'paymongo_session_id',
         'paymongo_payment_id',
                 'paymongo_checkout_url',
@@ -35,6 +33,8 @@ class Order extends Model
         'status',
         'delivered_at',
         'on_the_way_notified_at',
+        'remittance_id',
+        'remitted_at',
         'subtotal',
         'delivery_fee',
         'total_amount',
@@ -51,6 +51,7 @@ class Order extends Model
         'driver_lng' => 'float',
         'delivered_at' => 'datetime',
         'on_the_way_notified_at' => 'datetime',
+        'remitted_at' => 'datetime',
     ];
 
     public function user()
@@ -66,5 +67,10 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function remittance()
+    {
+        return $this->belongsTo(RiderRemittance::class, 'remittance_id');
     }
 }

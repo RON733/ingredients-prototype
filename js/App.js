@@ -1,4 +1,4 @@
-// G Shot Teas - Vue 3 Main Application Root
+// G Shot Teas — Vue 3 Main Application Root
 const { createApp, onMounted } = Vue;
 
 const App = {
@@ -40,7 +40,7 @@ const App = {
             <OrderHistoryView />
           </div>
 
-          <!-- 5. Staff & Admin Management Dashboard (Figures 14-17) -->
+          <!-- 5. Staff & Admin Management Dashboard (Figures 14–17) -->
           <div v-else-if="store.currentView === 'admin'">
             <AdminDashboard />
           </div>
@@ -56,11 +56,11 @@ const App = {
           <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <span class="font-extrabold text-white text-sm">G SHOT TEAS</span>
-              <span class="text-yellow-400 font-bold">&bull;</span>
+              <span class="text-yellow-400 font-bold">•</span>
               <span class="text-gray-400">Web-Based Ordering & Sales Management System</span>
             </div>
-            <p>STI College Santa Rosa &bull; Capstone Project by Tyron Erick Rico, Mhar Anthony Lirio, Kurt Xyler Munoz, Raymond Barajas</p>
-            <p class="text-[10px] text-gray-600">Client: Jefferson Anore Alulod &bull; Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna</p>
+            <p>STI College Santa Rosa — Capstone Project by Tyron Erick Rico, Mhar Anthony Lirio, Kurt Xyler Munoz, Raymond Barajas</p>
+            <p class="text-[10px] text-gray-600">Client: Jefferson Anore Alulod • Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna</p>
           </div>
         </footer>
 
@@ -85,14 +85,14 @@ const App = {
                 <i class="pi pi-image text-amber-400"></i> Official Service Flyer Preview
               </span>
               <button @click="store.closeFlyer()" class="w-8 h-8 rounded-full bg-surface-700 text-gray-300 hover:text-white flex items-center justify-center text-xs">
-                ?
+                ✕
               </button>
             </div>
             <div class="p-3 bg-black flex items-center justify-center">
               <img :src="store.previewFlyerImage" alt="Flyer Preview" class="max-h-[72vh] w-auto object-contain rounded-xl shadow-lg" />
             </div>
             <div class="p-3 sm:p-4 bg-surface-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 border-t border-surface-700">
-              <span class="text-[11px] sm:text-xs text-gray-300 font-medium truncate text-center sm:text-left">Direct: Jefferson Alulod &bull; 0994 612 1933</span>
+              <span class="text-[11px] sm:text-xs text-gray-300 font-medium truncate text-center sm:text-left">Direct: Jefferson Alulod • 0994 612 1933</span>
               <button 
                 @click="store.closeFlyer(); store.openBookingWithPackage(store.previewFlyerImage.includes('coffee') ? 'Coffee Package' : 'Fruity Float Package')"
                 class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all shrink-0 text-center">

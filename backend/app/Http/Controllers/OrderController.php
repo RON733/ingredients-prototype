@@ -137,9 +137,7 @@ class OrderController extends Controller
             'delivery_address' => 'nullable|string',
             'customer_lat' => 'nullable|numeric',
             'customer_lng' => 'nullable|numeric',
-            'payment_method' => 'required|in:Cash,GCash,PayMongo',
-            'gcash_ref' => 'nullable|string',
-            'proof_image' => 'nullable|string',
+            'payment_method' => 'required|in:Cash,PayMongo',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|string|exists:products,id',
@@ -176,43 +174,7 @@ class OrderController extends Controller
             }
         }
 
-        // 3. GCash Payment verification: BOTH Reference Number AND Receipt Screenshot are strictly required
-        if ($validated['payment_method'] === 'GCash') {
-            $gcashAvailable = \App\Models\SystemSetting::where('key', 'gcash_available')->value('value');
-            if ($gcashAvailable !== null && in_array(strtolower((string)$gcashAvailable), ['false', '0', 'no', 'off'], true)) {
-                return response()->json([
-                    'message' => 'GCash payment is currently unavailable. Please select Cash on Delivery or Cash at Counter.'
-                ], 422);
-            }
-            $ref = trim($validated['gcash_ref'] ?? '');
-            $proof = trim($validated['proof_image'] ?? '');
 
-            if (empty($ref) && empty($proof)) {
-                return response()->json([
-                    'message' => 'GCash payment requires BOTH the Reference Number (9 to 13 digits) and an uploaded receipt screenshot.'
-                ], 422);
-            }
-
-            if (empty($ref)) {
-                return response()->json([
-                    'message' => 'GCash Reference Number is required for online GCash payments.'
-                ], 422);
-            }
-
-            if (empty($proof)) {
-                return response()->json([
-                    'message' => 'GCash Receipt Screenshot is required. Please upload a clear photo or screenshot of your GCash receipt.'
-                ], 422);
-            }
-
-            $cleanRef = preg_replace('/\D/', '', $ref);
-            if (strlen($cleanRef) < 9 || strlen($cleanRef) > 13) {
-                return response()->json([
-                    'message' => 'GCash reference number must contain only numbers and be 9 to 13 digits (standard Philippine GCash reference code).'
-                ], 422);
-            }
-            $validated['gcash_ref'] = $cleanRef;
-        }
 
         return DB::transaction(function () use ($validated, $request) {
             // 1. Gather all product IDs and batch-fetch products with recipes
@@ -341,8 +303,6 @@ class OrderController extends Controller
                 'customer_lng' => $validated['customer_lng'] ?? null,
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => 'Pending',
-                'gcash_ref' => $validated['gcash_ref'] ?? null,
-                'proof_image' => $validated['proof_image'] ?? null,
                 'status' => 'Pending',
                 'subtotal' => $subtotal,
                 'delivery_fee' => $deliveryFee,
@@ -358,7 +318,7 @@ class OrderController extends Controller
                 try {
                     $paymongoService = app(\App\Services\PayMongoService::class);
 
-                    // 1. Generate Direct QR Ph payment code (Instant scan with GCash / Maya)
+                    // 1. Generate Direct QR Ph payment code via PayMongo
                     $qrData = $paymongoService->createQrPhPayment($order);
                     if ($qrData && !empty($qrData['qr_image'])) {
                         $qrImage = $qrData['qr_image'];
@@ -436,7 +396,7 @@ class OrderController extends Controller
         $newStatus = $validated['status'];
 
         // Payment Pre-condition constraint:
-        // Online orders (PayMongo & GCash) MUST be Paid/Verified before kitchen preparation can begin!
+        // Online orders (PayMongo) MUST be Paid/Verified before kitchen preparation can begin!
         if ($newStatus === 'Preparing' && $order->payment_method !== 'Cash' && !in_array($order->payment_status, ['Paid', 'Verified'])) {
             return response()->json([
                 'message' => "Cannot start preparation. Online payment for order {$order->order_number} ({$order->payment_method}) is still pending and must be verified first."
@@ -537,26 +497,6 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => "Order status updated to {$newStatus}",
-            'order' => $order,
-        ]);
-    }
-
-    public function verifyPayment(Request $request, $id)
-    {
-        $order = Order::findOrFail($id);
-        $order->payment_status = 'Verified';
-        $order->save();
-
-        AuditLog::create([
-            'user_name' => $request->user()?->name ?? 'Staff',
-            'user_role' => $request->user()?->role ?? 'staff',
-            'action' => 'Payment Verified',
-            'details' => "Verified payment for order {$order->order_number} ({$order->payment_method})",
-            'ip_address' => $request->ip(),
-        ]);
-
-        return response()->json([
-            'message' => 'Payment verified successfully.',
             'order' => $order,
         ]);
     }
@@ -792,6 +732,16 @@ class OrderController extends Controller
                     ->count();
                 $driver->pending_notice = \App\Models\RiderNotice::where('driver_id', $driver->id)
                     ->where('is_acknowledged', false)
+                    ->latest()
+                    ->first();
+                $driver->unremitted_cash = round((float) Order::where('driver_id', $driver->id)
+                    ->where('order_type', 'Delivery')
+                    ->where('status', 'Completed')
+                    ->whereIn('payment_method', ['Cash', 'Cash on Delivery', 'COD'])
+                    ->whereNull('remitted_at')
+                    ->sum('total_amount'), 2);
+                $driver->pending_remittance = \App\Models\RiderRemittance::where('driver_id', $driver->id)
+                    ->where('status', 'pending')
                     ->latest()
                     ->first();
                 return $driver;

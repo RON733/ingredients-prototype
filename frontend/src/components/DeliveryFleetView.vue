@@ -81,6 +81,39 @@
       </div>
     </div>
 
+    <!-- Pending COD Remittance Handover Alert Banner -->
+    <div
+      v-if="pendingRemittances.length > 0"
+      class="p-4 rounded-2xl bg-emerald-950/35 border border-emerald-500/40 text-emerald-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl shrink-0">💵</span>
+        <div>
+          <p class="font-black text-sm text-white">
+            {{ pendingRemittances.length }} COD Remittance Handover{{ pendingRemittances.length > 1 ? 's' : '' }} Pending Acceptance
+          </p>
+          <p class="text-[11px] text-emerald-200/90 mt-0.5">
+            Rider <strong class="text-white">{{ pendingRemittances[0].driver_name }}</strong> submitted
+            <strong class="text-amber-300 font-mono">₱{{ Number(pendingRemittances[0].amount).toFixed(2) }}</strong>
+            ({{ pendingRemittances[0].reference_number }} • {{ pendingRemittances[0].orders_count }} order{{ pendingRemittances[0].orders_count === 1 ? '' : 's' }}).
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          @click="activeTab = 'remittances'"
+          class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-surface-800 text-emerald-300 text-xs font-bold border border-emerald-500/30 transition-colors cursor-pointer">
+          View Details
+        </button>
+        <button
+          type="button"
+          @click="handleAcceptRemittance(pendingRemittances[0])"
+          class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs transition-colors shadow cursor-pointer">
+          Accept Remittance
+        </button>
+      </div>
+    </div>
+
     <!-- Fleet Overview Stat Cards (4 Cards) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <!-- 1. Available Riders -->
@@ -136,8 +169,8 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs: Who's Available Riders | In Delivery Right Now | Their History -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 rounded-2xl bg-surface-900 border border-surface-800 shadow-md">
+    <!-- Navigation Tabs: Available Riders | In Delivery | History | Remittances -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 p-1.5 rounded-2xl bg-surface-900 border border-surface-800 shadow-md">
       <!-- Tab 1: Available Riders -->
       <button 
         type="button"
@@ -186,6 +219,23 @@
           class="px-2 py-0.5 rounded-full text-[10px] font-black"
           :class="activeTab === 'history' ? 'bg-purple-500 text-black' : 'bg-surface-800 text-neutral-300'">
           {{ deliveredHistory.length }}
+        </span>
+      </button>
+
+      <!-- Tab 4: COD Remittances -->
+      <button 
+        type="button"
+        @click="activeTab = 'remittances'"
+        class="flex-1 py-3 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border"
+        :class="activeTab === 'remittances' 
+          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm' 
+          : 'text-neutral-400 hover:text-white border-transparent hover:bg-surface-800/60'">
+        <i class="pi pi-wallet text-sm"></i>
+        <span>Remittances</span>
+        <span 
+          class="px-2 py-0.5 rounded-full text-[10px] font-black"
+          :class="pendingRemittances.length > 0 ? 'bg-rose-500 text-white animate-pulse' : (activeTab === 'remittances' ? 'bg-emerald-500 text-black' : 'bg-surface-800 text-neutral-300')">
+          {{ pendingRemittances.length > 0 ? pendingRemittances.length + ' Pending' : (store.remittances?.length || 0) }}
         </span>
       </button>
     </div>
@@ -390,6 +440,29 @@
                 {{ rider.total_completed_count || 0 }}
               </div>
             </div>
+          </div>
+
+          <!-- COD Cash to Remit Status Strip -->
+          <div class="p-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs"
+            :class="rider.pending_remittance
+              ? 'bg-amber-500/10 border-amber-500/40'
+              : (Number(rider.unremitted_cash || 0) > 0 ? 'bg-surface-950/70 border-surface-800' : 'bg-surface-950/40 border-surface-800/60')">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">COD Cash to Remit</span>
+              <span class="font-mono font-black text-sm" :class="Number(rider.unremitted_cash || 0) > 0 ? 'text-amber-300' : 'text-emerald-400'">
+                ₱{{ Number(rider.unremitted_cash || 0).toFixed(2) }}
+              </span>
+            </div>
+            <button
+              v-if="rider.pending_remittance"
+              type="button"
+              @click="handleAcceptRemittance(rider.pending_remittance)"
+              class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] font-black transition-colors cursor-pointer shadow">
+              Accept Remittance
+            </button>
+            <span v-else class="text-[10px] font-semibold" :class="Number(rider.unremitted_cash || 0) > 0 ? 'text-neutral-400' : 'text-emerald-400'">
+              {{ Number(rider.unremitted_cash || 0) > 0 ? 'Not handed over yet' : 'Settled ✓' }}
+            </span>
           </div>
 
           <!-- Bottom Action Buttons for Staff Control -->
@@ -702,6 +775,13 @@
       </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- TAB 4: COD REMITTANCES & HISTORY           -->
+    <!-- ========================================== -->
+    <div v-if="activeTab === 'remittances'">
+      <AdminRemittancesTab />
+    </div>
+
     <!-- Photo Proof Lightbox Modal -->
     <div 
       v-if="activeProofImage" 
@@ -742,9 +822,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
+import AdminRemittancesTab from '@/admin/AdminRemittancesTab.vue';
 
 export default {
   name: 'DeliveryFleetView',
+  components: { AdminRemittancesTab },
   setup() {
     const store = useGShotStore();
 
@@ -804,7 +886,8 @@ export default {
         await Promise.all([
           fetchRiders(),
           fetchOrders(),
-          store.fetchRiderNotices(true)
+          store.fetchRiderNotices(true),
+          store.fetchRemittances({}, true)
         ]);
       } finally {
         loading.value = false;
@@ -825,6 +908,10 @@ export default {
 
     const pendingNotices = computed(() => {
       return (store.riderNotices || []).filter(n => !n.is_acknowledged);
+    });
+
+    const pendingRemittances = computed(() => {
+      return (store.remittances || []).filter(r => r.status === 'pending');
     });
 
     const filteredRiders = computed(() => {
@@ -959,6 +1046,16 @@ export default {
       }
     };
 
+    const handleAcceptRemittance = async (rem) => {
+      if (!confirm('Accept COD remittance of ₱' + Number(rem.amount).toFixed(2) + ' from ' + rem.driver_name + ' (' + rem.reference_number + ')?')) return;
+      try {
+        await store.acceptRemittance(rem.id);
+        await refreshAll();
+      } catch (err) {
+        // handled by store
+      }
+    };
+
     const markOrderDelivered = async (order) => {
       if (!confirm('Confirm order #' + order.order_number + ' has been delivered successfully by the rider?')) return;
       try {
@@ -979,7 +1076,8 @@ export default {
       pollInterval = setInterval(async () => {
         await Promise.all([
           fetchRiders(),
-          fetchOrders()
+          fetchOrders(),
+          store.fetchRemittances({}, true)
         ]);
       }, 10000);
     });
@@ -1004,6 +1102,7 @@ export default {
       deliveringRiders,
       offlineRiders,
       pendingNotices,
+      pendingRemittances,
       filteredRiders,
       filteredHistory,
       totalHistoryAmount,
@@ -1018,6 +1117,7 @@ export default {
       viewRiderActiveDelivery,
       toggleRiderStatus,
       handleAcceptNotice,
+      handleAcceptRemittance,
       markOrderDelivered,
       openProofPreview,
       refreshAll

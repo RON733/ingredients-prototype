@@ -215,7 +215,7 @@
             <p class="text-[11px] text-brand-400 font-medium">Estimated ready time: 10–15 mins after order acceptance.</p>
           </div>
 
-          <!-- Payment Method (GCash vs Cash on Delivery) -->
+          <!-- Payment Method (PayMongo QR vs Cash) -->
           <div>
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Payment Method <span class="text-rose-500">*</span>
@@ -239,7 +239,7 @@
                   <span class="font-extrabold tracking-wide text-xs">QR Payment</span>
                 </div>
                 <span class="text-[9px] text-emerald-300/80 font-semibold leading-tight">
-                  GCash • Maya (QR Ph)
+                  PayMongo • QR Ph
                 </span>
                 <span v-if="!store.isPaymongoAvailable" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
                   Unavailable
@@ -284,7 +284,7 @@
                         Automated & Instant
                       </span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-0.5">Pay via GCash, Maya, or any QR Ph banking app</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Pay via PayMongo QR Ph, e-wallets, or banking app</p>
                   </div>
                 </div>
                 <div class="text-right">
@@ -293,20 +293,20 @@
                 </div>
               </div>
 
-              <!-- Supported Channels: GCash & Maya Only -->
+              <!-- Supported Channels: PayMongo QR Ph -->
               <div class="grid grid-cols-2 gap-2 pt-1">
                 <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-black text-[10px]">G</span>
+                  <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]"><i class="pi pi-qrcode"></i></span>
                   <div>
-                    <p class="text-xs font-bold text-white leading-tight">GCash</p>
-                    <p class="text-[10px] text-gray-500">Scan QR</p>
+                    <p class="text-xs font-bold text-white leading-tight">E-Wallets</p>
+                    <p class="text-[10px] text-gray-500">QR Ph Scan</p>
                   </div>
                 </div>
                 <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">M</span>
+                  <span class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-[10px]"><i class="pi pi-building"></i></span>
                   <div>
-                    <p class="text-xs font-bold text-white leading-tight">Maya</p>
-                    <p class="text-[10px] text-gray-500">Scan QR</p>
+                    <p class="text-xs font-bold text-white leading-tight">Online Banks</p>
+                    <p class="text-[10px] text-gray-500">QR Ph Scan</p>
                   </div>
                 </div>
               </div>
@@ -599,10 +599,10 @@
 
               <!-- Badges -->
               <div class="flex items-center justify-center gap-1.5 text-[10px] text-gray-300 font-bold flex-wrap pt-1">
-                <span class="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-400/30">GCash</span>
-                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Maya</span>
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">PayMongo QR Ph</span>
+                <span class="px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-400/30">Maya</span>
                 <span class="px-2 py-0.5 rounded-md bg-violet-500/20 text-violet-300 border border-violet-400/30">BDO / BPI</span>
-                <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30">Any QR Ph</span>
+                <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30">Any QR Ph App</span>
               </div>
             </div>
 
@@ -616,7 +616,7 @@
             </div>
 
             <p class="text-[11px] text-gray-400 leading-relaxed">
-              Open your <strong>GCash</strong>, <strong>Maya</strong>, or banking app, tap <strong>Scan QR</strong>, and scan the code. This page automatically completes checkout upon payment!
+              Open your <strong>e-wallet</strong> or <strong>banking</strong> app, tap <strong>Scan QR</strong>, and scan the code. This page automatically completes checkout upon payment!
             </p>
 
             <!-- Actions -->
@@ -671,10 +671,6 @@ export default {
     const isSubmitting = Vue.ref(false);
     const isValidationTriggered = Vue.ref(false);
     const serverErrorMessage = Vue.ref('');
-    const proofFileName = Vue.ref('');
-    const isQrModalOpen = Vue.ref(false);
-    const isReceiptLightboxOpen = Vue.ref(false);
-    const isCopiedNumber = Vue.ref(false);
     const paymongoModalOpen = Vue.ref(false);
     const activePaymongoOrder = Vue.ref(null);
     const activePaymongoQr = Vue.ref('');
@@ -702,8 +698,6 @@ export default {
       customer_lat: null,
       customer_lng: null,
       payment_method: store.isPaymongoAvailable ? 'PayMongo' : 'Cash',
-      gcash_ref: '',
-      proof_image: '',
       notes: '',
     });
 
@@ -715,13 +709,10 @@ export default {
       return store.cartSubtotal + deliveryFee.value;
     });
 
-    // Auto-fallback payment method if selected method is flagged unavailable
-    Vue.watch(() => [store.isPaymongoAvailable, store.isGcashAvailable], ([pmAvail, gcashAvail]) => {
+    // Auto-fallback payment method if PayMongo is flagged unavailable
+    Vue.watch(() => store.isPaymongoAvailable, (pmAvail) => {
       if (!pmAvail && form.payment_method === 'PayMongo') {
-        form.payment_method = gcashAvail ? 'GCash' : 'Cash';
-      }
-      if (!gcashAvail && form.payment_method === 'GCash') {
-        form.payment_method = pmAvail ? 'PayMongo' : 'Cash';
+        form.payment_method = 'Cash';
       }
     }, { immediate: true });
 
@@ -729,25 +720,6 @@ export default {
     const onPhoneInput = (e) => {
       const clean = e.target.value.replace(/\D/g, '').slice(0, 11);
       form.customer_phone = clean;
-    };
-
-    // Enforce numbers only and max 13 digits for GCash Reference Number
-    const onRefInput = (e) => {
-      const clean = e.target.value.replace(/\D/g, '').slice(0, 13);
-      form.gcash_ref = clean;
-    };
-
-    // Quick-copy GCash mobile number
-    const copyGcashNumber = () => {
-      const cleanNum = (store.gcashAccountNumber || '09123456789').replace(/\s+/g, '');
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(cleanNum);
-      }
-      isCopiedNumber.value = true;
-      store.notify(`Copied ${cleanNum} to clipboard!`, 'info');
-      setTimeout(() => {
-        isCopiedNumber.value = false;
-      }, 2500);
     };
 
     // Validation computeds
@@ -774,45 +746,6 @@ export default {
       if (!isValidationTriggered.value && !form.delivery_address) return '';
       if (!form.delivery_address.trim()) return 'Delivery address is required for Delivery orders.';
       return '';
-    });
-
-    // GCash Reference Number: strictly required when payment_method === 'GCash'
-    const refError = Vue.computed(() => {
-      if (form.payment_method !== 'GCash') return '';
-      if (!isValidationTriggered.value && !form.gcash_ref) return '';
-      if (!form.gcash_ref || !form.gcash_ref.trim()) {
-        return 'GCash Reference Number is required.';
-      }
-      if (form.gcash_ref.length < 9) {
-        return `Reference number is too short (${form.gcash_ref.length}/9–13 digits entered).`;
-      }
-      return '';
-    });
-
-    // GCash Receipt Screenshot: strictly required when payment_method === 'GCash'
-    const proofError = Vue.computed(() => {
-      if (form.payment_method !== 'GCash') return '';
-      if (!isValidationTriggered.value && !form.proof_image) return '';
-      if (!form.proof_image) {
-        return 'GCash Receipt Screenshot is required.';
-      }
-      return '';
-    });
-
-    // GCash dual verification status check
-    const isGcashFullyVerified = Vue.computed(() => {
-      if (form.payment_method !== 'GCash') return true;
-      const hasRef = Boolean(form.gcash_ref && form.gcash_ref.trim().length >= 9);
-      const hasProof = Boolean(form.proof_image && form.proof_image.trim().length > 0);
-      return hasRef && hasProof;
-    });
-
-    const gcashRequirementStatusText = Vue.computed(() => {
-      const hasRef = Boolean(form.gcash_ref && form.gcash_ref.trim().length >= 9);
-      const hasProof = Boolean(form.proof_image && form.proof_image.trim().length > 0);
-      if (hasRef && hasProof) return '✓ 2 of 2 Requirements Completed';
-      if (hasRef || hasProof) return '1 of 2 Requirements Completed';
-      return '0 of 2 Requirements Completed';
     });
 
     // Aggregated list stating all exact reasons why order cannot be placed
@@ -1224,69 +1157,6 @@ export default {
       }
     });
 
-    // Client-side canvas compression for receipt image
-    const compressImage = (file, maxDim = 1200, quality = 0.85) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onerror = reject;
-          img.onload = () => {
-            let w = img.width;
-            let h = img.height;
-            if (w > maxDim || h > maxDim) {
-              if (w > h) {
-                h = Math.round((h * maxDim) / w);
-                w = maxDim;
-              } else {
-                w = Math.round((w * maxDim) / h);
-                h = maxDim;
-              }
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality));
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-
-    const handleImageUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        store.notify('Please upload an image file (PNG, JPG, JPEG, WEBP).', 'error');
-        return;
-      }
-
-      proofFileName.value = file.name;
-      try {
-        const compressedBase64 = await compressImage(file, 1200, 0.85);
-        form.proof_image = compressedBase64;
-        store.notify('Receipt screenshot attached successfully!', 'success');
-      } catch (err) {
-        // Fallback to raw reader if canvas fails
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          form.proof_image = event.target.result;
-          store.notify('Receipt screenshot attached successfully!', 'success');
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-
-    const removeProofImage = () => {
-      form.proof_image = '';
-      proofFileName.value = '';
-    };
-
     const startModalPaymongoPolling = (orderId) => {
       if (modalPollTimer) clearInterval(modalPollTimer);
       modalPollTimer = setInterval(async () => {
@@ -1420,8 +1290,6 @@ export default {
           customer_lat: form.customer_lat ? Number(form.customer_lat) : null,
           customer_lng: form.customer_lng ? Number(form.customer_lng) : null,
           payment_method: form.payment_method,
-          gcash_ref: form.gcash_ref.trim(),
-          proof_image: form.proof_image,
           notes: form.notes,
           items: store.cart.map(i => ({
             product_id: i.product_id,
@@ -1503,24 +1371,12 @@ export default {
       isSubmitting,
       isValidationTriggered,
       serverErrorMessage,
-      proofFileName,
-      isQrModalOpen,
-      isReceiptLightboxOpen,
-      isCopiedNumber,
-      copyGcashNumber,
       onPhoneInput,
-      onRefInput,
       nameError,
       phoneError,
       addressError,
-      refError,
-      proofError,
-      isGcashFullyVerified,
-      gcashRequirementStatusText,
       checkoutBlockReasons,
       useCurrentLocation,
-      handleImageUpload,
-      removeProofImage,
       backToMenu,
       submitOrder,
       paymongoModalOpen,

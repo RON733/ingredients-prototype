@@ -80,7 +80,6 @@ export const GST_API = {
   createOrder: (data) => apiClient.post('/orders', data),
   placeOrder: (data) => apiClient.post('/orders', data),
   updateOrderStatus: (id, status, notes = '') => apiClient.patch(`/orders/${id}/status`, { status, notes }),
-  verifyPayment: (id) => apiClient.patch(`/orders/${id}/verify-payment`),
 
   // PayMongo Online Payment Gateway
   getPayMongoConfig: () => apiClient.get('/paymongo/config'),
@@ -104,6 +103,11 @@ export const GST_API = {
   cancelRiderNotice: (id) => apiClient.delete('/driver/notices/' + id),
   getActiveRiderNotice: (params) => apiClient.get('/driver/active-notice', { params }),
   getDriverOrders: (params) => apiClient.get('/driver/orders', { params }),
+  getRemittances: (params) => apiClient.get('/driver/remittances', { params }),
+  submitRemittance: (data) => apiClient.post('/driver/remittances', data),
+  acceptRemittance: (id, data = {}) => apiClient.post(`/driver/remittances/${id}/accept`, data),
+  rejectRemittance: (id, data = {}) => apiClient.post(`/driver/remittances/${id}/reject`, data),
+  cancelRemittance: (id) => apiClient.delete(`/driver/remittances/${id}`),
 
   // Authentication & Verification
   login: (emailOrData, password, portal = 'customer') => {

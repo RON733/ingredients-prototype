@@ -32,42 +32,42 @@ const AdminAnalyticsTab = {
         </div>
       </div>
 
-      <!-- KPI Summary Cards (2-cols on mobile, 4-cols on desktop) -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <!-- KPI Summary Cards (Matches Figure 15: Total Sales, Highest Day, Average Sales) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total Sales -->
-        <div class="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-800/90 border border-surface-700 shadow-xl flex flex-col justify-between">
-          <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider truncate">Total Sales</p>
-          <p class="text-base sm:text-2xl lg:text-3xl font-black text-brand-400 my-1 sm:my-2 truncate">
+        <div class="p-6 rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-1">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Sales</p>
+          <p class="text-3xl font-black text-brand-400">
             ₱{{ formatCurrency(analyticsData?.total_sales) }}
           </p>
-          <p class="text-[9px] sm:text-[11px] text-gray-500 font-medium truncate">Completed orders revenue</p>
+          <p class="text-[11px] text-gray-500 font-medium">Completed orders revenue</p>
         </div>
 
         <!-- Highest Day -->
-        <div class="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-800/90 border border-surface-700 shadow-xl flex flex-col justify-between">
-          <p class="text-[10px] sm:text-xs font-bold text-amber-400 uppercase tracking-wider truncate">Highest Day</p>
-          <p class="text-base sm:text-2xl lg:text-3xl font-black text-amber-400 my-1 sm:my-2 truncate">
+        <div class="p-6 rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-1">
+          <p class="text-xs font-bold text-amber-400 uppercase tracking-wider">Highest Day</p>
+          <p class="text-3xl font-black text-amber-400">
             ₱{{ formatCurrency(analyticsData?.highest_day) }}
           </p>
-          <p class="text-[9px] sm:text-[11px] text-gray-500 font-medium truncate">Peak revenue date</p>
+          <p class="text-[11px] text-gray-500 font-medium">Peak revenue date</p>
         </div>
 
         <!-- Average Sales -->
-        <div class="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-800/90 border border-surface-700 shadow-xl flex flex-col justify-between">
-          <p class="text-[10px] sm:text-xs font-bold text-emerald-400 uppercase tracking-wider truncate">Average Ticket</p>
-          <p class="text-base sm:text-2xl lg:text-3xl font-black text-emerald-400 my-1 sm:my-2 truncate">
+        <div class="p-6 rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-1">
+          <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Average Sales</p>
+          <p class="text-3xl font-black text-emerald-400">
             ₱{{ formatCurrency(analyticsData?.average_sales) }}
           </p>
-          <p class="text-[9px] sm:text-[11px] text-gray-500 font-medium truncate">Average ticket per order</p>
+          <p class="text-[11px] text-gray-500 font-medium">Average ticket per order</p>
         </div>
 
         <!-- Total Orders -->
-        <div class="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-800/90 border border-surface-700 shadow-xl flex flex-col justify-between">
-          <p class="text-[10px] sm:text-xs font-bold text-purple-400 uppercase tracking-wider truncate">Orders</p>
-          <p class="text-base sm:text-2xl lg:text-3xl font-black text-purple-400 my-1 sm:my-2 truncate">
+        <div class="p-6 rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-1">
+          <p class="text-xs font-bold text-purple-400 uppercase tracking-wider">Completed Orders</p>
+          <p class="text-3xl font-black text-purple-400">
             {{ analyticsData?.orders_count || 0 }}
           </p>
-          <p class="text-[9px] sm:text-[11px] text-gray-500 font-medium truncate">Fulfilled customer orders</p>
+          <p class="text-[11px] text-gray-500 font-medium">Fulfilled customer orders</p>
         </div>
       </div>
 

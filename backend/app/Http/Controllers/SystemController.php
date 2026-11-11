@@ -23,9 +23,6 @@ class SystemController extends Controller
             if (!isset($s['paymongo_available'])) {
                 $s['paymongo_available'] = 'true';
             }
-            if (!isset($s['gcash_available'])) {
-                $s['gcash_available'] = 'true';
-            }
             if (!isset($s['maintenance_mode'])) {
                 $s['maintenance_mode'] = 'false';
             }
@@ -61,18 +58,6 @@ class SystemController extends Controller
                     'message' => 'Access Denied: Only Super Admin has permission to shut down the website or toggle Maintenance Mode.'
                 ], 403);
             }
-        }
-
-        // Handle direct file upload for GCash QR code if submitted as multipart form data
-        if ($request->hasFile('gcash_qr_file')) {
-            $file = $request->file('gcash_qr_file');
-            $uploadDir = public_path('uploads');
-            if (!file_exists($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
-            $filename = 'gcash_qr_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->move($uploadDir, $filename);
-            $data['gcash_qr_code'] = './uploads/' . $filename;
         }
 
         $records = [];
@@ -112,19 +97,16 @@ class SystemController extends Controller
             $details = $isShutdown 
                 ? 'EMERGENCY: Super Admin initiated website shutdown. Customer access placed into Maintenance Mode.' 
                 : 'Super Admin deactivated Maintenance Mode. Public website and customer ordering restored.';
-        } elseif (isset($data['gcash_available'])) {
-            $isAvail = in_array($data['gcash_available'], ['true', true, '1', 1], true);
-            $action = $isAvail ? 'GCash Marked Available' : 'GCash Flagged Unavailable';
+        } elseif (isset($data['paymongo_available'])) {
+            $isAvail = in_array($data['paymongo_available'], ['true', true, '1', 1], true);
+            $action = $isAvail ? 'PayMongo Marked Available' : 'PayMongo Flagged Unavailable';
             $details = $isAvail 
-                ? 'GCash online payment option enabled for customer checkout.' 
-                : 'GCash online payment flagged unavailable. Customers restricted to Cash on Delivery / Counter.';
+                ? 'PayMongo online payment gateway enabled for customer checkout.' 
+                : 'PayMongo online payment gateway flagged unavailable. Customers restricted to Cash on Delivery / Counter.';
         } elseif (isset($data['order_area_note']) || isset($data['order_area_note_enabled'])) {
             $action = 'Order Area Notice Updated';
             $noteText = $data['order_area_note'] ?? 'Santa Rosa Bayan notice';
             $details = 'Updated customer order availability note: ' . $noteText;
-        } elseif (isset($data['gcash_account_number']) || isset($data['gcash_qr_code'])) {
-            $num = $data['gcash_account_number'] ?? 'unchanged';
-            $details = "Updated GCash payment settings: Mobile No. {$num}, QR code updated.";
         }
 
         try {
@@ -147,9 +129,6 @@ class SystemController extends Controller
             }
             if (!isset($s['paymongo_available'])) {
                 $s['paymongo_available'] = 'true';
-            }
-            if (!isset($s['gcash_available'])) {
-                $s['gcash_available'] = 'true';
             }
             if (!isset($s['maintenance_mode'])) {
                 $s['maintenance_mode'] = 'false';
@@ -252,7 +231,7 @@ class SystemController extends Controller
             . "- Contact / Phone: {$phone} (Direct to Jefferson Alulod) or +63 912 345 6789\n"
             . "- Business Hours: Monday to Saturday, 9:00 AM – 10:00 PM (Closed on Sundays)\n"
             . "- Walk-In Orders: YES! Walk-in orders for dine-in and takeout are 100% welcomed directly at our physical store at {$address}. Customers can also order online through this website for delivery or pickup!\n"
-            . "- Payment Methods: GCash (Transfer to {$phone} under Jefferson A.) and Cash on Delivery (COD) / Cash at Counter for walk-ins.\n"
+            . "- Payment Methods: PayMongo Online Payment (QR Ph, E-Wallets & Online Banking) and Cash on Delivery (COD) / Cash at Counter for walk-ins.\n"
             . "- Event Catering & Mobile Bar: Coffee Package (₱3,500 for 50 pax, 5 drink choices, 3 hrs barista service) and Fruity Float Package (₱3,500 for 50 pax, 7 drink choices). Inquiries handled directly by {$owner} ({$phone}).\n\n"
             . "CURRENT STORE MENU & PRICES:\n{$menuSummary}\n\n"
             . "LIVE PROMOTIONS & ANNOUNCEMENTS:\n{$announcementsSummary}\n\n"

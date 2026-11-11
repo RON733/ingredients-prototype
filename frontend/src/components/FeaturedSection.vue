@@ -451,8 +451,8 @@
               <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 font-black text-sm flex items-center justify-center mb-3">
                 2
               </span>
-              <h3 class="font-bold text-white text-sm">Pay with GCash or COD</h3>
-              <p class="text-xs text-gray-400 mt-1">Pay smoothly via GCash scan-to-pay upload or convenient Cash on Delivery upon arrival.</p>
+              <h3 class="font-bold text-white text-sm">Pay Online via PayMongo or COD</h3>
+              <p class="text-xs text-gray-400 mt-1">Pay smoothly via PayMongo QR Ph instant checkout or convenient Cash on Delivery upon arrival.</p>
             </div>
 
             <div class="p-6 rounded-2xl bg-surface-900 border border-surface-800">

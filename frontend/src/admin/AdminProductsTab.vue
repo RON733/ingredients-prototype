@@ -494,78 +494,267 @@
         </div>
       </div>
       <!-- ================= ADD / EDIT PRODUCT MODAL ================= -->
-      <div v-if="modalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="w-full max-w-lg bg-surface-900 border border-surface-700 rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div v-if="modalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+        <div class="w-full max-w-3xl bg-surface-900 border border-surface-700 rounded-3xl p-6 space-y-5 max-h-[92vh] overflow-y-auto shadow-2xl">
           <div class="flex justify-between items-center border-b border-surface-700 pb-3">
-            <h3 class="text-lg font-black text-white">
-              {{ isEditing ? 'Edit Product' : 'Add New Product' }}
-            </h3>
-            <button @click="modalOpen = false" class="text-gray-400 hover:text-white">✕</button>
+            <div>
+              <h3 class="text-lg font-black text-white">
+                {{ isEditing ? 'Edit Product' : 'Add New Product' }}
+              </h3>
+              <p class="text-[11px] text-gray-400">Configure details, pricing, and insert a menu preview picture.</p>
+            </div>
+            <button type="button" @click="modalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer">✕</button>
           </div>
 
-          <div class="space-y-3 text-xs">
-            <div>
-              <label class="block text-gray-400 mb-1">Product Name</label>
-              <input v-model="form.name" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" placeholder="e.g. Avocado Boba Milk" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+            <!-- Left Column: Product Details & Picture Controls -->
+            <div class="md:col-span-7 space-y-3.5 text-xs">
               <div>
-                <label class="block text-gray-400 mb-1">Category</label>
-                <select v-model="form.category" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white">
-                  <option value="Drinks">Drinks</option>
-                  <option value="Burgers">Burgers</option>
-                  <option value="Pizzas">Pizzas</option>
-                  <option value="RiceMeals">RiceMeals</option>
-                  <option value="Sides">Sides</option>
-                  <option value="Coffee">Coffee</option>
-                </select>
+                <label class="block text-gray-400 mb-1">Product Name</label>
+                <input v-model="form.name" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 focus:border-amber-500 focus:outline-none text-white" placeholder="e.g. Avocado Boba Milk" />
               </div>
-              <div>
-                <label class="block text-gray-400 mb-1">Regular Base Price (₱)</label>
-                <input v-model.number="form.base_price" type="number" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
-              </div>
-            </div>
 
-            <!-- Discount field in Edit Modal -->
-            <div class="p-3 rounded-xl bg-surface-800/80 border border-surface-700 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-gray-300">Discount & Promo (% Off)</span>
-                <span v-if="form.discount_percent > 0" class="text-amber-400 font-bold">
-                  Selling Price: ₱{{ (form.base_price * (1 - form.discount_percent / 100)).toFixed(2) }}
-                </span>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-gray-400 mb-0.5 text-[11px]">Discount Percent (%)</label>
-                  <input 
-                    v-model.number="form.discount_percent" 
-                    type="number" 
-                    min="0" 
-                    max="99" 
-                    class="w-full p-2 rounded-xl bg-surface-900 border border-surface-700 text-white"
-                    placeholder="0 = No discount" 
-                  />
+                  <label class="block text-gray-400 mb-1">Category</label>
+                  <select v-model="form.category" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 focus:border-amber-500 focus:outline-none text-white cursor-pointer">
+                    <option value="Drinks">Drinks</option>
+                    <option value="Burgers">Burgers</option>
+                    <option value="Pizzas">Pizzas</option>
+                    <option value="RiceMeals">RiceMeals</option>
+                    <option value="Sides">Sides</option>
+                    <option value="Coffee">Coffee</option>
+                  </select>
                 </div>
                 <div>
-                  <label class="block text-gray-400 mb-0.5 text-[11px]">Preview Selling Price</label>
-                  <div class="w-full p-2 rounded-xl bg-surface-900 border border-surface-700 text-amber-400 font-bold">
-                    ₱{{ form.discount_percent > 0 ? (form.base_price * (1 - form.discount_percent / 100)).toFixed(2) : Number(form.base_price || 0).toFixed(2) }}
+                  <label class="block text-gray-400 mb-1">Regular Base Price (₱)</label>
+                  <input v-model.number="form.base_price" type="number" min="0" step="0.01" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 focus:border-amber-500 focus:outline-none text-white" />
+                </div>
+              </div>
+
+              <!-- Discount field in Edit Modal -->
+              <div class="p-3 rounded-xl bg-surface-800/80 border border-surface-700 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-gray-300">Discount & Promo (% Off)</span>
+                  <span v-if="form.discount_percent > 0" class="text-amber-400 font-bold">
+                    Selling Price: ₱{{ previewSellingPrice.toFixed(2) }}
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-gray-400 mb-0.5 text-[11px]">Discount Percent (%)</label>
+                    <input 
+                      v-model.number="form.discount_percent" 
+                      type="number" 
+                      min="0" 
+                      max="99" 
+                      class="w-full p-2 rounded-xl bg-surface-900 border border-surface-700 text-white"
+                      placeholder="0 = No discount" 
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-gray-400 mb-0.5 text-[11px]">Preview Selling Price</label>
+                    <div class="w-full p-2 rounded-xl bg-surface-900 border border-surface-700 text-amber-400 font-bold">
+                      ₱{{ previewSellingPrice.toFixed(2) }}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <div>
+                <label class="block text-gray-400 mb-1">Description</label>
+                <textarea v-model="form.description" rows="2" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 focus:border-amber-500 focus:outline-none text-white" placeholder="Describe the ingredients, flavor, or serving..."></textarea>
+              </div>
+
+              <!-- Product Picture Upload / URL / Presets -->
+              <div 
+                @dragover.prevent="isDraggingImage = true"
+                @dragleave.prevent="isDraggingImage = false"
+                @drop.prevent="handleImageDrop"
+                class="p-3.5 rounded-2xl bg-surface-800/80 border transition-all space-y-2.5"
+                :class="isDraggingImage ? 'border-amber-400 bg-amber-500/10' : 'border-surface-700'">
+                <div class="flex items-center justify-between gap-2">
+                  <label class="font-bold text-gray-200 flex items-center gap-1.5">
+                    <i class="pi pi-image text-amber-400"></i>
+                    <span>Product Picture (Menu Preview)</span>
+                  </label>
+                  <span 
+                    class="text-[10px] px-2 py-0.5 rounded-md font-semibold"
+                    :class="hasCustomImage ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-surface-900 text-gray-400 border border-surface-700'">
+                    {{ isDataUrlImage ? 'Uploaded Photo' : (hasCustomImage ? 'Custom Image' : 'Default Banner') }}
+                  </span>
+                </div>
+
+                <p class="text-[11px] text-gray-400">
+                  Upload a photo from your device, drag &amp; drop an image here, pick a preset, or paste an image URL.
+                </p>
+
+                <!-- Action Controls -->
+                <div class="flex flex-wrap items-center gap-2">
+                  <label class="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm">
+                    <i class="pi" :class="isUploadingImage ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
+                    <span>{{ form.image ? 'Change Picture' : 'Upload Picture' }}</span>
+                    <input 
+                      ref="imageInputRef"
+                      type="file" 
+                      accept="image/*" 
+                      class="hidden" 
+                      @change="handleImageUpload" 
+                    />
+                  </label>
+
+                  <button 
+                    type="button" 
+                    @click="setPresetImage('/assets/menu-coffee.png')"
+                    class="px-2.5 py-2 rounded-xl bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] font-medium cursor-pointer transition-colors">
+                    ☕ Drinks
+                  </button>
+                  <button 
+                    type="button" 
+                    @click="setPresetImage('/assets/hero-banner.png')"
+                    class="px-2.5 py-2 rounded-xl bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] font-medium cursor-pointer transition-colors">
+                    🍔 Food
+                  </button>
+                  <button 
+                    type="button" 
+                    @click="setPresetImage('/assets/menu-pizza.png')"
+                    class="px-2.5 py-2 rounded-xl bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] font-medium cursor-pointer transition-colors">
+                    🍕 Pizza
+                  </button>
+
+                  <button 
+                    v-if="hasCustomImage"
+                    type="button" 
+                    @click="clearImage"
+                    class="px-2.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-rose-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ml-auto">
+                    <i class="pi pi-trash text-[10px]"></i>
+                    <span>Reset</span>
+                  </button>
+                </div>
+
+                <!-- URL Input or Uploaded Status -->
+                <div v-if="!isDataUrlImage">
+                  <input 
+                    v-model="form.image" 
+                    @input="onImageUrlInput"
+                    type="text" 
+                    placeholder="Or paste image URL (https://... or /assets/...)" 
+                    class="w-full px-3 py-2 rounded-xl bg-surface-900 border border-surface-700 focus:border-amber-500 text-gray-200 placeholder-gray-500 text-xs focus:outline-none" 
+                  />
+                </div>
+                <div v-else class="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-900 border border-emerald-500/30 text-[11px] text-emerald-300">
+                  <span class="flex items-center gap-1.5 font-medium">
+                    <i class="pi pi-check-circle"></i>
+                    <span>Custom photo attached &amp; ready for menu</span>
+                  </span>
+                  <button type="button" @click="clearImage" class="text-gray-400 hover:text-rose-300 underline cursor-pointer">
+                    Switch to URL
+                  </button>
+                </div>
+
+                <p v-if="imageError" class="text-[11px] text-rose-400 flex items-center gap-1">
+                  <i class="pi pi-exclamation-triangle text-[10px]"></i>
+                  <span>{{ imageError }}</span>
+                </p>
+              </div>
             </div>
 
-            <div>
-              <label class="block text-gray-400 mb-1">Description</label>
-              <textarea v-model="form.description" rows="2" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white"></textarea>
+            <!-- Right Column: Live Menu Card Preview -->
+            <div class="md:col-span-5 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <i class="pi pi-eye text-amber-400"></i>
+                  <span>Live Menu Preview</span>
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
+                  Menu Card
+                </span>
+              </div>
+
+              <div class="p-3 rounded-2xl bg-surface-950/90 border border-surface-800">
+                <div class="rounded-2xl bg-surface-800/90 border border-surface-700/80 overflow-hidden shadow-xl flex flex-col">
+                  <!-- Preview Picture -->
+                  <div class="relative h-44 bg-surface-900 overflow-hidden flex items-center justify-center group">
+                    <img 
+                      :src="previewImageSrc" 
+                      :alt="form.name || 'Menu preview'"
+                      @error="onPreviewImageError"
+                      @load="onPreviewImageLoad"
+                      class="w-full h-full object-cover filter brightness-95 transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-surface-800 via-transparent to-transparent pointer-events-none"></div>
+
+                    <!-- Category Pill -->
+                    <span class="absolute top-2.5 right-2.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-surface-900/85 text-gray-200 border border-surface-700 backdrop-blur-sm">
+                      {{ form.category || 'Drinks' }}
+                    </span>
+
+                    <!-- Discount Badge -->
+                    <div v-if="form.discount_percent > 0" class="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-neutral-950 text-[10px] font-black uppercase tracking-wider shadow-md">
+                      <i class="pi pi-bolt text-[9px]"></i>
+                      <span>{{ form.discount_percent }}% OFF</span>
+                    </div>
+
+                    <!-- Quick Insert Overlay if no custom image yet -->
+                    <label 
+                      v-if="!hasCustomImage"
+                      class="absolute bottom-2.5 left-2.5 right-2.5 py-1.5 px-3 rounded-xl bg-black/70 hover:bg-black/85 backdrop-blur-md border border-white/15 text-gray-200 text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+                      <i class="pi pi-camera text-amber-400 text-xs"></i>
+                      <span>Click to insert menu photo</span>
+                      <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
+                    </label>
+                  </div>
+
+                  <!-- Preview Card Body -->
+                  <div class="p-4 space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                      <h4 class="font-bold text-white text-sm leading-snug line-clamp-1">
+                        {{ form.name.trim() || 'Product Name Preview' }}
+                      </h4>
+                      <div class="text-right shrink-0">
+                        <div v-if="form.discount_percent > 0" class="flex flex-col items-end">
+                          <span class="text-[10px] line-through text-gray-400 font-semibold leading-none">
+                            ₱{{ Number(form.base_price || 0).toFixed(2) }}
+                          </span>
+                          <span class="font-black text-amber-400 text-sm whitespace-nowrap mt-0.5">
+                            ₱{{ previewSellingPrice.toFixed(2) }}
+                          </span>
+                        </div>
+                        <span v-else class="font-black text-yellow-400 text-sm whitespace-nowrap">
+                          ₱{{ Number(form.base_price || 0).toFixed(2) }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p class="text-[11px] text-gray-400 line-clamp-2 leading-relaxed min-h-[2.25rem]">
+                      {{ form.description.trim() || 'Your product description will appear here on the customer menu.' }}
+                    </p>
+
+                    <div class="pt-2 border-t border-surface-700/60">
+                      <div class="w-full py-2 rounded-xl font-bold text-xs bg-yellow-400 text-black flex items-center justify-center gap-1.5 opacity-95">
+                        <i class="pi pi-plus text-[10px]"></i>
+                        <span>{{ form.category === 'Drinks' || form.category === 'Coffee' ? 'Customize' : 'Add to Cart' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-[10px] text-gray-500 leading-relaxed px-1">
+                Customers will see this picture on the storefront menu, product preview modal, and admin catalog.
+              </p>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-3 border-t border-surface-700">
-            <button @click="modalOpen = false" class="px-4 py-2 text-xs text-gray-400">Cancel</button>
-            <button @click="saveProduct" class="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 rounded-xl cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
-              {{ isEditing ? 'Save Changes' : 'Create Product' }}
+            <button type="button" @click="modalOpen = false" class="px-4 py-2 text-xs text-gray-400 hover:text-white cursor-pointer">Cancel</button>
+            <button 
+              type="button"
+              @click="saveProduct" 
+              :disabled="isSavingProduct"
+              class="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 rounded-xl cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95 disabled:opacity-50 flex items-center gap-1.5">
+              <i v-if="isSavingProduct" class="pi pi-spin pi-spinner text-xs"></i>
+              <span>{{ isEditing ? 'Save Changes' : 'Create Product' }}</span>
             </button>
           </div>
         </div>
@@ -601,7 +790,166 @@ export default {
       discount_percent: 0,
       description: '',
       emoji: '🧋',
+      image: '',
     });
+
+    const imageInputRef = ref(null);
+    const isUploadingImage = ref(false);
+    const isDraggingImage = ref(false);
+    const isSavingProduct = ref(false);
+    const imageError = ref('');
+    const previewImgLoadFailed = ref(false);
+
+    const isDataUrlImage = computed(() => {
+      return typeof form.image === 'string' && form.image.startsWith('data:image/');
+    });
+
+    const hasCustomImage = computed(() => {
+      const val = (form.image || '').trim();
+      return val !== '' && val !== '/assets/hero-banner.png' && val !== './assets/hero-banner.png';
+    });
+
+    const previewImageSrc = computed(() => {
+      if (previewImgLoadFailed.value) return '/assets/hero-banner.png';
+      const val = (form.image || '').trim();
+      return val || '/assets/hero-banner.png';
+    });
+
+    const previewSellingPrice = computed(() => {
+      const base = Number(form.base_price || 0);
+      const pct = Number(form.discount_percent || 0);
+      if (pct > 0) {
+        return Math.round(base * (1 - pct / 100) * 100) / 100;
+      }
+      return base;
+    });
+
+    const compressImageFile = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Could not read the selected image file.'));
+        reader.onload = (ev) => {
+          const dataUrl = ev.target?.result;
+          if (!dataUrl || typeof dataUrl !== 'string') {
+            reject(new Error('Invalid image data.'));
+            return;
+          }
+
+          if (file.type === 'image/svg+xml') {
+            resolve(dataUrl);
+            return;
+          }
+
+          const img = new Image();
+          img.onerror = () => reject(new Error('Could not decode image file.'));
+          img.onload = () => {
+            const maxDim = 800;
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              if (width >= height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(dataUrl);
+              return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const webp = canvas.toDataURL('image/webp', 0.84);
+            if (webp.startsWith('data:image/webp')) {
+              resolve(webp);
+            } else {
+              resolve(canvas.toDataURL('image/jpeg', 0.84));
+            }
+          };
+          img.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    const processImageFile = async (file) => {
+      if (!file) return;
+      if (!file.type || !file.type.startsWith('image/')) {
+        imageError.value = 'Please choose a valid image file (PNG, JPG, WebP, GIF).';
+        store.notify(imageError.value, 'error');
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        imageError.value = 'Image file is too large (max 15MB).';
+        store.notify(imageError.value, 'error');
+        return;
+      }
+
+      isUploadingImage.value = true;
+      imageError.value = '';
+      previewImgLoadFailed.value = false;
+      try {
+        form.image = await compressImageFile(file);
+      } catch (err) {
+        imageError.value = err?.message || 'Failed to process image.';
+        store.notify(imageError.value, 'error');
+      } finally {
+        isUploadingImage.value = false;
+        if (imageInputRef.value) {
+          imageInputRef.value.value = '';
+        }
+      }
+    };
+
+    const handleImageUpload = (e) => {
+      const file = e.target.files?.[0];
+      if (file) processImageFile(file);
+    };
+
+    const handleImageDrop = (e) => {
+      isDraggingImage.value = false;
+      const file = e.dataTransfer?.files?.[0];
+      if (file) processImageFile(file);
+    };
+
+    const setPresetImage = (path) => {
+      imageError.value = '';
+      previewImgLoadFailed.value = false;
+      form.image = path;
+    };
+
+    const clearImage = () => {
+      imageError.value = '';
+      previewImgLoadFailed.value = false;
+      form.image = '';
+      if (imageInputRef.value) {
+        imageInputRef.value.value = '';
+      }
+    };
+
+    const onImageUrlInput = () => {
+      imageError.value = '';
+      previewImgLoadFailed.value = false;
+    };
+
+    const onPreviewImageError = () => {
+      if (form.image && form.image.trim() && !previewImgLoadFailed.value) {
+        previewImgLoadFailed.value = true;
+        imageError.value = 'Could not load that image URL — showing default banner in preview.';
+      }
+    };
+
+    const onPreviewImageLoad = () => {
+      if (!previewImgLoadFailed.value) {
+        imageError.value = '';
+      }
+    };
 
     // Discount Manager State
     const discountModalOpen = ref(false);
@@ -796,6 +1144,11 @@ export default {
       form.discount_percent = 0;
       form.description = '';
       form.emoji = '🧋';
+      form.image = '';
+      imageError.value = '';
+      previewImgLoadFailed.value = false;
+      isDraggingImage.value = false;
+      if (imageInputRef.value) imageInputRef.value.value = '';
       modalOpen.value = true;
     };
 
@@ -808,14 +1161,23 @@ export default {
         ? Number(product.original_price)
         : Number(product.price);
       form.discount_percent = Number(product.discount_percent || 0);
-      form.description = product.description;
+      form.description = product.description || '';
       form.emoji = product.emoji || '🍽️';
+      form.image = product.image || '';
+      imageError.value = '';
+      previewImgLoadFailed.value = false;
+      isDraggingImage.value = false;
+      if (imageInputRef.value) imageInputRef.value.value = '';
       modalOpen.value = true;
     };
 
     const saveProduct = async () => {
-      if (!form.name.trim()) return;
+      if (!form.name.trim()) {
+        store.notify('Please enter a product name.', 'error');
+        return;
+      }
 
+      isSavingProduct.value = true;
       try {
         const basePrice = Number(form.base_price);
         const discountPct = Number(form.discount_percent || 0);
@@ -827,8 +1189,10 @@ export default {
           originalPrice = basePrice;
         }
 
+        const imageValue = (form.image || '').trim() || '/assets/hero-banner.png';
+
         const payload = {
-          name: form.name,
+          name: form.name.trim(),
           category: form.category,
           price: finalPrice,
           original_price: originalPrice,
@@ -837,13 +1201,19 @@ export default {
           discount_value: discountPct > 0 ? discountPct : 0,
           description: form.description,
           emoji: form.emoji,
+          image: imageValue,
         };
 
         if (isEditing.value) {
           await GST_API.updateProduct(editingId.value, payload);
           store.notify('Product updated successfully!');
         } else {
-          const slug = form.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          const slugBase = form.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '') || 'product';
+          const exists = store.products.some(p => p.id === slugBase);
+          const slug = exists ? `${slugBase}-${Date.now().toString().slice(-4)}` : slugBase;
           await GST_API.createProduct({
             id: slug,
             ...payload,
@@ -853,7 +1223,10 @@ export default {
         modalOpen.value = false;
         store.fetchProducts();
       } catch (err) {
-        store.notify('Failed to save product.', 'error');
+        const msg = err?.response?.data?.message || 'Failed to save product.';
+        store.notify(msg, 'error');
+      } finally {
+        isSavingProduct.value = false;
       }
     };
 
@@ -879,6 +1252,22 @@ export default {
       modalOpen,
       isEditing,
       form,
+      imageInputRef,
+      isUploadingImage,
+      isDraggingImage,
+      isSavingProduct,
+      imageError,
+      isDataUrlImage,
+      hasCustomImage,
+      previewImageSrc,
+      previewSellingPrice,
+      handleImageUpload,
+      handleImageDrop,
+      setPresetImage,
+      clearImage,
+      onImageUrlInput,
+      onPreviewImageError,
+      onPreviewImageLoad,
       toggleAvailability,
       openAddModal,
       openEditModal,

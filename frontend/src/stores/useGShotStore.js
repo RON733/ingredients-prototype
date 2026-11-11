@@ -355,6 +355,9 @@ const useGShotStore = defineStore('gshot', {
     riderNotices: [],
     unreadRiderNoticesCount: 0,
     showRiderNoticesModal: false,
+    remittances: [],
+    pendingRemittancesCount: 0,
+    remittanceSummary: null,
     previewProofImage: null,
 
     // Terminal & Staff Security Lock State
@@ -418,16 +421,7 @@ const useGShotStore = defineStore('gshot', {
       return true;
     },
 
-    isGcashAvailable: (state) => {
-      if (state.settings && state.settings.gcash_available !== undefined && state.settings.gcash_available !== null) {
-        return state.settings.gcash_available === 'true' || state.settings.gcash_available === true || state.settings.gcash_available === '1' || state.settings.gcash_available === 1;
-      }
-      return true;
-    },
 
-    gcashQrCode: (state) => state.settings?.gcash_qr_code || './assets/gcash-qr-default.png',
-    gcashAccountNumber: (state) => state.settings?.gcash_account_number || '0912 345 6789',
-    gcashAccountName: (state) => state.settings?.gcash_account_name || 'Jefferson A.',
     discountedProductsCount: (state) => state.products.filter(p => (p.original_price && Number(p.original_price) > Number(p.price)) || (p.discount_percent && Number(p.discount_percent) > 0)).length,
     discountedProducts: (state) => state.products.filter(p => (p.original_price && Number(p.original_price) > Number(p.price)) || (p.discount_percent && Number(p.discount_percent) > 0)),
   },
@@ -650,6 +644,51 @@ const useGShotStore = defineStore('gshot', {
         return res.data;
       } catch (err) {
         this.notify(err.response?.data?.message || 'Could not cancel notice.', 'error');
+        throw err;
+      }
+    },
+
+    async fetchRemittances(params = {}, silent = true) {
+      try {
+        const res = await GST_API.getRemittances(params);
+        const prevCount = this.pendingRemittancesCount;
+        this.remittances = res.data.remittances || [];
+        this.pendingRemittancesCount = res.data.pending_count ?? this.remittances.filter(r => r.status === 'pending').length;
+        this.remittanceSummary = res.data.summary || null;
+
+        if (!silent && this.pendingRemittancesCount > prevCount && prevCount >= 0 && (this.isAdminOrSuper || this.isStaffOnly)) {
+          const newest = this.remittances.find(r => r.status === 'pending');
+          if (newest) {
+            this.notify('COD Remittance Handover: ' + newest.driver_name + ' submitted ₱' + Number(newest.amount).toFixed(2) + ' (' + newest.reference_number + ')', 'warning');
+          }
+        }
+        return res.data;
+      } catch (err) {
+        console.warn('Failed to fetch remittances:', err);
+        return null;
+      }
+    },
+
+    async acceptRemittance(id, staffNotes = '') {
+      try {
+        const res = await GST_API.acceptRemittance(id, staffNotes ? { staff_notes: staffNotes } : {});
+        this.notify(res.data?.message || 'Remittance accepted and rider balance cleared!', 'success');
+        await Promise.all([this.fetchRemittances({}, true), this.fetchOrders()]);
+        return res.data;
+      } catch (err) {
+        this.notify(err.response?.data?.message || 'Failed to accept remittance.', 'error');
+        throw err;
+      }
+    },
+
+    async rejectRemittance(id, staffNotes = '') {
+      try {
+        const res = await GST_API.rejectRemittance(id, staffNotes ? { staff_notes: staffNotes } : {});
+        this.notify(res.data?.message || 'Remittance returned for verification.', 'info');
+        await Promise.all([this.fetchRemittances({}, true), this.fetchOrders()]);
+        return res.data;
+      } catch (err) {
+        this.notify(err.response?.data?.message || 'Failed to reject remittance.', 'error');
         throw err;
       }
     },
@@ -1215,27 +1254,6 @@ const useGShotStore = defineStore('gshot', {
       } catch (err) {
         console.error('Failed to update PayMongo availability on backend:', err);
         const msg = err.response?.data?.message || 'Failed to update PayMongo availability.';
-        this.notify(msg, 'error');
-        throw err;
-      }
-    },
-
-    async setGcashAvailability(isAvailable) {
-      const valStr = isAvailable ? 'true' : 'false';
-      if (!this.settings) this.settings = {};
-      this.settings.gcash_available = valStr;
-      try {
-        await GST_API.updateSettings({ gcash_available: valStr });
-        this.notify(
-          isAvailable 
-            ? 'GCash payment marked as AVAILABLE for customer checkout.' 
-            : 'GCash payment flagged as UNAVAILABLE for customer checkout.', 
-          isAvailable ? 'success' : 'info'
-        );
-        return true;
-      } catch (err) {
-        console.error('Failed to update GCash availability on backend:', err);
-        const msg = err.response?.data?.message || 'Failed to update GCash availability.';
         this.notify(msg, 'error');
         throw err;
       }

@@ -92,6 +92,17 @@
           </button>
 
           <button 
+            @click="selectTab('remittances')" 
+            class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
+            :class="store.adminTab === 'remittances' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
+            <i class="pi pi-wallet text-[11px]"></i>
+            <span>Remittances</span>
+            <span v-if="store.pendingRemittancesCount > 0" class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse">
+              {{ store.pendingRemittancesCount }}
+            </span>
+          </button>
+
+          <button 
             @click="selectTab('inventory')" 
             class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer"
             :class="store.adminTab === 'inventory' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold' : 'bg-surface-850/80 text-neutral-400 border-transparent hover:text-white'">
@@ -274,6 +285,22 @@
                 </span>
               </button>
 
+              <!-- COD Rider Remittances -->
+              <button 
+                @click="selectTab('remittances')"
+                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
+                :class="store.adminTab === 'remittances' 
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
+                <div class="flex items-center gap-3">
+                  <i class="pi pi-wallet text-sm"></i>
+                  <span>COD Remittances</span>
+                </div>
+                <span v-if="store.pendingRemittancesCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                  {{ store.pendingRemittancesCount }}
+                </span>
+              </button>
+
               <!-- Delivery Fleet (Live Driver View) -->
               <button 
                 @click="store.currentView = 'driver'"
@@ -394,7 +421,7 @@
                 </div>
               </button>
 
-              <!-- Store & GCash Payment Settings (Staff, Admin, Super Admin) -->
+              <!-- Store & Payment Settings (Staff, Admin, Super Admin) -->
               <button 
                 v-if="store.isStaffOrAdmin"
                 @click="selectTab('settings')"
@@ -403,8 +430,8 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-qrcode text-sm"></i>
-                  <span>GCash & Settings</span>
+                  <i class="pi pi-cog text-sm"></i>
+                  <span>Store & Settings</span>
                 </div>
               </button>
             </div>
@@ -490,6 +517,22 @@
               <span class="text-neutral-400 text-[11px] hidden sm:inline">On Duty:</span>
               <span class="font-bold text-white text-xs truncate max-w-[80px] sm:max-w-[100px]">{{ store.user?.name || 'Staff' }}</span>
               <span class="text-[9px] px-1 py-0.2 rounded bg-sky-500/20 text-sky-300 font-mono font-bold shrink-0">PIN</span>
+            </button>
+
+            <!-- Pending COD Remittances Indicator Button -->
+            <button 
+              @click="selectTab('remittances')"
+              type="button"
+              class="relative flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-surface-800/80 hover:bg-surface-700 border text-xs font-bold transition-all shadow-sm cursor-pointer active:scale-95"
+              :class="store.pendingRemittancesCount > 0 ? 'border-amber-500/50 text-amber-300' : 'border-surface-700/60 text-neutral-300 hover:text-white'"
+              title="View Rider COD Remittances &amp; History">
+              <i class="pi pi-wallet text-xs text-amber-400"></i>
+              <span>Remit</span>
+              <span 
+                v-if="store.pendingRemittancesCount > 0" 
+                class="px-1.5 py-0.2 rounded-full text-[9px] sm:text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                {{ store.pendingRemittancesCount }}
+              </span>
             </button>
 
             <!-- Rider Fleet Notices Indicator Button -->
@@ -1025,6 +1068,7 @@ import GST_API from '@/services/api';
 import AdminAnalyticsTab from './AdminAnalyticsTab.vue';
 import AdminOrdersTab from './AdminOrdersTab.vue';
 import AdminCompletedTab from './AdminCompletedTab.vue';
+import AdminRemittancesTab from './AdminRemittancesTab.vue';
 import AdminProductsTab from './AdminProductsTab.vue';
 import AdminInventoryTab from './AdminInventoryTab.vue';
 import AdminRecipesTab from './AdminRecipesTab.vue';
@@ -1042,6 +1086,7 @@ export default {
     AdminAnalyticsTab,
     AdminOrdersTab,
     AdminCompletedTab,
+    AdminRemittancesTab,
     AdminProductsTab,
     AdminInventoryTab,
     AdminRecipesTab,
@@ -1082,7 +1127,11 @@ export default {
       updateTime();
       timer = setInterval(updateTime, 1000);
       store.fetchRiderNotices(true);
-      noticePoller = setInterval(() => store.fetchRiderNotices(true), 8000);
+      store.fetchRemittances({}, true);
+      noticePoller = setInterval(() => {
+        store.fetchRiderNotices(true);
+        store.fetchRemittances({}, false);
+      }, 8000);
     });
     onUnmounted(() => {
       if (timer) clearInterval(timer);
@@ -1139,6 +1188,7 @@ export default {
         case 'analytics': return store.isAdminOrSuper ? 'AdminAnalyticsTab' : 'AdminOrdersTab';
         case 'orders': return 'AdminOrdersTab';
         case 'completed': return 'AdminCompletedTab';
+        case 'remittances': return 'AdminRemittancesTab';
         case 'products': return 'AdminProductsTab';
         case 'inventory': return 'AdminInventoryTab';
         case 'recipes': return store.isAdminOrSuper ? 'AdminRecipesTab' : 'AdminOrdersTab';

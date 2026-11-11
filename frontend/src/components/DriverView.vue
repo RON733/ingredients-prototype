@@ -145,27 +145,92 @@
         </div>
 
         <!-- COD Cash to Remit -->
-        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
+        <div class="bg-surface-900 border rounded-2xl p-4 flex flex-col justify-between"
+          :class="pendingRemittance ? 'border-amber-500/50 bg-amber-500/5' : (totalCashToRemit > 0 ? 'border-brand-500/40' : 'border-surface-700')">
           <p class="text-[10px] font-bold uppercase tracking-wider text-brand-400">COD Cash to Remit</p>
           <p class="text-2xl font-black text-white mt-1">₱{{ Number(totalCashToRemit).toFixed(2) }}</p>
+          <p class="text-[10px] mt-1 font-semibold" :class="pendingRemittance ? 'text-amber-300' : (totalCashToRemit > 0 ? 'text-brand-300' : 'text-emerald-400')">
+            {{ pendingRemittance ? '⏳ Pending Staff Acceptance' : (totalCashToRemit > 0 ? readyToRemitOrdersCount + ' order(s) unremitted' : 'All settled ✓') }}
+          </p>
         </div>
       </div>
 
+      <!-- COD Remittance Handover Bar / Pending Status -->
+      <div v-if="pendingRemittance" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">⏳</div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="font-black text-sm text-white">Remittance Handover Pending Acceptance</p>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">{{ pendingRemittance.reference_number }}</span>
+            </div>
+            <p class="text-[11px] text-amber-200/90 mt-0.5">
+              Amount: <strong class="text-white font-mono">₱{{ Number(pendingRemittance.amount).toFixed(2) }}</strong> ({{ pendingRemittance.orders_count }} COD order{{ pendingRemittance.orders_count === 1 ? '' : 's' }}) • Submitted {{ formatDeliveryDateTime(pendingRemittance.created_at) }}
+            </p>
+            <p class="text-[10px] text-amber-300/80 mt-0.5">
+              Your COD Cash to Remit will reset to <strong>₱0.00</strong> once Staff or Admin clicks <strong>Accept Remittance</strong>.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            @click="activeTab = 'remittances'"
+            class="px-3 py-2 rounded-xl bg-surface-850 hover:bg-surface-800 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer">
+            View Details
+          </button>
+          <button
+            type="button"
+            :disabled="isSubmittingRemittance"
+            @click="cancelPendingRemittance(pendingRemittance.id)"
+            class="px-3 py-2 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer disabled:opacity-50">
+            ✕ Cancel
+          </button>
+        </div>
+      </div>
+
+      <div v-else-if="readyToRemitAmount > 0" class="p-4 rounded-2xl bg-surface-900 border border-brand-500/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl shrink-0">💵</div>
+          <div>
+            <p class="font-black text-sm text-white">Ready to Remit COD Cash: <span class="text-brand-400 font-mono">₱{{ Number(readyToRemitAmount).toFixed(2) }}</span></p>
+            <p class="text-[11px] text-neutral-400 mt-0.5">
+              Collected from {{ readyToRemitOrdersCount }} completed Cash delivery order{{ readyToRemitOrdersCount === 1 ? '' : 's' }}. Hand over cash to staff/owner and request approval.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          @click="openRemitModal"
+          class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-neutral-950 font-black text-xs transition-all shadow-lg shadow-brand-500/20 cursor-pointer flex items-center justify-center gap-2 active:scale-95 shrink-0">
+          <i class="pi pi-wallet text-xs"></i>
+          <span>Hand Over Remittance (₱{{ Number(readyToRemitAmount).toFixed(2) }})</span>
+        </button>
+      </div>
+
       <!-- Delivery Tabs (Segmented Controller) -->
-      <div class="grid grid-cols-2 p-1 rounded-2xl bg-surface-900 border border-surface-800 shadow-md">
+      <div class="grid grid-cols-3 p-1 rounded-2xl bg-surface-900 border border-surface-800 shadow-md gap-1">
         <button 
           @click="activeTab = 'active'"
-          class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
+          class="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
           :class="activeTab === 'active' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
           <i class="pi pi-box text-xs"></i>
           <span class="truncate">Dispatched ({{ activeDeliveries.length }})</span>
         </button>
         <button 
           @click="activeTab = 'completed'"
-          class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
+          class="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
           :class="activeTab === 'completed' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
           <i class="pi pi-check-circle text-xs"></i>
           <span class="truncate">Delivered ({{ completedDeliveries.length }})</span>
+        </button>
+        <button 
+          @click="activeTab = 'remittances'"
+          class="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center relative"
+          :class="activeTab === 'remittances' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
+          <i class="pi pi-wallet text-xs"></i>
+          <span class="truncate">Remittances ({{ remittanceHistory.length }})</span>
+          <span v-if="pendingRemittance" class="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
         </button>
       </div>
 
@@ -213,7 +278,7 @@
                 <i class="pi pi-exclamation-triangle text-amber-400 mr-1 text-[10px]"></i>Collect ₱{{ Number(order.total_amount).toFixed(2) }} Cash
               </p>
               <p v-else class="text-[10px] text-emerald-400 font-bold mt-1">
-                <i class="pi pi-check text-emerald-400 mr-1 text-[10px]"></i>Paid via GCash
+                <i class="pi pi-check text-emerald-400 mr-1 text-[10px]"></i>Paid Online (PayMongo)
               </p>
             </div>
           </div>
@@ -521,11 +586,255 @@
           </div>
           <div class="text-left sm:text-right flex sm:flex-col justify-between items-center sm:items-end gap-1 border-t sm:border-t-0 border-surface-800 pt-2 sm:pt-0">
             <span class="font-black text-white text-base">₱{{ Number(order.total_amount).toFixed(2) }}</span>
-            <span 
-              class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
-              :class="order.payment_method === 'Cash' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
-              {{ order.payment_method }}
+            <div class="flex items-center gap-1.5 flex-wrap justify-end">
+              <span 
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                :class="isCashPayment(order.payment_method) ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'">
+                {{ order.payment_method }}
+              </span>
+              <span
+                v-if="isCashPayment(order.payment_method)"
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                :class="order.remitted_at
+                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                  : (order.remittance_id ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-rose-500/15 text-rose-300 border-rose-500/30')">
+                {{ order.remitted_at ? '✓ Remitted' : (order.remittance_id ? '⏳ Pending Accept' : 'Unremitted') }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Remittance & Remittance History -->
+      <div v-if="activeTab === 'remittances'" class="space-y-4">
+        
+        <!-- Remittance Summary Card -->
+        <div class="bg-surface-900 border border-surface-700/80 rounded-3xl p-5 shadow-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                <i class="pi pi-wallet text-brand-400"></i>
+                <span>COD Cash Remittance</span>
+              </h3>
+              <p class="text-[11px] text-gray-400 mt-0.5">
+                Hand over collected COD cash to staff or admin. Your balance returns to ₱0.00 once accepted.
+              </p>
+            </div>
+            <button
+              v-if="readyToRemitAmount > 0 && !pendingRemittance"
+              type="button"
+              @click="openRemitModal"
+              class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-neutral-950 font-black text-xs transition-all shadow-lg shadow-brand-500/20 cursor-pointer flex items-center justify-center gap-2 active:scale-95 shrink-0">
+              <i class="pi pi-send text-xs"></i>
+              <span>Hand Over Remittance (₱{{ Number(readyToRemitAmount).toFixed(2) }})</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div class="p-3.5 rounded-2xl bg-surface-950/70 border border-surface-800">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-brand-400">Current Cash to Remit</p>
+              <p class="text-xl font-black text-white mt-1 font-mono">₱{{ Number(totalCashToRemit).toFixed(2) }}</p>
+              <p class="text-[10px] text-gray-400 mt-0.5">
+                {{ pendingRemittance ? 'Awaiting acceptance to clear' : (readyToRemitOrdersCount + ' unremitted COD order(s)') }}
+              </p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-surface-950/70 border border-surface-800">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Pending Acceptance</p>
+              <p class="text-xl font-black text-amber-300 mt-1 font-mono">
+                ₱{{ Number(pendingRemittance?.amount || 0).toFixed(2) }}
+              </p>
+              <p class="text-[10px] text-gray-400 mt-0.5">
+                {{ pendingRemittance ? pendingRemittance.reference_number : 'No pending handover' }}
+              </p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-surface-950/70 border border-surface-800">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Total Remitted (All-Time)</p>
+              <p class="text-xl font-black text-emerald-400 mt-1 font-mono">₱{{ Number(totalAcceptedRemittances).toFixed(2) }}</p>
+              <p class="text-[10px] text-gray-400 mt-0.5">
+                {{ acceptedRemittancesCount }} accepted handover(s)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remittance History Filter Bar -->
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button
+              v-for="f in [{id:'all',label:'All'},{id:'pending',label:'Pending'},{id:'accepted',label:'Accepted'},{id:'rejected',label:'Rejected / Cancelled'}]"
+              :key="f.id"
+              type="button"
+              @click="remittanceStatusFilter = f.id"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+              :class="remittanceStatusFilter === f.id ? 'bg-brand-500/20 text-brand-300 border-brand-500/40' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+              {{ f.label }}
+            </button>
+          </div>
+          <span class="text-[11px] text-gray-400 font-medium">
+            Showing <strong class="text-white">{{ filteredRemittanceHistory.length }}</strong> remittance record(s)
+          </span>
+        </div>
+
+        <!-- Empty Remittance History -->
+        <div v-if="filteredRemittanceHistory.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-3xl p-6 space-y-2">
+          <div class="text-4xl mb-2">🧾</div>
+          <h3 class="text-base font-bold text-white">No Remittance History Yet</h3>
+          <p class="text-xs text-gray-400">When you hand over COD cash to the store, your remittance records and approvals will appear here.</p>
+        </div>
+
+        <!-- Remittance History List -->
+        <div
+          v-else
+          v-for="rem in filteredRemittanceHistory"
+          :key="rem.id"
+          class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-5 space-y-3 text-xs shadow-lg">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-mono font-black text-white text-sm">{{ rem.reference_number }}</span>
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border"
+                  :class="rem.status === 'accepted'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    : (rem.status === 'pending'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 animate-pulse'
+                      : 'bg-rose-500/20 text-rose-300 border-rose-500/30')">
+                  {{ rem.status === 'pending' ? 'Pending Staff Acceptance' : rem.status.toUpperCase() }}
+                </span>
+              </div>
+              <p class="text-[11px] text-gray-400">
+                Submitted: {{ formatDeliveryDateTime(rem.created_at) }} • {{ rem.orders_count }} COD order{{ rem.orders_count === 1 ? '' : 's' }}
+              </p>
+            </div>
+            <div class="text-left sm:text-right">
+              <span class="text-lg font-black font-mono" :class="rem.status === 'accepted' ? 'text-emerald-400' : 'text-white'">
+                ₱{{ Number(rem.amount).toFixed(2) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Order Numbers Included -->
+          <div v-if="rem.order_numbers && rem.order_numbers.length" class="flex flex-wrap items-center gap-1.5">
+            <span class="text-[10px] font-bold uppercase text-gray-500 mr-1">Orders:</span>
+            <span
+              v-for="ordNum in rem.order_numbers"
+              :key="ordNum"
+              class="px-2 py-0.5 rounded-md bg-surface-950 border border-surface-800 font-mono text-[11px] text-gray-300">
+              {{ ordNum }}
             </span>
+          </div>
+
+          <p v-if="rem.rider_notes" class="text-[11px] text-gray-300 bg-surface-950/60 p-2.5 rounded-xl border border-surface-800">
+            <strong class="text-gray-400">Your Note:</strong> {{ rem.rider_notes }}
+          </p>
+
+          <!-- Acceptance / Rejection Info -->
+          <div v-if="rem.status === 'accepted'" class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <span>
+              <i class="pi pi-check-circle mr-1"></i>
+              Accepted by <strong>{{ rem.accepted_by_name || 'Staff / Admin' }}</strong>
+              <span v-if="rem.accepted_by_role" class="uppercase text-[10px] opacity-80">({{ rem.accepted_by_role }})</span>
+            </span>
+            <span class="font-mono text-[10px]">{{ formatDeliveryDateTime(rem.accepted_at) }}</span>
+          </div>
+
+          <div v-else-if="rem.status === 'rejected'" class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] space-y-1">
+            <div class="flex items-center justify-between">
+              <span><i class="pi pi-times-circle mr-1"></i> Rejected by <strong>{{ rem.rejected_by_name || 'Staff / Admin' }}</strong></span>
+              <span class="font-mono text-[10px]">{{ formatDeliveryDateTime(rem.rejected_at) }}</span>
+            </div>
+            <p v-if="rem.staff_notes" class="text-[11px] text-rose-200">Reason: {{ rem.staff_notes }}</p>
+          </div>
+
+          <div v-else-if="rem.status === 'pending'" class="flex items-center justify-between gap-2 pt-1">
+            <span class="text-[11px] text-amber-300">Waiting for staff, admin, or super admin to verify cash and accept.</span>
+            <button
+              type="button"
+              :disabled="isSubmittingRemittance"
+              @click="cancelPendingRemittance(rem.id)"
+              class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer shrink-0">
+              Cancel Request
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= HAND OVER REMITTANCE MODAL ================= -->
+      <div
+        v-if="showRemitModal"
+        class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+        @click.self="showRemitModal = false">
+        <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-3xl p-6 shadow-2xl space-y-4 relative overflow-hidden text-xs max-h-[90vh] flex flex-col">
+          <div class="flex items-center justify-between pb-3 border-b border-surface-800 shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
+                💵
+              </div>
+              <div>
+                <h3 class="text-base font-black text-white">Hand Over COD Remittance</h3>
+                <p class="text-xs text-gray-400">Submit cash handover for staff or admin acceptance</p>
+              </div>
+            </div>
+            <button type="button" @click="showRemitModal = false" class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs cursor-pointer">✕</button>
+          </div>
+
+          <div class="space-y-4 overflow-y-auto pr-1">
+            <div class="p-4 rounded-2xl bg-surface-950 border border-brand-500/30 flex items-center justify-between">
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Cash to Hand Over</p>
+                <p class="text-2xl font-black text-brand-400 font-mono mt-0.5">₱{{ Number(readyToRemitAmount).toFixed(2) }}</p>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/30 font-bold">
+                {{ readyToRemitOrdersCount }} COD Order{{ readyToRemitOrdersCount === 1 ? '' : 's' }}
+              </span>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-[11px] leading-relaxed">
+              <i class="pi pi-info-circle mr-1 text-amber-400"></i>
+              Your <strong>COD Cash to Remit</strong> will stay at <strong>₱{{ Number(totalCashToRemit).toFixed(2) }}</strong> until Staff or Admin counts the cash and clicks <strong>Accept Remittance</strong>.
+            </div>
+
+            <div class="space-y-1.5">
+              <p class="text-[11px] font-bold text-gray-300 uppercase tracking-wider">Included COD Orders</p>
+              <div class="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                <div
+                  v-for="ord in readyToRemitOrdersList"
+                  :key="ord.id"
+                  class="flex items-center justify-between p-2.5 rounded-xl bg-surface-950/70 border border-surface-800">
+                  <div>
+                    <span class="font-mono font-bold text-white">{{ ord.order_number }}</span>
+                    <span class="text-gray-400 ml-2">{{ ord.customer_name }}</span>
+                  </div>
+                  <span class="font-mono font-bold text-amber-300">₱{{ Number(ord.total_amount).toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-gray-300 mb-1">Optional Handover Note</label>
+              <input
+                v-model="remitNotes"
+                type="text"
+                placeholder="e.g. Handed over full COD cash to counter staff"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-950 border border-surface-700 text-white text-xs focus:outline-none focus:border-brand-500" />
+            </div>
+          </div>
+
+          <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-surface-800 shrink-0">
+            <button
+              type="button"
+              @click="showRemitModal = false"
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-bold cursor-pointer">
+              Cancel
+            </button>
+            <button
+              type="button"
+              :disabled="isSubmittingRemittance || readyToRemitAmount <= 0"
+              @click="submitRemittanceHandover"
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 disabled:opacity-50 text-neutral-950 text-xs font-black transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
+              <i v-if="isSubmittingRemittance" class="pi pi-spin pi-spinner text-xs"></i>
+              <span>💵 Confirm & Hand Over Remittance</span>
+            </button>
           </div>
         </div>
       </div>
@@ -888,11 +1197,122 @@ export default {
         .reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
     });
 
-    const totalCashToRemit = Vue.computed(() => {
-      return completedDeliveries.value
-        .filter(o => o.payment_method === 'Cash')
-        .reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+    const isCashPayment = (method) => ['Cash', 'Cash on Delivery', 'COD'].includes(method);
+
+    // Remittance state & history (backed by /api/driver/remittances)
+    const remittanceHistory = Vue.ref([]);
+    const pendingRemittance = Vue.ref(null);
+    const backendUnremittedAmount = Vue.ref(null);
+    const backendReadyToRemitAmount = Vue.ref(null);
+    const backendReadyToRemitOrders = Vue.ref([]);
+    const remittanceStatusFilter = Vue.ref('all');
+    const showRemitModal = Vue.ref(false);
+    const remitNotes = Vue.ref('');
+    const isSubmittingRemittance = Vue.ref(false);
+
+    const fetchDriverRemittances = async () => {
+      try {
+        const res = await GST_API.getRemittances({ driver_id: currentDriverId.value });
+        if (res.data) {
+          remittanceHistory.value = res.data.remittances || [];
+          pendingRemittance.value = res.data.pending_remittance || null;
+          if (res.data.unremitted_amount !== undefined) {
+            backendUnremittedAmount.value = Number(res.data.unremitted_amount);
+          }
+          if (res.data.ready_to_remit_amount !== undefined) {
+            backendReadyToRemitAmount.value = Number(res.data.ready_to_remit_amount);
+          }
+          if (Array.isArray(res.data.ready_to_remit_orders)) {
+            backendReadyToRemitOrders.value = res.data.ready_to_remit_orders;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load remittances:', e);
+      }
+    };
+
+    const localUnremittedOrders = Vue.computed(() => {
+      return completedDeliveries.value.filter(o => isCashPayment(o.payment_method) && !o.remitted_at);
     });
+
+    const totalCashToRemit = Vue.computed(() => {
+      if (backendUnremittedAmount.value !== null) {
+        return backendUnremittedAmount.value;
+      }
+      return localUnremittedOrders.value.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+    });
+
+    const readyToRemitOrdersList = Vue.computed(() => {
+      if (backendReadyToRemitOrders.value.length > 0 || backendReadyToRemitAmount.value !== null) {
+        return backendReadyToRemitOrders.value;
+      }
+      return localUnremittedOrders.value.filter(o => !o.remittance_id);
+    });
+
+    const readyToRemitOrdersCount = Vue.computed(() => readyToRemitOrdersList.value.length);
+
+    const readyToRemitAmount = Vue.computed(() => {
+      if (backendReadyToRemitAmount.value !== null) {
+        return backendReadyToRemitAmount.value;
+      }
+      return readyToRemitOrdersList.value.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+    });
+
+    const filteredRemittanceHistory = Vue.computed(() => {
+      if (remittanceStatusFilter.value === 'all') return remittanceHistory.value;
+      if (remittanceStatusFilter.value === 'rejected') {
+        return remittanceHistory.value.filter(r => r.status === 'rejected' || r.status === 'cancelled');
+      }
+      return remittanceHistory.value.filter(r => r.status === remittanceStatusFilter.value);
+    });
+
+    const acceptedRemittancesCount = Vue.computed(() => {
+      return remittanceHistory.value.filter(r => r.status === 'accepted').length;
+    });
+
+    const totalAcceptedRemittances = Vue.computed(() => {
+      return remittanceHistory.value
+        .filter(r => r.status === 'accepted')
+        .reduce((sum, r) => sum + Number(r.amount || 0), 0);
+    });
+
+    const openRemitModal = () => {
+      remitNotes.value = '';
+      showRemitModal.value = true;
+    };
+
+    const submitRemittanceHandover = async () => {
+      if (isSubmittingRemittance.value) return;
+      isSubmittingRemittance.value = true;
+      try {
+        const res = await GST_API.submitRemittance({
+          driver_id: currentDriverId.value,
+          rider_notes: remitNotes.value.trim() || null,
+        });
+        showRemitModal.value = false;
+        store.notify(res.data?.message || 'Remittance handover submitted! Waiting for staff/admin acceptance.', 'success');
+        await Promise.all([fetchDriverRemittances(), store.fetchOrders()]);
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to submit remittance handover.', 'error');
+      } finally {
+        isSubmittingRemittance.value = false;
+      }
+    };
+
+    const cancelPendingRemittance = async (remittanceId) => {
+      if (isSubmittingRemittance.value) return;
+      if (!confirm('Cancel this pending remittance handover request?')) return;
+      isSubmittingRemittance.value = true;
+      try {
+        const res = await GST_API.cancelRemittance(remittanceId);
+        store.notify(res.data?.message || 'Pending remittance cancelled.', 'info');
+        await Promise.all([fetchDriverRemittances(), store.fetchOrders()]);
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Could not cancel pending remittance.', 'error');
+      } finally {
+        isSubmittingRemittance.value = false;
+      }
+    };
 
     const formatTime = (isoString) => {
       if (!isoString) return '';
@@ -1347,7 +1767,7 @@ export default {
 
     const refreshOrders = async () => {
       await store.fetchOrders();
-      await checkRiderNoticeStatus();
+      await Promise.all([checkRiderNoticeStatus(), fetchDriverRemittances()]);
       store.notify('Queue & status refreshed', 'info');
     };
 
@@ -1443,8 +1863,10 @@ export default {
       store.fetchOrders();
       startGpsBroadcast();
       checkRiderNoticeStatus();
+      fetchDriverRemittances();
       statusPoller = setInterval(() => {
         checkRiderNoticeStatus();
+        fetchDriverRemittances();
         store.fetchOrders();
       }, 5000);
       document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -1472,6 +1894,23 @@ export default {
       getYesterdayDateKey,
       formatFilterDisplayDate,
       totalCashToRemit,
+      isCashPayment,
+      remittanceHistory,
+      pendingRemittance,
+      remittanceStatusFilter,
+      filteredRemittanceHistory,
+      readyToRemitOrdersList,
+      readyToRemitOrdersCount,
+      readyToRemitAmount,
+      acceptedRemittancesCount,
+      totalAcceptedRemittances,
+      showRemitModal,
+      remitNotes,
+      isSubmittingRemittance,
+      openRemitModal,
+      submitRemittanceHandover,
+      cancelPendingRemittance,
+      fetchDriverRemittances,
       formatTime,
       formatDeliveryDate,
       formatDeliveryTime,

@@ -148,7 +148,7 @@ class PayMongoService
     }
 
     /**
-     * Create a dynamic QR Ph (GCash, Maya, Banking Apps) Payment Intent for an order
+     * Create a dynamic QR Ph (E-Wallets & Banking Apps) Payment Intent for an order
      */
     public function createQrPhPayment(Order $order): ?array
     {

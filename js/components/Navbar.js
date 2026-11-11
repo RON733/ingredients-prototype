@@ -1,4 +1,4 @@
-﻿// G Shot Teas — Navbar Component
+// G Shot Teas — Navbar Component
 const Navbar = {
   template: `
     <header class="fixed top-0 left-0 right-0 z-50 bg-surface-900/95 backdrop-blur-md border-b border-surface-700/60 shadow-xl transition-all">

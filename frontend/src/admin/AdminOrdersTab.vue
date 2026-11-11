@@ -19,16 +19,6 @@
           </div>
 
           <button 
-            v-if="store.isAdminOrSuper"
-            @click="store.adminTab = 'settings'"
-            class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-            title="Manage Store GCash QR Code & Number">
-            <i class="pi pi-qrcode text-sky-400"></i>
-            <span class="hidden sm:inline">GCash QR</span>
-          </button>
-
-
-          <button 
             @click="refresh"
             class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-300 hover:text-white border border-surface-700 text-xs transition-colors cursor-pointer"
             title="Refresh Orders">
@@ -207,18 +197,7 @@
               <p v-if="order.delivery_address" class="text-gray-400 leading-relaxed">
                 <i class="pi pi-map-marker text-[10px] text-brand-400 mr-1"></i>{{ order.delivery_address }}
               </p>
-              <p v-if="order.gcash_ref" class="text-sky-400 font-mono font-semibold pt-1">
-                GCash Ref: {{ order.gcash_ref }}
-              </p>
-              <div v-if="order.proof_image" class="pt-1.5">
-                <button 
-                  type="button"
-                  @click="selectedReceiptImage = order.proof_image" 
-                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 hover:bg-sky-500 hover:text-white text-[11px] font-bold border border-sky-500/40 transition-colors cursor-pointer">
-                  <i class="pi pi-image text-xs"></i>
-                  <span>View Receipt Screenshot</span>
-                </button>
-              </div>
+
               <p v-if="order.notes" class="text-gray-400 italic pt-1">
                 Note: "{{ order.notes }}"
               </p>
@@ -247,15 +226,6 @@
 
           <!-- Workflow Action Buttons (Staff & Admin Controls) -->
           <div class="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-end gap-2 border-t border-surface-700/50">
-            <!-- Verify Payment button if GCash pending -->
-            <button 
-              v-if="order.payment_method === 'GCash' && order.payment_status !== 'Verified' && order.payment_status !== 'Paid'"
-              @click="verifyPayment(order)"
-              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-sky-500/20 hover:bg-sky-500 text-sky-400 hover:text-white border border-sky-500/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
-              <i class="pi pi-check"></i>
-              <span>Verify GCash Payment</span>
-            </button>
-
             <!-- Check PayMongo Status button if PayMongo pending -->
             <button 
               v-if="order.payment_method === 'PayMongo' && order.payment_status !== 'Paid' && order.payment_status !== 'Verified'"
@@ -339,38 +309,6 @@
           <p class="text-xs text-neutral-400 leading-relaxed">
             New incoming customer delivery and counter pickup orders will appear here automatically in real time.
           </p>
-        </div>
-      </div>
-
-
-      <!-- Receipt Screenshot Lightbox Modal -->
-      <div 
-        v-if="selectedReceiptImage" 
-        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-        @click.self="selectedReceiptImage = null">
-        <div class="relative max-w-lg w-full bg-surface-900 border border-surface-700 rounded-3xl p-5 shadow-2xl space-y-4 animate-scale-up">
-          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
-            <h4 class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="pi pi-receipt text-sky-400"></i> Customer GCash Receipt Screenshot
-            </h4>
-            <button 
-              @click="selectedReceiptImage = null" 
-              type="button"
-              class="w-7 h-7 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors"
-              title="Close">
-              <i class="pi pi-times"></i>
-            </button>
-          </div>
-          <div class="max-h-[65vh] overflow-auto rounded-2xl bg-black border border-surface-800 p-2 flex items-center justify-center">
-            <img :src="selectedReceiptImage" alt="Payment Receipt" class="max-h-[60vh] w-auto object-contain rounded-lg" />
-          </div>
-          <div class="text-right">
-            <button 
-              @click="selectedReceiptImage = null"
-              class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-white text-xs font-bold transition-colors">
-              Close Preview
-            </button>
-          </div>
         </div>
       </div>
 
@@ -527,7 +465,6 @@ export default {
     const store = useGShotStore();
     const loading = Vue.ref(false);
     const selectedFilter = Vue.ref('active');
-    const selectedReceiptImage = Vue.ref(null);
 
 
     const statusFilters = [
@@ -625,29 +562,6 @@ export default {
         store.notify('Failed to update order status on server. Rolled back.', 'error');
       }
     };
-
-    // Instant 0ms Optimistic UI for GCash Payment Verification
-    const verifyPayment = async (order) => {
-      const prevPaymentStatus = order.payment_status;
-
-      // 1. Instant 0ms Optimistic Update
-      order.payment_status = 'Verified';
-      const storeItem = store.orders.find(o => o.id === order.id);
-      if (storeItem) storeItem.payment_status = 'Verified';
-
-      store.notify(`GCash Payment verified for ${order.order_number}`);
-
-      // 2. Background sync to cloud database
-      try {
-        await GST_API.verifyPayment(order.id);
-      } catch (err) {
-        order.payment_status = prevPaymentStatus;
-        if (storeItem) storeItem.payment_status = prevPaymentStatus;
-        store.notify('Error verifying payment on server. Rolled back.', 'error');
-      }
-    };
-
-
 
     const isCheckingPaymongoId = Vue.ref(null);
     const checkPayMongoStatus = async (order) => {
@@ -799,11 +713,9 @@ export default {
       getStatusBadge,
       formatTime,
       updateStatus,
-      verifyPayment,
       checkPayMongoStatus,
       isCheckingPaymongoId,
       refresh,
-      selectedReceiptImage,
       dispatchModalOrder,
       driversList,
       selectedDriverId,

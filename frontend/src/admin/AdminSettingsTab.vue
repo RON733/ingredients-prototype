@@ -11,7 +11,7 @@
             <span>Store & Payment Settings</span>
           </h2>
           <p class="text-xs text-gray-400 mt-1">
-            Configure your store's GCash QR code, mobile number, merchant account details, and store operations.
+            Configure your PayMongo payment gateway, order availability notices, and store operations.
           </p>
         </div>
 
@@ -43,7 +43,7 @@
                 </span>
               </h3>
               <p class="text-xs text-gray-400 mt-0.5">
-                Enables customers to pay online directly using GCash, Maya, Debit/Credit Card (Visa, Mastercard), GrabPay, and BillEase.
+                Enables customers to pay online directly via PayMongo QR Ph, e-wallets, and online banking.
               </p>
             </div>
           </div>
@@ -106,335 +106,6 @@
             Auto Loyverse POS Sync on Payment
           </span>
         </div>
-      </div>
-
-      <!-- MAIN SECTION 1: GCash Online Payment & Scan-to-Pay Settings -->
-      <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-750 shadow-2xl relative overflow-hidden space-y-6">
-        
-        <!-- Ambient subtle accent glow -->
-        <div class="absolute -top-24 right-0 w-72 h-72 bg-sky-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-        <!-- Section Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
-          <div class="flex items-center gap-3.5">
-            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-sky-500/20 shrink-0">
-              G
-            </div>
-            <div>
-              <h3 class="text-lg font-black text-white flex items-center gap-2 flex-wrap">
-                <span>GCash Payment Configuration</span>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-sky-500/15 text-sky-300 border border-sky-500/30">
-                  Online Checkout
-                </span>
-              </h3>
-              <p class="text-xs text-gray-400 mt-0.5">
-                Customers scan this QR code or send payment to this GCash mobile number upon checkout.
-              </p>
-            </div>
-          </div>
-
-          <!-- Badges: GCash Availability Status & Active QR Type -->
-          <div class="flex items-center gap-2 flex-wrap shrink-0">
-            <!-- GCash Availability Live Status Badge -->
-            <span v-if="isGcashAvailable" class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>GCash Available</span>
-            </span>
-            <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1.5 shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-              <span>GCash Flagged Unavailable</span>
-            </span>
-
-            <!-- Active QR Type Badge -->
-            <span v-if="hasCustomQr" class="px-3 py-1.5 rounded-full text-xs font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
-              <span>Custom Uploaded QR Code Active</span>
-            </span>
-            <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5 shadow-sm">
-              <i class="pi pi-info-circle text-xs"></i>
-              <span>Default System QR Active</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- GCash Unavailable Warning Alert Banner -->
-        <div v-if="!isGcashAvailable" class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-fade-in">
-          <div class="flex items-start sm:items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center justify-center text-sm shrink-0">
-              <i class="pi pi-ban"></i>
-            </div>
-            <div>
-              <p class="font-extrabold text-rose-200">GCash Payment is currently flagged as UNAVAILABLE</p>
-              <p class="text-rose-300/80 text-[11px] mt-0.5">
-                Customers checking out cannot select GCash right now. Ordering will automatically proceed with Cash on Delivery (COD) or Cash at Counter.
-              </p>
-            </div>
-          </div>
-          <button 
-            type="button" 
-            @click="toggleGcashAvailability(true)"
-            :disabled="isTogglingAvailability"
-            class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 shadow-sm active:scale-95 disabled:opacity-50">
-            <i v-if="isTogglingAvailability" class="pi pi-spin pi-spinner"></i>
-            <i v-else class="pi pi-check-circle"></i>
-            <span>Re-enable GCash Now</span>
-          </button>
-        </div>
-
-        <!-- 2-Column Grid: Left Edit Controls, Right Live Customer Checkout Preview -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          <!-- Left Column: Controls (lg:col-span-7) -->
-          <div class="lg:col-span-7 space-y-6">
-            
-            <!-- GCash Account / Merchant Name -->
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
-                GCash Account / Merchant Name <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative">
-                <i class="pi pi-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                <input 
-                  v-model="gcashForm.gcash_account_name" 
-                  type="text" 
-                  placeholder="e.g. Jefferson A. or G Shot Teas"
-                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-medium"
-                />
-              </div>
-              <p class="text-[11px] text-gray-500 mt-1.5">
-                The account recipient name shown on the customer checkout screen and verification receipts.
-              </p>
-            </div>
-
-            <!-- GCash Mobile Number (Clean label, no duplicate number display) -->
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
-                  GCash Mobile Number <span class="text-rose-500">*</span>
-                </label>
-                <span class="text-[10px] font-semibold text-gray-400 bg-surface-950 px-2 py-0.5 rounded border border-surface-800">
-                  Official Merchant Recipient
-                </span>
-              </div>
-              <div class="relative">
-                <i class="pi pi-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                <input 
-                  v-model="gcashForm.gcash_account_number" 
-                  type="text" 
-                  placeholder="0912 345 6789"
-                  class="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-950 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400/30 transition-all font-mono tracking-wider font-bold"
-                />
-              </div>
-              <p class="text-[11px] text-gray-500 mt-1.5">
-                Customers can click "Copy Number" to transfer directly from their GCash app.
-              </p>
-            </div>
-
-            <!-- QR Code Upload & File Selector -->
-            <div class="p-5 rounded-2xl bg-surface-950/80 border border-surface-800 space-y-4 shadow-sm">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h4 class="text-xs font-bold text-white uppercase tracking-wider">Upload GCash QR Code</h4>
-                  <p class="text-[11px] text-gray-400 mt-0.5">Upload your store's GCash QR code image anytime (PNG, JPG, WEBP).</p>
-                </div>
-              </div>
-
-              <!-- Drag / Click Area -->
-              <div class="relative">
-                <input 
-                  type="file" 
-                  id="admin_gcash_qr_input" 
-                  accept="image/png, image/jpeg, image/jpg, image/webp" 
-                  @change="handleQrUpload"
-                  class="hidden" 
-                />
-                <label 
-                  for="admin_gcash_qr_input"
-                  class="w-full p-6 rounded-2xl border-2 border-dashed border-surface-700 hover:border-amber-400 bg-surface-950/60 hover:bg-surface-850 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2.5 group">
-                  <div class="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-amber-500/10 group-hover:text-amber-400 group-hover:border-amber-500/30 transition-all">
-                    <i class="pi pi-cloud-upload"></i>
-                  </div>
-                  <div>
-                    <p class="text-xs font-bold text-white group-hover:text-amber-400 transition-colors">
-                      {{ qrFileName ? 'Selected: ' + qrFileName : 'Click to select or drag a new GCash QR Code' }}
-                    </p>
-                    <p class="text-[11px] text-gray-400 mt-1">
-                      High-resolution PNG, JPG, or WEBP (Automatically optimized & compressed)
-                    </p>
-                  </div>
-                </label>
-              </div>
-
-              <!-- Quick QR Action Buttons -->
-              <div class="flex flex-wrap items-center gap-2.5 pt-1">
-                <button 
-                  v-if="hasCustomQr"
-                  type="button" 
-                  @click="resetToDefaultQr"
-                  class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95">
-                  <i class="pi pi-trash text-xs"></i>
-                  <span>Remove Custom QR (Use Default)</span>
-                </button>
-
-                <a 
-                  :href="activeQrPreview" 
-                  download="gshot-gcash-qr.png"
-                  class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs font-bold transition-all inline-flex items-center gap-1.5 shadow-sm active:scale-95">
-                  <i class="pi pi-download text-xs"></i>
-                  <span>Download Current QR</span>
-                </a>
-              </div>
-            </div>
-
-            <!-- Action Buttons: Save GCash Settings & Flag Unavailable -->
-            <div class="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">
-              <button 
-                type="button"
-                @click="saveGcashSettings"
-                :disabled="isSavingGcash || isTogglingAvailability"
-                class="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50">
-                <i v-if="isSavingGcash" class="pi pi-spin pi-spinner"></i>
-                <i v-else class="pi pi-check"></i>
-                <span>Save GCash Payment Settings</span>
-              </button>
-
-              <!-- Button where the user can flag GCash unavailable / available -->
-              <button 
-                type="button"
-                @click="toggleGcashAvailability()"
-                :disabled="isTogglingAvailability || isSavingGcash"
-                class="w-full sm:w-auto px-5 py-3.5 rounded-xl font-bold text-sm border transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50 shadow-sm"
-                :class="isGcashAvailable 
-                  ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/40 hover:border-rose-500/60 shadow-rose-500/10' 
-                  : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/40 hover:border-emerald-500/60 shadow-emerald-500/10'">
-                <i v-if="isTogglingAvailability" class="pi pi-spin pi-spinner"></i>
-                <i v-else :class="isGcashAvailable ? 'pi pi-ban' : 'pi pi-check-circle'"></i>
-                <span>{{ isGcashAvailable ? 'Flag as Unavailable' : 'Flag as Available' }}</span>
-              </button>
-            </div>
-
-          </div>
-
-          <!-- Right Column: Live Customer Checkout Preview (lg:col-span-5) -->
-          <div class="lg:col-span-5 bg-surface-950 rounded-2xl border border-surface-750 p-5 space-y-4 shadow-xl">
-            <div class="flex items-center justify-between pb-3 border-b border-surface-800">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full" :class="isGcashAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'"></span>
-                <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Checkout Preview</span>
-                <span v-if="!isGcashAvailable" class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  Unavailable
-                </span>
-              </div>
-              <span class="text-[10px] text-gray-400 font-mono">Customer Perspective</span>
-            </div>
-
-            <!-- Sleek Authentic GCash Checkout Mockup Card -->
-            <div class="rounded-2xl bg-surface-900 border overflow-hidden shadow-lg space-y-0 transition-all relative"
-              :class="isGcashAvailable ? 'border-surface-700/80' : 'border-rose-500/40 opacity-90'">
-              
-              <!-- GCash Flagged Unavailable Overlay Banner in Preview -->
-              <div v-if="!isGcashAvailable" class="bg-rose-600 text-white px-3 py-1.5 text-center text-xs font-extrabold flex items-center justify-center gap-1.5 shadow">
-                <i class="pi pi-ban text-xs"></i>
-                <span>GCash Payment Unavailable at Checkout</span>
-              </div>
-              
-              <!-- GCash Branded Top Bar -->
-              <div class="bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 p-3.5 text-white flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-2.5">
-                  <div class="w-7 h-7 rounded-lg bg-white text-blue-700 font-black text-xs flex items-center justify-center shadow">
-                    G
-                  </div>
-                  <div>
-                    <p class="text-[10px] font-extrabold uppercase tracking-widest text-sky-100">Official Merchant</p>
-                    <p class="text-xs font-black tracking-wide">GCash QR Pay</p>
-                  </div>
-                </div>
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm flex items-center gap-1 border border-white/20">
-                  <i class="pi pi-check-circle text-[9px]"></i>
-                  <span>Verified</span>
-                </span>
-              </div>
-
-              <!-- Content Area -->
-              <div class="p-4 space-y-4">
-                
-                <!-- Merchant Account & Number -->
-                <div class="p-3 rounded-xl bg-surface-950 border border-surface-800/80 flex items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Account Recipient</p>
-                    <p class="text-xs font-bold text-white truncate">
-                      {{ gcashForm.gcash_account_name || 'Jefferson A. (G Shot Teas)' }}
-                    </p>
-                  </div>
-                  <div class="text-right shrink-0">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Mobile No.</p>
-                    <p class="text-xs font-black text-amber-400 font-mono tracking-wider">
-                      {{ gcashForm.gcash_account_number || '0912 345 6789' }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- The QR Code Image Container with Scanner Guides -->
-                <div class="text-center space-y-2">
-                  <div class="relative w-48 h-48 mx-auto rounded-2xl bg-white p-3 border border-gray-200 shadow-xl flex items-center justify-center overflow-hidden group">
-                    <!-- Scanner Corner Brackets -->
-                    <span class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-blue-600 rounded-tl pointer-events-none"></span>
-                    <span class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-blue-600 rounded-tr pointer-events-none"></span>
-                    <span class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-blue-600 rounded-bl pointer-events-none"></span>
-                    <span class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-blue-600 rounded-br pointer-events-none"></span>
-
-                    <img 
-                      :src="activeQrPreview" 
-                      alt="GCash QR Code" 
-                      class="w-full h-full object-contain select-none transition-all"
-                      :class="!isGcashAvailable ? 'grayscale opacity-30 blur-[1px]' : ''"
-                      @error="(e) => { e.target.src = '/assets/gcash-qr-default.png'; }"
-                    />
-
-                    <!-- Unavailable Watermark Overlay -->
-                    <div v-if="!isGcashAvailable" class="absolute inset-0 flex flex-col items-center justify-center p-3 bg-black/40 backdrop-blur-[1px]">
-                      <span class="px-2.5 py-1 rounded-xl bg-rose-600 text-white font-black text-[10px] uppercase tracking-wider shadow-lg flex items-center gap-1">
-                        <i class="pi pi-ban text-[10px]"></i> Unavailable
-                      </span>
-                    </div>
-                  </div>
-                  <p class="text-[11px] font-semibold text-gray-400 flex items-center justify-center gap-1.5">
-                    <i class="pi" :class="isGcashAvailable ? 'pi-camera text-sky-400' : 'pi-ban text-rose-400 text-xs'"></i>
-                    <span>{{ isGcashAvailable ? 'Scan with GCash app to transfer' : 'QR Scan Temporarily Paused' }}</span>
-                  </p>
-                </div>
-
-                <!-- Verification Requirements -->
-                <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-1.5 text-[11px]">
-                  <p class="font-extrabold text-gray-200 flex items-center gap-1.5">
-                    <i class="pi pi-shield text-xs text-yellow-400"></i>
-                    <span>Customer Requirements upon Order:</span>
-                  </p>
-                  <div class="text-[10px] text-gray-300 space-y-1 pl-4">
-                    <p class="flex items-center gap-1.5">
-                      <span class="text-emerald-400 font-bold">✓</span>
-                      <span>1. GCash Reference Number (9–13 digits)</span>
-                      <span class="text-rose-400">*</span>
-                    </p>
-                    <p class="flex items-center gap-1.5">
-                      <span class="text-emerald-400 font-bold">✓</span>
-                      <span>2. Proof of Payment (Screenshot upload)</span>
-                      <span class="text-rose-400">*</span>
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-
-            <p class="text-[11px] text-center" :class="isGcashAvailable ? 'text-gray-500' : 'text-rose-400/90 font-medium'">
-              {{ isGcashAvailable ? 'Changes saved here update immediately across the customer checkout view.' : 'GCash is flagged unavailable: customers will be guided to pay via Cash upon checkout.' }}
-            </p>
-          </div>
-
-        </div>
-
       </div>
 
       <!-- MAIN SECTION: Customer Order Availability & Area Notice (Staff, Admin, Super Admin) -->
@@ -1052,28 +723,13 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
-// G Shot Teas — Store & GCash Payment Settings (Admin & Super Admin)
+// G Shot Teas — Store & Payment Settings (Admin & Super Admin)
 export default {
   name: 'AdminSettingsTab',
   setup() {
     const store = useGShotStore();
     const isLoading = Vue.ref(false);
-    const isSavingGcash = Vue.ref(false);
     const isSavingStore = Vue.ref(false);
-    const qrFileName = Vue.ref('');
-
-    const defaultQrPath = '/assets/gcash-qr-default.png';
-
-    const isTogglingAvailability = Vue.ref(false);
-    const isGcashAvailable = Vue.computed(() => store.isGcashAvailable);
-
-    // GCash specific form state
-    const gcashForm = Vue.reactive({
-      gcash_account_name: store.settings?.gcash_account_name || 'Jefferson A.',
-      gcash_account_number: store.settings?.gcash_account_number || '0912 345 6789',
-      gcash_qr_code: store.settings?.gcash_qr_code || '',
-      gcash_available: store.isGcashAvailable,
-    });
 
     // Customer order availability & area note form state (Staff, Admin, Super Admin)
     const isSavingAreaNote = Vue.ref(false);
@@ -1115,13 +771,6 @@ export default {
     // Watch for store settings updates
     Vue.watch(() => store.settings, (newSettings) => {
       if (newSettings) {
-        if (newSettings.gcash_account_name !== undefined) gcashForm.gcash_account_name = newSettings.gcash_account_name;
-        if (newSettings.gcash_account_number !== undefined) gcashForm.gcash_account_number = newSettings.gcash_account_number;
-        if (newSettings.gcash_qr_code !== undefined) gcashForm.gcash_qr_code = newSettings.gcash_qr_code;
-        if (newSettings.gcash_available !== undefined) {
-          gcashForm.gcash_available = newSettings.gcash_available === 'true' || newSettings.gcash_available === true || newSettings.gcash_available === '1' || newSettings.gcash_available === 1;
-        }
-
         if (newSettings.store_name !== undefined) storeForm.store_name = newSettings.store_name;
         if (newSettings.store_tagline !== undefined) storeForm.store_tagline = newSettings.store_tagline;
         if (newSettings.store_address !== undefined) storeForm.store_address = newSettings.store_address;
@@ -1173,111 +822,6 @@ export default {
         } finally {
           isSavingMaint.value = false;
         }
-      }
-    };
-
-    const hasCustomQr = Vue.computed(() => {
-      return Boolean(gcashForm.gcash_qr_code && gcashForm.gcash_qr_code.trim().length > 0);
-    });
-
-    const activeQrPreview = Vue.computed(() => {
-      if (hasCustomQr.value) {
-        return gcashForm.gcash_qr_code;
-      }
-      return defaultQrPath;
-    });
-
-    // Client-side canvas compression for QR code uploads
-    const compressImage = (file, maxDim = 800, quality = 0.90) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onerror = reject;
-          img.onload = () => {
-            let w = img.width;
-            let h = img.height;
-            if (w > maxDim || h > maxDim) {
-              if (w > h) {
-                h = Math.round((h * maxDim) / w);
-                w = maxDim;
-              } else {
-                w = Math.round((w * maxDim) / h);
-                h = maxDim;
-              }
-            }
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', quality));
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-
-    const handleQrUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        store.notify('Please select a valid image file (PNG, JPG, WEBP).', 'error');
-        return;
-      }
-
-      try {
-        qrFileName.value = file.name;
-        const compressedBase64 = await compressImage(file, 800, 0.90);
-        gcashForm.gcash_qr_code = compressedBase64;
-        store.notify('QR code loaded in preview! Click "Save GCash Payment Settings" to publish.', 'info');
-      } catch (err) {
-        console.error('Failed to process QR code file:', err);
-        store.notify('Could not process selected image. Please try another file.', 'error');
-      }
-    };
-
-    const resetToDefaultQr = () => {
-      gcashForm.gcash_qr_code = '';
-      qrFileName.value = '';
-      store.notify('Reverted to default QR code. Click "Save GCash Payment Settings" to apply.', 'info');
-    };
-
-    const toggleGcashAvailability = async (targetVal = null) => {
-      const nextState = targetVal !== null ? targetVal : !isGcashAvailable.value;
-      isTogglingAvailability.value = true;
-      try {
-        await store.setGcashAvailability(nextState);
-        gcashForm.gcash_available = nextState;
-      } catch (err) {
-        // error notification handled by store
-      } finally {
-        isTogglingAvailability.value = false;
-      }
-    };
-
-    const saveGcashSettings = async () => {
-      if (!gcashForm.gcash_account_number.trim()) {
-        store.notify('Please enter a valid GCash mobile number.', 'error');
-        return;
-      }
-
-      isSavingGcash.value = true;
-      try {
-        await store.updateStoreSettings({
-          gcash_account_name: gcashForm.gcash_account_name.trim(),
-          gcash_account_number: gcashForm.gcash_account_number.trim(),
-          gcash_qr_code: gcashForm.gcash_qr_code || '',
-          gcash_available: gcashForm.gcash_available ? 'true' : 'false',
-        });
-        store.notify('GCash QR Code and Payment settings successfully updated and live!', 'success');
-      } catch (err) {
-        // error notification handled by store.updateStoreSettings
-      } finally {
-        isSavingGcash.value = false;
       }
     };
 
@@ -1441,22 +985,11 @@ export default {
     return {
       store,
       isLoading,
-      isSavingGcash,
       isSavingStore,
       isPaymongoAvailable,
       isTogglingPaymongo,
       togglePaymongoAvailability,
-      isTogglingAvailability,
-      isGcashAvailable,
-      toggleGcashAvailability,
-      qrFileName,
-      gcashForm,
       storeForm,
-      hasCustomQr,
-      activeQrPreview,
-      handleQrUpload,
-      resetToDefaultQr,
-      saveGcashSettings,
       saveGeneralSettings,
       areaNoteForm,
       isSavingAreaNote,

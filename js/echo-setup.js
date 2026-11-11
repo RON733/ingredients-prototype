@@ -1,4 +1,4 @@
-﻿// Initialize Laravel Echo for Laravel Reverb
+// Initialize Laravel Echo for Laravel Reverb
 (function() {
   if (typeof Pusher !== 'undefined' && typeof Echo !== 'undefined') {
     try {

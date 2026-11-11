@@ -1,4 +1,4 @@
-﻿// G Shot Teas — Fast 4-Digit Staff PIN Switcher Modal for Shared POS Terminal
+// G Shot Teas — Fast 4-Digit Staff PIN Switcher Modal for Shared POS Terminal
 var StaffPinModal = window.StaffPinModal = {
   template: `
     <div 

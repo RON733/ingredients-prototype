@@ -1,4 +1,4 @@
-﻿// G Shot Teas — Staff, Admin & Super Admin Dedicated Portal App Root
+// G Shot Teas — Staff, Admin & Super Admin Dedicated Portal App Root
 const { createApp, ref, computed, onMounted } = Vue;
 
 const AdminApp = {

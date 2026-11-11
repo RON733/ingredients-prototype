@@ -244,13 +244,7 @@ const DriverView = {
                 </button>
                 <div v-if="order.isBroadcastingGps || isGpsBroadcasting" class="flex items-center justify-between px-1 text-[10px] text-emerald-400 font-mono">
                   <span>GPS: {{ order.driver_lat || 'Acquiring...' }}, {{ order.driver_lng || 'Acquiring...' }}</span>
-                  <button type="button" @click="stopOrderGps(order)" class="text-rose-400 hover:text-rose-300 underline font-sans font-bold cursor-pointer">
-                    Stop Sharing
-                  </button>
-                </div>
-              </div>
-
-                           <!-- "On The Way" Customer Alert Status & Quick Action -->
+                  <button type=              <!-- "On The Way" Customer Alert Status & Quick Action -->
               <div class="p-3 rounded-2xl border transition-all"
                 :class="order.on_the_way_notified_at 
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
@@ -314,7 +308,12 @@ const DriverView = {
                   <i class="pi pi-info-circle text-[10px] text-amber-400"></i>
                   <span>Tapping either map button starts navigation and notifies the customer that you are on the way.</span>
                 </p>
-              </div></div>
+              </div>er:bg-sky-500 text-white font-bold text-xs inline-flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer">
+                  <i class="pi pi-map text-xs"></i>
+                  <span>Waze</span>
+                </a>
+              </div>
+            </div>
 
           </div>
 

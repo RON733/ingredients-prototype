@@ -80,6 +80,11 @@ class ProductController extends Controller
             'discount_value' => 'nullable|numeric|min:0', // array of { ingredient_id, qty }
         ]);
 
+        $imageValue = trim((string) ($validated['image'] ?? ''));
+        if ($imageValue === '') {
+            $imageValue = '/assets/hero-banner.png';
+        }
+
         $productData = [
             'id' => $validated['id'],
             'name' => $validated['name'],
@@ -87,7 +92,7 @@ class ProductController extends Controller
             'price' => $validated['price'],
             'description' => $validated['description'] ?? '',
             'emoji' => $validated['emoji'] ?? '🍽️',
-            'image' => $validated['image'] ?? '/assets/hero-banner.png',
+            'image' => $imageValue,
             'is_available' => $validated['is_available'] ?? true,
         ];
         if (array_key_exists('original_price', $validated)) $productData['original_price'] = $validated['original_price'];
@@ -143,6 +148,11 @@ class ProductController extends Controller
             'discount_type' => 'nullable|string',
             'discount_value' => 'nullable|numeric|min:0',
         ]);
+
+        if (array_key_exists('image', $validated)) {
+            $imageValue = trim((string) ($validated['image'] ?? ''));
+            $validated['image'] = $imageValue !== '' ? $imageValue : '/assets/hero-banner.png';
+        }
 
         $product->update($validated);
         Cache::forget('products_catalog_default');

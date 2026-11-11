@@ -1,4 +1,4 @@
-﻿// G Shot Teas — Kitchen Inventory Management Tab (THE INGREDIENT PROTOTYPE CORE)
+// G Shot Teas — Kitchen Inventory Management Tab (THE INGREDIENT PROTOTYPE CORE)
 const AdminInventoryTab = {
   template: `
     <div class="space-y-8 animate-fade-in">
