@@ -51,8 +51,8 @@
 
           <!-- Catering / Event Booking Button -->
           <button 
-            @click="store.bookingModalOpen = true"
-            class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-yellow-400 border border-surface-700 flex items-center gap-1.5 transition-all">
+            @click="store.openBookingModal('form')"
+            class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-yellow-400 border border-surface-700 flex items-center gap-1.5 transition-all cursor-pointer">
             <span>🎉</span> Book Event
           </button>
         </nav>
@@ -170,13 +170,27 @@
                   <button 
                     v-if="store.user"
                     @click="goToView('history')" 
-                    class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors">
+                    class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors cursor-pointer">
                     <i class="pi pi-history text-brand-400"></i> Order History
+                  </button>
+                  <button 
+                    v-if="store.user"
+                    @click="goToView('bookings')" 
+                    class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center justify-between gap-2 transition-colors cursor-pointer">
+                    <span class="flex items-center gap-2.5">
+                      <i class="pi pi-calendar text-amber-400"></i> Event Booking History
+                    </span>
+                    <span
+                      v-if="store.bookingsList.length > 0"
+                      class="text-[10px] px-1.5 py-0.2 rounded-full font-bold"
+                      :class="hasApprovedBooking ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300'">
+                      {{ store.bookingsList.length }}
+                    </span>
                   </button>
                   <button 
                     v-if="store.activeOrder || store.user"
                     @click="goToView('track')" 
-                    class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors">
+                    class="w-full text-left px-4 py-2 text-xs text-gray-300 hover:bg-surface-700/70 hover:text-white flex items-center gap-2.5 transition-colors cursor-pointer">
                     <i class="pi pi-map-marker text-emerald-400"></i> Track Active Order
                   </button>
                 </div>
@@ -284,12 +298,24 @@
           </button>
         </div>
 
-        <!-- Book Event Call to Action -->
-        <button 
-          @click="store.bookingModalOpen = true; mobileMenuOpen = false" 
-          class="w-full py-2.5 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
-          <span>🎉 Book Catering & Mobile Bar</span>
-        </button>
+        <!-- Event Booking History & Book Event Call to Action -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button 
+            @click="store.openBookingModal('form'); mobileMenuOpen = false" 
+            class="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
+            <span>🎉 Book Catering & Mobile Bar</span>
+          </button>
+          <button 
+            @click="goToView('bookings')" 
+            class="w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer border transition-all"
+            :class="store.currentView === 'bookings' ? 'bg-amber-400 text-black border-amber-300' : 'bg-surface-800/90 text-amber-300 hover:bg-surface-700 border-surface-700'">
+            <i class="pi pi-calendar text-xs"></i>
+            <span>Event Booking History</span>
+            <span v-if="store.bookingsList.length > 0" class="text-[10px] px-1.5 py-0.2 rounded-full bg-black/25 font-black">
+              {{ store.bookingsList.length }}
+            </span>
+          </button>
+        </div>
 
         <!-- Operations Portal Button (Mobile) -->
 
@@ -446,6 +472,10 @@ export default {
       store.authModalOpen = true;
     };
 
+    const hasApprovedBooking = Vue.computed(() =>
+      (store.bookingsList || []).some(b => b.status === 'Approved')
+    );
+
     const goToView = (view) => {
       mobileMenuOpen.value = false;
       store.profileDropdownOpen = false;
@@ -474,6 +504,7 @@ export default {
       togglePortal,
       toggleProfileMenu,
       openAuthModal,
+      hasApprovedBooking,
       goToView,
       handleLogout,
     };

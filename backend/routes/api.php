@@ -61,6 +61,7 @@ Route::get('/reverse-geocode', [SystemController::class, 'reverseGeocode']);
 Route::get('/geocode-search', [SystemController::class, 'searchAddress']);
 Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
+Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
 
 // PayMongo Online Payment Gateway
@@ -158,6 +159,7 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::post('/products/discount', [ProductController::class, 'applyDiscount']);
     Route::post('/products/discount/remove', [ProductController::class, 'removeDiscount']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
     Route::get('/bookings', [EventBookingController::class, 'index']);
     Route::match(['put', 'patch'], '/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);
     Route::get('/analytics/overview', [AnalyticsController::class, 'overview']);

@@ -24,8 +24,44 @@
           </button>
         </div>
 
+        <!-- Modal Mode Switcher: Book Event vs My Bookings History -->
+        <div class="px-4 sm:px-6 pt-3 pb-2 bg-surface-900 border-b border-surface-800 flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            @click="store.bookingModalTab = 'form'"
+            class="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+            :class="store.bookingModalTab === 'form'
+              ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-400/20'
+              : 'bg-surface-800/80 text-gray-300 hover:text-white border border-surface-700/60'">
+            <i class="pi pi-calendar-plus text-xs"></i>
+            <span>Book Event</span>
+          </button>
+
+          <button
+            type="button"
+            @click="switchToHistoryTab"
+            class="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+            :class="store.bookingModalTab === 'history'
+              ? 'bg-yellow-400 text-black font-black shadow-md shadow-yellow-400/20'
+              : 'bg-surface-800/80 text-gray-300 hover:text-white border border-surface-700/60'">
+            <i class="pi pi-history text-xs"></i>
+            <span>My Bookings</span>
+            <span
+              v-if="store.bookingsList.length > 0"
+              class="text-[10px] px-1.5 py-0.2 rounded-full font-black"
+              :class="store.bookingModalTab === 'history' ? 'bg-black/20 text-black' : 'bg-amber-500/20 text-amber-300'">
+              {{ store.bookingsList.length }}
+            </span>
+            <span
+              v-if="hasApprovedBooking"
+              class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+              title="You have an approved booking">
+            </span>
+          </button>
+        </div>
+
         <!-- Form Body -->
-        <form @submit.prevent="submitBooking" class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
+        <form v-if="store.bookingModalTab === 'form'" @submit.prevent="submitBooking" class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
           
           <!-- Package Quick Select Banner -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 p-3 rounded-2xl bg-surface-950/70 border border-surface-800">
@@ -270,6 +306,53 @@
           </div>
 
         </form>
+
+        <!-- Booking History & Approval Status Body -->
+        <div v-else class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
+          <!-- Post-Submit Confirmation Callout -->
+          <div
+            v-if="justSubmitted"
+            class="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-100 flex items-start gap-3 animate-fade-in">
+            <i class="pi pi-check-circle text-emerald-400 text-base mt-0.5 shrink-0"></i>
+            <div class="space-y-1">
+              <p class="font-black text-xs sm:text-sm text-white">Event Booking Request Submitted!</p>
+              <p class="text-[11px] text-emerald-200/90 leading-relaxed">
+                Your booking is now listed in your history below. Once an Admin or Staff member reviews and approves it, the status will update to <strong class="text-emerald-300">Approved</strong>.
+              </p>
+            </div>
+          </div>
+
+          <BookingHistoryList
+            :compact="true"
+            :highlightId="store.lastSubmittedBookingId"
+            @book-new="startNewBooking" />
+
+          <!-- Modal History Footer Actions -->
+          <div class="pt-3 border-t border-surface-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <button
+              type="button"
+              @click="openFullHistoryPage"
+              class="px-3.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+              <i class="pi pi-external-link text-[11px] text-amber-400"></i>
+              <span>Open Full Bookings Page</span>
+            </button>
+
+            <div class="flex items-center gap-2 justify-end">
+              <button
+                type="button"
+                @click="startNewBooking"
+                class="px-3.5 py-2 rounded-xl bg-yellow-400/15 hover:bg-yellow-400 text-yellow-300 hover:text-black border border-yellow-400/40 text-xs font-bold transition-all cursor-pointer">
+                + Book Another
+              </button>
+              <button
+                type="button"
+                @click="store.bookingModalOpen = false"
+                class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-xs font-bold transition-colors cursor-pointer">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
 
       </div>
 
@@ -718,16 +801,51 @@ export default {
       }
     };
 
+    const justSubmitted = Vue.ref(false);
+    const hasApprovedBooking = Vue.computed(() =>
+      (store.bookingsList || []).some(b => b.status === 'Approved')
+    );
+
+    const switchToHistoryTab = () => {
+      store.bookingModalTab = 'history';
+      store.fetchMyBookings();
+    };
+
+    const startNewBooking = () => {
+      justSubmitted.value = false;
+      store.bookingModalTab = 'form';
+    };
+
+    const openFullHistoryPage = () => {
+      store.bookingModalOpen = false;
+      store.currentView = 'bookings';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     Vue.watch(() => store.bookingModalOpen, (isOpen) => {
-      if (isOpen && store.selectedBookingPackage) {
-        if (store.selectedBookingPackage.includes('Coffee')) {
-          form.event_type = 'Coffee Package (₱3,500 / 50 pax)';
-          form.guest_count = 50;
-        } else if (store.selectedBookingPackage.includes('Fruity')) {
-          form.event_type = 'Fruity Float Package (₱3,500 / 50 pax)';
-          form.guest_count = 50;
-        } else {
-          form.event_type = 'Mobile Bar & Milktea Booth';
+      if (isOpen) {
+        justSubmitted.value = false;
+        if (!form.client_name && store.user?.name) {
+          form.client_name = String(store.user.name).slice(0, 80);
+        }
+        if (!form.client_phone && store.user?.phone) {
+          form.client_phone = sanitizePhone(store.user.phone);
+        }
+        if (!form.client_email && store.user?.email) {
+          form.client_email = store.user.email;
+        }
+        store.fetchMyBookings();
+        if (store.selectedBookingPackage) {
+          store.bookingModalTab = 'form';
+          if (store.selectedBookingPackage.includes('Coffee')) {
+            form.event_type = 'Coffee Package (₱3,500 / 50 pax)';
+            form.guest_count = 50;
+          } else if (store.selectedBookingPackage.includes('Fruity')) {
+            form.event_type = 'Fruity Float Package (₱3,500 / 50 pax)';
+            form.guest_count = 50;
+          } else {
+            form.event_type = 'Mobile Bar & Milktea Booth';
+          }
         }
       }
     });
@@ -785,8 +903,9 @@ export default {
 
       loading.value = true;
       try {
-        await GST_API.createBooking({
+        const res = await GST_API.createBooking({
           ...form,
+          user_id: store.user?.id || undefined,
           client_name: cleanName,
           guest_count: guests,
           event_time: (form.event_time || '').trim().slice(0, 60),
@@ -796,9 +915,24 @@ export default {
           estimated_cost: estimatedCost.value,
         });
 
-        store.notify('Booking submitted! Our team will contact you to coordinate dates.', 'success');
-        store.bookingModalOpen = false;
+        const createdBooking = res.data?.booking;
+        if (createdBooking?.id) {
+          store.saveLocalBookingId(createdBooking.id);
+          store.lastSubmittedBookingId = createdBooking.id;
+          const existingIdx = store.bookingsList.findIndex(b => b.id === createdBooking.id);
+          if (existingIdx === -1) {
+            store.bookingsList.unshift(createdBooking);
+          }
+        }
+        await store.fetchMyBookings();
+
+        store.notify('Booking submitted! Track approval status under My Bookings.', 'success');
         store.selectedBookingPackage = null;
+        form.event_date = '';
+        form.location = '';
+        form.notes = '';
+        justSubmitted.value = true;
+        store.bookingModalTab = 'history';
       } catch (err) {
         store.notify(err.response?.data?.message || 'Failed to submit event booking.', 'error');
       } finally {
@@ -836,6 +970,11 @@ export default {
       isCoffeePackage,
       isFruityPackage,
       selectPackage,
+      justSubmitted,
+      hasApprovedBooking,
+      switchToHistoryTab,
+      startNewBooking,
+      openFullHistoryPage,
       estimatedCost,
       packageDetailsText,
       submitBooking,

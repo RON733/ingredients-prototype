@@ -5,13 +5,104 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\EventBooking;
 use App\Models\AuditLog;
+use App\Models\User;
 
 class EventBookingController extends Controller
 {
+    private function normalizePhone(?string $raw): string
+    {
+        $digits = preg_replace('/\D/', '', (string) $raw);
+        if (str_starts_with($digits, '63') && strlen($digits) === 12) {
+            $digits = '0' . substr($digits, 2);
+        }
+        return $digits;
+    }
+
     public function index()
     {
         $bookings = EventBooking::latest()->get();
         return response()->json($bookings);
+    }
+
+    public function myBookings(Request $request)
+    {
+        $user = auth('sanctum')->user() ?? $request->user();
+        if (!$user && $request->filled('user_id')) {
+            $user = User::find($request->input('user_id'));
+        }
+
+        $rawIds = $request->input('ids', '');
+        $localIds = collect(is_array($rawIds) ? $rawIds : explode(',', (string) $rawIds))
+            ->map(fn ($id) => (int) trim((string) $id))
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        $search = trim((string) $request->input('search', ''));
+        $searchPhone = $search !== '' ? $this->normalizePhone($search) : '';
+        $searchNumericId = ($search !== '' && preg_match('/^#?(\d+)$/', $search, $m)) ? (int) $m[1] : null;
+
+        if ($user) {
+            $userPhone = $this->normalizePhone($user->phone);
+            $userEmail = trim((string) ($user->email ?? ''));
+
+            $query = EventBooking::query()->where(function ($q) use ($user, $userPhone, $userEmail, $localIds) {
+                $q->where('user_id', $user->id);
+
+                if ($userEmail !== '' || $userPhone !== '') {
+                    $q->orWhere(function ($sub) use ($userEmail, $userPhone) {
+                        $sub->whereNull('user_id')->where(function ($match) use ($userEmail, $userPhone) {
+                            if ($userEmail !== '') {
+                                $match->whereRaw('LOWER(client_email) = ?', [strtolower($userEmail)]);
+                            }
+                            if ($userPhone !== '') {
+                                if ($userEmail !== '') {
+                                    $match->orWhere('client_phone', $userPhone);
+                                } else {
+                                    $match->where('client_phone', $userPhone);
+                                }
+                            }
+                        });
+                    });
+                }
+
+                if (!empty($localIds)) {
+                    $q->orWhereIn('id', $localIds);
+                }
+            });
+
+            return response()->json($query->latest()->get());
+        }
+
+        if (empty($localIds) && $search === '') {
+            return response()->json([]);
+        }
+
+        $query = EventBooking::query()->where(function ($q) use ($localIds, $searchPhone, $searchNumericId) {
+            $hasCondition = false;
+
+            if (!empty($localIds)) {
+                $q->whereIn('id', $localIds);
+                $hasCondition = true;
+            }
+
+            if (strlen($searchPhone) === 11 && str_starts_with($searchPhone, '09')) {
+                $hasCondition ? $q->orWhere('client_phone', $searchPhone) : $q->where('client_phone', $searchPhone);
+                $hasCondition = true;
+            }
+
+            if ($searchNumericId !== null && $searchNumericId > 0) {
+                $hasCondition ? $q->orWhere('id', $searchNumericId) : $q->where('id', $searchNumericId);
+                $hasCondition = true;
+            }
+
+            if (!$hasCondition) {
+                $q->whereRaw('1 = 0');
+            }
+        });
+
+        return response()->json($query->latest()->get());
     }
 
     public function store(Request $request)
@@ -19,12 +110,18 @@ class EventBookingController extends Controller
         // Maintenance Mode Check
         $maintenance = \App\Models\SystemSetting::where('key', 'maintenance_mode')->value('value');
         if ($maintenance === 'true' || $maintenance === '1') {
-            $userRole = $request->user()?->role;
+            $actingForMaintenance = auth('sanctum')->user() ?? $request->user();
+            $userRole = $actingForMaintenance?->role;
             if (!$userRole || !in_array($userRole, ['staff', 'admin', 'super_admin'])) {
                 return response()->json([
                     'message' => 'The website is currently undergoing scheduled maintenance. Event booking requests are temporarily paused.'
                 ], 503);
             }
+        }
+
+        $actingUser = auth('sanctum')->user() ?? $request->user();
+        if (!$actingUser && $request->filled('user_id')) {
+            $actingUser = User::find($request->input('user_id'));
         }
 
         $validated = $request->validate([
@@ -42,10 +139,7 @@ class EventBookingController extends Controller
         ]);
 
         // Normalize and validate 11-digit contact number
-        $cleanPhone = preg_replace('/\D/', '', $validated['client_phone']);
-        if (str_starts_with($cleanPhone, '63') && strlen($cleanPhone) === 12) {
-            $cleanPhone = '0' . substr($cleanPhone, 2);
-        }
+        $cleanPhone = $this->normalizePhone($validated['client_phone']);
         if (strlen($cleanPhone) !== 11 || !str_starts_with($cleanPhone, '09')) {
             return response()->json([
                 'message' => 'Please provide a valid 11-digit mobile number starting with 09 (e.g. 09123456789).'
@@ -59,10 +153,10 @@ class EventBookingController extends Controller
             : $validated['guest_count'] * 95;
 
         $booking = EventBooking::create([
-            'user_id' => $request->user()?->id ?? null,
+            'user_id' => $actingUser?->id ?? null,
             'client_name' => trim($validated['client_name']),
             'client_phone' => $validated['client_phone'],
-            'client_email' => $validated['client_email'] ?? null,
+            'client_email' => $validated['client_email'] ?? $actingUser?->email ?? null,
             'event_type' => $validated['event_type'],
             'event_date' => $validated['event_date'],
             'event_time' => $validated['event_time'] ?? 'TBD',
@@ -74,11 +168,11 @@ class EventBookingController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        $bookingRole = $request->user()?->role;
+        $bookingRole = $actingUser?->role;
         if ($bookingRole && in_array($bookingRole, ['staff', 'admin', 'super_admin'])) {
             AuditLog::create([
-                'user_id' => $request->user()?->id,
-                'user_name' => $request->user()?->name ?? $validated['client_name'],
+                'user_id' => $actingUser?->id,
+                'user_name' => $actingUser?->name ?? $validated['client_name'],
                 'user_role' => $bookingRole,
                 'action' => 'Event Booking Logged',
                 'details' => "Booking for {$validated['event_type']} on {$validated['event_date']} ({$validated['guest_count']} guests)",
@@ -99,13 +193,26 @@ class EventBookingController extends Controller
             'status' => 'required|in:Pending,Approved,Declined,Completed',
         ]);
 
+        $reviewer = auth('sanctum')->user() ?? $request->user();
         $oldStatus = $booking->status;
         $booking->status = $validated['status'];
+
+        if ($validated['status'] !== 'Pending') {
+            $booking->reviewed_by_name = $reviewer?->name ?? 'Store Staff';
+            $booking->reviewed_by_role = $reviewer?->role ?? 'staff';
+            $booking->reviewed_at = now();
+        } else {
+            $booking->reviewed_by_name = null;
+            $booking->reviewed_by_role = null;
+            $booking->reviewed_at = null;
+        }
+
         $booking->save();
 
         AuditLog::create([
-            'user_name' => $request->user()?->name ?? 'Staff',
-            'user_role' => $request->user()?->role ?? 'staff',
+            'user_id' => $reviewer?->id,
+            'user_name' => $reviewer?->name ?? 'Staff',
+            'user_role' => $reviewer?->role ?? 'staff',
             'action' => 'Event Booking Status Updated',
             'details' => "Booking #{$booking->id} for {$booking->client_name} moved from {$oldStatus} to {$booking->status}",
             'ip_address' => $request->ip(),

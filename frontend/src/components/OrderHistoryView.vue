@@ -10,14 +10,27 @@
           <span>Back to Store</span>
         </button>
 
-        <button 
-          @click="loadOrders(true)"
-          :disabled="isLoading"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-800/80 hover:bg-surface-700 text-xs font-semibold text-gray-300 hover:text-white border border-surface-700/60 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-          title="Refresh orders">
-          <i class="pi pi-sync text-[11px]" :class="{ 'animate-spin text-yellow-400': isLoading }"></i>
-          <span class="hidden xs:inline">{{ isLoading ? 'Refreshing...' : 'Refresh' }}</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button 
+            type="button"
+            @click="store.currentView = 'bookings'"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-800/80 hover:bg-surface-700 text-xs font-semibold text-amber-300 hover:text-amber-200 border border-surface-700/60 transition-colors shadow-sm cursor-pointer">
+            <i class="pi pi-calendar text-[11px]"></i>
+            <span>Event Bookings</span>
+            <span v-if="store.bookingsList.length > 0" class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+              {{ store.bookingsList.length }}
+            </span>
+          </button>
+
+          <button 
+            @click="loadOrders(true)"
+            :disabled="isLoading"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-800/80 hover:bg-surface-700 text-xs font-semibold text-gray-300 hover:text-white border border-surface-700/60 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+            title="Refresh orders">
+            <i class="pi pi-sync text-[11px]" :class="{ 'animate-spin text-yellow-400': isLoading }"></i>
+            <span class="hidden xs:inline">{{ isLoading ? 'Refreshing...' : 'Refresh' }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Section Title & Counter (Matches Figure 13 + Mobile Enhancements) -->

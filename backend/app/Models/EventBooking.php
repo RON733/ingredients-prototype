@@ -23,12 +23,16 @@ class EventBooking extends Model
         'estimated_cost',
         'status',
         'notes',
+        'reviewed_by_name',
+        'reviewed_by_role',
+        'reviewed_at',
     ];
 
     protected $casts = [
         'event_date' => 'date',
         'guest_count' => 'integer',
         'estimated_cost' => 'float',
+        'reviewed_at' => 'datetime',
     ];
 
     public function user()

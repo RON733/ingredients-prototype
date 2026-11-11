@@ -541,7 +541,6 @@ const useGShotStore = defineStore('gshot', {
         // Fetch user's active order and event booking history
         if (this.user) {
           this.fetchUserActiveOrder();
-        this.fetchMyBookings();
         }
         if (this.user || this.getLocalBookingIds().length > 0) {
           this.fetchMyBookings();

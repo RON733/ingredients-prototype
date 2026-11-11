@@ -65,6 +65,11 @@
               <OrderHistoryView />
             </div>
 
+            <!-- 5b. Customer Event Booking History View -->
+            <div v-else-if="store.currentView === 'bookings'">
+              <BookingHistoryView />
+            </div>
+
             <!-- 6. Resilient Fallback: Always display Customer Storefront if view is unknown -->
             <div v-else class="animate-fade-in">
               <LandingHero />
@@ -161,7 +166,7 @@
 
           <!-- 6. Book Catering Package -->
           <button 
-            @click="store.bookingModalOpen = true"
+            @click="store.openBookingModal('form')"
             type="button"
             class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">
             <i class="pi pi-calendar-plus text-base"></i>
