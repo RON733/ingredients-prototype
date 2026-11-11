@@ -80,8 +80,8 @@
           <!-- Auth Box Container -->
           <div class="bg-surface-900/95 backdrop-blur-xl border border-surface-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4">
             
-            <!-- Login Method Switcher Tabs (PIN vs Password) -->
-            <div class="grid grid-cols-2 p-1 rounded-xl bg-surface-950 border border-surface-800 text-xs font-semibold">
+            <!-- Login Method Switcher Tabs (PIN vs Password — Staff Only) -->
+            <div v-if="activeRole === 'staff'" class="grid grid-cols-2 p-1 rounded-xl bg-surface-950 border border-surface-800 text-xs font-semibold">
               <button 
                 type="button"
                 @click="authTab = 'pin'"
@@ -106,10 +106,10 @@
               <span class="flex-1 leading-snug">{{ authError }}</span>
             </div>
 
-            <!-- TAB 1: 4-DIGIT PIN ENTRY -->
-            <div v-if="authTab === 'pin'" class="space-y-4">
-              <!-- Staff selector (only when in staff role mode) -->
-              <div v-if="activeRole === 'staff'">
+            <!-- TAB 1: 4-DIGIT PIN ENTRY (STAFF ONLY) -->
+            <div v-if="activeRole === 'staff' && authTab === 'pin'" class="space-y-4">
+              <!-- Staff selector -->
+              <div>
                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                   Select On-Duty Staff Operator:
                 </label>
@@ -146,9 +146,7 @@
                   </div>
                 </div>
                 <p class="text-[10px] text-gray-400">
-                  <span v-if="activeRole === 'staff'">Mhar = <strong>1234</strong> • Sarah = <strong>5678</strong></span>
-                  <span v-else-if="activeRole === 'admin'">Admin PIN = <strong>2222</strong></span>
-                  <span v-else-if="activeRole === 'super_admin'">Super Admin PIN = <strong>1111</strong></span>
+                  <span>Mhar = <strong>1234</strong> • Sarah = <strong>5678</strong></span>
                 </p>
               </div>
 
@@ -187,8 +185,7 @@
                 type="button"
                 @click="submitPinLogin"
                 :disabled="pinLoading || pinDigits.length < 4"
-                class="w-full py-3 rounded-xl disabled:opacity-40 font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
-                :class="activeRole === 'super_admin' ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-amber-500/20'">
+                class="w-full py-3 rounded-xl disabled:opacity-40 font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer bg-amber-500 hover:bg-amber-400 text-neutral-950 shadow-amber-500/20">
                 <i v-if="pinLoading" class="pi pi-spin pi-spinner"></i>
                 <span v-else>Authorize Entry</span>
               </button>
@@ -473,7 +470,7 @@ export default {
     };
 
     const submitPinLogin = async () => {
-      if (pinDigits.value.length !== 4) return;
+      if (activeRole.value !== 'staff' || pinDigits.value.length !== 4) return;
       pinLoading.value = true;
       authError.value = '';
       try {

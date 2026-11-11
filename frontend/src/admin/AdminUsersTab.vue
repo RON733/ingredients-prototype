@@ -11,7 +11,7 @@
           </div>
           <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">User & Role Management</h2>
           <p class="text-xs text-gray-400 mt-1 max-w-2xl">
-            Manage store personnel accounts: Baristas, Delivery Riders, and Administrators. Assign 4-digit POS PINs and operational privileges.
+            Manage store personnel accounts: Baristas, Delivery Riders, and Administrators. Assign 4-digit POS PINs for staff and operational privileges.
           </p>
         </div>
 
@@ -197,7 +197,7 @@
 
                 <!-- 4-Digit Staff PIN Column -->
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div v-if="['staff', 'driver', 'admin'].includes(u.role)" class="flex items-center gap-2">
+                  <div v-if="u.role === 'staff'" class="flex items-center gap-2">
                     <span class="font-mono font-bold text-xs px-2 py-0.5 rounded-lg bg-surface-900 border border-surface-700 text-brand-400">
                       {{ revealedPins[u.id] ? (u.pin || 'None') : (u.pin ? '••••' : 'None') }}
                     </span>
@@ -316,7 +316,7 @@
 
               <div>
                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Staff PIN</span>
-                <div v-if="['staff', 'driver', 'admin'].includes(u.role)" class="mt-1 flex items-center gap-1.5">
+                <div v-if="u.role === 'staff'" class="mt-1 flex items-center gap-1.5">
                   <span class="font-mono font-bold text-xs px-2 py-0.5 rounded-lg bg-surface-950 border border-surface-700 text-brand-400">
                     {{ revealedPins[u.id] ? (u.pin || 'None') : (u.pin ? '••••' : 'None') }}
                   </span>
@@ -386,7 +386,7 @@
             </span>
             <h3 class="text-xl font-black text-white mt-1">Create Personnel Account</h3>
             <p class="text-xs text-gray-400 mt-0.5">
-              Provision credentials and a 4-digit POS PIN for authorized staff and administrators.
+              Provision credentials for authorized personnel, plus a 4-digit POS PIN for staff.
             </p>
           </div>
 
@@ -429,8 +429,8 @@
                 </select>
               </div>
 
-              <!-- 4-Digit Staff PIN -->
-              <div>
+              <!-- 4-Digit Staff PIN (Staff Only) -->
+              <div v-if="newUser.role === 'staff'">
                 <div class="flex items-center justify-between mb-1">
                   <label class="font-bold text-gray-300">4-Digit POS PIN *</label>
                   <button 
@@ -666,7 +666,11 @@ export default {
     const submitCreateUser = async () => {
       savingUser.value = true;
       try {
-        await GST_API.createUser(newUser.value);
+        const payload = { ...newUser.value };
+        if (payload.role !== 'staff') {
+          delete payload.pin;
+        }
+        await GST_API.createUser(payload);
         store.notify(`Account for ${newUser.value.name} created successfully!`, 'success');
         createModalOpen.value = false;
         refresh();

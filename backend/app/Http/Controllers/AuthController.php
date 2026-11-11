@@ -760,7 +760,9 @@ class AuthController extends Controller
             return response()->json(['message' => 'Only Super Admins can create another Super Admin account.'], 403);
         }
 
-        $pin = !empty($validated['pin']) ? trim($validated['pin']) : '1234';
+        $pin = $validated['role'] === 'staff'
+            ? (!empty($validated['pin']) ? trim($validated['pin']) : '1234')
+            : null;
 
         $user = User::create([
             'name' => $validated['name'],
@@ -778,7 +780,7 @@ class AuthController extends Controller
             'user_name' => $creator?->name ?? 'Admin',
             'user_role' => $creator?->role ?? 'admin',
             'action' => 'Personnel Account Created',
-            'details' => "Created new {$user->role} account for {$user->name} ({$user->email}) with PIN assigned.",
+            'details' => "Created new {$user->role} account for {$user->name} ({$user->email})" . ($pin ? ' with PIN assigned.' : '.'),
             'ip_address' => $request->ip(),
         ]);
 
@@ -797,21 +799,21 @@ class AuthController extends Controller
 
         $pin = trim($validated['pin']);
 
-        // Check if user_id was provided and PIN matches
+        // Only staff accounts use 4-digit PIN authentication
         $user = null;
         if (!empty($validated['user_id'])) {
             $user = User::where('id', $validated['user_id'])
                 ->where('pin', $pin)
                 ->where('status', 'active')
-                ->whereIn('role', ['staff', 'admin', 'super_admin', 'driver'])
+                ->where('role', 'staff')
                 ->first();
         }
 
-        // If not found by user_id, locate directly by PIN across personnel
+        // If not found by user_id, locate directly by PIN across staff
         if (!$user) {
             $user = User::where('pin', $pin)
                 ->where('status', 'active')
-                ->whereIn('role', ['staff', 'admin', 'super_admin', 'driver'])
+                ->where('role', 'staff')
                 ->first();
         }
 
@@ -866,7 +868,9 @@ class AuthController extends Controller
 
         if (isset($validated['role'])) $user->role = $validated['role'];
         if (isset($validated['status'])) $user->status = $validated['status'];
-        if (array_key_exists('pin', $validated)) {
+        if ($user->role !== 'staff') {
+            $user->pin = null;
+        } elseif (array_key_exists('pin', $validated)) {
             $user->pin = !empty($validated['pin']) ? trim($validated['pin']) : null;
         }
         if (isset($validated['name'])) $user->name = $validated['name'];
