@@ -226,17 +226,6 @@ const AdminApp = {
               </button>
             </form>
 
-            <!-- 1-CLICK INSTANT DEMO LOGIN BUTTON (GUARANTEES ACCESS) -->
-            <div class="pt-2 border-t border-surface-800">
-              <button 
-                type="button"
-                @click="oneClickDirectLogin"
-                :disabled="credentialsLoading"
-                class="w-full py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-750 text-yellow-400 font-bold text-xs flex items-center justify-center gap-2 border border-surface-700 transition-all cursor-pointer">
-                <span>⚡ Instant 1-Click Sign In as {{ activeRole === 'super_admin' ? 'Super Admin' : (activeRole === 'admin' ? 'Admin' : 'Staff') }}</span>
-              </button>
-            </div>
-
           </div>
 
           <!-- Bottom Security Advisory -->
@@ -445,24 +434,6 @@ const AdminApp = {
       }
     };
 
-    const oneClickDirectLogin = async () => {
-      credentialsLoading.value = true;
-      authError.value = '';
-      let targetEmail = 'staff@gshotteas.com';
-      if (activeRole.value === 'admin') targetEmail = 'admin@gshotteas.com';
-      if (activeRole.value === 'super_admin') targetEmail = 'superadmin@gshotteas.com';
-
-      try {
-        await store.login(targetEmail, 'password123');
-        sessionStorage.setItem('gst_admin_unlocked', 'true');
-        isLoggedIn.value = true;
-        store.currentView = 'admin';
-      } catch (err) {
-        authError.value = err.response?.data?.message || 'Login failed.';
-      } finally {
-        credentialsLoading.value = false;
-      }
-    };
 
     const getToastClass = (type) => {
       if (type === 'error') return 'bg-rose-950/95 border-rose-600 text-rose-100 shadow-rose-950/50';
@@ -501,7 +472,6 @@ const AdminApp = {
       backspacePin,
       submitPinLogin,
       submitCredentialsLogin,
-      oneClickDirectLogin,
       getToastClass,
       getToastIcon
     };
