@@ -156,16 +156,16 @@
               <!-- Availability Badge -->
               <div class="flex items-center gap-2">
                 <span 
-                  v-if="store.previewProduct.max_portions > 3"
+                  v-if="liveMaxPortions > 8"
                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/60">
                   <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  In Stock ({{ store.previewProduct.max_portions }} portions available)
+                  In Stock ({{ liveMaxPortions }} portions available)
                 </span>
                 <span 
-                  v-else-if="store.previewProduct.max_portions > 0"
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-950/80 text-amber-400 border border-amber-700/60">
+                  v-else-if="liveMaxPortions > 0"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-600/60">
                   <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                  Low Stock ({{ store.previewProduct.max_portions }} remaining)
+                  Almost Out of Stock ({{ liveMaxPortions }} remaining)
                 </span>
                 <span 
                   v-else
@@ -199,20 +199,28 @@
 
             <div class="order-1 sm:order-2 flex items-center gap-2">
               <button 
-                v-if="store.previewProduct.max_portions > 0"
-                type="button"
-                @click="handleAction"
-                class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 transition-all cursor-pointer">
-                <i class="pi" :class="isCustomizable ? 'pi-sliders-h' : 'pi-plus'"></i>
-                <span>{{ isCustomizable ? 'Customize & Add to Cart' : 'Add to Cart (' + (store.previewProduct.price ? '₱' + Number(store.previewProduct.price).toFixed(2) : '') + ')' }}</span>
-              </button>
-              <button 
-                v-else
+                v-if="liveMaxPortions <= 0"
                 disabled
                 type="button"
                 class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2">
                 <i class="pi pi-ban"></i>
                 <span>Currently Unavailable</span>
+              </button>
+              <button 
+                v-else-if="remainingStock <= 0"
+                disabled
+                type="button"
+                class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-2">
+                <i class="pi pi-check"></i>
+                <span>Max Stock in Cart</span>
+              </button>
+              <button 
+                v-else
+                type="button"
+                @click="handleAction"
+                class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 transition-all cursor-pointer">
+                <i class="pi" :class="isCustomizable ? 'pi-sliders-h' : 'pi-plus'"></i>
+                <span>{{ isCustomizable ? 'Customize & Add to Cart' : 'Add to Cart (' + (store.previewProduct.price ? '₱' + Number(store.previewProduct.price).toFixed(2) : '') + ')' }}</span>
               </button>
             </div>
           </div>
@@ -414,6 +422,16 @@ export default {
       toggleZoom();
     };
 
+    const liveMaxPortions = Vue.computed(() => {
+      if (!store.previewProduct) return 0;
+      return store.getProductMaxStock(store.previewProduct);
+    });
+
+    const remainingStock = Vue.computed(() => {
+      if (!store.previewProduct) return 0;
+      return store.getRemainingStock(store.previewProduct);
+    });
+
     const isCustomizable = Vue.computed(() => {
       if (!store.previewProduct) return false;
       const cat = store.previewProduct.category;
@@ -428,16 +446,25 @@ export default {
     const handleAction = () => {
       const p = store.previewProduct;
       if (!p) return;
+      const matched = store.products.find(item => item.id === p.id) || p;
+      const maxStock = store.getProductMaxStock(matched);
+      if (maxStock <= 0) {
+        store.notify(`${matched.name} is currently sold out.`, 'error');
+        return;
+      }
+      if (store.getRemainingStock(matched) <= 0) {
+        store.notify(`Cannot add more ${matched.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available and you already have them in your cart.`, 'warning');
+        return;
+      }
       if (isCustomizable.value) {
         close();
-        const matched = store.products.find(item => item.id === p.id) || p;
         store.selectedProductForCustomize = matched;
         store.customizeModalOpen = true;
       } else {
-        const matched = store.products.find(item => item.id === p.id) || p;
-        store.addToCart(matched);
-        store.addToast(`Added ${p.name} to cart!`, 'success');
-        close();
+        const added = store.addToCart(matched);
+        if (added) {
+          close();
+        }
       }
     };
 
@@ -478,6 +505,8 @@ export default {
       onTouchMove,
       onTouchEnd,
       handleCanvasClick,
+      liveMaxPortions,
+      remainingStock,
       isCustomizable,
       close,
       handleAction,

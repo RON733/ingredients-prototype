@@ -245,14 +245,14 @@
 
           <!-- Stock Pill -->
           <span 
-            v-if="Number(product.max_portions) > 3"
+            v-if="Number(product.max_portions) > 8"
             class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50 backdrop-blur-sm pointer-events-none">
             {{ product.max_portions }} avail
           </span>
           <span 
             v-else-if="Number(product.max_portions) > 0"
-            class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-400 border border-amber-700/50 backdrop-blur-sm animate-pulse pointer-events-none">
-            {{ product.max_portions }} left
+            class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 backdrop-blur-sm animate-pulse pointer-events-none">
+            Almost Out ({{ product.max_portions }} left)
           </span>
           <span 
             v-else
@@ -290,20 +290,28 @@
           <!-- Add / Customize Action Button -->
           <div class="mt-2.5 pt-1.5 border-t border-surface-700/50">
             <button 
-              v-if="Number(product.max_portions) > 0"
-              @click="openCustomize(product)"
-              type="button"
-              class="w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-1 cursor-pointer shadow-md active:scale-95">
-              <i class="pi pi-plus text-[9px]"></i>
-              <span>{{ product.category === 'Drinks' ? 'Customize' : 'Add' }}</span>
-            </button>
-            <button 
-              v-else
+              v-if="Number(product.max_portions) <= 0 || product.is_available === false"
               disabled
               type="button"
               class="w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs bg-surface-700 text-gray-500 cursor-not-allowed flex items-center justify-center gap-1">
               <i class="pi pi-ban text-[9px]"></i>
               <span>Unavailable</span>
+            </button>
+            <button 
+              v-else-if="store.getRemainingStock(product) <= 0"
+              disabled
+              type="button"
+              class="w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1">
+              <i class="pi pi-check text-[9px]"></i>
+              <span>Max in Cart</span>
+            </button>
+            <button 
+              v-else
+              @click="openCustomize(product)"
+              type="button"
+              class="w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-1 cursor-pointer shadow-md active:scale-95">
+              <i class="pi pi-plus text-[9px]"></i>
+              <span>{{ product.category === 'Drinks' ? 'Customize' : 'Add' }}</span>
             </button>
           </div>
 
@@ -361,9 +369,14 @@
             </span>
 
             <span 
-              v-if="Number(product.max_portions) > 0"
+              v-if="Number(product.max_portions) > 8"
               class="absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.2 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50">
-              {{ product.max_portions }} left
+              {{ product.max_portions }} avail
+            </span>
+            <span 
+              v-else-if="Number(product.max_portions) > 0"
+              class="absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.2 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 animate-pulse">
+              Low: {{ product.max_portions }} left
             </span>
             <span 
               v-else
@@ -389,19 +402,26 @@
             </div>
 
             <button 
-              v-if="Number(product.max_portions) > 0"
+              v-if="Number(product.max_portions) <= 0 || product.is_available === false"
+              disabled
+              type="button"
+              class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-surface-700 text-gray-500 cursor-not-allowed flex items-center justify-center gap-1">
+              <span>Sold Out</span>
+            </button>
+            <button 
+              v-else-if="store.getRemainingStock(product) <= 0"
+              disabled
+              type="button"
+              class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1">
+              <span>Max in Cart</span>
+            </button>
+            <button 
+              v-else
               @click="openCustomize(product)"
               type="button"
               class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-1 active:scale-95 cursor-pointer shadow">
               <i class="pi pi-plus text-[8px]"></i>
               <span>Add</span>
-            </button>
-            <button 
-              v-else
-              disabled
-              type="button"
-              class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-surface-700 text-gray-500 cursor-not-allowed flex items-center justify-center gap-1">
-              <span>Sold Out</span>
             </button>
           </div>
 
@@ -457,16 +477,16 @@
 
         <div class="absolute bottom-3 left-3 pointer-events-none">
           <span 
-            v-if="Number(product.max_portions) > 3"
+            v-if="Number(product.max_portions) > 8"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/50 backdrop-blur-md">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             In Stock ({{ product.max_portions }} avail)
           </span>
           <span 
             v-else-if="Number(product.max_portions) > 0"
-            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-950/80 text-amber-400 border border-amber-700/50 backdrop-blur-md">
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-950/85 text-amber-300 border border-amber-600/60 backdrop-blur-md">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-            Low Stock ({{ product.max_portions }} left)
+            Almost Out ({{ product.max_portions }} left)
           </span>
           <span 
             v-else
@@ -514,20 +534,28 @@
 
         <div class="pt-2">
           <button 
-            v-if="Number(product.max_portions) > 0"
-            @click="openCustomize(product)"
-            type="button"
-            class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98">
-            <i class="pi pi-plus text-xs"></i>
-            <span>{{ product.category === 'Drinks' ? 'Customize & Add' : 'Add to Cart' }}</span>
-          </button>
-          <button 
-            v-else
+            v-if="Number(product.max_portions) <= 0 || product.is_available === false"
             disabled
             type="button"
             class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-700 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2">
             <i class="pi pi-ban text-xs"></i>
             <span>Unavailable</span>
+          </button>
+          <button 
+            v-else-if="store.getRemainingStock(product) <= 0"
+            disabled
+            type="button"
+            class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-2">
+            <i class="pi pi-check text-xs"></i>
+            <span>Max Stock in Cart ({{ product.max_portions }}/{{ product.max_portions }})</span>
+          </button>
+          <button 
+            v-else
+            @click="openCustomize(product)"
+            type="button"
+            class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98">
+            <i class="pi pi-plus text-xs"></i>
+            <span>{{ product.category === 'Drinks' ? 'Customize & Add' : 'Add to Cart' }}</span>
           </button>
         </div>
       </div>
@@ -722,6 +750,15 @@ export default {
     };
 
     const openCustomize = (product) => {
+      const maxStock = store.getProductMaxStock(product);
+      if (maxStock <= 0) {
+        store.notify(`${product.name} is currently sold out.`, 'error');
+        return;
+      }
+      if (store.getRemainingStock(product) <= 0) {
+        store.notify(`Cannot add more ${product.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available and you already have them in your cart.`, 'warning');
+        return;
+      }
       store.selectedProductForCustomize = product;
       store.customizeModalOpen = true;
     };

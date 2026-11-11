@@ -173,7 +173,7 @@
               <!-- Stock & Max Portions Badge -->
               <div class="mt-3 flex items-center justify-between text-[11px] bg-surface-900/60 p-2 rounded-xl border border-surface-700/60">
                 <span class="text-gray-400">Available Portions:</span>
-                <span class="font-bold" :class="product.max_portions > 3 ? 'text-emerald-400' : (product.max_portions > 0 ? 'text-amber-400' : 'text-rose-400')">
+                <span class="font-bold" :class="product.max_portions > 8 ? 'text-emerald-400' : (product.max_portions > 0 ? 'text-amber-400' : 'text-rose-400')">
                   {{ product.max_portions }} portions
                 </span>
               </div>

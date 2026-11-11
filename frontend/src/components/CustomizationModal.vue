@@ -37,9 +37,31 @@
           </button>
 
           <div class="relative z-10 pointer-events-none">
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-400 font-bold uppercase tracking-wider">
-              {{ product.category }}
-            </span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-400 font-bold uppercase tracking-wider">
+                {{ product.category }}
+              </span>
+              <span
+                v-if="maxStock <= 0"
+                class="text-[11px] px-2.5 py-0.5 rounded-full bg-rose-950/90 text-rose-400 border border-rose-700/60 font-bold">
+                Sold Out
+              </span>
+              <span
+                v-else-if="maxStock <= 8"
+                class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-950/90 text-amber-300 border border-amber-600/60 font-bold">
+                Almost Out ({{ maxStock }} left)
+              </span>
+              <span
+                v-else-if="maxStock < 999"
+                class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-950/90 text-emerald-400 border border-emerald-700/60 font-bold">
+                {{ maxStock }} in stock
+              </span>
+              <span
+                v-if="inCartQty > 0"
+                class="text-[11px] px-2.5 py-0.5 rounded-full bg-surface-900/90 text-amber-300 border border-surface-700 font-bold">
+                {{ inCartQty }} in cart
+              </span>
+            </div>
             <h3 class="text-2xl font-black text-white mt-1">{{ product.name }}</h3>
             <p class="text-xs text-gray-300 line-clamp-1 mt-0.5">{{ product.description }}</p>
           </div>
@@ -167,7 +189,25 @@
               Cancel
             </button>
             <button 
+              v-if="maxStock <= 0"
+              disabled
+              type="button"
+              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-surface-700 text-gray-500 cursor-not-allowed flex items-center gap-2">
+              <i class="pi pi-ban"></i>
+              <span>Sold Out</span>
+            </button>
+            <button 
+              v-else-if="remainingStock <= 0"
+              disabled
+              type="button"
+              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center gap-2">
+              <i class="pi pi-check"></i>
+              <span>Max in Cart</span>
+            </button>
+            <button 
+              v-else
               @click="confirmAdd"
+              type="button"
               class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
               <i class="pi pi-shopping-cart"></i>
               <span>Add to Cart</span>
@@ -196,6 +236,20 @@ export default {
     const isDrink = Vue.computed(() => {
       const cat = product.value?.category;
       return cat === 'Drinks' || cat === 'Coffee';
+    });
+
+    const maxStock = Vue.computed(() => {
+      if (!product.value) return 0;
+      return store.getProductMaxStock(product.value);
+    });
+
+    const inCartQty = Vue.computed(() => {
+      if (!product.value) return 0;
+      return store.getProductCartQty(product.value.id);
+    });
+
+    const remainingStock = Vue.computed(() => {
+      return Math.max(0, maxStock.value - inCartQty.value);
     });
 
     const sugarLevels = ['0%', '25%', '50%', '75%', '100%'];
@@ -257,14 +311,19 @@ export default {
       if (customization.notes && customization.notes.trim()) {
         cleanCustomization.notes = customization.notes.trim();
       }
-      store.addToCart(product.value, cleanCustomization);
-      close();
+      const added = store.addToCart(product.value, cleanCustomization);
+      if (added) {
+        close();
+      }
     };
 
     return {
       store,
       product,
       isDrink,
+      maxStock,
+      inCartQty,
+      remainingStock,
       sugarLevels,
       iceLevels,
       availableToppings,

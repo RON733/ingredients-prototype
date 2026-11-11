@@ -779,6 +779,12 @@ export default {
         reasons.push('Delivery Address is required for Delivery orders.');
       }
 
+      // Stock Limit Verification
+      const stockViolations = store.getCartStockViolations();
+      for (const v of stockViolations) {
+        reasons.push(`"${v.name}" exceeds available stock (${v.cartQty} in cart, only ${v.maxStock} available). Please adjust quantity in your cart.`);
+      }
+
       // Online QR Payment Check
       if (form.payment_method === 'PayMongo' && !store.isPaymongoAvailable) {
         reasons.push('Online QR payment is currently unavailable. Please select Cash.');

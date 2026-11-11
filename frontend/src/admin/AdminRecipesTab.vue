@@ -41,7 +41,7 @@
               <div class="text-right">
                 <span 
                   class="px-2.5 py-1 rounded-xl text-xs font-black inline-flex items-center gap-1.5"
-                  :class="product.max_portions > 3 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : (product.max_portions > 0 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30')">
+                  :class="product.max_portions > 8 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : (product.max_portions > 0 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30')">
                   {{ product.max_portions }} portions
                 </span>
                 <p class="text-[9px] text-gray-500 mt-0.5">Kitchen capacity</p>

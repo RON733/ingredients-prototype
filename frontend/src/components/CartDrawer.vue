@@ -82,13 +82,32 @@
                   {{ item.discount_percent }}% PROMO
                 </span>
               </p>
+
+              <!-- Stock Limit / Availability Notice -->
+              <p
+                v-if="store.getProductCartQty(item.product_id) > store.getProductMaxStock(item.product_id)"
+                class="text-[10px] font-bold text-rose-400 mt-1 flex items-center gap-1">
+                <i class="pi pi-exclamation-triangle text-[10px]"></i>
+                <span>Exceeds available stock ({{ store.getProductMaxStock(item.product_id) }} left) — please reduce</span>
+              </p>
+              <p
+                v-else-if="store.getProductMaxStock(item.product_id) < 999 && store.getProductCartQty(item.product_id) >= store.getProductMaxStock(item.product_id)"
+                class="text-[10px] font-bold text-amber-400 mt-1 flex items-center gap-1">
+                <i class="pi pi-info-circle text-[10px]"></i>
+                <span>Max stock reached ({{ store.getProductMaxStock(item.product_id) }} available)</span>
+              </p>
+              <p
+                v-else-if="store.getProductMaxStock(item.product_id) > 0 && store.getProductMaxStock(item.product_id) <= 8"
+                class="text-[10px] font-semibold text-amber-300/90 mt-1">
+                Almost out of stock ({{ store.getProductMaxStock(item.product_id) }} total left)
+              </p>
             </div>
 
             <!-- Quantity Controls and Trash Button (Matches Figure 9) -->
             <div class="flex items-center gap-2 bg-surface-900 px-2 py-1.5 rounded-xl border border-surface-700">
               <button 
                 @click="store.updateCartQty(item.cartItemId, -1)"
-                class="w-6 h-6 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white flex items-center justify-center text-xs font-bold transition-colors">
+                class="w-6 h-6 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white flex items-center justify-center text-xs font-bold transition-colors cursor-pointer">
                 -
               </button>
               <span class="text-xs font-bold text-white min-w-[16px] text-center">
@@ -96,7 +115,12 @@
               </span>
               <button 
                 @click="store.updateCartQty(item.cartItemId, 1)"
-                class="w-6 h-6 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white flex items-center justify-center text-xs font-bold transition-colors">
+                :disabled="!store.canIncrementCartItem(item)"
+                :title="!store.canIncrementCartItem(item) ? 'Maximum available stock reached (' + store.getProductMaxStock(item.product_id) + ')' : 'Increase quantity'"
+                class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold transition-colors"
+                :class="!store.canIncrementCartItem(item)
+                  ? 'bg-surface-800/40 text-gray-600 cursor-not-allowed opacity-50'
+                  : 'bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white cursor-pointer'">
                 +
               </button>
               <button 

@@ -301,6 +301,8 @@ const useGShotStore = defineStore('gshot', {
     customizeModalOpen: false,
     selectedProductForCustomize: null,
     bookingModalOpen: false,
+    bookingModalTab: 'form', // 'form' | 'history'
+    lastSubmittedBookingId: null,
     profileDropdownOpen: false,
 
     // Data from Backend API (Pre-populated with rich defaults so menu never disappears)
@@ -469,8 +471,9 @@ const useGShotStore = defineStore('gshot', {
       }
 
       await this.refreshAllData();
-      // Non-blocking single-flight periodic refresh for active order
+      // Non-blocking single-flight periodic refresh for active order & event booking status
       let isPollInFlight = false;
+      let isBookingPollInFlight = false;
       setInterval(async () => {
         if (this.currentView === 'track' && this.activeOrder && !isPollInFlight) {
           isPollInFlight = true;
@@ -480,6 +483,16 @@ const useGShotStore = defineStore('gshot', {
             // Silently ignore transient network drops
           } finally {
             isPollInFlight = false;
+          }
+        }
+        if ((this.currentView === 'bookings' || (this.bookingModalOpen && this.bookingModalTab === 'history')) && !isBookingPollInFlight) {
+          isBookingPollInFlight = true;
+          try {
+            await this.fetchMyBookings();
+          } catch (e) {
+            // Silently ignore transient network drops
+          } finally {
+            isBookingPollInFlight = false;
           }
         }
       }, 7000);
@@ -525,9 +538,13 @@ const useGShotStore = defineStore('gshot', {
           this.announcements = annRes.value.data;
         }
 
-        // Fetch user's active order if logged in
+        // Fetch user's active order and event booking history
         if (this.user) {
           this.fetchUserActiveOrder();
+        this.fetchMyBookings();
+        }
+        if (this.user || this.getLocalBookingIds().length > 0) {
+          this.fetchMyBookings();
         }
       } catch (err) {
         console.warn('Backend sync failed, using fallback mode:', err);
@@ -744,6 +761,45 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
+    getLocalBookingIds() {
+      try {
+        const raw = JSON.parse(localStorage.getItem('gst_local_booking_history') || '[]');
+        return Array.isArray(raw) ? raw.map(id => String(id)).filter(Boolean) : [];
+      } catch (e) {
+        return [];
+      }
+    },
+
+    saveLocalBookingId(id) {
+      if (!id) return;
+      try {
+        const idStr = String(id);
+        const list = this.getLocalBookingIds().filter(x => x !== idStr);
+        list.unshift(idStr);
+        localStorage.setItem('gst_local_booking_history', JSON.stringify(list.slice(0, 50)));
+      } catch (e) {}
+    },
+
+    async fetchMyBookings(extraParams = {}) {
+      try {
+        const params = { ...extraParams };
+        if (this.user?.id) params.user_id = this.user.id;
+        const localIds = this.getLocalBookingIds();
+        if (localIds.length > 0) params.ids = localIds.join(',');
+        if (!params.user_id && !params.ids && !params.search) {
+          this.bookingsList = [];
+          return [];
+        }
+        const res = await GST_API.getMyBookings(params);
+        const list = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        this.bookingsList = list;
+        return list;
+      } catch (err) {
+        console.error('Error fetching event bookings:', err);
+        return this.bookingsList || [];
+      }
+    },
+
     async fetchAnalytics(params = {}) {
       try {
         const res = await GST_API.getAnalytics(params);
@@ -753,9 +809,85 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
+    // Stock & Cart Limit Helpers
+    getProductMaxStock(productOrId) {
+      const id = typeof productOrId === 'string' ? productOrId : productOrId?.id;
+      const liveProduct = (id ? this.products.find(p => p.id === id) : null)
+        || (typeof productOrId === 'object' ? productOrId : null);
+
+      if (!liveProduct || liveProduct.is_available === false) {
+        return 0;
+      }
+      if (liveProduct.max_portions !== undefined && liveProduct.max_portions !== null) {
+        return Math.max(0, Math.floor(Number(liveProduct.max_portions) || 0));
+      }
+      return 999;
+    },
+
+    getProductCartQty(productId) {
+      if (!productId) return 0;
+      return this.cart.reduce((sum, item) => {
+        return item.product_id === productId ? sum + (Number(item.quantity) || 0) : sum;
+      }, 0);
+    },
+
+    getRemainingStock(productOrId) {
+      const id = typeof productOrId === 'string' ? productOrId : productOrId?.id;
+      const maxStock = this.getProductMaxStock(productOrId);
+      const inCart = this.getProductCartQty(id);
+      return Math.max(0, maxStock - inCart);
+    },
+
+    canIncrementCartItem(cartItem) {
+      if (!cartItem) return false;
+      const maxStock = this.getProductMaxStock(cartItem.product_id);
+      const currentTotal = this.getProductCartQty(cartItem.product_id);
+      return currentTotal < maxStock;
+    },
+
+    getCartStockViolations() {
+      const totalsByProduct = {};
+      for (const item of this.cart) {
+        const pid = item.product_id;
+        if (!totalsByProduct[pid]) {
+          totalsByProduct[pid] = { product_id: pid, name: item.name, cartQty: 0 };
+        }
+        totalsByProduct[pid].cartQty += Number(item.quantity) || 0;
+      }
+      const violations = [];
+      for (const entry of Object.values(totalsByProduct)) {
+        const maxStock = this.getProductMaxStock(entry.product_id);
+        if (entry.cartQty > maxStock) {
+          violations.push({ ...entry, maxStock });
+        }
+      }
+      return violations;
+    },
+
     // Cart Management
-    addToCart(product, customization = null) {
-      let unitPrice = product.price;
+    addToCart(product, customization = null, qty = 1) {
+      if (!product) return false;
+      const liveProduct = this.products.find(p => p.id === product.id) || product;
+      const maxStock = this.getProductMaxStock(liveProduct);
+      const currentInCart = this.getProductCartQty(liveProduct.id);
+      const addQty = Math.max(1, Math.floor(Number(qty) || 1));
+
+      if (maxStock <= 0) {
+        this.notify(`${liveProduct.name} is currently sold out.`, 'error');
+        return false;
+      }
+
+      if (currentInCart + addQty > maxStock) {
+        const remaining = Math.max(0, maxStock - currentInCart);
+        if (remaining <= 0) {
+          this.notify(`Cannot add more ${liveProduct.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available and you already have ${currentInCart} in your cart.`, 'warning');
+        } else {
+          this.notify(`Only ${remaining} more ${liveProduct.name} available (${maxStock} total in stock).`, 'warning');
+        }
+        return false;
+      }
+
+      let unitPrice = Number(liveProduct.price ?? product.price ?? 0);
       if (customization) {
         if (customization.size === 'Large') unitPrice += 20;
         if (customization.toppings && customization.toppings.length) {
@@ -764,40 +896,52 @@ const useGShotStore = defineStore('gshot', {
       }
 
       const cartItemId = customization
-        ? `${product.id}-${customization.size}-${customization.sugar}-${customization.ice}-${(customization.toppings || []).join(',')}`
-        : product.id;
+        ? `${liveProduct.id}-${customization.size}-${customization.sugar}-${customization.ice}-${(customization.toppings || []).join(',')}`
+        : liveProduct.id;
 
       const existingIndex = this.cart.findIndex(i => i.cartItemId === cartItemId);
 
       if (existingIndex > -1) {
-        this.cart[existingIndex].quantity += 1;
+        this.cart[existingIndex].quantity += addQty;
       } else {
         this.cart.push({
           cartItemId,
-          product_id: product.id,
-          name: product.name,
-          category: product.category,
-          emoji: (product.emoji && !product.emoji.includes('?')) ? product.emoji : '',
-          image: product.image,
+          product_id: liveProduct.id,
+          name: liveProduct.name,
+          category: liveProduct.category,
+          emoji: (liveProduct.emoji && !liveProduct.emoji.includes('?')) ? liveProduct.emoji : '',
+          image: liveProduct.image,
           unit_price: unitPrice,
-          quantity: 1,
+          quantity: addQty,
           customization: customization || { size: 'Regular' },
         });
       }
 
       this.saveCart();
-      this.notify(`Added ${product.name} to cart!`);
+      this.notify(`Added ${liveProduct.name} to cart!`);
+      return true;
     },
 
     updateCartQty(cartItemId, delta) {
       const idx = this.cart.findIndex(i => i.cartItemId === cartItemId);
-      if (idx === -1) return;
+      if (idx === -1) return false;
+
+      if (delta > 0) {
+        const item = this.cart[idx];
+        const maxStock = this.getProductMaxStock(item.product_id);
+        const currentTotal = this.getProductCartQty(item.product_id);
+        if (currentTotal + delta > maxStock) {
+          this.notify(`Cannot add more ${item.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available.`, 'warning');
+          return false;
+        }
+      }
 
       this.cart[idx].quantity += delta;
       if (this.cart[idx].quantity <= 0) {
         this.cart.splice(idx, 1);
       }
       this.saveCart();
+      return true;
     },
 
     removeFromCart(cartItemId) {
@@ -996,6 +1140,7 @@ const useGShotStore = defineStore('gshot', {
           }
         }
         this.fetchUserActiveOrder();
+        this.fetchMyBookings();
       } catch (err) {
         const msg = err.response?.data?.message || err.message || 'Login failed. Please check credentials.';
         this.notify(msg, 'error');
@@ -1078,6 +1223,7 @@ const useGShotStore = defineStore('gshot', {
             this.currentView = 'customer';
           }
           this.fetchUserActiveOrder();
+        this.fetchMyBookings();
         }
         return res.data;
       } catch (err) {
@@ -1134,6 +1280,7 @@ const useGShotStore = defineStore('gshot', {
           }
         }
         this.fetchUserActiveOrder();
+        this.fetchMyBookings();
         return res.data;
       } catch (err) {
         const msg = err.response?.data?.message || err.message || (err.message && err.message.includes('Network') ? 'Backend server unreachable. Please verify server is running on 127.0.0.1:8000.' : 'Google Sign-In failed.');
@@ -1147,6 +1294,7 @@ const useGShotStore = defineStore('gshot', {
       this.user = null;
       this.token = '';
       this.activeOrder = null;
+      this.bookingsList = [];
       localStorage.removeItem('gst_user');
       localStorage.removeItem('gst_auth_token');
       document.cookie = 'gst_role=; path=/; max-age=0; SameSite=Lax';
@@ -1286,6 +1434,12 @@ const useGShotStore = defineStore('gshot', {
 
     openBookingWithPackage(pkg) {
       this.selectedBookingPackage = pkg;
+      this.bookingModalTab = 'form';
+      this.bookingModalOpen = true;
+    },
+
+    openBookingModal(tab = 'form') {
+      this.bookingModalTab = tab === 'history' ? 'history' : 'form';
       this.bookingModalOpen = true;
     },
 

@@ -83,7 +83,7 @@ class Product extends Model
         if ($portions <= 0) {
             return 'soldout';
         }
-        if ($portions <= 3) {
+        if ($portions <= 8) {
             return 'low';
         }
         return 'available';

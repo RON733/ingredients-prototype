@@ -538,6 +538,7 @@ export default {
 
     const reorder = (ord) => {
       if (!ord?.items?.length) return;
+      let addedCount = 0;
       ord.items.forEach(item => {
         const product = store.products.find(p => p.id === item.product_id) || {
           id: item.product_id,
@@ -557,10 +558,14 @@ export default {
             parsedCustomization = item.customization;
           }
         }
-        store.addToCart(product, parsedCustomization);
+        if (store.addToCart(product, parsedCustomization)) {
+          addedCount += 1;
+        }
       });
-      store.cartOpen = true;
-      store.notify(`Re-added ${ord.items.length} item(s) to your cart!`, 'success');
+      if (addedCount > 0) {
+        store.cartOpen = true;
+        store.notify(`Re-added ${addedCount} item(s) to your cart!`, 'success');
+      }
     };
 
     const searchGuestOrders = async () => {

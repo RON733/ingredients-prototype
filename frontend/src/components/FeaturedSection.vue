@@ -58,6 +58,28 @@
                     {{ item.emoji }}
                   </span>
 
+                  <!-- Live Stock Status Badge -->
+                  <div class="absolute bottom-3 right-3 pointer-events-none">
+                    <span 
+                      v-if="!item.is_available || item.max_portions <= 0"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-rose-950/90 text-rose-400 border border-rose-700/60 backdrop-blur-md shadow">
+                      <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                      Sold Out
+                    </span>
+                    <span 
+                      v-else-if="item.max_portions <= 8"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-950/90 text-amber-300 border border-amber-600/60 backdrop-blur-md shadow">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                      Almost Out ({{ item.max_portions }} left)
+                    </span>
+                    <span 
+                      v-else
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-950/90 text-emerald-400 border border-emerald-700/60 backdrop-blur-md shadow">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      In Stock ({{ item.max_portions }} avail)
+                    </span>
+                  </div>
+
                   <!-- Quick Zoom Button -->
                   <button 
                     type="button"
@@ -76,6 +98,20 @@
                 <p class="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
                   {{ item.desc }}
                 </p>
+
+                <!-- Low Stock / Cart Limit Notice -->
+                <p 
+                  v-if="item.is_available && item.max_portions > 0 && item.remainingStock <= 0"
+                  class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg">
+                  <i class="pi pi-shopping-bag text-[10px]"></i>
+                  <span>Max stock in cart ({{ item.max_portions }}/{{ item.max_portions }})</span>
+                </p>
+                <p 
+                  v-else-if="item.is_available && item.max_portions > 0 && item.max_portions <= 8"
+                  class="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  <span>Almost out of stock — only {{ item.max_portions }} left!</span>
+                </p>
               </div>
 
               <!-- Price & CTA -->
@@ -86,8 +122,26 @@
                 </div>
 
                 <button 
+                  v-if="!item.is_available || item.max_portions <= 0"
+                  disabled
+                  type="button"
+                  class="px-4 py-2 rounded-xl text-xs font-bold bg-surface-800 text-gray-500 border border-surface-700 cursor-not-allowed flex items-center gap-1.5">
+                  <i class="pi pi-ban text-[10px]"></i>
+                  <span>Sold Out</span>
+                </button>
+                <button 
+                  v-else-if="item.remainingStock <= 0"
+                  disabled
+                  type="button"
+                  class="px-4 py-2 rounded-xl text-xs font-bold bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center gap-1.5">
+                  <i class="pi pi-check text-[10px]"></i>
+                  <span>Max in Cart</span>
+                </button>
+                <button 
+                  v-else
                   @click="handleOrder(item)"
-                  class="px-4 py-2 rounded-xl text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black font-bold flex items-center gap-1.5 transition-all">
+                  type="button"
+                  class="px-4 py-2 rounded-xl text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
                   <i class="pi pi-plus text-[10px]"></i>
                   <span>{{ item.category === 'Drinks' ? 'Customize' : 'Add' }}</span>
                 </button>
@@ -481,52 +535,72 @@ export default {
   setup() {
     const store = useGShotStore();
 
-    const bestsellers = Vue.computed(() => [
-      {
-        id: 'brown-sugar-milktea',
-        name: 'Brown Sugar Boba Milk',
-        category: 'Drinks',
-        price: 69.00,
-        desc: 'Tiger-striped brown sugar caramel, cold fresh milk, and warm chewy boba pearls.',
-        emoji: '🧋',
-        badge: 'TOP SELLER',
-        rating: '4.9 (1.4k+)',
-        image: './assets/menu-coffee.png',
-      },
-      {
-        id: 'pepperoni-pizza',
-        name: 'Pepperoni Feast Pizza',
-        category: 'Pizzas',
-        price: 169.00,
-        desc: 'Crispy thin crust topped with savory pepperoni cuts and melted mozzarella cheese.',
-        emoji: '🍕',
-        badge: 'FAN FAVORITE',
-        rating: '4.8 (980+)',
-        image: './assets/menu-pizza.png',
-      },
-      {
-        id: 'classic-cheeseburger',
-        name: 'Cheese Burger',
-        category: 'Burgers',
-        price: 89.00,
-        desc: 'Juicy grilled beef patty in buttery toasted brioche with melted golden cheddar.',
-        emoji: '🍔',
-        badge: 'POPULAR',
-        rating: '4.9 (820+)',
-        image: './assets/hero-banner.png',
-      },
-      {
-        id: 'classic-milktea',
-        name: 'Milktea Classic',
-        category: 'Drinks',
-        price: 49.00,
-        desc: 'Timeless brewed black tea infused with creamy milk and chewy tapioca pearls.',
-        emoji: '🧋',
-        badge: 'VALUE CRAVE',
-        rating: '4.9 (2.1k+)',
-        image: './assets/menu-coffee.png',
-      },
-    ]);
+    const bestsellers = Vue.computed(() => {
+      const templates = [
+        {
+          id: 'brown-sugar-milktea',
+          name: 'Brown Sugar Boba Milk',
+          category: 'Drinks',
+          price: 69.00,
+          desc: 'Tiger-striped brown sugar caramel, cold fresh milk, and warm chewy boba pearls.',
+          emoji: '🧋',
+          badge: 'TOP SELLER',
+          rating: '4.9 (1.4k+)',
+          image: './assets/menu-coffee.png',
+        },
+        {
+          id: 'pepperoni-pizza',
+          name: 'Pepperoni Feast Pizza',
+          category: 'Pizzas',
+          price: 169.00,
+          desc: 'Crispy thin crust topped with savory pepperoni cuts and melted mozzarella cheese.',
+          emoji: '🍕',
+          badge: 'FAN FAVORITE',
+          rating: '4.8 (980+)',
+          image: './assets/menu-pizza.png',
+        },
+        {
+          id: 'classic-cheeseburger',
+          name: 'Cheese Burger',
+          category: 'Burgers',
+          price: 89.00,
+          desc: 'Juicy grilled beef patty in buttery toasted brioche with melted golden cheddar.',
+          emoji: '🍔',
+          badge: 'POPULAR',
+          rating: '4.9 (820+)',
+          image: './assets/hero-banner.png',
+        },
+        {
+          id: 'classic-milktea',
+          name: 'Milktea Classic',
+          category: 'Drinks',
+          price: 49.00,
+          desc: 'Timeless brewed black tea infused with creamy milk and chewy tapioca pearls.',
+          emoji: '🧋',
+          badge: 'VALUE CRAVE',
+          rating: '4.9 (2.1k+)',
+          image: './assets/menu-coffee.png',
+        },
+      ];
+
+      return templates.map(tpl => {
+        const matched = store.products.find(p => p.id === tpl.id)
+          || store.products.find(p => (p.name || '').toLowerCase() === tpl.name.toLowerCase());
+        const source = matched || tpl;
+        const maxPortions = matched ? store.getProductMaxStock(matched) : 0;
+        const remainingStock = matched ? store.getRemainingStock(matched) : 0;
+        return {
+          ...tpl,
+          price: matched && matched.price !== undefined ? Number(matched.price) : tpl.price,
+          category: source.category || tpl.category,
+          image: (matched && matched.image) || tpl.image,
+          is_available: matched ? matched.is_available !== false : false,
+          max_portions: maxPortions,
+          remainingStock,
+          productRef: matched || null,
+        };
+      });
+    });
 
     const reviews = [
       {
@@ -548,16 +622,28 @@ export default {
 
     const handleOrder = (item) => {
       // Find matching product in store if available
-      const matched = store.products.find(p => p.id === item.id) || {
+      const matched = item.productRef || store.products.find(p => p.id === item.id) || {
         id: item.id,
         name: item.name,
         category: item.category,
         price: item.price,
         emoji: item.emoji,
         image: item.image,
+        max_portions: item.max_portions ?? 0,
+        is_available: item.is_available !== false,
       };
 
-      if (item.category === 'Drinks') {
+      const maxStock = store.getProductMaxStock(matched);
+      if (maxStock <= 0) {
+        store.notify(`${matched.name} is currently sold out.`, 'error');
+        return;
+      }
+      if (store.getRemainingStock(matched) <= 0) {
+        store.notify(`Cannot add more ${matched.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available and you already have them in your cart.`, 'warning');
+        return;
+      }
+
+      if (matched.category === 'Drinks' || matched.category === 'Coffee') {
         store.selectedProductForCustomize = matched;
         store.customizeModalOpen = true;
       } else {
