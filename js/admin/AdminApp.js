@@ -277,8 +277,8 @@ const AdminApp = {
     const activeRole = ref('staff');
     const authTab = ref('pin'); // 'pin' | 'credentials'
     const authError = ref('');
-    const email = ref('staff@gshotteas.com');
-    const password = ref('password123');
+    const email = ref('');
+    const password = ref('');
     const showPassword = ref(false);
     const credentialsLoading = ref(false);
 
@@ -313,16 +313,16 @@ const AdminApp = {
       }
       if (role === 'staff') {
         authTab.value = 'pin';
-        email.value = 'staff@gshotteas.com';
-        password.value = 'password123';
+        email.value = '';
+        password.value = '';
       } else if (role === 'super_admin') {
         authTab.value = 'credentials';
-        email.value = 'superadmin@gshotteas.com';
-        password.value = 'password123';
+        email.value = '';
+        password.value = '';
       } else {
         authTab.value = 'credentials';
-        email.value = 'admin@gshotteas.com';
-        password.value = 'password123';
+        email.value = '';
+        password.value = '';
       }
     };
 
