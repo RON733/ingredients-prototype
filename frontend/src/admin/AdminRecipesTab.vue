@@ -32,7 +32,7 @@
             <!-- Header: Title, Category, and Available Portions -->
             <div class="flex items-start justify-between gap-3 border-b border-surface-700/60 pb-3">
               <div>
-                <span v-if="product.emoji && !product.emoji.includes('?')" class="text-xl">{{ product.emoji }}</span>
+                <span class="w-7 h-7 rounded-lg bg-surface-800 border border-surface-700 flex items-center justify-center text-amber-400 text-xs shrink-0"><i class="pi pi-box"></i></span>
                 <h3 class="text-base font-black text-white mt-1">{{ product.name }}</h3>
                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ product.category }} • ₱{{ Number(product.price).toFixed(2) }}</span>
               </div>
@@ -78,7 +78,7 @@
                       {{ rec.ingredient ? rec.ingredient.stock : 0 }} in stock
                     </span>
                     <p v-if="rec.ingredient && rec.ingredient.stock < rec.qty" class="text-[9px] text-rose-400">
-                      ⚠️ Depleted bottleneck!
+                      <i class="pi pi-exclamation-triangle mr-1 text-[9px]"></i>Depleted bottleneck!
                     </p>
                   </div>
 

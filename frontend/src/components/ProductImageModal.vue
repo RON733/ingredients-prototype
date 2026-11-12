@@ -14,7 +14,7 @@
         <!-- Modal Top Bar -->
         <div class="px-4 sm:px-6 py-3.5 bg-surface-800/95 border-b border-surface-700/70 flex items-center justify-between gap-3 shrink-0">
           <div class="flex items-center gap-2.5 min-w-0">
-            <span v-if="store.previewProduct.emoji && !store.previewProduct.emoji.includes('?')" class="text-xl sm:text-2xl drop-shadow select-none shrink-0">{{ store.previewProduct.emoji }}</span>
+            <span class="w-8 h-8 rounded-xl bg-surface-700/80 border border-surface-600/50 flex items-center justify-center text-amber-400 text-sm shrink-0"><i class="pi pi-image"></i></span>
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="text-base sm:text-lg font-black text-white truncate">{{ store.previewProduct.name }}</h3>
@@ -80,7 +80,7 @@
               @click="close"
               class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-surface-700/80 hover:bg-surface-600 text-gray-300 hover:text-white flex items-center justify-center text-xs font-bold transition-all cursor-pointer"
               title="Close (Esc)">
-              ✕
+              <i class="pi pi-times text-xs"></i>
             </button>
           </div>
         </div>

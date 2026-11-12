@@ -4,8 +4,8 @@
       <!-- Top Driver Profile & Operational Bar -->
       <div class="bg-surface-900 border border-surface-800 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-lg shrink-0">
-            🛵
+          <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-lg text-amber-400 shrink-0">
+            <i class="pi pi-car"></i>
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
@@ -62,7 +62,7 @@
       <!-- Case 1: Unavailable Request Pending Acceptance Notice Banner -->
       <div v-if="hasPendingNotice" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
-          <span class="text-2xl">⏳</span>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 text-lg shrink-0"><i class="pi pi-clock"></i></div>
           <div>
             <p class="font-black text-sm text-white">Unavailable Notice Pending Staff Acceptance</p>
             <p class="text-[11px] text-amber-300/90 mt-0.5">
@@ -85,7 +85,7 @@
             type="button"
             @click="cancelNotice" 
             class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer">
-            ✕ Cancel Request
+            <i class="pi pi-times mr-1 text-[10px]"></i>Cancel Request
           </button>
         </div>
       </div>
@@ -93,7 +93,7 @@
       <!-- Case 2: Accepted & Flagged Unavailable Banner -->
       <div v-else-if="!isAvailable" class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
-          <span class="text-2xl">☕</span>
+          <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300 text-lg shrink-0"><i class="pi pi-pause-circle"></i></div>
           <div>
             <p class="font-black text-sm text-white">Account Flagged Unavailable / On Break</p>
             <p v-if="store.user?.availability_reason" class="text-[11px] text-rose-200 mt-0.5">
@@ -146,7 +146,7 @@
       <!-- COD Remittance Handover Bar / Pending Status -->
       <div v-if="pendingRemittance" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">⏳</div>
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl text-amber-300 shrink-0"><i class="pi pi-clock"></i></div>
           <div>
             <div class="flex items-center gap-2 flex-wrap">
               <p class="font-black text-sm text-white">Remittance Handover Pending Acceptance</p>
@@ -172,14 +172,14 @@
             :disabled="isSubmittingRemittance"
             @click="cancelPendingRemittance(pendingRemittance.id)"
             class="px-3 py-2 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer disabled:opacity-50">
-            ✕ Cancel
+            <i class="pi pi-times mr-1 text-[10px]"></i>Cancel
           </button>
         </div>
       </div>
 
       <div v-else-if="readyToRemitAmount > 0" class="p-4 rounded-2xl bg-surface-900 border border-brand-500/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl shrink-0">💵</div>
+          <div class="w-10 h-10 rounded-2xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl shrink-0"><i class="pi pi-wallet"></i></div>
           <div>
             <p class="font-black text-sm text-white">Ready to Remit COD Cash: <span class="text-brand-400 font-mono">₱{{ Number(readyToRemitAmount).toFixed(2) }}</span></p>
             <p class="text-[11px] text-neutral-400 mt-0.5">
@@ -281,7 +281,7 @@
         
         <!-- Empty State -->
         <div v-if="activeDeliveries.length === 0" class="text-center py-16 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5">
-          <div class="text-4xl mb-3">🛵✨</div>
+          <div class="w-12 h-12 rounded-2xl bg-surface-800 border border-surface-700 text-amber-400 flex items-center justify-center text-2xl mx-auto mb-3"><i class="pi pi-car"></i></div>
           <h3 class="text-base font-bold text-white">No Dispatches Right Now</h3>
           <p class="text-xs text-gray-400 mt-1">When kitchen staff dispatches a delivery to you, it will appear here immediately.</p>
           <button 
@@ -578,14 +578,14 @@
 
         <!-- Empty State Case 1: Driver has 0 completed deliveries ever -->
         <div v-if="completedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-2">
-          <div class="text-4xl mb-2">📋</div>
+          <div class="w-12 h-12 rounded-2xl bg-surface-800 border border-surface-700 text-gray-400 flex items-center justify-center text-2xl mx-auto mb-2"><i class="pi pi-list"></i></div>
           <h3 class="text-base font-bold text-white">No Deliveries Completed Yet</h3>
           <p class="text-xs text-gray-400">When you complete dispatches, your delivery history and remittance details will show up here.</p>
         </div>
 
         <!-- Empty State Case 2: Deliveries exist, but none on selected date -->
         <div v-else-if="filteredCompletedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-3">
-          <div class="text-4xl mb-1">📅</div>
+          <div class="w-12 h-12 rounded-2xl bg-surface-800 border border-surface-700 text-gray-400 flex items-center justify-center text-2xl mx-auto mb-1"><i class="pi pi-calendar"></i></div>
           <h3 class="text-base font-bold text-white">No Deliveries on {{ formatFilterDisplayDate(historyFilterDate) }}</h3>
           <p class="text-xs text-gray-400 max-w-md mx-auto">
             You do not have any deliveries recorded on this date. You have {{ completedDeliveries.length }} completed {{ completedDeliveries.length === 1 ? 'delivery' : 'deliveries' }} in total history.
@@ -640,7 +640,7 @@
                 :class="order.remitted_at
                   ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
                   : (order.remittance_id ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-rose-500/15 text-rose-300 border-rose-500/30')">
-                {{ order.remitted_at ? '✓ Remitted' : (order.remittance_id ? '⏳ Pending Accept' : 'Unremitted') }}
+                {{ order.remitted_at ? 'Remitted' : (order.remittance_id ? 'Pending Accept' : 'Unremitted') }}
               </span>
             </div>
           </div>
@@ -719,7 +719,7 @@
 
         <!-- Empty Remittance History -->
         <div v-if="filteredRemittanceHistory.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-2">
-          <div class="text-4xl mb-2">🧾</div>
+          <div class="w-12 h-12 rounded-2xl bg-surface-800 border border-surface-700 text-gray-400 flex items-center justify-center text-2xl mx-auto mb-2"><i class="pi pi-receipt"></i></div>
           <h3 class="text-base font-bold text-white">No Remittance History Yet</h3>
           <p class="text-xs text-gray-400">When you hand over COD cash to the store, your remittance records and approvals will appear here.</p>
         </div>
@@ -809,15 +809,15 @@
         <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-2xl p-3.5 sm:p-5 shadow-2xl space-y-4 relative overflow-hidden text-xs max-h-[90vh] flex flex-col">
           <div class="flex items-center justify-between pb-3 border-b border-surface-800 shrink-0">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
-                💵
+              <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl shrink-0">
+                <i class="pi pi-wallet"></i>
               </div>
               <div>
                 <h3 class="text-base font-black text-white">Hand Over COD Remittance</h3>
                 <p class="text-xs text-gray-400">Submit cash handover for staff or admin acceptance</p>
               </div>
             </div>
-            <button type="button" @click="showRemitModal = false" class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs cursor-pointer">✕</button>
+            <button type="button" @click="showRemitModal = false" class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs cursor-pointer" aria-label="Close"><i class="pi pi-times text-xs"></i></button>
           </div>
 
           <div class="space-y-4 overflow-y-auto pr-1">
@@ -875,7 +875,7 @@
               @click="submitRemittanceHandover"
               class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 disabled:opacity-50 text-neutral-950 text-xs font-black transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
               <i v-if="isSubmittingRemittance" class="pi pi-spin pi-spinner text-xs"></i>
-              <span>💵 Confirm & Hand Over Remittance</span>
+              <i class="pi pi-check text-xs"></i><span>Confirm & Hand Over Remittance</span>
             </button>
           </div>
         </div>
@@ -895,8 +895,8 @@
           <!-- Header -->
           <div class="flex items-center justify-between pb-3 border-b border-surface-800 relative z-10">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-xl">
-                🛵
+              <div class="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center text-xl shrink-0">
+                <i class="pi pi-car"></i>
               </div>
               <div>
                 <h3 class="text-base font-black text-white">Flag Account Unavailable</h3>
@@ -907,7 +907,7 @@
               type="button"
               @click="showUnavailableModal = false" 
               class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
-              ✕
+              <i class="pi pi-times text-xs"></i>
             </button>
           </div>
 
@@ -935,9 +935,9 @@
                   :key="chip.label"
                   type="button"
                   @click="selectReasonChip(chip.text)"
-                  class="px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer"
+                  class="px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer inline-flex items-center gap-1.5"
                   :class="selectedChip === chip.text ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm' : 'bg-surface-800 text-gray-300 border-surface-700 hover:border-gray-500'">
-                  {{ chip.label }}
+                  <i class="pi text-[11px]" :class="chip.icon"></i><span>{{ chip.label }}</span>
                 </button>
               </div>
             </div>
@@ -1051,8 +1051,8 @@
         
         <div class="w-full max-w-md bg-surface-900 border border-surface-750 rounded-2xl p-3.5 sm:p-5 shadow-2xl space-y-4 relative overflow-hidden text-xs">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl">
-              🛵
+            <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0">
+              <i class="pi pi-car"></i>
             </div>
             <div>
               <h3 class="text-base font-black text-white">Return to Active Duty</h3>
@@ -1086,7 +1086,7 @@
               @click="confirmReturnOnline"
               class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
               <i v-if="isSubmittingNotice" class="pi pi-spin pi-spinner text-xs"></i>
-              <span>✓ Confirm & Go Online</span>
+              <i class="pi pi-check text-xs"></i><span>Confirm & Go Online</span>
             </button>
           </div>
         </div>
@@ -1103,7 +1103,7 @@
             type="button" 
             @click="lightboxImage = null"
             class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-surface-800 text-white font-bold flex items-center justify-center shadow-lg border border-surface-600 hover:bg-surface-700 cursor-pointer">
-            ✕
+            <i class="pi pi-times text-xs"></i>
           </button>
         </div>
       </div>
@@ -1585,9 +1585,9 @@ export default {
 
         const appName = options.openNav === 'google_maps' ? 'Google Maps' : options.openNav === 'waze' ? 'Waze' : null;
         if (appName) {
-          store.notify(`🔔 Customer alerted that you're on the way! Launching ${appName}...`, 'success');
+          store.notify(`Customer alerted that you're on the way! Launching ${appName}...`, 'success');
         } else {
-          store.notify('🔔 Customer alerted: Rider is on the way!', 'success');
+          store.notify('Customer alerted: Rider is on the way!', 'success');
         }
       } catch (err) {
         console.warn('Failed to notify customer on the way:', err);
@@ -1620,12 +1620,12 @@ export default {
     const currentProofImage = Vue.computed(() => store.user?.availability_proof_image || null);
 
     const reasonChips = [
-      { label: '🥪 Lunch Break', text: 'Taking a lunch / meal break' },
-      { label: '⛽ Gas Refuel', text: 'Refueling motorcycle at gas station' },
-      { label: '🔧 Flat Tire / Repair', text: 'Flat tire / motorcycle mechanical trouble, at repair shop' },
-      { label: '🌧️ Heavy Rain', text: 'Waiting out severe weather / heavy rain delay' },
-      { label: '🚨 Emergency', text: 'Urgent personal / family emergency' },
-      { label: '🛑 Shift End', text: 'Finished delivery shift / going off-duty' },
+      { label: 'Lunch Break', icon: 'pi-clock', text: 'Taking a lunch / meal break' },
+      { label: 'Gas Refuel', icon: 'pi-bolt', text: 'Refueling motorcycle at gas station' },
+      { label: 'Flat Tire / Repair', icon: 'pi-wrench', text: 'Flat tire / motorcycle mechanical trouble, at repair shop' },
+      { label: 'Heavy Rain', icon: 'pi-cloud', text: 'Waiting out severe weather / heavy rain delay' },
+      { label: 'Emergency', icon: 'pi-exclamation-triangle', text: 'Urgent personal / family emergency' },
+      { label: 'Shift End', icon: 'pi-ban', text: 'Finished delivery shift / going off-duty' },
     ];
 
     const selectReasonChip = (text) => {

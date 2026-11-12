@@ -39,7 +39,7 @@
 
       <!-- Empty State for customers if no announcements exist -->
       <div v-if="visibleAnnouncements.length === 0 && store.isStaffOrAdmin" class="p-8 rounded-3xl bg-surface-900/60 border border-surface-800 text-center">
-        <div class="w-12 h-12 rounded-2xl bg-surface-800 flex items-center justify-center text-xl text-gray-400 mx-auto mb-3">📢</div>
+        <div class="w-12 h-12 rounded-2xl bg-surface-800 flex items-center justify-center text-xl text-gray-400 mx-auto mb-3"><i class="pi pi-megaphone"></i></div>
         <h3 class="text-sm font-bold text-white">No active announcements visible to customers</h3>
         <p class="text-xs text-gray-500 mt-1">Click the button above to publish promos, new drink launches, or event advisories.</p>
       </div>
@@ -156,7 +156,7 @@
 
             <!-- Background Decorative Watermark (Fills the space beautifully without an image) -->
             <div class="absolute -right-3 -bottom-4 text-7xl sm:text-8xl opacity-[0.06] group-hover:opacity-[0.10] text-brand-400 pointer-events-none select-none font-black transition-opacity duration-300">
-              📢
+              <i class="pi pi-megaphone"></i>
             </div>
 
             <div class="relative z-10 pl-2">

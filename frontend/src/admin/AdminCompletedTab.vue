@@ -65,7 +65,7 @@
                 <span>Fulfillment & Payment:</span>
                 <span class="text-white font-bold">
                   {{ order.order_type }} • {{ order.payment_method }}
-                  <span v-if="order.driver" class="text-sky-300 ml-1.5 font-semibold">🛵 {{ order.driver.name }}</span>
+                  <span v-if="order.driver" class="text-sky-300 ml-1.5 font-semibold inline-flex items-center gap-1"><i class="pi pi-car text-[10px]"></i> {{ order.driver.name }}</span>
                 </span>
               </div>
 
@@ -82,7 +82,7 @@
 
       <!-- Empty State -->
       <div v-else class="text-center py-20 bg-surface-800/40 rounded-2xl border border-surface-700/50">
-        <div class="text-4xl mb-3">✅</div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-2xl mx-auto mb-3"><i class="pi pi-check-circle"></i></div>
         <p class="text-base font-bold text-white">No completed orders yet</p>
         <p class="text-xs text-gray-500 mt-1">Orders marked as completed in the kitchen will be preserved here.</p>
       </div>

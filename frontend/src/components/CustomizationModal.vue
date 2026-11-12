@@ -33,7 +33,7 @@
             @click.stop="close"
             class="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-900/80 hover:bg-surface-700 text-gray-300 hover:text-white flex items-center justify-center border border-surface-700 z-10"
             title="Close">
-            ✕
+            <i class="pi pi-times text-xs"></i>
           </button>
 
           <div class="relative z-10 pointer-events-none">

@@ -50,7 +50,7 @@
           <div class="flex items-center gap-3.5">
             <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-yellow-400 font-bold text-lg shrink-0">
               <div class="w-full h-full bg-surface-900 rounded-[14px] flex items-center justify-center text-brand-400 font-black text-lg">
-                👑
+                <i class="pi pi-crown"></i>
               </div>
             </div>
             <div>

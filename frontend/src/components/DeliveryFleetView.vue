@@ -76,7 +76,7 @@
       v-if="pendingRemittances.length > 0"
       class="p-4 rounded-2xl bg-emerald-950/35 border border-emerald-500/40 text-emerald-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
       <div class="flex items-center gap-3">
-        <span class="text-2xl shrink-0">💵</span>
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 flex items-center justify-center text-lg shrink-0"><i class="pi pi-wallet"></i></div>
         <div>
           <p class="font-black text-sm text-white">
             {{ pendingRemittances.length }} COD Remittance Handover{{ pendingRemittances.length > 1 ? 's' : '' }} Pending Acceptance
@@ -458,7 +458,7 @@
               Accept Remittance
             </button>
             <span v-else class="text-[10px] font-semibold" :class="Number(rider.unremitted_cash || 0) > 0 ? 'text-neutral-400' : 'text-emerald-400'">
-              {{ Number(rider.unremitted_cash || 0) > 0 ? 'Not handed over yet' : 'Settled ✓' }}
+              {{ Number(rider.unremitted_cash || 0) > 0 ? 'Not handed over yet' : 'Settled' }}
             </span>
           </div>
 

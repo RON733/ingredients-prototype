@@ -128,19 +128,19 @@
                   type="button" 
                   @click="form.image_url = '/assets/menu-coffee.png'"
                   class="px-2.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 border border-surface-700 text-gray-300 text-xs font-medium">
-                  ☕ Drinks Banner
+                  <i class="pi pi-star mr-1.5 text-amber-400 text-[11px]"></i>Drinks Banner
                 </button>
                 <button 
                   type="button" 
                   @click="form.image_url = '/assets/hero-banner.png'"
                   class="px-2.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 border border-surface-700 text-gray-300 text-xs font-medium">
-                  🍔 Food Banner
+                  <i class="pi pi-shopping-bag mr-1.5 text-amber-400 text-[11px]"></i>Food Banner
                 </button>
                 <button 
                   type="button" 
                   @click="form.image_url = '/assets/menu-pizza.png'"
                   class="px-2.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 border border-surface-700 text-gray-300 text-xs font-medium">
-                  🍕 Pizza Banner
+                  <i class="pi pi-th-large mr-1.5 text-amber-400 text-[11px]"></i>Pizza Banner
                 </button>
 
                 <!-- Remove Photo Button -->
@@ -200,7 +200,7 @@
                 @click="form.is_active = !form.is_active"
                 class="px-3 py-1.5 rounded-xl text-xs font-black transition-all border"
                 :class="form.is_active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-surface-800 text-gray-400 border-surface-700'">
-                {{ form.is_active ? '🟢 Published' : '⚪ Draft' }}
+                <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" :class="form.is_active ? 'bg-emerald-400' : 'bg-gray-400'"></span>{{ form.is_active ? 'Published' : 'Draft' }}</span>
               </button>
             </div>
 
@@ -258,7 +258,7 @@
                   v-else
                   class="rounded-2xl bg-surface-900 border border-surface-800 p-4 relative overflow-hidden flex flex-col justify-between">
                   <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-yellow-400"></div>
-                  <div class="absolute -right-2 -bottom-3 text-6xl opacity-10 text-brand-400 pointer-events-none select-none font-black">📢</div>
+                  <div class="absolute -right-2 -bottom-3 text-6xl opacity-10 text-brand-400 pointer-events-none select-none"><i class="pi pi-megaphone"></i></div>
                   <div class="relative z-10 pl-1.5">
                     <div class="flex items-center justify-between mb-2">
                       <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider" :class="getBadgeClass(form.badge_color)">
@@ -286,7 +286,7 @@
               </div>
 
               <div class="p-3 rounded-xl bg-surface-900/60 border border-surface-800/80 text-[11px] text-gray-400 leading-relaxed">
-                <span class="font-bold text-gray-300">💡 Smart Responsiveness:</span> When you add a photo, the card uses a split media layout. When photo is left empty, it automatically renders as a rich typographic bulletin.
+                <span class="font-bold text-gray-300 inline-flex items-center gap-1"><i class="pi pi-lightbulb text-amber-400 text-[11px]"></i> Smart Responsiveness:</span> When you add a photo, the card uses a split media layout. When photo is left empty, it automatically renders as a rich typographic bulletin.
               </div>
             </div>
           </div>

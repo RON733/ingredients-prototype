@@ -19,7 +19,7 @@
             <span class="text-brand-400">• {{ store.activeOrder.status }}</span>
           </p>
           <p class="text-[10px] font-medium" :class="store.activeOrder?.on_the_way_notified_at && store.activeOrder?.status === 'Out for Delivery' ? 'text-amber-300 font-bold animate-pulse' : 'text-gray-400'">
-            {{ store.activeOrder?.on_the_way_notified_at && store.activeOrder?.status === 'Out for Delivery' ? '🛵 Rider is heading to your doorstep! Tap to track' : 'Click to track fulfillment in real-time' }}
+            {{ store.activeOrder?.on_the_way_notified_at && store.activeOrder?.status === 'Out for Delivery' ? 'Rider is heading to your doorstep! Tap to track' : 'Click to track fulfillment in real-time' }}
           </p>
         </div>
 

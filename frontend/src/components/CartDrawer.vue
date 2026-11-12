@@ -27,7 +27,7 @@
           <button 
             @click="store.cartOpen = false"
             class="w-9 h-9 rounded-full bg-surface-800 hover:bg-surface-700 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
-            ✕
+            <i class="pi pi-times text-xs"></i>
           </button>
         </div>
 
@@ -43,7 +43,7 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-4">
           <div v-if="store.cart.length === 0" class="h-full flex flex-col items-center justify-center text-center py-12">
             <div class="w-20 h-20 rounded-full bg-surface-800 flex items-center justify-center text-3xl text-gray-600 mb-4">
-              🛒
+              <i class="pi pi-shopping-cart"></i>
             </div>
             <p class="text-base font-bold text-gray-300">Your cart is empty</p>
             <p class="text-xs text-gray-500 mt-1 max-w-[200px]">Browse our delicious milk teas and comfort food to add items.</p>
@@ -61,7 +61,7 @@
             
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
-                <span v-if="item.emoji && !item.emoji.includes('?')" class="text-lg">{{ item.emoji }}</span>
+                <span class="w-6 h-6 rounded-lg bg-surface-700/70 flex items-center justify-center text-amber-400 text-[11px] shrink-0"><i class="pi pi-shopping-bag"></i></span>
                 <h4 class="text-sm font-bold text-white truncate">{{ item.name }}</h4>
               </div>
               

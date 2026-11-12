@@ -478,7 +478,7 @@
             <h3 class="text-lg font-black text-white">
               {{ isEditing ? 'Edit Ingredient' : 'Add Raw Ingredient' }}
             </h3>
-            <button @click="modalOpen = false" class="text-gray-400 hover:text-white">✕</button>
+            <button @click="modalOpen = false" class="text-gray-400 hover:text-white p-1 flex items-center justify-center cursor-pointer" aria-label="Close"><i class="pi pi-times text-sm"></i></button>
           </div>
 
           <div class="space-y-3 text-xs">

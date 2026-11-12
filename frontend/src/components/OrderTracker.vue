@@ -62,7 +62,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-surface-800">
             <div class="flex items-center gap-3.5">
               <div class="w-12 h-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-300 flex items-center justify-center text-2xl shadow-inner shrink-0">
-                🛵
+                <i class="pi pi-car"></i>
               </div>
               <div>
                 <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
@@ -95,9 +95,9 @@
               ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
               : 'bg-surface-800/80 border-surface-700 text-gray-300'">
             <div class="flex items-center gap-3">
-              <span class="text-2xl shrink-0">
-                {{ order.status === 'Out for Delivery' ? '🚀' : order.status === 'Preparing' ? '🧋' : order.status === 'Completed' ? '🎉' : '⏳' }}
-              </span>
+              <div class="w-10 h-10 rounded-xl bg-surface-900/70 border border-surface-700/60 flex items-center justify-center text-lg shrink-0">
+                <i class="pi" :class="order.status === 'Out for Delivery' ? 'pi-truck text-emerald-400' : order.status === 'Preparing' ? 'pi-sparkles text-amber-400' : order.status === 'Completed' ? 'pi-check-circle text-emerald-400' : 'pi-clock text-gray-300'"></i>
+              </div>
               <div class="min-w-0 flex-1">
                 <p class="font-bold text-sm text-white">{{ currentDeliveryStateTitle }}</p>
                 <p class="text-xs text-gray-300 mt-0.5">{{ currentDeliveryStateDesc }}</p>
@@ -111,7 +111,7 @@
             <div class="flex items-center justify-between gap-3">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-2xl bg-amber-400/25 border border-amber-400/40 text-amber-300 flex items-center justify-center text-xl shrink-0 shadow-inner animate-pulse">
-                  🛵
+                  <i class="pi pi-car"></i>
                 </div>
                 <div>
                   <div class="flex items-center gap-2">
@@ -359,7 +359,7 @@
 
       <!-- No Active Order State -->
       <div v-else class="text-center py-20 bg-surface-800/50 rounded-3xl border border-surface-700 p-8">
-        <div class="text-4xl mb-4">📦</div>
+        <div class="w-14 h-14 rounded-2xl bg-surface-800 border border-surface-700 text-gray-400 flex items-center justify-center text-2xl mx-auto mb-4"><i class="pi pi-box"></i></div>
         <h3 class="text-lg font-bold text-white">No Active Order Selected</h3>
         <p class="text-xs text-gray-400 mt-1">Place an order or check your order history to track progress.</p>
         <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
@@ -843,10 +843,10 @@ export default {
             hasChimedArrival = true;
             playArrivalChime();
           }
-          riderProximityStatus.value = '🎉 Rider has arrived right at your doorstep/gate!';
+          riderProximityStatus.value = 'Rider has arrived right at your doorstep/gate!';
         } else if (remainingDist <= 350) {
           isRiderArrivedNear.value = false;
-          riderProximityStatus.value = '🛵 Rider is approaching your street! Please prepare.';
+          riderProximityStatus.value = 'Rider is approaching your street! Please prepare.';
         } else {
           isRiderArrivedNear.value = false;
           riderProximityStatus.value = `Rider is on the road heading towards your address (${heading})`;
@@ -915,7 +915,7 @@ export default {
           icon: getDestinationIcon(),
           draggable: false
         }).addTo(trackerMap)
-          .bindPopup(`<b>📍 Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}<br><span class="text-[10px] text-gray-400">Tap "Fine-tune My Pin" to adjust gate</span>`);
+          .bindPopup(`<b>Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}<br><span class="text-[10px] text-gray-400">Tap "Fine-tune My Pin" to adjust gate</span>`);
 
         // Handle customer pin dragging during adjustment mode
         customerMarker.on('dragend', (e) => {
@@ -941,7 +941,7 @@ export default {
         const initialBearing = calcBearing(riderLat, riderLng, custLat, custLng);
         riderMarker = L.marker([riderLat, riderLng], { icon: getRiderIcon(initialBearing) })
           .addTo(trackerMap)
-          .bindPopup(`<b>🛵 G Shot Teas Delivery Rider</b><br>${order.value.status === 'Out for Delivery' ? 'En route to your doorstep!' : 'Awaiting dispatch'}`);
+          .bindPopup(`<b>G Shot Teas Delivery Rider</b><br>${order.value.status === 'Out for Delivery' ? 'En route to your doorstep!' : 'Awaiting dispatch'}`);
 
         // 4. Grab Green Route Line with White Contrast Casing
         routeLineCasing = L.polyline(roadPoints, {
@@ -1006,7 +1006,7 @@ export default {
       isAdjustingPin.value = true;
       if (customerMarker) {
         customerMarker.dragging.enable();
-        customerMarker.bindPopup("<b>📍 Pin Adjustment Active</b><br>Drag this pin or tap map to place your exact gate.").openPopup();
+        customerMarker.bindPopup("<b>Pin Adjustment Active</b><br>Drag this pin or tap map to place your exact gate.").openPopup();
       }
       store.notify('Pin adjustment active! Drag red pin or tap map to set exact gate.', 'info');
     };
@@ -1023,9 +1023,9 @@ export default {
         isAdjustingPin.value = false;
         if (customerMarker) {
           customerMarker.dragging.disable();
-          customerMarker.bindPopup(`<b>📍 Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}`);
+          customerMarker.bindPopup(`<b>Delivery Destination</b><br>${order.value.delivery_address || 'Santa Rosa, Laguna'}`);
         }
-        store.notify('✓ Delivery pin updated! Road route recalculated to your gate.', 'success');
+        store.notify('Delivery pin updated! Road route recalculated to your gate.', 'success');
         initOrUpdateMap();
       } catch (err) {
         store.notify('Failed to save updated pin location.', 'error');
@@ -1135,7 +1135,7 @@ export default {
             if (e.driver_name) order.value.driver_name = e.driver_name;
             if (e.driver_phone) order.value.driver_phone = e.driver_phone;
             playArrivalChime();
-            store.notify('🛵 ' + (e.message || 'Rider is now on the way to your doorstep!'), 'success');
+            store.notify(e.message || 'Rider is now on the way to your doorstep!', 'success');
             store.refreshActiveOrder(order.value.id);
           }
         })

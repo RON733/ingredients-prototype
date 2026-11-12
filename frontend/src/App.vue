@@ -195,7 +195,7 @@
                 <i class="pi pi-image text-amber-400"></i> Official Service Flyer Preview
               </span>
               <button @click="store.closeFlyer()" class="w-8 h-8 rounded-full bg-surface-700 text-gray-300 hover:text-white flex items-center justify-center text-xs">
-                ✕
+                <i class="pi pi-times text-xs"></i>
               </button>
             </div>
             <div class="p-3 bg-black flex items-center justify-center">

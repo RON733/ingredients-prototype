@@ -219,7 +219,7 @@
             <span class="text-sm font-black text-white">₱{{ formatCurrency(hoveredPoint.sales) }}</span>
             <span class="text-[10px] text-neutral-400">({{ hoveredPoint.orders }} ord{{ hoveredPoint.orders === 1 ? '' : 's' }})</span>
           </div>
-          <button @click="hoveredIndex = null" class="w-5 h-5 rounded-full bg-surface-800 text-neutral-400 hover:text-white flex items-center justify-center text-[10px]">✕</button>
+          <button @click="hoveredIndex = null" class="w-5 h-5 rounded-full bg-surface-800 text-neutral-400 hover:text-white flex items-center justify-center text-[10px]" aria-label="Close"><i class="pi pi-times text-[9px]"></i></button>
         </div>
 
         <!-- Mobile Scroll Hint (when in scroll mode) -->
@@ -379,7 +379,7 @@
             </div>
           </div>
           <div v-else class="text-center py-6 text-emerald-400 text-xs">
-            ✓ All kitchen raw ingredients are above minimum thresholds!
+            <i class="pi pi-check-circle mr-1.5"></i>All kitchen raw ingredients are above minimum thresholds!
           </div>
         </div>
 

@@ -191,7 +191,7 @@
             <div class="mt-3 p-4 rounded-2xl bg-surface-900 border border-surface-700/80 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-300 flex items-center justify-center text-xl shrink-0">
-                  ⏱️
+                  <i class="pi pi-clock"></i>
                 </div>
                 <div>
                   <p class="text-xs font-black text-white uppercase tracking-wider">Estimated Delivery Time</p>
@@ -443,7 +443,7 @@
                 <i class="pi pi-times-circle text-base text-rose-400"></i>
                 <span>Order Placement Rejected by Server</span>
               </div>
-              <button @click="serverErrorMessage = ''" class="text-rose-400 hover:text-white text-xs px-1">✕</button>
+              <button @click="serverErrorMessage = ''" class="text-rose-400 hover:text-white text-xs p-1 flex items-center justify-center" aria-label="Dismiss"><i class="pi pi-times text-[11px]"></i></button>
             </div>
             <p class="text-[11px] leading-relaxed whitespace-pre-line text-rose-200 pl-6">
               {{ serverErrorMessage }}
@@ -551,7 +551,7 @@
             <button 
               @click="dismissPaymongoModal" 
               class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
-              ✕
+              <i class="pi pi-times text-xs"></i>
             </button>
           </div>
 
@@ -834,7 +834,7 @@ export default {
         checkoutMap.setView([chip.lat, chip.lng], 16);
         updatePinLocation(chip.lat, chip.lng, true);
         if (pinMarker) {
-          pinMarker.bindPopup(`<b>📍 ${chip.name}</b><br>Drag red pin to your exact gate/door.`).openPopup();
+          pinMarker.bindPopup(`<b>${chip.name}</b><br>Drag red pin to your exact gate/door.`).openPopup();
         }
       }
       store.notify(`Map centered on ${chip.name}. Drag pin to your gate.`, 'info');
@@ -889,7 +889,7 @@ export default {
         form.delivery_address = item.display_name;
         pinnedAddressPreview.value = item.display_name.split(',')[0];
         if (pinMarker) {
-          pinMarker.bindPopup(`<b>📍 ${item.display_name.split(',')[0]}</b><br>Drag pin to fine-tune exact gate/door.`).openPopup();
+          pinMarker.bindPopup(`<b>${item.display_name.split(',')[0]}</b><br>Drag pin to fine-tune exact gate/door.`).openPopup();
         }
       }
       geoSearchResults.value = [];
@@ -940,7 +940,7 @@ export default {
       form.customer_lng = Number(lng).toFixed(7);
       if (pinMarker) {
         pinMarker.setLatLng([lat, lng]);
-        pinMarker.setPopupContent(`<b>📍 Pinned Delivery Location</b><br>${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}<br><span class="text-[10px] text-gray-400">Drag to adjust exact door/gate</span>`);
+        pinMarker.setPopupContent(`<b>Pinned Delivery Location</b><br>${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}<br><span class="text-[10px] text-gray-400">Drag to adjust exact door/gate</span>`);
       }
       if (doReverseGeocode) {
         const initial = getQuickLocationHint(lat, lng);
@@ -1027,7 +1027,7 @@ export default {
           draggable: true,
         }).addTo(checkoutMap);
 
-        pinMarker.bindPopup("<b>📍 Delivery Pin</b><br>Drag this pin or tap anywhere on the map to set your exact gate/door.").openPopup();
+        pinMarker.bindPopup("<b>Delivery Pin</b><br>Drag this pin or tap anywhere on the map to set your exact gate/door.").openPopup();
 
         // Drag marker event
         pinMarker.on('dragend', (e) => {
@@ -1105,7 +1105,7 @@ export default {
             checkoutMap.setView([lat, lng], 17);
             if (pinMarker) {
               pinMarker.setLatLng([lat, lng]);
-              pinMarker.bindPopup(`<b>📍 Detected Device Location (±${accuracy}m)</b><br>Drag pin or tap map to fine-tune exact gate/door.`).openPopup();
+              pinMarker.bindPopup(`<b>Detected Device Location (±${accuracy}m)</b><br>Drag pin or tap map to fine-tune exact gate/door.`).openPopup();
             }
             if (accuracyCircle) {
               checkoutMap.removeLayer(accuracyCircle);
@@ -1120,7 +1120,7 @@ export default {
             setTimeout(() => { if (checkoutMap) checkoutMap.invalidateSize(); }, 200);
           }
 
-          store.notify(`✅ Location Detected! Accurate within ±${accuracy}m. Your address has been updated.`, 'success');
+          store.notify(`Location Detected! Accurate within ±${accuracy}m. Your address has been updated.`, 'success');
 
           // 4. Refine to full street/subdivision address in the text box
           await reverseGeocode(lat, lng);

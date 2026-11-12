@@ -66,7 +66,7 @@
 
       <!-- Announcements Cards List -->
       <div v-if="filteredAnnouncements.length === 0" class="p-12 rounded-2xl bg-surface-900/40 border border-surface-800 text-center">
-        <div class="w-12 h-12 rounded-2xl bg-surface-800 flex items-center justify-center text-xl text-gray-400 mx-auto mb-3">📢</div>
+        <div class="w-12 h-12 rounded-2xl bg-surface-800 flex items-center justify-center text-xl text-gray-400 mx-auto mb-3"><i class="pi pi-megaphone"></i></div>
         <h3 class="text-sm font-bold text-white">No announcements found in this filter</h3>
         <p class="text-xs text-gray-500 mt-1">Click "Create New Announcement" to announce a store discount or new menu item.</p>
       </div>

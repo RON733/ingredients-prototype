@@ -100,7 +100,7 @@
         class="p-4 rounded-2xl bg-amber-950/50 border border-amber-500/50 text-amber-200 text-xs  space-y-2.5 animate-fade-in">
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2">
-            <span class="text-xl">⚠️</span>
+            <i class="pi pi-exclamation-triangle text-amber-400 text-lg"></i>
             <span class="font-extrabold text-sm text-white">
               {{ pendingRiderNotices.length }} Delivery Rider {{ pendingRiderNotices.length === 1 ? 'Notice' : 'Notices' }} Awaiting Acceptance
             </span>
@@ -116,7 +116,7 @@
             class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-surface-900/80 border border-amber-500/30">
             <div>
               <p class="font-bold text-white text-xs">
-                🛵 {{ notice.driver_name || 'Rider' }}: 
+                <i class="pi pi-car text-sky-400 mr-1 text-[11px]"></i>{{ notice.driver_name || 'Rider' }}: 
                 <span class="text-amber-300 font-medium">"{{ notice.reason }}"</span>
               </p>
               <p class="text-[10px] text-gray-400 mt-0.5">
@@ -414,7 +414,7 @@
                   </p>
                   <div v-if="driver.pending_notice && driver.is_available" class="mt-1 flex flex-wrap items-center gap-2">
                     <span class="text-[10px] text-amber-300 font-bold bg-amber-500/20 px-2 py-0.5 rounded-lg border border-amber-500/30">
-                      ⏳ Notice Pending: "{{ driver.pending_notice.reason }}"
+                      <i class="pi pi-clock mr-1 text-[10px]"></i>Notice Pending: "{{ driver.pending_notice.reason }}"
                     </span>
                     <button 
                       type="button" 

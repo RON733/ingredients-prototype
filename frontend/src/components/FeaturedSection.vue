@@ -5,8 +5,8 @@
         <!-- 1. Bestsellers Showcase -->
         <div>
           <div class="text-center max-w-3xl mx-auto mb-12">
-            <span class="text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
-              🔥 Customer Favorites
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
+              <i class="pi pi-bolt text-amber-400 text-[10px]"></i> Customer Favorites
             </span>
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-3 tracking-tight">
               Santa Rosa's <span class="text-yellow-400">Top Cravings</span>
@@ -54,9 +54,7 @@
                     </span>
                   </div>
 
-                  <span class="absolute bottom-3 left-3 text-3xl drop-shadow-lg pointer-events-none">
-                    {{ item.emoji }}
-                  </span>
+
 
                   <!-- Live Stock Status Badge -->
                   <div class="absolute bottom-3 right-3 pointer-events-none">
@@ -156,8 +154,8 @@
           
 
           <div class="max-w-2xl mb-12">
-            <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">
-              ✨ Fresh Ingredients & Real Recipes
+<span class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 uppercase tracking-widest">
+              <i class="pi pi-sparkles text-[10px]"></i> Fresh Ingredients & Real Recipes
             </span>
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white mt-2">
               Why Santa Rosa Chooses G Shot Teas
@@ -171,7 +169,7 @@
             
             <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
               <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-lg mb-4">
-                🍃
+                <i class="pi pi-verified"></i>
               </div>
               <h3 class="font-bold text-white text-sm mb-1.5">Freshly Steeped Daily</h3>
               <p class="text-xs text-gray-400 leading-relaxed">
@@ -181,7 +179,7 @@
 
             <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
               <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg mb-4">
-                🧋
+                <i class="pi pi-sparkles"></i>
               </div>
               <h3 class="font-bold text-white text-sm mb-1.5">Warm Slow-Cooked Boba</h3>
               <p class="text-xs text-gray-400 leading-relaxed">
@@ -191,7 +189,7 @@
 
             <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
               <div class="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center text-lg mb-4">
-                🍕
+                <i class="pi pi-heart"></i>
               </div>
               <h3 class="font-bold text-white text-sm mb-1.5">100% Real Cheese & Beef</h3>
               <p class="text-xs text-gray-400 leading-relaxed">
@@ -201,7 +199,7 @@
 
             <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
               <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center text-lg mb-4">
-                🛵
+                <i class="pi pi-car"></i>
               </div>
               <h3 class="font-bold text-white text-sm mb-1.5">Fast Santa Rosa Delivery</h3>
               <p class="text-xs text-gray-400 leading-relaxed">
@@ -216,8 +214,8 @@
         <div id="booking-services" class="space-y-8">
           
           <div class="text-center max-w-3xl mx-auto">
-            <span class="text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
-              🎉 Official Booking Services & Mobile Bar
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
+              <i class="pi pi-calendar-plus text-amber-400 text-[10px]"></i> Official Booking Services & Mobile Bar
             </span>
             <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-3 tracking-tight">
               Event Catering & <span class="text-yellow-400">Mobile Bar Packages</span>
@@ -247,7 +245,7 @@
                     class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   />
                   <div v-else class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-surface-900 to-surface-950 text-gray-500 gap-2">
-                    <span class="text-5xl">🎉</span>
+                    <div class="w-14 h-14 rounded-2xl bg-surface-800 border border-surface-700 text-amber-400 flex items-center justify-center text-2xl"><i class="pi pi-calendar"></i></div>
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-400">{{ pkg.name }}</span>
                   </div>
                   <div class="absolute inset-0 bg-gradient-to-t from-surface-900 via-surface-900/20 to-transparent"></div>
@@ -356,8 +354,8 @@
         <!-- 4. Real Customer Reviews & Social Proof -->
         <div>
           <div class="text-center max-w-3xl mx-auto mb-12">
-            <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 uppercase tracking-widest border border-emerald-500/30">
-              ⭐ Verified Reviews
+<span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 uppercase tracking-widest border border-emerald-500/30">
+              <i class="pi pi-star-fill text-[10px]"></i> Verified Reviews
             </span>
             <h2 class="text-3xl sm:text-4xl font-black text-white mt-3">
               Loved by Milk Tea Lovers Across Laguna

@@ -149,7 +149,7 @@
         </div>
 
         <div v-else class="text-center py-20 bg-surface-800/40 rounded-2xl border border-surface-700/50">
-          <div class="text-4xl mb-3">📅</div>
+          <div class="w-12 h-12 rounded-2xl bg-surface-800 text-gray-400 flex items-center justify-center text-2xl mx-auto mb-3"><i class="pi pi-calendar"></i></div>
           <p class="text-base font-bold text-white">No event booking requests</p>
           <p class="text-xs text-gray-500 mt-1">Catering and mobile bar reservations will appear here.</p>
         </div>
@@ -299,7 +299,7 @@
                 Customize package selection name, pricing, flyer picture, and description shown to customers.
               </p>
             </div>
-            <button type="button" @click="packageModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer">✕</button>
+            <button type="button" @click="packageModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer flex items-center justify-center" aria-label="Close"><i class="pi pi-times text-sm"></i></button>
           </div>
 
           <form @submit.prevent="savePackage" class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start text-xs">
@@ -334,7 +334,7 @@
                     v-model="pkgForm.badge"
                     type="text"
                     maxlength="60"
-                    placeholder="e.g. ☕ COFFEE PACKAGE"
+                    placeholder="e.g. COFFEE PACKAGE"
                     class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 focus:border-amber-500 focus:outline-none text-white"
                   />
                 </div>
@@ -540,10 +540,10 @@
                 <div class="space-y-1.5">
                   <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Quick Presets</p>
                   <div class="flex flex-wrap gap-1.5">
-                    <button type="button" @click="pkgForm.image_url = '/assets/booking-coffee-package.jpg'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer">☕ Coffee Flyer</button>
-                    <button type="button" @click="pkgForm.image_url = '/assets/booking-fruity-float.jpg'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer">🍹 Fruity Flyer</button>
-                    <button type="button" @click="pkgForm.image_url = '/assets/menu-coffee.png'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer">🧋 Drinks</button>
-                    <button type="button" @click="pkgForm.image_url = '/assets/hero-banner.png'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer">🍔 Catering</button>
+                    <button type="button" @click="pkgForm.image_url = '/assets/booking-coffee-package.jpg'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer inline-flex items-center gap-1.5"><i class="pi pi-sparkles text-[10px] text-amber-400"></i> Coffee Flyer</button>
+                    <button type="button" @click="pkgForm.image_url = '/assets/booking-fruity-float.jpg'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer inline-flex items-center gap-1.5"><i class="pi pi-sun text-[10px] text-amber-400"></i> Fruity Flyer</button>
+                    <button type="button" @click="pkgForm.image_url = '/assets/menu-coffee.png'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer inline-flex items-center gap-1.5"><i class="pi pi-star text-[10px] text-amber-400"></i> Drinks</button>
+                    <button type="button" @click="pkgForm.image_url = '/assets/hero-banner.png'" class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] cursor-pointer inline-flex items-center gap-1.5"><i class="pi pi-shopping-bag text-[10px] text-amber-400"></i> Catering</button>
                   </div>
                 </div>
 
@@ -591,7 +591,7 @@
               <h3 class="text-lg font-black text-white">Edit Booking #{{ editingBooking?.id }}</h3>
               <p class="text-[11px] text-gray-400">Adjust package selection, price, guest count, schedule, or notes.</p>
             </div>
-            <button type="button" @click="bookingEditModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer">✕</button>
+            <button type="button" @click="bookingEditModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer flex items-center justify-center" aria-label="Close"><i class="pi pi-times text-sm"></i></button>
           </div>
 
           <form @submit.prevent="saveBookingEdit" class="space-y-3.5 text-xs">

@@ -11,7 +11,7 @@
         @click="store.authModalOpen = false"
         class="absolute top-5 right-5 w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
         aria-label="Close modal">
-        ✕
+        <i class="pi pi-times text-xs"></i>
       </button>
 
       <!-- Brand Icon & Header -->

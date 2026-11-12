@@ -810,7 +810,7 @@
           <div class="flex items-start justify-between gap-4 border-b border-surface-800 pb-4 relative z-10 shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-11 h-11 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0">
-                🛵
+                <i class="pi pi-car"></i>
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -899,7 +899,7 @@
                         :class="notice.is_acknowledged 
                           ? (notice.status === 'available' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300') 
                           : 'bg-amber-500/20 text-amber-300 animate-pulse'">
-                        {{ notice.is_acknowledged ? (notice.status === 'available' ? 'Available' : 'Unavailable') : '⏳ Pending Acceptance' }}
+                        {{ notice.is_acknowledged ? (notice.status === 'available' ? 'Available' : 'Unavailable') : 'Pending Acceptance' }}
                       </span>
                     </div>
                     <p class="text-[10px] text-neutral-400 mt-0.5">{{ formatNoticeTime(notice.created_at) }}</p>

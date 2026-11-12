@@ -82,7 +82,7 @@
           <div class="min-w-0">
             <p class="text-xs font-bold text-white truncate">{{ r.name }}</p>
             <p class="text-[10px] text-neutral-400 mt-0.5">
-              <span v-if="r.pending_remittance" class="text-amber-300 font-bold">⏳ Handover Pending</span>
+              <span v-if="r.pending_remittance" class="text-amber-300 font-bold inline-flex items-center gap-1"><i class="pi pi-clock text-[10px]"></i>Handover Pending</span>
               <span v-else-if="r.unremitted_orders_count > 0">{{ r.unremitted_orders_count }} unremitted COD order(s)</span>
               <span v-else class="text-emerald-400">Settled (₱0.00)</span>
             </p>
@@ -112,7 +112,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-amber-500/20">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">
-              💵
+              <i class="pi pi-wallet"></i>
             </div>
             <div>
               <div class="flex items-center gap-2 flex-wrap">
@@ -175,7 +175,7 @@
               :disabled="processingId === rem.id"
               @click="handleReject(rem)"
               class="px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50">
-              ✕ Reject
+              <i class="pi pi-times mr-1 text-[10px]"></i>Reject
             </button>
             <button
               type="button"
@@ -250,7 +250,7 @@
 
       <!-- Empty History -->
       <div v-if="filteredHistory.length === 0" class="bg-surface-900 border border-surface-800 rounded-2xl p-10 text-center space-y-2 ">
-        <div class="text-4xl">🧾</div>
+        <div class="w-12 h-12 rounded-2xl bg-surface-800 text-gray-400 flex items-center justify-center text-2xl mx-auto"><i class="pi pi-receipt"></i></div>
         <h4 class="text-base font-bold text-white">No Remittance Records Found</h4>
         <p class="text-xs text-neutral-400">No rider remittance handovers match the selected filters.</p>
       </div>

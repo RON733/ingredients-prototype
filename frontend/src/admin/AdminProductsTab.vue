@@ -131,12 +131,8 @@
             />
             <div class="absolute inset-0 bg-gradient-to-t from-surface-800 via-transparent"></div>
 
-            <span v-if="product.emoji && !product.emoji.includes('?')" class="absolute top-3 left-3 text-2xl drop-shadow-md">
-              {{ product.emoji }}
-            </span>
-
             <!-- Discount Ribbon / Badge -->
-            <div v-if="isProductDiscounted(product)" class="absolute top-3 left-12 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-neutral-950 text-[10px] font-black uppercase tracking-wider shadow-md border border-amber-400/40">
+            <div v-if="isProductDiscounted(product)" class="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-neutral-950 text-[10px] font-black uppercase tracking-wider shadow-md border border-amber-400/40">
               <i class="pi pi-bolt text-[9px]"></i>
               <span>{{ product.discount_percent }}% OFF</span>
             </div>
@@ -249,7 +245,7 @@
                 <p class="text-xs text-gray-400">Discount a specific product, a category (like all burgers), or the entire menu.</p>
               </div>
             </div>
-            <button @click="discountModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer">✕</button>
+            <button @click="discountModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer flex items-center justify-center" aria-label="Close"><i class="pi pi-times text-sm"></i></button>
           </div>
 
           <!-- Scope Selection Tabs -->
@@ -456,7 +452,7 @@
                     @click="quickRemoveDiscount(item)"
                     class="text-rose-400 hover:text-white p-1 text-[11px]"
                     title="Remove discount for this product">
-                    ✕
+                    <i class="pi pi-times text-[11px]"></i>
                   </button>
                 </div>
               </div>
@@ -503,7 +499,7 @@
               </h3>
               <p class="text-[11px] text-gray-400">Configure details, pricing, and insert a menu preview picture.</p>
             </div>
-            <button type="button" @click="modalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer">✕</button>
+            <button type="button" @click="modalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer flex items-center justify-center" aria-label="Close"><i class="pi pi-times text-sm"></i></button>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
@@ -607,19 +603,19 @@
                     type="button" 
                     @click="setPresetImage('/assets/menu-coffee.png')"
                     class="px-2.5 py-2 rounded-xl bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] font-medium cursor-pointer transition-colors">
-                    ☕ Drinks
+                    <i class="pi pi-star mr-1 text-amber-400 text-[10px]"></i>Drinks
                   </button>
                   <button 
                     type="button" 
                     @click="setPresetImage('/assets/hero-banner.png')"
                     class="px-2.5 py-2 rounded-xl bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] font-medium cursor-pointer transition-colors">
-                    🍔 Food
+                    <i class="pi pi-shopping-bag mr-1 text-amber-400 text-[10px]"></i>Food
                   </button>
                   <button 
                     type="button" 
                     @click="setPresetImage('/assets/menu-pizza.png')"
                     class="px-2.5 py-2 rounded-xl bg-surface-900 hover:bg-surface-700 border border-surface-700 text-gray-300 text-[11px] font-medium cursor-pointer transition-colors">
-                    🍕 Pizza
+                    <i class="pi pi-th-large mr-1 text-amber-400 text-[10px]"></i>Pizza
                   </button>
 
                   <button 

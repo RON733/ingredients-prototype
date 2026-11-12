@@ -9,7 +9,7 @@
         <div class="p-4 sm:p-6 bg-surface-850 border-b border-surface-700 flex items-center justify-between shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold shrink-0">
-              🎉
+              <i class="pi pi-calendar-plus"></i>
             </div>
             <div>
               <h3 class="text-base sm:text-xl font-black text-white">Book Catering or Mobile Bar</h3>
@@ -20,7 +20,7 @@
           <button 
             @click="store.bookingModalOpen = false"
             class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center shrink-0">
-            ✕
+            <i class="pi pi-times text-xs"></i>
           </button>
         </div>
 
@@ -89,8 +89,8 @@
                 </div>
                 <div
                   v-else
-                  class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl shrink-0 bg-surface-900 border border-surface-700 flex items-center justify-center text-base">
-                  🎉
+                  class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl shrink-0 bg-surface-900 border border-surface-700 text-amber-400 flex items-center justify-center text-base">
+                  <i class="pi pi-calendar"></i>
                 </div>
                 <div class="min-w-0">
                   <p class="font-black text-[11px] truncate" :class="selectedPackageId === pkg.id ? getAccentTitleClass(pkg.accent_color) : 'text-gray-300'">{{ pkg.name }}</p>
@@ -355,7 +355,7 @@
           <div class="px-4 sm:px-6 py-3.5 bg-surface-850 border-b border-surface-700 flex items-center justify-between gap-3 shrink-0">
             <div class="flex items-center gap-2.5 min-w-0">
               <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm font-bold shrink-0">
-                🔍
+                <i class="pi pi-search-plus"></i>
               </div>
               <div class="min-w-0">
                 <h3 class="text-sm sm:text-base font-black text-white truncate">{{ enlargedPreview.title }}</h3>
@@ -409,7 +409,7 @@
                 @click="closeEnlargedImage"
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-surface-800 hover:bg-surface-700 text-gray-400 hover:text-white flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
                 title="Close (Esc)">
-                ✕
+                <i class="pi pi-times text-xs"></i>
               </button>
             </div>
           </div>

@@ -79,7 +79,7 @@
           @click="searchQuery = ''"
           type="button"
           class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs p-1 cursor-pointer">
-          ✕
+          <i class="pi pi-times text-[11px]"></i>
         </button>
       </div>
 
@@ -90,8 +90,8 @@
           v-model="sortOrder"
           class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-surface-800 text-gray-300 text-xs sm:text-sm border border-surface-700/80 focus:outline-none focus:border-yellow-400 cursor-pointer">
           <option value="default">Default Order</option>
-          <option value="price_asc">Price: Low to High (₱ ⬆)</option>
-          <option value="price_desc">Price: High to Low (₱ ⬇)</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
           <option value="name_asc">Name: A to Z</option>
         </select>
       </div>
@@ -108,7 +108,7 @@
         :class="selectedCategory === cat.name 
           ? 'bg-yellow-400 text-black border-yellow-400 font-black shadow-lg shadow-yellow-400/25 scale-[1.02]' 
           : 'bg-surface-800 text-gray-300 hover:bg-surface-700 hover:text-white border-surface-700/60'">
-        <span>{{ cat.icon }}</span>
+        <i class="pi text-[11px]" :class="cat.icon"></i>
         <span>{{ cat.name }}</span>
         <span 
           class="text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-0.5"
@@ -617,13 +617,13 @@ export default {
     const store = useGShotStore();
     
     const categoryOptions = [
-      { name: 'All', icon: '🍽️' },
-      { name: 'Drinks', icon: '🧋' },
-      { name: 'Burgers', icon: '🍔' },
-      { name: 'Pizzas', icon: '🍕' },
-      { name: 'RiceMeals', icon: '🍗' },
-      { name: 'Sides', icon: '🍟' },
-      { name: 'Coffee', icon: '☕' },
+      { name: 'All', icon: 'pi-th-large' },
+      { name: 'Drinks', icon: 'pi-sparkles' },
+      { name: 'Burgers', icon: 'pi-shopping-bag' },
+      { name: 'Pizzas', icon: 'pi-circle' },
+      { name: 'RiceMeals', icon: 'pi-box' },
+      { name: 'Sides', icon: 'pi-star' },
+      { name: 'Coffee', icon: 'pi-sun' },
     ];
 
     const priceOptions = [

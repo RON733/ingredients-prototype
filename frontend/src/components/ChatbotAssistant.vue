@@ -19,7 +19,7 @@
         <div class="p-4 bg-surface-800 border-b border-surface-700 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-sm shrink-0">
-              🧋
+              <i class="pi pi-sparkles text-amber-400"></i>
             </div>
             <div>
               <h3 class="text-sm font-bold text-white flex items-center gap-2">
@@ -35,7 +35,7 @@
           <button 
             @click="isOpen = false"
             class="w-7 h-7 rounded-full bg-surface-700 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors">
-            ✕
+            <i class="pi pi-times text-xs"></i>
           </button>
         </div>
 
@@ -164,7 +164,7 @@ export default {
     const messages = Vue.reactive([
       {
         sender: 'bot',
-        text: 'Hello! I am your Gshot Assistant. 🧋\n\nI can think freely and answer questions about our drinks, burgers, pizzas, walk-in orders, our owner **Jefferson Alulod**, or our store at **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**! How can I help you today?',
+        text: 'Hello! I am your Gshot Assistant.\n\nI can think freely and answer questions about our drinks, burgers, pizzas, walk-in orders, our owner **Jefferson Alulod**, or our store at **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**! How can I help you today?',
         ai_powered: true,
       },
     ]);
@@ -214,7 +214,7 @@ export default {
       } catch (err) {
         messages.push({
           sender: 'bot',
-          text: 'Yes! Walk-in orders and online delivery are always welcomed at **G Shot Teas**! 😊\n\nOwner: **Jefferson Alulod**\nAddress: **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**\nHours: Mon–Sat, 9:00 AM – 10:00 PM\nPhone: **0994 612 1933**',
+          text: 'Yes! Walk-in orders and online delivery are always welcomed at **G Shot Teas**!\n\nOwner: **Jefferson Alulod**\nAddress: **Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna**\nHours: Mon–Sat, 9:00 AM – 10:00 PM\nPhone: **0994 612 1933**',
           ai_powered: false
         });
       } finally {
