@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 sm:space-y-6">
+  <div class="space-y-6 sm:space-y-8">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
@@ -97,7 +97,7 @@
     </div>
 
     <!-- Pending Handovers Requiring Staff / Admin Acceptance -->
-    <div v-if="pendingRemittances.length > 0" class="space-y-3">
+    <div v-if="pendingRemittances.length > 0" class="space-y-5 sm:space-y-6">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-amber-400 "></span>
         <h3 class="text-sm font-black text-white uppercase tracking-wider">
@@ -191,7 +191,7 @@
     </div>
 
     <!-- Remittance History Section -->
-    <div class="space-y-4">
+    <div class="space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
           <i class="pi pi-history text-purple-400"></i>

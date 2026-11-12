@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-4 sm:space-y-6">
+<div class="space-y-6 sm:space-y-8">
       
       <!-- Top Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -63,8 +63,8 @@
       </div>
 
       <!-- ================= TAB 1: BOOKING REQUESTS ================= -->
-      <div v-if="activeSubTab === 'requests'" class="space-y-4">
-        <div v-if="bookings.length > 0" class="space-y-4">
+      <div v-if="activeSubTab === 'requests'" class="space-y-6">
+        <div v-if="bookings.length > 0" class="space-y-6">
           <div 
             v-for="b in bookings" 
             :key="b.id"

@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-4 sm:space-y-6 lg:space-y-8">
+<div class="space-y-6 sm:space-y-8">
       
       <!-- Top Header & Filter Controls -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">

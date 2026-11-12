@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-4 sm:space-y-6">
+<div class="space-y-6 sm:space-y-8">
       
       <!-- Top Header & Walk-in Cashier Mode Button -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -144,7 +144,7 @@
       </div>
 
       <!-- Orders List / Cards (Matches Figure 14) -->
-      <div v-if="filteredOrders.length > 0" class="space-y-4">
+      <div v-if="filteredOrders.length > 0" class="space-y-6">
         <div 
           v-for="order in filteredOrders" 
           :key="order.id"

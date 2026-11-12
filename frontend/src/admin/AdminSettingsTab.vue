@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-4 sm:space-y-6">
+<div class="space-y-6 sm:space-y-8">
   <!-- Header -->
   <div class="flex items-center justify-between gap-3 pb-3.5 border-b border-surface-800">
     <div class="flex items-center gap-3">
