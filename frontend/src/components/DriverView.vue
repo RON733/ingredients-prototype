@@ -60,7 +60,7 @@
       </div>
 
       <!-- Case 1: Unavailable Request Pending Acceptance Notice Banner -->
-      <div v-if="hasPendingNotice" class="p-4 rounded-2xl bg-[#0b0b0d] border border-amber-500/30 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+      <div v-if="hasPendingNotice" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 text-lg shrink-0"><i class="pi pi-clock"></i></div>
           <div>
@@ -91,7 +91,7 @@
       </div>
 
       <!-- Case 2: Accepted & Flagged Unavailable Banner -->
-      <div v-else-if="!isAvailable" class="p-4 rounded-2xl bg-[#0b0b0d] border border-rose-500/30 text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+      <div v-else-if="!isAvailable" class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300 text-lg shrink-0"><i class="pi pi-pause-circle"></i></div>
           <div>
@@ -144,7 +144,7 @@
       </div>
 
       <!-- COD Remittance Handover Bar / Pending Status -->
-      <div v-if="pendingRemittance" class="p-4 rounded-2xl bg-[#0b0b0d] border border-amber-500/30 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+      <div v-if="pendingRemittance" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl text-amber-300 shrink-0"><i class="pi pi-clock"></i></div>
           <div>
@@ -402,7 +402,7 @@
                     class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-[11px] font-black transition-all cursor-pointer border shrink-0 flex items-center justify-center gap-1.5 active:scale-95"
                     :class="order.on_the_way_notified_at 
                       ? 'bg-surface-800 hover:bg-surface-700 text-gray-300 border-surface-600' 
-                      : 'bg-white hover:bg-zinc-200 text-zinc-950 border-transparent font-extrabold shadow-md'">
+                      : 'bg-amber-400 hover:bg-amber-300 text-black border-amber-400 font-extrabold shadow-md'">
                     <i :class="isNotifyingOnTheWay[order.id] ? 'pi pi-spin pi-spinner text-xs' : (order.on_the_way_notified_at ? 'pi pi-bell text-xs' : 'pi pi-send text-xs')"></i>
                     <span>{{ isNotifyingOnTheWay[order.id] ? 'Alerting...' : (order.on_the_way_notified_at ? 'Re-alert' : 'Alert: On The Way') }}</span>
                   </button>
@@ -494,7 +494,7 @@
                 @click="historyFilterDate = ''"
                 class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                 :class="historyFilterDate === '' 
-                  ? 'bg-zinc-800 text-white font-semibold border border-white/15' 
+                  ? 'bg-amber-500 text-surface-950 font-black shadow-md shadow-amber-500/20' 
                   : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
                 <span>All Deliveries</span>
                 <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="historyFilterDate === '' ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
@@ -594,7 +594,7 @@
             <button
               type="button"
               @click="historyFilterDate = ''"
-              class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-black text-xs transition-colors shadow-md cursor-pointer inline-flex items-center gap-1.5">
+              class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-surface-950 font-black text-xs transition-colors shadow-md cursor-pointer inline-flex items-center gap-1.5">
               <i class="pi pi-calendar text-xs"></i>
               <span>View All Deliveries ({{ completedDeliveries.length }})</span>
             </button>
@@ -890,7 +890,7 @@
         <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-2xl p-3.5 sm:p-5 sm:p-7 shadow-2xl space-y-5 relative overflow-hidden flex flex-col max-h-[92vh]">
           
           <!-- Ambient Glow -->
-          
+          <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <!-- Header -->
           <div class="flex items-center justify-between pb-3 border-b border-surface-800 relative z-10">

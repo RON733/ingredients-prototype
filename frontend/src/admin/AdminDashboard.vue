@@ -5,7 +5,7 @@
       <div class="lg:hidden sticky top-0 z-40 bg-surface-900 border-b border-surface-800">
         <header class="px-3 py-2.5 flex items-center justify-between gap-2 border-b border-surface-800/80">
           <div class="flex items-center gap-2 cursor-pointer min-w-0" @click="selectTab(store.isAdminOrSuper ? 'analytics' : 'orders')">
-            <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-white/15 flex items-center justify-center font-black text-sm text-white shrink-0">G'</div>
+            <div class="w-8 h-8 rounded-lg bg-surface-800 border border-surface-700 flex items-center justify-center font-black text-sm text-amber-400 shrink-0">G'</div>
             <div class="min-w-0">
               <h1 class="text-xs font-bold text-white leading-none truncate">G SHOT TEAS</h1>
               <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5 truncate">{{ store.user?.role || 'ops' }}</p>
@@ -48,16 +48,16 @@
             v-if="store.isAdminOrSuper"
             @click="selectTab('analytics')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'analytics' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'analytics' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Analytics</span>
           </button>
 
           <button 
             @click="selectTab('orders')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'orders' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'orders' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Orders</span>
-            <span v-if="activeOrdersCount > 0" class="px-1.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-200">
+            <span v-if="activeOrdersCount > 0" class="px-1.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">
               {{ activeOrdersCount }}
             </span>
           </button>
@@ -65,14 +65,14 @@
           <button 
             @click="selectTab('completed')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'completed' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'completed' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Completed</span>
           </button>
 
           <button 
             @click="selectTab('remittances')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'remittances' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'remittances' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Remit</span>
             <span v-if="store.pendingRemittancesCount > 0" class="px-1.5 rounded text-[10px] font-bold bg-rose-500 text-white">
               {{ store.pendingRemittancesCount }}
@@ -82,14 +82,14 @@
           <button 
             @click="selectTab('inventory')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'inventory' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'inventory' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Inventory</span>
           </button>
 
           <button 
             @click="selectTab('products')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'products' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'products' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Menu</span>
           </button>
 
@@ -97,21 +97,21 @@
             v-if="store.isAdminOrSuper"
             @click="selectTab('recipes')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'recipes' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'recipes' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Recipes</span>
           </button>
 
           <button 
             @click="selectTab('bookings')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'bookings' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'bookings' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Bookings</span>
           </button>
 
           <button 
             @click="selectTab('announcements')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'announcements' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'announcements' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Notices</span>
           </button>
 
@@ -119,7 +119,7 @@
             v-if="store.isAdminOrSuper"
             @click="selectTab('users')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'users' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'users' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Users</span>
           </button>
 
@@ -127,7 +127,7 @@
             v-if="store.isSuperAdmin"
             @click="selectTab('audit')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'audit' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'audit' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Audit</span>
           </button>
 
@@ -135,14 +135,14 @@
             v-if="store.isStaffOrAdmin"
             @click="selectTab('settings')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'settings' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
+            :class="store.adminTab === 'settings' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Settings</span>
           </button>
 
           <button 
             @click="store.currentView = 'driver'" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border bg-surface-900 text-gray-300 border-surface-800 hover:text-white cursor-pointer">
-            <i class="pi pi-compass text-[11px] text-zinc-300"></i>
+            <i class="pi pi-compass text-[11px] text-amber-400"></i>
             <span>Fleet</span>
           </button>
         </div>
@@ -157,10 +157,10 @@
           <!-- Brand Logo & Header -->
           <div class="flex items-center justify-between cursor-pointer" @click="selectTab(store.isAdminOrSuper ? 'analytics' : 'orders')">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-zinc-900 border border-white/15 flex items-center justify-center font-black text-base text-white">G'</div>
+              <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center font-black text-base text-amber-300 shadow-sm">G'</div>
               <div>
                 <h1 class="text-base font-extrabold text-white tracking-tight leading-none">G SHOT TEAS</h1>
-                <p class="text-[10px] text-zinc-500 font-medium tracking-wider uppercase mt-1">Management Console</p>
+                <p class="text-[10px] text-amber-400/80 font-semibold tracking-wider uppercase mt-1">Management Console</p>
               </div>
             </div>
 
@@ -173,12 +173,12 @@
           <!-- Current User Profile Pill & PIN Switcher -->
           <div class="p-3 rounded-2xl bg-surface-850/80 border border-surface-750/70">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-zinc-800 text-white border border-white/15 font-bold text-sm flex items-center justify-center shrink-0">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold text-sm flex items-center justify-center shrink-0">
                 {{ (store.user?.name || 'A').charAt(0) }}
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-xs font-bold text-white truncate">{{ store.user?.name || 'Authorized Staff' }}</p>
-                <span class="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-amber-400/80">
                   {{ store.user?.role || 'staff' }}
                 </span>
               </div>
@@ -210,13 +210,13 @@
                 @click="selectTab('orders')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
                 :class="store.adminTab === 'orders' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-list text-sm text-zinc-400"></i>
+                  <i class="pi pi-list text-sm text-amber-400"></i>
                   <span>Active Orders</span>
                 </div>
-                <span v-if="activeOrdersCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-200 border border-white/10">
+                <span v-if="activeOrdersCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   {{ activeOrdersCount }}
                 </span>
               </button>
@@ -226,9 +226,9 @@
                 @click="selectTab('completed')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'completed' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
-                <i class="pi pi-check-circle text-sm text-zinc-400"></i>
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
+                <i class="pi pi-check-circle text-sm text-emerald-400/85"></i>
                 <span>Completed Orders</span>
               </button>
 
@@ -237,10 +237,10 @@
                 @click="selectTab('inventory')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
                 :class="store.adminTab === 'inventory' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-server text-sm text-zinc-400"></i>
+                  <i class="pi pi-server text-sm text-orange-400/85"></i>
                   <span>Kitchen Inventory</span>
                 </div>
                 <span v-if="store.lowStockAlerts.length > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
@@ -253,13 +253,13 @@
                 @click="selectTab('remittances')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
                 :class="store.adminTab === 'remittances' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-wallet text-sm text-zinc-400"></i>
+                  <i class="pi pi-wallet text-sm text-teal-400/85"></i>
                   <span>COD Remittances</span>
                 </div>
-                <span v-if="store.pendingRemittancesCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white ">
+                <span v-if="store.pendingRemittancesCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
                   {{ store.pendingRemittancesCount }}
                 </span>
               </button>
@@ -273,7 +273,7 @@
                   <i class="pi pi-compass text-sm text-emerald-400"></i>
                   <span>Delivery Rider Fleet</span>
                 </div>
-                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">FLEET</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">FLEET</span>
               </button>
             </div>
 
@@ -287,10 +287,10 @@
                 @click="selectTab('analytics')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'analytics' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-chart-line text-sm text-zinc-400"></i>
+                  <i class="pi pi-chart-line text-sm text-sky-400/85"></i>
                   <span>Sales Analytics</span>
                 </div>
               </button>
@@ -300,10 +300,10 @@
                 @click="selectTab('products')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'products' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-box text-sm text-zinc-400"></i>
+                  <i class="pi pi-box text-sm text-amber-400/85"></i>
                   <span>Product Menu</span>
                 </div>
               </button>
@@ -314,10 +314,10 @@
                 @click="selectTab('recipes')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'recipes' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-book text-sm text-zinc-400"></i>
+                  <i class="pi pi-book text-sm text-orange-300/85"></i>
                   <span>Recipes & Portions</span>
                 </div>
               </button>
@@ -327,10 +327,10 @@
                 @click="selectTab('bookings')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'bookings' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-calendar text-sm text-zinc-400"></i>
+                  <i class="pi pi-calendar text-sm text-rose-400/85"></i>
                   <span>Event Bookings</span>
                 </div>
               </button>
@@ -345,13 +345,13 @@
                 @click="selectTab('announcements')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
                 :class="store.adminTab === 'announcements' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-megaphone text-sm text-zinc-400"></i>
+                  <i class="pi pi-megaphone text-sm text-amber-300/85"></i>
                   <span>Announcements</span>
                 </div>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-800 text-zinc-200 border border-white/10">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   {{ store.announcements.length }}
                 </span>
               </button>
@@ -362,10 +362,10 @@
                 @click="selectTab('users')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'users' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-users text-sm text-zinc-400"></i>
+                  <i class="pi pi-users text-sm text-indigo-300/85"></i>
                   <span>User & Roles</span>
                 </div>
               </button>
@@ -376,10 +376,10 @@
                 @click="selectTab('audit')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'audit' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-history text-sm text-zinc-400"></i>
+                  <i class="pi pi-history text-sm text-slate-300/85"></i>
                   <span>Audit Trail</span>
                 </div>
               </button>
@@ -390,10 +390,10 @@
                 @click="selectTab('settings')"
                 class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
                 :class="store.adminTab === 'settings' 
-                  ? 'bg-zinc-800/90 text-white font-semibold border-white/15' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04] border-transparent'">
+                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-cog text-sm text-zinc-400"></i>
+                  <i class="pi pi-cog text-sm text-amber-400/90"></i>
                   <span>Store & Settings</span>
                 </div>
               </button>
@@ -406,7 +406,7 @@
         <div class="pt-4 border-t border-surface-800 space-y-2 text-xs">
           <button 
             @click="handleLockTerminal"
-            class="w-full py-2.5 rounded-xl bg-surface-850 hover:bg-surface-800 text-neutral-300 hover:text-zinc-200 font-semibold flex items-center justify-center gap-2 transition-colors border border-surface-750 cursor-pointer">
+            class="w-full py-2.5 rounded-xl bg-surface-850 hover:bg-surface-800 text-neutral-300 hover:text-amber-300 font-semibold flex items-center justify-center gap-2 transition-colors border border-surface-750 cursor-pointer">
             <i class="pi pi-lock text-xs"></i>
             <span>Lock Terminal</span>
           </button>
@@ -450,7 +450,7 @@
               @click="store.openStaffPinModal()"
               class="px-2.5 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 text-xs text-gray-200 border border-surface-700 flex items-center gap-1.5 cursor-pointer">
               <span class="font-semibold truncate max-w-[90px]">{{ store.user?.name || 'Staff' }}</span>
-              <span class="text-[10px] text-zinc-300 font-mono">PIN</span>
+              <span class="text-[10px] text-amber-400 font-mono">PIN</span>
             </button>
 
             <button 
@@ -484,7 +484,7 @@
               class="ml-auto sm:ml-0 px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border"
               :class="store.isStoreOpen 
                 ? 'bg-surface-800 hover:bg-surface-700 text-rose-300 border-surface-700' 
-                : 'bg-white hover:bg-zinc-200 text-zinc-950 border-transparent'">
+                : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 border-transparent'">
               <i class="text-xs pi" :class="store.isStoreOpen ? 'pi-power-off' : 'pi-check'"></i>
               <span>{{ store.isStoreOpen ? 'Close Store' : 'Open Store' }}</span>
             </button>
@@ -553,7 +553,7 @@
           <button
             type="button"
             @click="reloadActiveTab"
-            class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold inline-flex items-center gap-2 cursor-pointer">
+            class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold inline-flex items-center gap-2 cursor-pointer">
             <i class="pi pi-refresh"></i>
             <span>Reload Tab</span>
           </button>
@@ -577,14 +577,14 @@
           <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-amber-500/15 rounded-full blur-2xl pointer-events-none"></div>
 
           <!-- Lock Icon with pulsating badge -->
-          <div class="relative mx-auto w-20 h-20 rounded-3xl bg-zinc-900 border border-white/15 flex items-center justify-center shadow-inner">
-            <i class="pi pi-lock text-3xl text-zinc-300 "></i>
+          <div class="relative mx-auto w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-inner">
+            <i class="pi pi-lock text-3xl text-amber-400 animate-pulse"></i>
           </div>
 
           <!-- Title & Operator Details -->
           <div class="space-y-1.5">
-            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-zinc-800 text-white border border-white/15">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 "></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
               Terminal Security Locked
             </span>
             <h2 class="text-2xl font-black text-white tracking-tight">Dashboard Is Locked</h2>
@@ -595,14 +595,14 @@
 
           <!-- Locked Operator Card -->
           <div class="p-3.5 rounded-2xl bg-surface-800/80 border border-surface-700/80 flex items-center gap-3 text-left">
-            <div class="w-10 h-10 rounded-xl bg-zinc-800 text-white border border-white/15 font-bold flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold flex items-center justify-center shrink-0">
               {{ (store.lockedUser?.name || store.user?.name || 'U').charAt(0) }}
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-xs font-bold text-white truncate">{{ store.lockedUser?.name || store.user?.name || 'Authorized Operator' }}</p>
               <p class="text-[10px] text-gray-400 truncate">{{ store.lockedUser?.email || store.user?.email }}</p>
             </div>
-            <span class="text-[9px] px-2 py-0.5 rounded font-mono font-bold uppercase bg-zinc-800 text-zinc-200 border border-white/10">
+            <span class="text-[9px] px-2 py-0.5 rounded font-mono font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
               {{ (store.lockedUser?.role || store.user?.role || 'staff').toUpperCase() }}
             </span>
           </div>
@@ -637,7 +637,7 @@
             <button 
               type="submit" 
               :disabled="unlocking || !unlockPassword"
-              class="w-full py-3 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-extrabold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-amber-400/20">
+              class="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 active:bg-amber-500 text-black font-extrabold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-amber-400/20">
               <i class="pi" :class="unlocking ? 'pi-spin pi-spinner' : 'pi-lock-open'"></i>
               <span>{{ unlocking ? 'Verifying Password...' : 'Unlock Terminal' }}</span>
             </button>
@@ -721,7 +721,7 @@
               </div>
 
               <div class="pt-2 border-t border-surface-800/80 flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full" :class="shutdownForm.maintenance_mode ? 'bg-rose-500 ' : 'bg-emerald-400'"></span>
+                <span class="w-2 h-2 rounded-full" :class="shutdownForm.maintenance_mode ? 'bg-rose-500 animate-ping' : 'bg-emerald-400'"></span>
                 <span class="font-extrabold uppercase tracking-wider text-[11px]" :class="shutdownForm.maintenance_mode ? 'text-rose-400' : 'text-emerald-400'">
                   {{ shutdownForm.maintenance_mode ? 'Mode: UNDER MAINTENANCE (SHUTDOWN)' : 'Mode: LIVE & OPERATIONAL' }}
                 </span>
@@ -804,7 +804,7 @@
         <div class="w-full max-w-2xl bg-surface-900 border border-surface-750 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative overflow-hidden flex flex-col max-h-[90vh]">
           
           <!-- Ambient Glow -->
-          
+          <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <!-- Header -->
           <div class="flex items-start justify-between gap-4 border-b border-surface-800 pb-4 relative z-10 shrink-0">
@@ -840,7 +840,7 @@
               type="button" 
               @click="noticesFilter = 'all'"
               class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
-              :class="noticesFilter === 'all' ? 'bg-zinc-800 text-zinc-200 border-amber-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
+              :class="noticesFilter === 'all' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
               All ({{ store.riderNotices.length }})
             </button>
             <button 
@@ -854,7 +854,7 @@
               type="button" 
               @click="noticesFilter = 'unavailable'"
               class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer"
-              :class="noticesFilter === 'unavailable' ? 'bg-zinc-800 text-zinc-200 border-amber-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
+              :class="noticesFilter === 'unavailable' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-surface-800/80 text-neutral-400 border-surface-700/60 hover:text-white'">
               On Break / Offline
             </button>
             <button 
@@ -880,7 +880,7 @@
               class="p-4 rounded-2xl border transition-all space-y-3"
               :class="notice.is_acknowledged 
                 ? 'bg-surface-950/60 border-surface-800 text-neutral-300' 
-                : 'bg-surface-850 border-white/20 text-white'">
+                : 'bg-surface-850 border-amber-500/40 text-white shadow-md'">
               
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div class="flex items-center gap-2.5 min-w-0">
@@ -888,7 +888,7 @@
                     class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0"
                     :class="notice.status === 'available' 
                       ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
-                      : 'bg-amber-500/15 text-zinc-300 border border-amber-500/30'">
+                      : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'">
                     <i class="pi" :class="notice.status === 'available' ? 'pi-check-circle' : 'pi-clock'"></i>
                   </div>
                   <div class="min-w-0">
@@ -898,7 +898,7 @@
                         class="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider"
                         :class="notice.is_acknowledged 
                           ? (notice.status === 'available' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300') 
-                          : 'bg-zinc-800 text-zinc-200 '">
+                          : 'bg-amber-500/20 text-amber-300 animate-pulse'">
                         {{ notice.is_acknowledged ? (notice.status === 'available' ? 'Available' : 'Unavailable') : 'Pending Acceptance' }}
                       </span>
                     </div>
@@ -913,7 +913,7 @@
                     type="button"
                     :disabled="acceptingNoticeId === notice.id"
                     @click="handleAcceptNotice(notice.id)"
-                    class="w-full sm:w-auto px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-black transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                    class="w-full sm:w-auto px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
                     <i :class="acceptingNoticeId === notice.id ? 'pi pi-spin pi-spinner text-xs font-black' : 'pi pi-check text-xs font-black'"></i>
                     <span>{{ acceptingNoticeId === notice.id ? 'Accepting...' : 'Accept Notice' }}</span>
                   </button>
@@ -939,7 +939,7 @@
                   class="group inline-flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-surface-900 hover:bg-surface-800 border border-surface-750 transition-all cursor-pointer">
                   <img :src="notice.proof_image" class="w-10 h-10 object-cover rounded-lg border border-surface-700" alt="Proof" />
                   <div class="text-left">
-                    <span class="text-[11px] font-bold text-zinc-200 group-hover:underline flex items-center gap-1">
+                    <span class="text-[11px] font-bold text-amber-300 group-hover:underline flex items-center gap-1">
                       <i class="pi pi-image text-[10px]"></i> View Proof Photo
                     </span>
                     <span class="text-[9px] text-neutral-400 block">Click to enlarge</span>

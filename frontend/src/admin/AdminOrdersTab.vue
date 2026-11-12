@@ -97,7 +97,7 @@
       <!-- Pending Rider Notice Alert Banner (Alerts Kitchen Staff & Admins) -->
       <div 
         v-if="pendingRiderNotices.length > 0" 
-        class="p-4 rounded-2xl bg-[#0b0b0d] border border-amber-500/50 text-amber-200 text-xs  space-y-2.5 animate-fade-in">
+        class="p-4 rounded-2xl bg-amber-950/50 border border-amber-500/50 text-amber-200 text-xs  space-y-2.5 animate-fade-in">
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <i class="pi pi-exclamation-triangle text-amber-400 text-lg"></i>
@@ -134,7 +134,7 @@
               <button 
                 type="button" 
                 @click="handleAcceptNotice(notice.id)"
-                class="px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-black transition-all shadow-md flex items-center gap-1 cursor-pointer">
+                class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition-all shadow-md flex items-center gap-1 cursor-pointer">
                 <i class="pi pi-check text-xs font-black"></i>
                 <span>Accept Notice</span>
               </button>
@@ -249,7 +249,7 @@
             <button 
               v-else-if="order.status === 'Pending'"
               @click="updateStatus(order, 'Preparing')"
-              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-zinc-200 text-zinc-950 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
               <i class="pi pi-play"></i>
               <span>Start Preparing</span>
             </button>
@@ -419,7 +419,7 @@
                     <button 
                       type="button" 
                       @click.stop="handleAcceptNotice(driver.pending_notice.id)"
-                      class="px-2 py-0.5 rounded-lg bg-white hover:bg-zinc-200 text-zinc-950 text-[10px] font-black cursor-pointer shadow-sm">
+                      class="px-2 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-black cursor-pointer shadow-sm">
                       Accept Notice
                     </button>
                   </div>

@@ -1,5 +1,5 @@
 <template>
-<div class="min-h-screen bg-[#050506] text-zinc-100 flex flex-col font-sans selection:bg-white selection:text-black">
+<div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-amber-400 selection:text-black">
       
       <!-- 1. Authenticated Delivery Rider: Render Dedicated Driver View for actual drivers -->
       <div v-if="isLoggedIn && store.user && store.user.role === 'driver'" class="flex-1 flex flex-col">
@@ -17,74 +17,75 @@
       </div>
 
       <!-- 3. LOGIN PAGE: Always Shown First When Accessing /admin, /staff, /driver, or /superadmin -->
-      <div v-else class="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 relative overflow-hidden ops-dot-bg">
-        <!-- Subtle top monochrome radial highlight -->
-        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.04),transparent_55%)]"></div>
+      <div v-else class="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 relative overflow-hidden">
+        <!-- Soft warm ambient background glow -->
+        <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-600/8 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-orange-700/8 blur-3xl"></div>
 
         <div class="w-full max-w-md space-y-4 relative z-10">
           
           <!-- Portal Branding Header -->
           <div class="text-center space-y-1.5">
-            <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-zinc-900 border border-white/15 text-white font-black text-lg tracking-tight shadow-sm">
+            <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-300 font-black text-xl shadow-sm">
               G'
             </div>
             <div class="flex items-center justify-center gap-2 flex-wrap">
-              <h1 class="text-xl font-bold tracking-tight text-white">G SHOT TEAS</h1>
+              <h1 class="text-xl font-bold tracking-tight text-amber-50">G SHOT TEAS</h1>
               <span 
-                class="text-[10px] px-2 py-0.5 rounded-md font-semibold border uppercase tracking-wider"
+                class="text-[10px] px-2 py-0.5 rounded-md font-bold border uppercase tracking-wider"
                 :class="portalBadgeClass">
                 {{ portalBadgeText }}
               </span>
             </div>
-            <p class="text-xs text-zinc-400">{{ portalSubtext }}</p>
+            <p class="text-xs text-surface-400">{{ portalSubtext }}</p>
           </div>
 
           <!-- Connected Role Navigation Tabs (/staff, /driver, /admin, /superadmin) -->
-          <div class="grid grid-cols-4 p-1 rounded-xl bg-[#0b0b0d] border border-white/[0.08] text-xs font-medium gap-1">
+          <div class="grid grid-cols-4 p-1 rounded-xl bg-surface-900 border border-surface-800 text-xs font-medium gap-1">
             <button 
               type="button"
               @click="setPortalRole('staff')"
-              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
-              :class="activeRole === 'staff' ? 'bg-zinc-800/90 text-white border-white/15 font-semibold' : 'text-zinc-500 hover:text-zinc-200 border-transparent'">
+              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
+              :class="activeRole === 'staff' ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 font-semibold' : 'text-surface-400 hover:text-amber-100 border-transparent'">
               <i class="pi pi-id-card text-xs"></i>
               <span class="text-[11px] sm:text-xs">Staff</span>
             </button>
             <button 
               type="button"
               @click="setPortalRole('driver')"
-              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
-              :class="activeRole === 'driver' ? 'bg-zinc-800/90 text-white border-white/15 font-semibold' : 'text-zinc-500 hover:text-zinc-200 border-transparent'">
+              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
+              :class="activeRole === 'driver' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 font-semibold' : 'text-surface-400 hover:text-emerald-100 border-transparent'">
               <i class="pi pi-compass text-xs"></i>
               <span class="text-[11px] sm:text-xs">Rider</span>
             </button>
             <button 
               type="button"
               @click="setPortalRole('admin')"
-              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
-              :class="activeRole === 'admin' ? 'bg-zinc-800/90 text-white border-white/15 font-semibold' : 'text-zinc-500 hover:text-zinc-200 border-transparent'">
+              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
+              :class="activeRole === 'admin' ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 font-semibold' : 'text-surface-400 hover:text-orange-100 border-transparent'">
               <i class="pi pi-shield text-xs"></i>
               <span class="text-[11px] sm:text-xs">Admin</span>
             </button>
             <button 
               type="button"
               @click="setPortalRole('super_admin')"
-              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer text-center border"
-              :class="activeRole === 'super_admin' ? 'bg-zinc-800/90 text-white border-white/15 font-semibold' : 'text-zinc-500 hover:text-zinc-200 border-transparent'">
+              class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
+              :class="activeRole === 'super_admin' ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 font-semibold' : 'text-surface-400 hover:text-rose-100 border-transparent'">
               <i class="pi pi-lock text-xs"></i>
               <span class="text-[11px] sm:text-xs truncate">Super</span>
             </button>
           </div>
 
           <!-- Auth Box Container -->
-          <div class="bg-[#0b0b0d] border border-white/[0.08] rounded-2xl p-4 sm:p-6 space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+          <div class="bg-surface-900 border border-surface-800 rounded-2xl p-4 sm:p-6 space-y-4">
             
             <!-- Login Method Switcher Tabs (PIN vs Password — Staff Only) -->
-            <div v-if="activeRole === 'staff'" class="grid grid-cols-2 p-1 rounded-xl bg-[#050506] border border-white/[0.07] text-xs font-medium">
+            <div v-if="activeRole === 'staff'" class="grid grid-cols-2 p-1 rounded-xl bg-surface-950 border border-surface-800 text-xs font-medium">
               <button 
                 type="button"
                 @click="authTab = 'pin'"
                 class="py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer border"
-                :class="authTab === 'pin' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'text-zinc-500 hover:text-zinc-200 border-transparent'">
+                :class="authTab === 'pin' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'text-gray-400 hover:text-white border-transparent'">
                 <i class="pi pi-id-card text-xs"></i>
                 <span>PIN</span>
               </button>
@@ -92,14 +93,14 @@
                 type="button"
                 @click="authTab = 'credentials'"
                 class="py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer border"
-                :class="authTab === 'credentials' ? 'bg-zinc-800 text-white border-white/15 font-semibold' : 'text-zinc-500 hover:text-zinc-200 border-transparent'">
+                :class="authTab === 'credentials' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'text-gray-400 hover:text-white border-transparent'">
                 <i class="pi pi-key text-xs"></i>
                 <span>Password</span>
               </button>
             </div>
 
             <!-- Error Banner -->
-            <div v-if="authError" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-start gap-2">
+            <div v-if="authError" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2">
               <i class="pi pi-exclamation-triangle text-rose-400 mt-0.5 shrink-0 text-xs"></i>
               <span class="flex-1 leading-snug">{{ authError }}</span>
             </div>
@@ -108,7 +109,7 @@
             <div v-if="activeRole === 'staff' && authTab === 'pin'" class="space-y-3.5">
               <!-- Staff selector -->
               <div>
-                <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">
+                <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
                   Staff Member
                 </label>
                 <div class="grid grid-cols-2 gap-2">
@@ -118,9 +119,9 @@
                     type="button"
                     @click="selectedStaff = s; pinDigits = ''"
                     class="p-2.5 rounded-xl border text-left transition-colors cursor-pointer flex flex-col min-w-0"
-                    :class="selectedStaff?.id === s.id ? 'bg-zinc-800/80 border-white/25 text-white' : 'bg-[#050506] border-white/[0.07] text-zinc-400 hover:border-white/15'">
+                    :class="selectedStaff?.id === s.id ? 'bg-amber-500/10 border-amber-500/45 text-amber-50' : 'bg-surface-950 border-surface-800 text-surface-400 hover:border-surface-700'">
                     <span class="text-xs font-semibold truncate">{{ s.name }}</span>
-                    <span class="text-[10px]" :class="selectedStaff?.id === s.id ? 'text-zinc-300' : 'text-zinc-500'">
+                    <span class="text-[10px]" :class="selectedStaff?.id === s.id ? 'text-amber-400' : 'text-gray-500'">
                       Staff
                     </span>
                   </button>
@@ -129,7 +130,7 @@
 
               <!-- PIN Input Display -->
               <div class="space-y-1.5 text-center">
-                <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                   4-Digit PIN
                 </label>
                 <div class="flex justify-center gap-2.5 py-1">
@@ -138,12 +139,12 @@
                     :key="i"
                     class="w-11 h-11 rounded-xl border flex items-center justify-center text-xl font-bold transition-colors"
                     :class="pinDigits.length >= i 
-                      ? 'bg-zinc-800 border-white/30 text-white' 
-                      : 'bg-[#050506] border-white/[0.08] text-zinc-600'">
+                      ? 'bg-amber-500/15 border-amber-500/60 text-amber-300' 
+                      : 'bg-surface-950 border-surface-800 text-surface-500'">
                     {{ pinDigits.length >= i ? '•' : '' }}
                   </div>
                 </div>
-                <p class="text-[11px] text-zinc-500">
+                <p class="text-[11px] text-gray-500">
                   Mhar: 1234 &bull; Sarah: 5678
                 </p>
               </div>
@@ -155,25 +156,25 @@
                   :key="n"
                   type="button"
                   @click="pressPinDigit(n)"
-                  class="h-11 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-semibold text-base transition-colors active:scale-95 border border-white/[0.08] flex items-center justify-center cursor-pointer">
+                  class="h-11 rounded-xl bg-surface-800 hover:bg-surface-700 text-white font-bold text-base transition-colors active:scale-95 border border-surface-700/60 flex items-center justify-center cursor-pointer">
                   {{ n }}
                 </button>
                 <button 
                   type="button"
                   @click="clearPin"
-                  class="h-11 rounded-xl bg-[#050506] hover:bg-zinc-900 text-zinc-400 font-medium text-xs transition-colors active:scale-95 border border-white/[0.07] flex items-center justify-center cursor-pointer">
+                  class="h-11 rounded-xl bg-surface-950 hover:bg-surface-800 text-gray-400 font-semibold text-xs transition-colors active:scale-95 border border-surface-800 flex items-center justify-center cursor-pointer">
                   Clear
                 </button>
                 <button 
                   type="button"
                   @click="pressPinDigit(0)"
-                  class="h-11 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-semibold text-base transition-colors active:scale-95 border border-white/[0.08] flex items-center justify-center cursor-pointer">
+                  class="h-11 rounded-xl bg-surface-800 hover:bg-surface-700 text-white font-bold text-base transition-colors active:scale-95 border border-surface-700/60 flex items-center justify-center cursor-pointer">
                   0
                 </button>
                 <button 
                   type="button"
                   @click="backspacePin"
-                  class="h-11 rounded-xl bg-[#050506] hover:bg-zinc-900 text-zinc-400 font-medium text-sm transition-colors active:scale-95 border border-white/[0.07] flex items-center justify-center cursor-pointer">
+                  class="h-11 rounded-xl bg-surface-950 hover:bg-surface-800 text-gray-400 font-semibold text-sm transition-colors active:scale-95 border border-surface-800 flex items-center justify-center cursor-pointer">
                   ⌫
                 </button>
               </div>
@@ -183,7 +184,7 @@
                 type="button"
                 @click="submitPinLogin"
                 :disabled="pinLoading || pinDigits.length < 4"
-                class="w-full py-2.5 rounded-xl disabled:opacity-40 font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer bg-white hover:bg-zinc-200 text-zinc-950">
+                class="w-full py-2.5 rounded-xl disabled:opacity-40 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-amber-50 shadow-md shadow-amber-950/40">
                 <i v-if="pinLoading" class="pi pi-spin pi-spinner"></i>
                 <span v-else>Sign In</span>
               </button>
@@ -192,32 +193,32 @@
             <!-- TAB 2: EMAIL & PASSWORD CREDENTIALS LOGIN -->
             <form v-else @submit.prevent="submitCredentialsLogin" class="space-y-3.5">
               <div>
-                <label class="block text-xs font-medium text-zinc-300 mb-1.5">Email</label>
+                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
                 <div class="relative">
-                  <i class="pi pi-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                  <i class="pi pi-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     v-model="email" 
                     type="email" 
                     required 
                     placeholder="name@gshotteas.com"
-                    class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#050506] border border-white/[0.08] focus:border-white/30 text-white placeholder:text-zinc-600 text-xs outline-none transition-colors" />
+                    class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 focus:border-amber-500 text-white text-xs outline-none transition-colors" />
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-zinc-300 mb-1.5">Password</label>
+                <label class="block text-xs font-medium text-gray-300 mb-1">Password</label>
                 <div class="relative">
-                  <i class="pi pi-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                  <i class="pi pi-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     v-model="password" 
                     :type="showPassword ? 'text' : 'password'" 
                     required 
                     placeholder="••••••••"
-                    class="w-full pl-9 pr-9 py-2.5 rounded-xl bg-[#050506] border border-white/[0.08] focus:border-white/30 text-white placeholder:text-zinc-600 text-xs outline-none transition-colors" />
+                    class="w-full pl-9 pr-9 py-2.5 rounded-xl bg-surface-950 border border-surface-800 focus:border-amber-500 text-white text-xs outline-none transition-colors" />
                   <button 
                     type="button" 
                     @click="showPassword = !showPassword"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 text-xs cursor-pointer">
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-xs cursor-pointer">
                     <i class="pi" :class="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
                   </button>
                 </div>
@@ -226,7 +227,7 @@
               <button 
                 type="submit"
                 :disabled="credentialsLoading"
-                class="w-full py-2.5 rounded-xl disabled:opacity-50 font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer bg-white hover:bg-zinc-200 text-zinc-950">
+                class="w-full py-2.5 rounded-xl disabled:opacity-50 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-amber-50 shadow-md shadow-amber-950/40">
                 <i v-if="credentialsLoading" class="pi pi-spin pi-spinner"></i>
                 <span v-else>Sign In</span>
               </button>
@@ -234,7 +235,7 @@
           </div>
 
           <!-- Bottom Security Advisory -->
-          <p class="text-center text-[11px] text-zinc-500">
+          <p class="text-center text-[11px] text-gray-500">
             G Shot Teas &bull; Operations Portal
           </p>
 
@@ -406,7 +407,7 @@ export default {
     });
 
     const portalBadgeClass = computed(() => {
-      return 'bg-zinc-900 text-zinc-300 border-white/15';
+      return 'bg-surface-800 text-amber-400 border-amber-500/30';
     });
 
     const portalBadgeText = computed(() => {
@@ -490,10 +491,10 @@ export default {
 
 
     const getToastClass = (type) => {
-      if (type === 'error') return 'bg-[#0b0b0d]/95 border-rose-500/40 text-zinc-100';
-      if (type === 'warning') return 'bg-[#0b0b0d]/95 border-amber-500/40 text-zinc-100';
-      if (type === 'info') return 'bg-[#0b0b0d]/95 border-white/20 text-zinc-100';
-      return 'bg-[#0b0b0d]/95 border-emerald-500/40 text-zinc-100';
+      if (type === 'error') return 'bg-rose-950/95 border-rose-600 text-rose-100 shadow-rose-950/50';
+      if (type === 'warning') return 'bg-amber-950/95 border-amber-500 text-amber-100 shadow-amber-950/50';
+      if (type === 'info') return 'bg-sky-950/95 border-sky-600 text-sky-100 shadow-sky-950/50';
+      return 'bg-emerald-950/95 border-emerald-600 text-emerald-100 shadow-emerald-950/50';
     };
 
     const getToastIcon = (type) => {

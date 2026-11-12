@@ -21,7 +21,7 @@
 
           <button 
             @click="openAddModal"
-            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-zinc-200 text-zinc-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
+            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
             <i class="pi pi-plus"></i>
             <span>Add Raw Ingredient</span>
           </button>
@@ -714,7 +714,7 @@ export default {
 
     const getStatusBadge = (ing) => {
       if (ing.stock <= 0) return 'bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-xs shadow-rose-950/40';
-      if (ing.stock <= ing.low_threshold) return 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-xs ';
+      if (ing.stock <= ing.low_threshold) return 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-xs shadow-amber-950/40';
       return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs shadow-emerald-950/40';
     };
 
@@ -728,7 +728,7 @@ export default {
       if (cat === 'Meat') return 'bg-red-950/60 text-red-400 border border-red-800/50';
       if (cat === 'Dairy') return 'bg-blue-950/60 text-blue-400 border border-blue-800/50';
       if (cat === 'Produce') return 'bg-green-950/60 text-green-400 border border-green-800/50';
-      return 'bg-zinc-900 text-amber-400 border border-amber-800/50';
+      return 'bg-amber-950/60 text-amber-400 border border-amber-800/50';
     };
 
     const quickAdjust = async (ing, amt) => {

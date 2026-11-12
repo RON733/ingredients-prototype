@@ -27,7 +27,7 @@
           <button 
             v-if="store.isAdminOrSuper"
             @click="openAddModal"
-            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white hover:bg-zinc-200 text-zinc-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
             <i class="pi pi-plus"></i>
             <span>Add Product</span>
           </button>
@@ -480,7 +480,7 @@
                 type="button"
                 @click="applyDiscountSubmit"
                 :disabled="isProcessingDiscount || !discountForm.discount_value"
-                class="px-5 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-zinc-200 text-zinc-950 transition-all flex items-center gap-2  cursor-pointer disabled:opacity-50 active:scale-95">
+                class="px-5 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer disabled:opacity-50 active:scale-95">
                 <i class="pi" :class="isProcessingDiscount ? 'pi-spin pi-spinner' : 'pi-check'"></i>
                 <span>Apply Discount</span>
               </button>
@@ -587,7 +587,7 @@
 
                 <!-- Action Controls -->
                 <div class="flex flex-wrap items-center gap-2">
-                  <label class="px-3 py-2 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm">
+                  <label class="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm">
                     <i class="pi" :class="isUploadingImage ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
                     <span>{{ form.image ? 'Change Picture' : 'Upload Picture' }}</span>
                     <input 
@@ -748,7 +748,7 @@
               type="button"
               @click="saveProduct" 
               :disabled="isSavingProduct"
-              class="px-5 py-2 text-xs font-bold bg-white hover:bg-zinc-200 text-zinc-950 rounded-xl cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95 disabled:opacity-50 flex items-center gap-1.5">
+              class="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 rounded-xl cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95 disabled:opacity-50 flex items-center gap-1.5">
               <i v-if="isSavingProduct" class="pi pi-spin pi-spinner text-xs"></i>
               <span>{{ isEditing ? 'Save Changes' : 'Create Product' }}</span>
             </button>

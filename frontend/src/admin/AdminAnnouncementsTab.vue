@@ -16,7 +16,7 @@
 
         <button 
           @click="store.openCreateAnnouncementModal()"
-          class="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
+          class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
           <i class="pi pi-plus text-xs"></i>
           <span>Create New Announcement</span>
         </button>
