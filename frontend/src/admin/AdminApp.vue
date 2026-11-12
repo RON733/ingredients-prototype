@@ -247,6 +247,9 @@
       <AnnouncementModal />
       <ProductImageModal />
 
+      <!-- Global Styled Confirm & Prompt Dialog -->
+      <AppDialog />
+
       <!-- Global Notification Toasts -->
       <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-2 pointer-events-none w-full max-w-md px-4">
         <div 

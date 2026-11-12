@@ -454,7 +454,15 @@ export default {
     };
 
     const cancelOrder = async () => {
-      if (!confirm('Are you sure you want to cancel this order?')) return;
+      const ok = await store.confirmDialog({
+        title: 'Cancel Order',
+        message: 'Are you sure you want to cancel this order?',
+        confirmText: 'Cancel Order',
+        cancelText: 'Keep Order',
+        variant: 'danger',
+        icon: 'pi-exclamation-triangle',
+      });
+      if (!ok) return;
       try {
         await GST_API.updateOrderStatus(order.value.id, 'Cancelled');
         store.notify('Order cancelled. Ingredients returned to inventory.', 'info');

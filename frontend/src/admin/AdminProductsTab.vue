@@ -1087,7 +1087,15 @@ export default {
     };
 
     const quickResetAllDiscounts = async () => {
-      if (!confirm('Are you sure you want to clear all discounts and restore normal prices across the entire menu?')) return;
+      const ok = await store.confirmDialog({
+        title: 'Clear All Discounts',
+        message: 'Are you sure you want to clear all discounts and restore normal prices across the entire menu?',
+        confirmText: 'Clear Discounts',
+        cancelText: 'Cancel',
+        variant: 'warning',
+        icon: 'pi-percentage',
+      });
+      if (!ok) return;
       isProcessingDiscount.value = true;
       try {
         await store.removeDiscount({ scope: 'all' });
@@ -1227,7 +1235,15 @@ export default {
     };
 
     const deleteProduct = async (product) => {
-      if (!confirm(`Delete ${product.name}?`)) return;
+      const ok = await store.confirmDialog({
+        title: 'Delete Menu Item',
+        message: `Are you sure you want to delete ${product.name}?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        variant: 'danger',
+        icon: 'pi-trash',
+      });
+      if (!ok) return;
       try {
         await GST_API.deleteProduct(product.id);
         store.notify(`${product.name} removed from menu`);

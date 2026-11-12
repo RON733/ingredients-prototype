@@ -21,6 +21,7 @@ import AnnouncementModal from './components/AnnouncementModal.vue';
 import ProductImageModal from './components/ProductImageModal.vue';
 import DriverView from './components/DriverView.vue';
 import DeliveryFleetView from './components/DeliveryFleetView.vue';
+import AppDialog from './components/AppDialog.vue';
 
 const app = createApp(AdminApp);
 const pinia = createPinia();
@@ -43,5 +44,6 @@ app.component('AdminSettingsTab', AdminSettingsTab);
 app.component('StaffPinModal', StaffPinModal);
 app.component('AnnouncementModal', AnnouncementModal);
 app.component('ProductImageModal', ProductImageModal);
+app.component('AppDialog', AppDialog);
 
 app.mount('#app');

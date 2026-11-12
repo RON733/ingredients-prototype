@@ -1354,7 +1354,15 @@ export default {
 
     const cancelPendingRemittance = async (remittanceId) => {
       if (isSubmittingRemittance.value) return;
-      if (!confirm('Cancel this pending remittance handover request?')) return;
+      const ok = await store.confirmDialog({
+        title: 'Cancel Remittance Request',
+        message: 'Cancel this pending remittance handover request?',
+        confirmText: 'Cancel Request',
+        cancelText: 'Keep',
+        variant: 'danger',
+        icon: 'pi-times-circle',
+      });
+      if (!ok) return;
       isSubmittingRemittance.value = true;
       try {
         const res = await GST_API.cancelRemittance(remittanceId);
@@ -1816,7 +1824,15 @@ export default {
         ? `Confirm delivery for ${order.order_number}?\n\nDid you collect ₱${Number(order.total_amount).toFixed(2)} cash from ${order.customer_name}?`
         : `Confirm delivery for ${order.order_number} to ${order.customer_name}?`;
 
-      if (!confirm(confirmMsg)) return;
+      const ok = await store.confirmDialog({
+        title: 'Confirm Delivery',
+        message: confirmMsg,
+        confirmText: 'Mark Delivered',
+        cancelText: 'Cancel',
+        variant: 'success',
+        icon: 'pi-check-circle',
+      });
+      if (!ok) return;
 
       try {
         const completedIso = new Date().toISOString();

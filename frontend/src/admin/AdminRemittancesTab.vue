@@ -419,7 +419,15 @@ export default {
 
     const handleAccept = async (rem) => {
       if (processingId.value) return;
-      if (!confirm(`Confirm receipt of ₱${Number(rem.amount).toFixed(2)} COD cash from ${rem.driver_name} (${rem.reference_number})? This will reset those orders' remittance balance to ₱0.00.`)) {
+      const ok = await store.confirmDialog({
+        title: 'Accept COD Remittance',
+        message: `Confirm receipt of ₱${Number(rem.amount).toFixed(2)} COD cash from ${rem.driver_name} (${rem.reference_number})? This will reset those orders' remittance balance to ₱0.00.`,
+        confirmText: 'Confirm Receipt',
+        cancelText: 'Cancel',
+        variant: 'success',
+        icon: 'pi-check-circle',
+      });
+      if (!ok) {
         return;
       }
       processingId.value = rem.id;
@@ -433,7 +441,21 @@ export default {
 
     const handleReject = async (rem) => {
       if (processingId.value) return;
-      const reason = staffNotesMap[rem.id] || prompt('Optional reason for rejecting/returning this remittance:', 'Cash amount does not match') || '';
+      let reason = staffNotesMap[rem.id];
+      if (!reason) {
+        const input = await store.promptDialog({
+          title: 'Return / Reject Remittance',
+          message: `Optional reason for rejecting/returning ${rem.driver_name}'s remittance (${rem.reference_number}):`,
+          defaultValue: 'Cash amount does not match',
+          placeholder: 'Enter reason...',
+          confirmText: 'Reject Remittance',
+          cancelText: 'Cancel',
+          variant: 'danger',
+          icon: 'pi-times-circle',
+        });
+        if (input === null) return;
+        reason = input || '';
+      }
       processingId.value = rem.id;
       try {
         await store.rejectRemittance(rem.id, reason);

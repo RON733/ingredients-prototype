@@ -614,7 +614,17 @@ export default {
 
     const promptEditPin = async (user) => {
       const currentPin = user.pin || '1234';
-      const newPin = window.prompt(`Enter new 4-digit PIN for ${user.name}:`, currentPin);
+      const newPin = await store.promptDialog({
+        title: 'Update Staff PIN',
+        message: `Enter new 4-digit PIN for ${user.name}:`,
+        defaultValue: currentPin,
+        placeholder: '4-digit PIN',
+        maxLength: 8,
+        confirmText: 'Save PIN',
+        cancelText: 'Cancel',
+        variant: 'brand',
+        icon: 'pi-key',
+      });
       if (newPin && newPin.trim().length >= 4) {
         try {
           await GST_API.updateUser(user.id, { pin: newPin.trim() });

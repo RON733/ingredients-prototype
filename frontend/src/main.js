@@ -28,6 +28,7 @@ import DriverView from './components/DriverView.vue';
 import DeliveryFleetView from './components/DeliveryFleetView.vue';
 import ContactSection from './components/ContactSection.vue';
 import MaintenanceView from './components/MaintenanceView.vue';
+import AppDialog from './components/AppDialog.vue';
 
 // Admin Components (for quick admin views)
 import AdminDashboard from './admin/AdminDashboard.vue';
@@ -72,6 +73,7 @@ app.component('DriverView', DriverView);
 app.component('DeliveryFleetView', DeliveryFleetView);
 app.component('ContactSection', ContactSection);
 app.component('MaintenanceView', MaintenanceView);
+app.component('AppDialog', AppDialog);
 
 app.component('AdminDashboard', AdminDashboard);
 app.component('AdminOrdersTab', AdminOrdersTab);

@@ -1204,7 +1204,15 @@ export default {
     };
 
     const handleRestoreWebsite = async () => {
-      if (confirm('Restore Website Online? Customers will be able to access the storefront and place orders immediately.')) {
+      const ok = await store.confirmDialog({
+        title: 'Restore Website Online',
+        message: 'Customers will be able to access the storefront and place orders immediately.',
+        confirmText: 'Restore Online',
+        cancelText: 'Cancel',
+        variant: 'success',
+        icon: 'pi-globe',
+      });
+      if (ok) {
         isTogglingShutdown.value = true;
         try {
           await store.setMaintenanceMode(false);
@@ -1214,14 +1222,30 @@ export default {
       }
     };
 
-    const confirmLogoutFromLock = () => {
-      if (confirm('Are you sure you want to log out and switch to another account?')) {
+    const confirmLogoutFromLock = async () => {
+      const ok = await store.confirmDialog({
+        title: 'Switch Account',
+        message: 'Are you sure you want to log out and switch to another account?',
+        confirmText: 'Log Out',
+        cancelText: 'Stay Signed In',
+        variant: 'warning',
+        icon: 'pi-sign-out',
+      });
+      if (ok) {
         store.logout();
       }
     };
 
-    const handleLogout = () => {
-      if (confirm('Are you sure you want to log out?')) {
+    const handleLogout = async () => {
+      const ok = await store.confirmDialog({
+        title: 'Log Out',
+        message: 'Are you sure you want to log out?',
+        confirmText: 'Log Out',
+        cancelText: 'Cancel',
+        variant: 'warning',
+        icon: 'pi-sign-out',
+      });
+      if (ok) {
         store.logout();
       }
     };

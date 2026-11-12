@@ -1016,7 +1016,15 @@ export default {
     };
 
     const confirmDeletePackage = async (pkg) => {
-      if (!confirm(`Delete booking package "${pkg.name}"?`)) return;
+      const ok = await store.confirmDialog({
+        title: 'Delete Booking Package',
+        message: `Are you sure you want to delete booking package "${pkg.name}"?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        variant: 'danger',
+        icon: 'pi-trash',
+      });
+      if (!ok) return;
       try {
         await store.deleteBookingPackage(pkg.id);
       } catch (err) {

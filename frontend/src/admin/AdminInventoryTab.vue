@@ -834,7 +834,15 @@ export default {
     };
 
     const deleteIngredient = async (ing) => {
-      if (!confirm(`Delete ${ing.name}? This will remove it from all linked recipes.`)) return;
+      const ok = await store.confirmDialog({
+        title: 'Delete Ingredient',
+        message: `Delete ${ing.name}? This will remove it from all linked recipes.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        variant: 'danger',
+        icon: 'pi-trash',
+      });
+      if (!ok) return;
       try {
         await GST_API.deleteIngredient(ing.id);
         store.notify(`${ing.name} removed from inventory`);

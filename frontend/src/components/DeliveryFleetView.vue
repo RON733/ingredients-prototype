@@ -1044,7 +1044,15 @@ export default {
     };
 
     const handleAcceptRemittance = async (rem) => {
-      if (!confirm('Accept COD remittance of ₱' + Number(rem.amount).toFixed(2) + ' from ' + rem.driver_name + ' (' + rem.reference_number + ')?')) return;
+      const ok = await store.confirmDialog({
+        title: 'Accept COD Remittance',
+        message: 'Accept COD remittance of ₱' + Number(rem.amount).toFixed(2) + ' from ' + rem.driver_name + ' (' + rem.reference_number + ')?',
+        confirmText: 'Accept',
+        cancelText: 'Cancel',
+        variant: 'success',
+        icon: 'pi-check-circle',
+      });
+      if (!ok) return;
       try {
         await store.acceptRemittance(rem.id);
         await refreshAll();
@@ -1054,7 +1062,15 @@ export default {
     };
 
     const markOrderDelivered = async (order) => {
-      if (!confirm('Confirm order #' + order.order_number + ' has been delivered successfully by the rider?')) return;
+      const ok = await store.confirmDialog({
+        title: 'Confirm Delivery',
+        message: 'Confirm order #' + order.order_number + ' has been delivered successfully by the rider?',
+        confirmText: 'Mark Delivered',
+        cancelText: 'Cancel',
+        variant: 'success',
+        icon: 'pi-check-circle',
+      });
+      if (!ok) return;
       try {
         await GST_API.updateOrderStatus(order.id, 'Completed');
         store.notify('Order #' + order.order_number + ' marked Delivered!', 'success');

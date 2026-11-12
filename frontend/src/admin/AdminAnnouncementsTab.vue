@@ -202,8 +202,16 @@ export default {
       }
     };
 
-    const confirmDelete = (item) => {
-      if (confirm(`Are you sure you want to delete announcement "${item.title}"?`)) {
+    const confirmDelete = async (item) => {
+      const ok = await store.confirmDialog({
+        title: 'Delete Announcement',
+        message: `Are you sure you want to delete announcement "${item.title}"?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        variant: 'danger',
+        icon: 'pi-trash',
+      });
+      if (ok) {
         store.deleteAnnouncement(item.id);
       }
     };

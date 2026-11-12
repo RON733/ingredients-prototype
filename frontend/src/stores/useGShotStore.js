@@ -452,6 +452,23 @@ const useGShotStore = defineStore('gshot', {
     loading: false,
     backendConnected: false,
 
+    // Global Styled Confirm / Prompt Dialog
+    dialog: {
+      open: false,
+      mode: 'confirm',
+      title: '',
+      message: '',
+      confirmText: 'OK',
+      cancelText: 'Cancel',
+      variant: 'warning',
+      icon: '',
+      defaultValue: '',
+      placeholder: '',
+      inputType: 'text',
+      maxLength: null,
+      _resolver: null,
+    },
+
     // Announcements (Promos, New Menus, Advisories)
     announcements: JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS)),
     announcementModalOpen: false,
@@ -563,6 +580,67 @@ const useGShotStore = defineStore('gshot', {
 
     addToast(msg, type = 'success') {
       this.notify(msg, type);
+    },
+
+    // Styled Global Confirm / Prompt Dialog
+    confirmDialog(options = {}) {
+      if (this.dialog.open && typeof this.dialog._resolver === 'function') {
+        this.dialog._resolver(this.dialog.mode === 'prompt' ? null : false);
+      }
+      const opts = typeof options === 'string' ? { message: options } : options;
+      return new Promise((resolve) => {
+        this.dialog = {
+          open: true,
+          mode: 'confirm',
+          title: opts.title || 'Confirm Action',
+          message: opts.message || '',
+          confirmText: opts.confirmText || 'Confirm',
+          cancelText: opts.cancelText || 'Cancel',
+          variant: opts.variant || 'warning',
+          icon: opts.icon || '',
+          defaultValue: '',
+          placeholder: '',
+          inputType: 'text',
+          maxLength: null,
+          _resolver: resolve,
+        };
+      });
+    },
+
+    promptDialog(options = {}) {
+      if (this.dialog.open && typeof this.dialog._resolver === 'function') {
+        this.dialog._resolver(this.dialog.mode === 'prompt' ? null : false);
+      }
+      const opts = typeof options === 'string' ? { message: options } : options;
+      return new Promise((resolve) => {
+        this.dialog = {
+          open: true,
+          mode: 'prompt',
+          title: opts.title || 'Input Required',
+          message: opts.message || '',
+          confirmText: opts.confirmText || 'Confirm',
+          cancelText: opts.cancelText || 'Cancel',
+          variant: opts.variant || 'brand',
+          icon: opts.icon || 'pi-pencil',
+          defaultValue: opts.defaultValue ?? '',
+          placeholder: opts.placeholder || '',
+          inputType: opts.inputType || 'text',
+          maxLength: opts.maxLength || null,
+          _resolver: resolve,
+        };
+      });
+    },
+
+    resolveDialog(result) {
+      const resolver = this.dialog._resolver;
+      this.dialog = {
+        ...this.dialog,
+        open: false,
+        _resolver: null,
+      };
+      if (typeof resolver === 'function') {
+        resolver(result);
+      }
     },
 
     // Initialize Store

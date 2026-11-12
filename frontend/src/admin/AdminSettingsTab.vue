@@ -458,7 +458,15 @@ export default {
     };
 
     const restoreWebsiteNow = async () => {
-      if (confirm('Restore Website Online? All customers will immediately regain access to order and view the menu.')) {
+      const ok = await store.confirmDialog({
+        title: 'Restore Website Online',
+        message: 'All customers will immediately regain access to order and view the menu.',
+        confirmText: 'Restore Online',
+        cancelText: 'Cancel',
+        variant: 'success',
+        icon: 'pi-globe',
+      });
+      if (ok) {
         isSavingMaint.value = true;
         try {
           await store.setMaintenanceMode(false);
