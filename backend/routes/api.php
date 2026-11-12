@@ -43,6 +43,7 @@ Route::match(['post', 'put', 'patch'], '/orders/{id}/notify-on-the-way', [OrderC
 Route::match(['put', 'patch'], '/orders/{id}/assign-driver', [OrderController::class, 'assignDriver']);
 Route::get('/drivers', [OrderController::class, 'getDrivers']);
 Route::match(['put', 'patch'], '/driver/toggle-availability', [OrderController::class, 'toggleDriverAvailability']);
+Route::match(['put', 'patch', 'post'], '/driver/delivery-status', [OrderController::class, 'updateDriverDeliveryStatus']);
 Route::post('/driver/notice', [OrderController::class, 'submitRiderNotice']);
 Route::get('/driver/notices', [OrderController::class, 'getRiderNotices']);
 Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/acknowledge', [OrderController::class, 'acknowledgeRiderNotice']);
@@ -144,6 +145,7 @@ Route::prefix('v1')->group(function () {
     Route::match(['put', 'patch'], '/orders/{id}/assign-driver', [OrderController::class, 'assignDriver']);
     Route::get('/drivers', [OrderController::class, 'getDrivers']);
     Route::match(['put', 'patch'], '/driver/toggle-availability', [OrderController::class, 'toggleDriverAvailability']);
+    Route::match(['put', 'patch', 'post'], '/driver/delivery-status', [OrderController::class, 'updateDriverDeliveryStatus']);
     Route::post('/driver/notice', [OrderController::class, 'submitRiderNotice']);
     Route::get('/driver/notices', [OrderController::class, 'getRiderNotices']);
     Route::match(['put', 'patch', 'post'], '/driver/notices/{id}/acknowledge', [OrderController::class, 'acknowledgeRiderNotice']);

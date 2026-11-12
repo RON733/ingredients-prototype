@@ -371,28 +371,47 @@
             <div 
               v-for="driver in driversList" 
               :key="driver.id"
-              @click="driver.is_available ? selectedDriverId = driver.id : null"
+              @click="isDriverDispatchable(driver) ? selectedDriverId = driver.id : null"
               class="p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3"
               :class="[
-                !driver.is_available ? 'opacity-50 cursor-not-allowed bg-surface-950 border-surface-800' : 'cursor-pointer hover:border-brand-500/60',
+                !isDriverDispatchable(driver) ? 'opacity-55 cursor-not-allowed bg-surface-950 border-surface-800' : 'cursor-pointer hover:border-brand-500/60',
                 selectedDriverId === driver.id ? 'bg-brand-600/20 border-brand-500 ring-2 ring-brand-500/30' : 'bg-surface-850 border-surface-700/80'
               ]">
               
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-md"
-                  :class="driver.is_available ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'">
+                  :class="!driver.is_available
+                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                    : (driver.driver_status === 'on_delivery'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30')">
                   <i class="pi pi-send text-xs"></i>
                 </div>
                 <div class="min-w-0">
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 flex-wrap">
                     <p class="font-bold text-white text-xs truncate">{{ driver.name }}</p>
                     <span 
                       class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
-                      :class="driver.is_available ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'">
-                      {{ driver.is_available ? (driver.active_deliveries_count > 0 ? 'Busy (' + driver.active_deliveries_count + ' active)' : 'Available') : 'Not Available (Break)' }}
+                      :class="!driver.is_available
+                        ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                        : (driver.driver_status === 'on_delivery'
+                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                          : (driver.active_deliveries_count > 0
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'))">
+                      {{ !driver.is_available
+                        ? 'Not Available (Break)'
+                        : (driver.driver_status === 'on_delivery'
+                          ? 'On Delivery (' + (driver.active_deliveries_count || 0) + ' active)'
+                          : (driver.active_deliveries_count > 0
+                            ? 'At Store (' + driver.active_deliveries_count + ' queued)'
+                            : 'Available')) }}
                     </span>
                   </div>
                   <p class="text-[10px] text-gray-400 mt-0.5">{{ driver.phone || driver.email }}</p>
+                  <p v-if="driver.is_available && driver.driver_status === 'on_delivery'" class="text-[10px] text-cyan-300 font-semibold mt-1">
+                    Already departed for delivery — cannot dispatch new orders.
+                  </p>
                   <div v-if="driver.pending_notice && driver.is_available" class="mt-1 flex flex-wrap items-center gap-2">
                     <span class="text-[10px] text-amber-300 font-bold bg-amber-500/20 px-2 py-0.5 rounded-lg border border-amber-500/30">
                       ⏳ Notice Pending: "{{ driver.pending_notice.reason }}"
@@ -628,13 +647,17 @@ export default {
       }
     };
 
+    const isDriverDispatchable = (driver) => {
+      return Boolean(driver && driver.is_available && driver.driver_status !== 'on_delivery');
+    };
+
     const openDispatchModal = async (order) => {
       dispatchModalOrder.value = order;
       selectedDriverId.value = null;
       try {
         const res = await GST_API.getDrivers();
         driversList.value = res.data;
-        const firstAvail = driversList.value.find(d => d.is_available);
+        const firstAvail = driversList.value.find(d => isDriverDispatchable(d));
         if (firstAvail) selectedDriverId.value = firstAvail.id;
       } catch (err) {
         store.notify('Could not load fleet drivers.', 'error');
@@ -650,29 +673,32 @@ export default {
         await store.acceptRiderNotice(noticeId);
         const res = await GST_API.getDrivers();
         driversList.value = res.data;
-        if (selectedDriverId.value && !driversList.value.find(d => d.id === selectedDriverId.value)?.is_available) {
-          const nextAvail = driversList.value.find(d => d.is_available);
+        if (selectedDriverId.value && !isDriverDispatchable(driversList.value.find(d => d.id === selectedDriverId.value))) {
+          const nextAvail = driversList.value.find(d => isDriverDispatchable(d));
           selectedDriverId.value = nextAvail ? nextAvail.id : null;
         }
       } catch (err) {}
     };
 
     const autoAssignRider = () => {
-      const avail = driversList.value.filter(d => d.is_available && !d.pending_notice);
+      const avail = driversList.value.filter(d => isDriverDispatchable(d) && !d.pending_notice);
       if (avail.length > 0) {
         avail.sort((a, b) => (a.active_deliveries_count || 0) - (b.active_deliveries_count || 0));
         selectedDriverId.value = avail[0].id;
         store.notify('Auto-selected least busy rider: ' + avail[0].name, 'info');
       } else {
-        store.notify('No available riders on duty right now. All riders are offline or on break.', 'warning');
+        store.notify('No dispatchable riders at the store right now. All riders are on delivery, offline, or on break.', 'warning');
       }
     };
 
     const confirmDispatch = async () => {
       if (!dispatchModalOrder.value || !selectedDriverId.value) return;
       const assignedDriver = driversList.value.find(d => d.id === selectedDriverId.value);
-      if (assignedDriver && !assignedDriver.is_available) {
-        store.notify('Cannot dispatch: Rider ' + (assignedDriver ? assignedDriver.name : 'selected') + ' is flagged unavailable.', 'error');
+      if (assignedDriver && !isDriverDispatchable(assignedDriver)) {
+        const reason = assignedDriver.driver_status === 'on_delivery'
+          ? 'is already on delivery.'
+          : 'is flagged unavailable.';
+        store.notify('Cannot dispatch: Rider ' + assignedDriver.name + ' ' + reason, 'error');
         return;
       }
       isDispatching.value = true;
@@ -693,7 +719,15 @@ export default {
         store.notify(`Order ${dispatchModalOrder.value.order_number} dispatched to ${assignedDriver?.name}!`, 'success');
         dispatchModalOrder.value = null;
       } catch (err) {
-        store.notify('Failed to dispatch rider.', 'error');
+        store.notify(err.response?.data?.message || 'Failed to dispatch rider.', 'error');
+        try {
+          const res = await GST_API.getDrivers();
+          driversList.value = res.data;
+          if (selectedDriverId.value && !isDriverDispatchable(driversList.value.find(d => d.id === selectedDriverId.value))) {
+            const nextAvail = driversList.value.find(d => isDriverDispatchable(d));
+            selectedDriverId.value = nextAvail ? nextAvail.id : null;
+          }
+        } catch (refreshErr) {}
       } finally {
         isDispatching.value = false;
       }
@@ -720,6 +754,7 @@ export default {
       driversList,
       selectedDriverId,
       isDispatching,
+      isDriverDispatchable,
       openDispatchModal,
       autoAssignRider,
       confirmDispatch,

@@ -340,10 +340,16 @@
             <!-- Status Pill Badge -->
             <div class="shrink-0">
               <span 
-                v-if="rider.active_deliveries_count > 0"
-                class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5 shadow-sm">
+                v-if="rider.driver_status === 'on_delivery'"
+                class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 shadow-sm">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                In Delivery ({{ rider.active_deliveries_count }})
+                On Delivery • Gone ({{ rider.active_deliveries_count || 0 }})
+              </span>
+              <span 
+                v-else-if="rider.active_deliveries_count > 0"
+                class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                At Store • {{ rider.active_deliveries_count }} Queued
               </span>
               <span 
                 v-else-if="rider.pending_notice"
@@ -372,7 +378,8 @@
             class="p-3 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 space-y-2">
             <div class="flex items-center justify-between text-xs">
               <span class="text-cyan-400 font-bold flex items-center gap-1.5">
-                <i class="pi pi-send text-[11px]"></i> Current Delivery Load
+                <i class="pi pi-send text-[11px]"></i>
+                {{ rider.driver_status === 'on_delivery' ? 'On Delivery (Dispatches Locked)' : 'Queued at Store (Can Still Add Orders)' }}
               </span>
               <button 
                 type="button"
@@ -895,11 +902,11 @@ export default {
     };
 
     const availableRiders = computed(() => {
-      return riders.value.filter(r => r.is_available && (!r.active_deliveries_count || r.active_deliveries_count === 0));
+      return riders.value.filter(r => r.is_available && r.driver_status !== 'on_delivery');
     });
 
     const deliveringRiders = computed(() => {
-      return riders.value.filter(r => (r.active_deliveries_count && r.active_deliveries_count > 0));
+      return riders.value.filter(r => r.driver_status === 'on_delivery' || (r.active_deliveries_count && r.active_deliveries_count > 0));
     });
 
     const offlineRiders = computed(() => {

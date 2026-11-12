@@ -96,6 +96,10 @@ export const GST_API = {
       : (isAvailable !== undefined ? { is_available: isAvailable, driver_id: driverId } : {});
     return apiClient.patch('/driver/toggle-availability', payload);
   },
+  updateDriverDeliveryStatus: (driverStatus, driverId) => apiClient.patch('/driver/delivery-status', {
+    driver_status: driverStatus,
+    ...(driverId ? { driver_id: driverId } : {}),
+  }),
   submitRiderNotice: (data) => apiClient.post('/driver/notice', data),
   getRiderNotices: (params) => apiClient.get('/driver/notices', { params }),
   acknowledgeRiderNotice: (id) => apiClient.post('/driver/notices/' + id + '/accept'),

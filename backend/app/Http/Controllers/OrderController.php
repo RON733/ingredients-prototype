@@ -456,6 +456,21 @@ class OrderController extends Controller
         $order->status = $newStatus;
         $order->save();
 
+        // Automatically clear on_delivery lock once all active deliveries for this rider finish or are cancelled
+        if ($order->driver_id && in_array($newStatus, ['Completed', 'Cancelled'])) {
+            $remainingActive = Order::where('driver_id', $order->driver_id)
+                ->where('order_type', 'Delivery')
+                ->where('status', 'Out for Delivery')
+                ->count();
+            if ($remainingActive === 0) {
+                $assignedDriver = User::find($order->driver_id);
+                if ($assignedDriver && $assignedDriver->driver_status === 'on_delivery') {
+                    $assignedDriver->driver_status = $assignedDriver->is_available ? 'available' : 'offline';
+                    $assignedDriver->save();
+                }
+            }
+        }
+
         // Push to Loyverse POS when order is completed
         if ($newStatus === 'Completed' && empty($order->loyverse_receipt_id) && $order->source !== 'loyverse_pos') {
             try {
@@ -671,6 +686,12 @@ class OrderController extends Controller
             ], 422);
         }
 
+        if ($driver->driver_status === 'on_delivery') {
+            return response()->json([
+                'message' => "Cannot dispatch order to {$driver->name}. Rider is already on delivery.",
+            ], 422);
+        }
+
         $order = Order::findOrFail($id);
         $order->driver_id = $validated['driver_id'];
         $order->status = 'Out for Delivery';
@@ -744,6 +765,8 @@ class OrderController extends Controller
                     ->where('status', 'pending')
                     ->latest()
                     ->first();
+                $driver->driver_status = $driver->driver_status ?: ($driver->is_available ? 'available' : 'offline');
+                $driver->is_on_delivery = $driver->driver_status === 'on_delivery';
                 return $driver;
             });
 
@@ -788,6 +811,88 @@ class OrderController extends Controller
             'is_available' => $user->is_available,
             'driver_status' => $user->driver_status,
             'user' => $user,
+        ]);
+    }
+
+    public function updateDriverDeliveryStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'driver_status' => 'required|in:available,on_delivery',
+            'driver_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $driver = auth('sanctum')->user() ?? $request->user();
+        if ($request->filled('driver_id')) {
+            $found = User::find($request->input('driver_id'));
+            if ($found) $driver = $found;
+        }
+        if (!$driver) {
+            $driver = User::where('role', 'driver')->first();
+        }
+
+        if (!$driver) {
+            return response()->json(['message' => 'Driver not found'], 404);
+        }
+
+        $nextStatus = $validated['driver_status'];
+
+        if ($nextStatus === 'on_delivery') {
+            if (!$driver->is_available) {
+                return response()->json([
+                    'message' => 'Cannot mark as On Delivery while flagged unavailable / on break.',
+                ], 422);
+            }
+
+            $activeCount = Order::where('driver_id', $driver->id)
+                ->where('order_type', 'Delivery')
+                ->where('status', 'Out for Delivery')
+                ->count();
+
+            if ($activeCount === 0) {
+                return response()->json([
+                    'message' => 'You do not have any dispatched orders to deliver yet.',
+                ], 422);
+            }
+
+            $driver->driver_status = 'on_delivery';
+            $driver->save();
+
+            AuditLog::create([
+                'user_id' => $driver->id,
+                'user_name' => $driver->name,
+                'user_role' => $driver->role ?? 'driver',
+                'action' => 'Rider Departed for Delivery',
+                'details' => "Rider {$driver->name} is now On Delivery with {$activeCount} order(s). Staff and admin cannot dispatch new orders until deliveries finish or rider returns.",
+                'ip_address' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'message' => 'You are now marked as On Delivery. New dispatches are locked until you finish or return.',
+                'driver_status' => $driver->driver_status,
+                'is_available' => (bool) $driver->is_available,
+                'is_on_delivery' => true,
+                'driver' => $driver,
+            ]);
+        }
+
+        $driver->driver_status = $driver->is_available ? 'available' : 'offline';
+        $driver->save();
+
+        AuditLog::create([
+            'user_id' => $driver->id,
+            'user_name' => $driver->name,
+            'user_role' => $driver->role ?? 'driver',
+            'action' => 'Rider Ready for Dispatch',
+            'details' => "Rider {$driver->name} is back at the store and ready to receive order dispatches.",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => 'Status updated: you are ready to receive new dispatches.',
+            'driver_status' => $driver->driver_status,
+            'is_available' => (bool) $driver->is_available,
+            'is_on_delivery' => false,
+            'driver' => $driver,
         ]);
     }
 
@@ -1027,6 +1132,7 @@ class OrderController extends Controller
             'pending_notice' => $pendingNotice,
             'latest_notice' => $latestNotice,
             'is_available' => $driver ? (bool)$driver->is_available : true,
+            'driver_status' => $driver ? ($driver->driver_status ?: ($driver->is_available ? 'available' : 'offline')) : 'available',
             'driver' => $driver,
         ]);
     }

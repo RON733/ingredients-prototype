@@ -14,8 +14,10 @@
                 class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0"
                 :class="hasPendingNotice 
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                  : (isAvailable ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30')">
-                {{ hasPendingNotice ? 'PENDING APPROVAL' : (isAvailable ? 'ON DUTY' : 'ON BREAK') }}
+                  : (!isAvailable 
+                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' 
+                    : (isOnDelivery ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 animate-pulse' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'))">
+                {{ hasPendingNotice ? 'PENDING APPROVAL' : (!isAvailable ? 'ON BREAK' : (isOnDelivery ? 'ON DELIVERY' : 'ON DUTY')) }}
               </span>
             </div>
             <p class="text-xs text-neutral-400 truncate mt-0.5">
@@ -236,6 +238,60 @@
 
       <!-- Tab 1: Active Deliveries List (Only orders dispatched to this rider) -->
       <div v-if="activeTab === 'active'" class="space-y-4">
+
+        <!-- Rider Takeoff / On-Delivery Lock Card -->
+        <div 
+          v-if="activeDeliveries.length > 0 && isAvailable && !hasPendingNotice"
+          class="p-4 sm:p-5 rounded-3xl border shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all"
+          :class="isOnDelivery 
+            ? 'bg-cyan-950/40 border-cyan-500/50 text-cyan-100' 
+            : 'bg-surface-900 border-sky-500/40 text-gray-100'">
+          <div class="flex items-start sm:items-center gap-3.5">
+            <div 
+              class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 border"
+              :class="isOnDelivery ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-sky-500/15 text-sky-400 border-sky-500/30'">
+              <span v-if="isOnDelivery" class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+              <i v-else class="pi pi-send text-base"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="font-black text-sm text-white">
+                  {{ isOnDelivery ? 'You Are Currently On Delivery' : `Ready to Take Off? (${activeDeliveries.length} ${activeDeliveries.length === 1 ? 'order' : 'orders'} loaded)` }}
+                </p>
+                <span 
+                  v-if="isOnDelivery"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  Dispatches Locked
+                </span>
+              </div>
+              <p class="text-[11px] mt-1 leading-relaxed" :class="isOnDelivery ? 'text-cyan-200/90' : 'text-gray-400'">
+                {{ isOnDelivery 
+                  ? 'Staff and admin can see you are already out on delivery. No new orders will be dispatched to you until you finish your deliveries or return.' 
+                  : 'Still at the store? Staff can still assign more orders to you. Press the button before taking off so staff & admin see you are already on delivery.' }}
+              </p>
+            </div>
+          </div>
+
+          <button
+            v-if="!isOnDelivery"
+            type="button"
+            :disabled="isUpdatingDeliveryStatus"
+            @click="setDeliveryStatus('on_delivery')"
+            class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-neutral-950 font-black text-xs transition-all shadow-lg shadow-cyan-500/25 cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-95">
+            <i :class="isUpdatingDeliveryStatus ? 'pi pi-spin pi-spinner text-xs' : 'pi pi-send text-xs'"></i>
+            <span>{{ isUpdatingDeliveryStatus ? 'Updating...' : 'Taking Off • Mark On Delivery' }}</span>
+          </button>
+
+          <button
+            v-else
+            type="button"
+            :disabled="isUpdatingDeliveryStatus"
+            @click="setDeliveryStatus('available')"
+            class="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-surface-850 hover:bg-surface-800 disabled:opacity-50 text-cyan-300 font-bold text-xs border border-cyan-500/40 transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-95">
+            <i :class="isUpdatingDeliveryStatus ? 'pi pi-spin pi-spinner text-xs' : 'pi pi-undo text-xs'"></i>
+            <span>{{ isUpdatingDeliveryStatus ? 'Updating...' : 'Still at Store / Ready for Orders' }}</span>
+          </button>
+        </div>
         
         <!-- Empty State -->
         <div v-if="activeDeliveries.length === 0" class="text-center py-16 bg-surface-900/60 border border-surface-700 rounded-3xl p-6">
@@ -1083,13 +1139,23 @@ export default {
     const activeTab = Vue.ref('active');
     const isGpsBroadcasting = Vue.ref(true);
     const isAvailable = Vue.ref(Boolean(store.user?.is_available));
+    const driverStatus = Vue.ref(store.user?.driver_status || (store.user?.is_available ? 'available' : 'offline'));
+    const isUpdatingDeliveryStatus = Vue.ref(false);
     const pendingNotice = Vue.ref(null);
     let gpsWatchId = null;
     let statusPoller = null;
 
+    const isOnDelivery = Vue.computed(() => driverStatus.value === 'on_delivery' && isAvailable.value);
+
     Vue.watch(() => store.user?.is_available, (val) => {
       if (val !== undefined && val !== null) {
         isAvailable.value = Boolean(val);
+      }
+    }, { immediate: true });
+
+    Vue.watch(() => store.user?.driver_status, (val) => {
+      if (val) {
+        driverStatus.value = val;
       }
     }, { immediate: true });
 
@@ -1113,9 +1179,10 @@ export default {
           pendingNotice.value = res.data.pending_notice || null;
           if (res.data.driver) {
             isAvailable.value = Boolean(res.data.driver.is_available);
+            driverStatus.value = res.data.driver.driver_status || res.data.driver_status || (isAvailable.value ? 'available' : 'offline');
             if (store.user) {
               store.user.is_available = res.data.driver.is_available;
-              store.user.driver_status = res.data.driver.driver_status;
+              store.user.driver_status = driverStatus.value;
               store.user.availability_reason = res.data.driver.availability_reason;
               store.user.availability_proof_image = res.data.driver.availability_proof_image;
               localStorage.setItem('gst_user', JSON.stringify(store.user));
@@ -1722,6 +1789,28 @@ export default {
       }
     };
 
+    const setDeliveryStatus = async (nextStatus) => {
+      if (isUpdatingDeliveryStatus.value) return;
+      isUpdatingDeliveryStatus.value = true;
+      try {
+        const res = await GST_API.updateDriverDeliveryStatus(nextStatus, currentDriverId.value);
+        const updatedStatus = res.data?.driver_status || nextStatus;
+        driverStatus.value = updatedStatus;
+        if (store.user) {
+          store.user.driver_status = updatedStatus;
+          localStorage.setItem('gst_user', JSON.stringify(store.user));
+        }
+        store.notify(
+          res.data?.message || (updatedStatus === 'on_delivery' ? 'Marked as On Delivery! New dispatches are locked.' : 'Marked as Ready for Orders.'),
+          updatedStatus === 'on_delivery' ? 'success' : 'info'
+        );
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Could not update delivery status.', 'error');
+      } finally {
+        isUpdatingDeliveryStatus.value = false;
+      }
+    };
+
     // Rider Availability Toggle
     const toggleAvailability = async () => {
       const nextState = !isAvailable.value;
@@ -1758,6 +1847,13 @@ export default {
           if (storeItem.payment_method === 'Cash') storeItem.payment_status = 'Paid';
         }
 
+        if (activeDeliveries.value.length <= 1 && driverStatus.value === 'on_delivery') {
+          driverStatus.value = isAvailable.value ? 'available' : 'offline';
+          if (store.user) {
+            store.user.driver_status = driverStatus.value;
+            localStorage.setItem('gst_user', JSON.stringify(store.user));
+          }
+        }
         store.notify(`Order ${order.order_number} marked Delivered & Completed!`, 'success');
         refreshOrders();
       } catch (err) {
@@ -1883,6 +1979,10 @@ export default {
       activeTab,
       isGpsBroadcasting,
       isAvailable,
+      driverStatus,
+      isOnDelivery,
+      isUpdatingDeliveryStatus,
+      setDeliveryStatus,
       activeDeliveries,
       completedDeliveries,
       deliveredTodayDeliveries,
