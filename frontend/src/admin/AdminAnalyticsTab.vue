@@ -12,7 +12,7 @@
               <i class="pi pi-calendar text-[9px] sm:text-[10px]"></i> {{ analyticsData.period_label }}
             </span>
           </div>
-          <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-white mt-1">Sales Analytics</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white mt-1">Sales Analytics</h2>
           <p class="text-[11px] sm:text-xs text-gray-400 flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 mt-0.5">
             <span>Track physical POS and online channels.</span>
             <span v-if="analyticsData" class="inline-flex items-center gap-1.5 sm:gap-2 bg-surface-800/80 px-2 py-0.5 rounded-lg border border-surface-700/60 text-[10px]">
@@ -86,7 +86,7 @@
 
           <!-- Loyverse POS Live Indicator -->
           <div class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold flex items-center gap-1.5 shrink-0" title="POS sales automatically synchronize every minute in the background">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 "></span>
             <span class="hidden sm:inline">POS Auto-Sync Active</span>
             <span class="sm:hidden">POS Live</span>
           </div>
@@ -170,7 +170,7 @@
       </div>
 
       <!-- Sales Trend Interactive Chart Card -->
-      <div class="p-3.5 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-3 sm:space-y-5">
+      <div class="p-3.5 sm:p-3.5 sm:p-5 lg:p-8 rounded-2xl sm:rounded-2xl bg-surface-800/90 border border-surface-700  space-y-3 sm:space-y-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-surface-700 pb-3 gap-2">
           <div>
             <div class="flex items-center gap-2">
@@ -315,7 +315,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 lg:gap-8">
         
         <!-- Top Selling Products Table -->
-        <div class="lg:col-span-7 p-3.5 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-3 sm:space-y-4">
+        <div class="lg:col-span-7 p-3.5 sm:p-3.5 sm:p-5 lg:p-8 rounded-2xl sm:rounded-2xl bg-surface-800/90 border border-surface-700  space-y-3 sm:space-y-4">
           <div class="flex items-center justify-between border-b border-surface-700 pb-3">
             <div>
               <h3 class="text-sm sm:text-base font-black text-white">Top Selling Menu Items</h3>
@@ -349,7 +349,7 @@
         </div>
 
         <!-- Raw Ingredient Alerts -->
-        <div class="lg:col-span-5 p-3.5 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-3 sm:space-y-4">
+        <div class="lg:col-span-5 p-3.5 sm:p-3.5 sm:p-5 lg:p-8 rounded-2xl sm:rounded-2xl bg-surface-800/90 border border-surface-700  space-y-3 sm:space-y-4">
           <div class="flex items-center justify-between border-b border-surface-700 pb-3">
             <div>
               <h3 class="text-sm sm:text-base font-black text-white">Kitchen Inventory Watch</h3>

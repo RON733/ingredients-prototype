@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-8">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -7,7 +7,7 @@
           <span class="text-xs font-bold text-brand-400 uppercase tracking-widest flex items-center gap-1.5">
             <i class="pi pi-book"></i> RECIPE & PORTION CALCULATION ENGINE
           </span>
-          <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">Product Recipes & Portions</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white mt-1">Product Recipes & Portions</h2>
           <p class="text-xs text-gray-400">
             Each menu item is composed of specific raw ingredients. The system automatically computes maximum portions and blocks orders if any ingredient is depleted.
           </p>
@@ -26,7 +26,7 @@
         <div 
           v-for="product in store.products" 
           :key="product.id"
-          class="p-6 rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl flex flex-col justify-between space-y-4 hover:border-brand-500/50 transition-all">
+          class="p-3.5 sm:p-5 rounded-2xl bg-surface-800/90 border border-surface-700  flex flex-col justify-between space-y-4 hover:border-brand-500/50 transition-all">
           
           <div>
             <!-- Header: Title, Category, and Available Portions -->

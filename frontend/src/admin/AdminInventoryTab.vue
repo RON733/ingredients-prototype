@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-8">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Header & Primary Actions -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -7,7 +7,7 @@
           <span class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
             <i class="pi pi-box"></i> KITCHEN INGREDIENTS & LOYVERSE PROTOTYPE
           </span>
-          <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">Raw Ingredient Inventory</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white mt-1">Raw Ingredient Inventory</h2>
           <p class="text-xs text-gray-400">
             Real-time kitchen raw ingredient tracking synchronized with Loyverse Advanced Inventory (Purchase Orders, Adjustments & Productions).
           </p>
@@ -15,7 +15,7 @@
 
         <div class="flex items-center gap-2.5 flex-wrap">
           <div class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2" title="Loyverse POS & Kitchen Inventory are automatically synchronized in real time">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 "></span>
             <span>Loyverse Auto-Sync Active</span>
           </div>
 
@@ -36,7 +36,7 @@
       </div>
 
       <!-- Loyverse Advanced Inventory Live Sync Banner -->
-      <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-surface-850 via-surface-800 to-amber-950/20 border border-surface-700/80 shadow-md">
+      <div class="p-4 sm:p-5 rounded-2xl bg-surface-900 border border-surface-700/80 shadow-md">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div class="flex items-start sm:items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
@@ -150,7 +150,7 @@
       </div>
 
       <!-- Raw Ingredients Table & Mobile Cards -->
-      <div class="rounded-3xl bg-surface-800/90 border border-surface-700 overflow-hidden shadow-2xl">
+      <div class="rounded-2xl bg-surface-800/90 border border-surface-700 overflow-hidden ">
         <!-- Desktop Table (hidden on mobile) -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">
@@ -473,7 +473,7 @@
 
       <!-- Add/Edit Ingredient Modal -->
       <div v-if="modalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-fade-in">
-        <div class="w-full max-w-md max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl animate-scale-up">
+        <div class="w-full max-w-md max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-4  animate-scale-up">
           <div class="flex justify-between items-center border-b border-surface-700 pb-3">
             <h3 class="text-lg font-black text-white">
               {{ isEditing ? 'Edit Ingredient' : 'Add Raw Ingredient' }}
@@ -720,7 +720,7 @@ export default {
 
     const getStatusDot = (ing) => {
       if (ing.stock <= 0) return 'bg-rose-500';
-      if (ing.stock <= ing.low_threshold) return 'bg-amber-400 animate-pulse';
+      if (ing.stock <= ing.low_threshold) return 'bg-amber-400 ';
       return 'bg-emerald-400';
     };
 

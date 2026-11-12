@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-8">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Header (Matches Figure 16) -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -7,7 +7,7 @@
           <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
             <i class="pi pi-check-circle"></i> HISTORY & AUDITING
           </span>
-          <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">Completed Orders</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white mt-1">Completed Orders</h2>
           <p class="text-xs text-gray-400">Total completed: {{ completedOrders.length }} orders</p>
         </div>
 
@@ -24,7 +24,7 @@
         <div 
           v-for="order in completedOrders" 
           :key="order.id"
-          class="p-6 sm:p-8 rounded-3xl bg-surface-800/90 border border-surface-700/80 shadow-xl space-y-6">
+          class="p-3.5 sm:p-5 rounded-2xl bg-surface-800/90 border border-surface-700/80  space-y-6">
           
           <!-- Header: Order ID & Completed Badge -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-700/60 pb-4">
@@ -81,7 +81,7 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else class="text-center py-20 bg-surface-800/40 rounded-3xl border border-surface-700/50">
+      <div v-else class="text-center py-20 bg-surface-800/40 rounded-2xl border border-surface-700/50">
         <div class="text-4xl mb-3">✅</div>
         <p class="text-base font-bold text-white">No completed orders yet</p>
         <p class="text-xs text-gray-500 mt-1">Orders marked as completed in the kitchen will be preserved here.</p>

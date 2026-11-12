@@ -1,20 +1,20 @@
 <template>
-<div class="space-y-8">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Header & Walk-in Cashier Mode Button -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 "></span>
             <span class="text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Live Orders Feed</span>
           </div>
-          <h2 class="text-2xl font-black text-white tracking-tight">Active Orders</h2>
+          <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight">Active Orders</h2>
           <p class="text-xs text-neutral-400 mt-0.5">Monitor and manage incoming store and delivery orders in real time.</p>
         </div>
 
         <div class="flex items-center gap-2.5 flex-wrap">
           <div class="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2" title="Loyverse POS sales automatically sync every minute in the background">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 "></span>
             <span class="hidden sm:inline">POS Auto-Sync Active</span>
           </div>
 
@@ -97,7 +97,7 @@
       <!-- Pending Rider Notice Alert Banner (Alerts Kitchen Staff & Admins) -->
       <div 
         v-if="pendingRiderNotices.length > 0" 
-        class="p-4 rounded-2xl bg-amber-950/50 border border-amber-500/50 text-amber-200 text-xs shadow-xl space-y-2.5 animate-fade-in">
+        class="p-4 rounded-2xl bg-amber-950/50 border border-amber-500/50 text-amber-200 text-xs  space-y-2.5 animate-fade-in">
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <span class="text-xl">⚠️</span>
@@ -148,7 +148,7 @@
         <div 
           v-for="order in filteredOrders" 
           :key="order.id"
-          class="p-6 rounded-3xl bg-surface-800/80 border border-surface-700/70 hover:border-surface-600 transition-all shadow-xl space-y-4">
+          class="p-3.5 sm:p-5 rounded-2xl bg-surface-800/80 border border-surface-700/70 hover:border-surface-600 transition-all  space-y-4">
           
           <!-- Order Title, Customer Name, and Current Status -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-700/60 pb-4">
@@ -284,7 +284,7 @@
             <div 
               v-if="order.order_type === 'Delivery' && order.status === 'Out for Delivery'"
               class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-sky-950/60 border border-sky-500/30 text-sky-300 text-[11px] font-bold flex items-center justify-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+              <span class="w-2 h-2 rounded-full bg-sky-400 "></span>
               <i class="pi pi-send text-xs"></i><span>Dispatched to {{ order.driver?.name || 'Rider' }} &bull; Awaiting Rider Completion</span>
             </div>
 
@@ -300,7 +300,7 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else class="py-16 sm:py-20 px-6 rounded-3xl bg-surface-900/60 border border-surface-750/70 text-center flex flex-col items-center justify-center space-y-3 shadow-inner">
+      <div v-else class="py-16 sm:py-20 px-6 rounded-2xl bg-surface-900/60 border border-surface-750/70 text-center flex flex-col items-center justify-center space-y-3 shadow-inner">
         <div class="w-14 h-14 rounded-2xl bg-surface-800/80 border border-surface-700/60 flex items-center justify-center text-neutral-400 shadow-sm">
           <i class="pi pi-inbox text-2xl text-neutral-400"></i>
         </div>
@@ -318,7 +318,7 @@
         v-if="dispatchModalOrder"
         class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
         @click.self="dispatchModalOrder = null">
-        <div class="relative max-w-md w-full max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 animate-scale-up">
+        <div class="relative max-w-md w-full max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-2xl p-3.5 sm:p-5  space-y-5 animate-scale-up">
           
           <!-- Header -->
           <div class="flex items-center justify-between pb-3 border-b border-surface-800">

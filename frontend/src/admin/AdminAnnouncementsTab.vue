@@ -1,14 +1,14 @@
 <template>
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Action Bar & Metrics -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-surface-900 border border-surface-800">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800">
         <div>
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-400 text-xs font-bold tracking-wider uppercase mb-2">
             <i class="pi pi-megaphone"></i>
             <span>Bulletin & Marketing Controls</span>
           </div>
-          <h2 class="text-xl sm:text-2xl font-black text-white">Store Announcements & Promos</h2>
+          <h2 class="text-xl sm:text-lg sm:text-xl font-bold text-white">Store Announcements & Promos</h2>
           <p class="text-xs text-gray-400 mt-1">
             Broadcast limited-time promos, new menu launches, and holiday advisories to customer screens.
           </p>
@@ -26,7 +26,7 @@
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <div class="p-4 rounded-2xl bg-surface-900 border border-surface-800">
           <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Total Announcements</span>
-          <span class="text-2xl font-black text-white mt-1 block">{{ store.announcements.length }}</span>
+          <span class="text-lg sm:text-xl font-bold text-white mt-1 block">{{ store.announcements.length }}</span>
         </div>
         <div class="p-4 rounded-2xl bg-surface-900 border border-surface-800">
           <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Active / Visible</span>
@@ -65,7 +65,7 @@
       </div>
 
       <!-- Announcements Cards List -->
-      <div v-if="filteredAnnouncements.length === 0" class="p-12 rounded-3xl bg-surface-900/40 border border-surface-800 text-center">
+      <div v-if="filteredAnnouncements.length === 0" class="p-12 rounded-2xl bg-surface-900/40 border border-surface-800 text-center">
         <div class="w-12 h-12 rounded-2xl bg-surface-800 flex items-center justify-center text-xl text-gray-400 mx-auto mb-3">📢</div>
         <h3 class="text-sm font-bold text-white">No announcements found in this filter</h3>
         <p class="text-xs text-gray-500 mt-1">Click "Create New Announcement" to announce a store discount or new menu item.</p>
@@ -75,7 +75,7 @@
         <div 
           v-for="item in filteredAnnouncements" 
           :key="item.id"
-          class="p-5 rounded-3xl bg-surface-900 border flex flex-col justify-between hover:border-surface-700 transition-all shadow-md"
+          class="p-5 rounded-2xl bg-surface-900 border flex flex-col justify-between hover:border-surface-700 transition-all shadow-md"
           :class="item.is_active ? 'border-surface-800' : 'border-dashed border-surface-700/80 opacity-75'">
           
           <div>
@@ -97,7 +97,7 @@
                 class="px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-colors flex items-center gap-1.5 cursor-pointer"
                 :class="item.is_active ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-surface-800 text-gray-400 border-surface-700'"
                 :title="item.is_active ? 'Click to hide announcement' : 'Click to show announcement'">
-                <span class="w-1.5 h-1.5 rounded-full" :class="item.is_active ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'"></span>
+                <span class="w-1.5 h-1.5 rounded-full" :class="item.is_active ? 'bg-emerald-400 ' : 'bg-gray-500'"></span>
                 <span>{{ item.is_active ? 'Published' : 'Hidden / Draft' }}</span>
               </button>
             </div>

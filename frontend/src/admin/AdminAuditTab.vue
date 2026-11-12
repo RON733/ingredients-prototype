@@ -1,6 +1,6 @@
 <template>
 <!-- Unauthorized Fallback if non-Super Admin somehow navigates here -->
-    <div v-if="!store.isSuperAdmin" class="p-8 sm:p-12 rounded-3xl bg-surface-900 border border-rose-500/40 text-center space-y-4 shadow-2xl animate-fade-in">
+    <div v-if="!store.isSuperAdmin" class="p-8 sm:p-12 rounded-2xl bg-surface-900 border border-rose-500/40 text-center space-y-4  animate-fade-in">
       <div class="w-16 h-16 mx-auto rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center text-2xl">
         <i class="pi pi-lock"></i>
       </div>
@@ -30,7 +30,7 @@
               Super Admin Exclusive Security Console
             </span>
           </div>
-          <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">System Audit Trail</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white tracking-tight">System Audit Trail</h2>
           <p class="text-xs text-gray-400 mt-1 max-w-2xl">
             Tamper-evident logs of administrative actions, stock modifications, orders, and system preferences. Strictly restricted to Super Admin.
           </p>
@@ -193,7 +193,7 @@
       </div>
 
       <!-- Logs Table & Mobile Cards -->
-      <div class="rounded-3xl bg-surface-800/90 border border-surface-700 overflow-hidden shadow-2xl">
+      <div class="rounded-2xl bg-surface-800/90 border border-surface-700 overflow-hidden ">
         <!-- Desktop Table (hidden on mobile) -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">

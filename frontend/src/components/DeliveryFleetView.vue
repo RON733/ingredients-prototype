@@ -1,49 +1,39 @@
 <template>
-  <div class="min-h-screen bg-surface-950 text-gray-100 py-6 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-6 animate-fade-in font-sans">
+  <div class="min-h-screen bg-surface-950 text-gray-100 py-3 sm:py-6 px-3 sm:px-6 max-w-6xl mx-auto space-y-4 font-sans">
     
     <!-- Top Fleet Operations Header -->
-    <div class="bg-surface-900 border border-surface-700/80 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
-      <!-- Glow ambient background -->
-      <div class="absolute -top-12 -left-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-12 right-1/4 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="flex items-center gap-4 relative z-10">
-        <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl shadow-lg shrink-0">
-          <i class="pi pi-compass text-2xl text-emerald-400"></i>
+    <div class="bg-surface-900 border border-surface-800 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 text-amber-400 flex items-center justify-center text-lg shrink-0">
+          <i class="pi pi-compass"></i>
         </div>
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">Delivery Rider Fleet</h1>
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live Fleet Monitor
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-base sm:text-lg font-bold text-white truncate">Delivery Fleet</h1>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-surface-950 text-emerald-400 border border-surface-800">
+              Live
             </span>
           </div>
-          <p class="text-xs text-neutral-400 mt-0.5 font-medium flex items-center gap-2">
-            <span>G Shot Teas Delivery Fleet • Santa Rosa Hub</span>
-            <span class="text-neutral-600">•</span>
-            <span class="text-amber-400/90 font-semibold">Operator: {{ store.user?.name || 'Operations Staff' }}</span>
-          </p>
+          <p class="text-[11px] text-gray-400 truncate">{{ store.user?.name || 'Operations Staff' }}</p>
         </div>
       </div>
 
-      <!-- Action Buttons: ONLY Back to Console and Refresh -->
-      <div class="flex flex-wrap items-center gap-2.5 relative z-10 shrink-0">
+      <div class="flex items-center gap-2 shrink-0">
         <button 
           type="button"
           @click="refreshAll"
           :disabled="loading"
-          class="px-3.5 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-300 text-xs font-bold border border-surface-700 transition-all cursor-pointer flex items-center gap-2 shadow-sm disabled:opacity-50">
+          class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 text-xs font-semibold border border-surface-700 transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50">
           <i class="pi pi-refresh text-xs" :class="{ 'animate-spin': loading }"></i>
-          <span>{{ loading ? 'Refreshing...' : 'Refresh' }}</span>
+          <span>Refresh</span>
         </button>
 
         <button 
           type="button"
           @click="returnToConsole"
-          class="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-black border border-amber-500/40 transition-all cursor-pointer flex items-center gap-2 shadow-md hover:scale-[1.02]">
+          class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
           <i class="pi pi-arrow-left text-xs"></i>
-          <span>{{ store.isStaffOnly ? 'Back to Console' : 'Back to Admin' }}</span>
+          <span>{{ store.isStaffOnly ? 'Console' : 'Admin' }}</span>
         </button>
       </div>
     </div>
@@ -123,7 +113,7 @@
         :class="activeTab === 'riders' && riderFilter === 'available' ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-surface-800 hover:border-surface-700'">
         <div class="flex items-center justify-between mb-2">
           <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">Available Riders</span>
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400" :class="{ 'animate-ping': availableRiders.length > 0 }"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400" :class="{ '': availableRiders.length > 0 }"></span>
         </div>
         <div class="text-2xl sm:text-3xl font-black text-white tracking-tight">{{ availableRiders.length }}</div>
         <p class="text-[11px] text-neutral-400 mt-1 font-medium">Ready for order dispatch</p>
@@ -234,7 +224,7 @@
         <span>Remittances</span>
         <span 
           class="px-2 py-0.5 rounded-full text-[10px] font-black"
-          :class="pendingRemittances.length > 0 ? 'bg-rose-500 text-white animate-pulse' : (activeTab === 'remittances' ? 'bg-emerald-500 text-black' : 'bg-surface-800 text-neutral-300')">
+          :class="pendingRemittances.length > 0 ? 'bg-rose-500 text-white ' : (activeTab === 'remittances' ? 'bg-emerald-500 text-black' : 'bg-surface-800 text-neutral-300')">
           {{ pendingRemittances.length > 0 ? pendingRemittances.length + ' Pending' : (store.remittances?.length || 0) }}
         </span>
       </button>
@@ -292,7 +282,7 @@
       </div>
 
       <!-- Empty State for Riders -->
-      <div v-if="filteredRiders.length === 0" class="bg-surface-900 border border-surface-800 rounded-3xl p-10 text-center space-y-3 shadow-xl">
+      <div v-if="filteredRiders.length === 0" class="bg-surface-900 border border-surface-800 rounded-2xl p-10 text-center space-y-3 shadow-xl">
         <div class="w-14 h-14 rounded-2xl bg-surface-800 border border-surface-700 mx-auto flex items-center justify-center text-2xl text-neutral-500">
           <i class="pi pi-users text-2xl"></i>
         </div>
@@ -313,7 +303,7 @@
         <div 
           v-for="rider in filteredRiders" 
           :key="rider.id"
-          class="bg-surface-900 border border-surface-800 hover:border-surface-700 rounded-3xl p-5 shadow-xl transition-all space-y-4 relative overflow-hidden group">
+          class="bg-surface-900 border border-surface-800 hover:border-surface-700 rounded-2xl p-5 shadow-xl transition-all space-y-4 relative overflow-hidden group">
           
           <!-- Top Card Row: Avatar, Name & Status Badge -->
           <div class="flex items-start justify-between gap-3">
@@ -342,25 +332,25 @@
               <span 
                 v-if="rider.driver_status === 'on_delivery'"
                 class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5 shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                <span class="w-2 h-2 rounded-full bg-cyan-400 "></span>
                 On Delivery • Gone ({{ rider.active_deliveries_count || 0 }})
               </span>
               <span 
                 v-else-if="rider.active_deliveries_count > 0"
                 class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5 shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                <span class="w-2 h-2 rounded-full bg-sky-400 "></span>
                 At Store • {{ rider.active_deliveries_count }} Queued
               </span>
               <span 
                 v-else-if="rider.pending_notice"
                 class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-400 "></span>
                 Break Pending
               </span>
               <span 
                 v-else-if="rider.is_available"
                 class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400 "></span>
                 Available for Orders
               </span>
               <span 
@@ -510,8 +500,8 @@
     <div v-if="activeTab === 'in_delivery'" class="space-y-4 animate-fade-in">
       <div 
         v-if="activeDeliveries.length === 0" 
-        class="bg-surface-900 border border-surface-800 rounded-3xl p-10 sm:p-14 text-center space-y-4 shadow-2xl max-w-2xl mx-auto">
-        <div class="w-16 h-16 rounded-3xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 mx-auto flex items-center justify-center text-3xl shadow-lg">
+        class="bg-surface-900 border border-surface-800 rounded-2xl p-10 sm:p-14 text-center space-y-4 shadow-2xl max-w-2xl mx-auto">
+        <div class="w-16 h-16 rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 mx-auto flex items-center justify-center text-3xl shadow-lg">
           <i class="pi pi-send text-3xl text-cyan-400"></i>
         </div>
         <div class="space-y-1">
@@ -541,11 +531,11 @@
         <div 
           v-for="order in activeDeliveries" 
           :key="order.id"
-          class="bg-surface-900 border border-surface-800 hover:border-cyan-500/50 rounded-3xl p-5 sm:p-6 shadow-2xl transition-all space-y-5">
+          class="bg-surface-900 border border-surface-800 hover:border-cyan-500/50 rounded-2xl p-5 sm:p-3.5 sm:p-5 shadow-2xl transition-all space-y-5">
           
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-800">
             <div class="flex items-center gap-3">
-              <span class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+              <span class="w-3 h-3 rounded-full bg-cyan-400 "></span>
               <div>
                 <div class="flex items-center gap-2">
                   <h3 class="text-base font-black text-white font-mono">Order #{{ order.order_number }}</h3>
@@ -700,7 +690,7 @@
         <span>Total Delivery Revenue: <strong class="text-amber-400 font-mono">₱{{ totalHistoryAmount.toLocaleString() }}</strong></span>
       </div>
 
-      <div v-if="filteredHistory.length === 0" class="bg-surface-900 border border-surface-800 rounded-3xl p-10 text-center space-y-3 shadow-xl">
+      <div v-if="filteredHistory.length === 0" class="bg-surface-900 border border-surface-800 rounded-2xl p-10 text-center space-y-3 shadow-xl">
         <div class="w-14 h-14 rounded-2xl bg-surface-800 border border-surface-700 mx-auto flex items-center justify-center text-2xl text-neutral-500">
           <i class="pi pi-history text-2xl"></i>
         </div>
@@ -796,7 +786,7 @@
       class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-fade-in cursor-pointer">
       <div 
         @click.stop 
-        class="bg-surface-900 border border-surface-700 rounded-3xl p-5 max-w-lg w-full space-y-4 shadow-2xl relative">
+        class="bg-surface-900 border border-surface-700 rounded-2xl p-5 max-w-lg w-full space-y-4 shadow-2xl relative">
         <div class="flex items-center justify-between pb-2 border-b border-surface-800">
           <h4 class="text-sm font-bold text-white flex items-center gap-2">
             <i class="pi pi-image text-amber-400"></i> Rider Proof of Unavailability

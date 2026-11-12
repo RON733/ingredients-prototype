@@ -1,9 +1,9 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
+  <div class="space-y-4 sm:space-y-6">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+        <h2 class="text-xl sm:text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
           <i class="pi pi-wallet text-amber-400"></i>
           <span>COD Rider Remittances</span>
         </h2>
@@ -26,9 +26,9 @@
       <div class="bg-surface-900 border rounded-2xl p-4 shadow-lg" :class="pendingRemittances.length > 0 ? 'border-amber-500/50 bg-amber-500/5' : 'border-surface-800'">
         <div class="flex items-center justify-between mb-1.5">
           <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">Pending Acceptance</span>
-          <span v-if="pendingRemittances.length > 0" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+          <span v-if="pendingRemittances.length > 0" class="w-2.5 h-2.5 rounded-full bg-amber-400 "></span>
         </div>
-        <div class="text-2xl font-black text-white font-mono">₱{{ Number(summary.pending_amount || 0).toFixed(2) }}</div>
+        <div class="text-lg sm:text-xl font-bold text-white font-mono">₱{{ Number(summary.pending_amount || 0).toFixed(2) }}</div>
         <p class="text-[11px] text-neutral-400 mt-1">{{ pendingRemittances.length }} handover request(s)</p>
       </div>
 
@@ -46,7 +46,7 @@
           <span class="text-[10px] font-black uppercase tracking-wider text-purple-400">All-Time Remitted</span>
           <i class="pi pi-chart-bar text-xs text-purple-400"></i>
         </div>
-        <div class="text-2xl font-black text-white font-mono">₱{{ Number(summary.total_accepted_amount || 0).toFixed(2) }}</div>
+        <div class="text-lg sm:text-xl font-bold text-white font-mono">₱{{ Number(summary.total_accepted_amount || 0).toFixed(2) }}</div>
         <p class="text-[11px] text-neutral-400 mt-1">Total verified COD cash</p>
       </div>
 
@@ -55,7 +55,7 @@
           <span class="text-[10px] font-black uppercase tracking-wider text-cyan-400">Riders Holding Cash</span>
           <i class="pi pi-users text-xs text-cyan-400"></i>
         </div>
-        <div class="text-2xl font-black text-white">{{ ridersHoldingCashCount }}</div>
+        <div class="text-lg sm:text-xl font-bold text-white">{{ ridersHoldingCashCount }}</div>
         <p class="text-[11px] text-neutral-400 mt-1">Unremitted balance &gt; ₱0.00</p>
       </div>
     </div>
@@ -99,7 +99,7 @@
     <!-- Pending Handovers Requiring Staff / Admin Acceptance -->
     <div v-if="pendingRemittances.length > 0" class="space-y-3">
       <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 "></span>
         <h3 class="text-sm font-black text-white uppercase tracking-wider">
           Pending Handover Requests ({{ pendingRemittances.length }})
         </h3>
@@ -108,7 +108,7 @@
       <div
         v-for="rem in pendingRemittances"
         :key="rem.id"
-        class="bg-amber-950/25 border border-amber-500/40 rounded-3xl p-5 shadow-xl space-y-4">
+        class="bg-amber-950/25 border border-amber-500/40 rounded-2xl p-5  space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-amber-500/20">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">
@@ -120,7 +120,7 @@
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-900 text-amber-300 border border-amber-500/30">
                   {{ rem.reference_number }}
                 </span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 ">
                   Awaiting Acceptance
                 </span>
               </div>
@@ -132,7 +132,7 @@
 
           <div class="text-left md:text-right">
             <p class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Cash to Receive</p>
-            <p class="text-2xl font-black text-white font-mono">₱{{ Number(rem.amount).toFixed(2) }}</p>
+            <p class="text-lg sm:text-xl font-bold text-white font-mono">₱{{ Number(rem.amount).toFixed(2) }}</p>
           </div>
         </div>
 
@@ -249,7 +249,7 @@
       </div>
 
       <!-- Empty History -->
-      <div v-if="filteredHistory.length === 0" class="bg-surface-900 border border-surface-800 rounded-3xl p-10 text-center space-y-2 shadow-xl">
+      <div v-if="filteredHistory.length === 0" class="bg-surface-900 border border-surface-800 rounded-2xl p-10 text-center space-y-2 ">
         <div class="text-4xl">🧾</div>
         <h4 class="text-base font-bold text-white">No Remittance Records Found</h4>
         <p class="text-xs text-neutral-400">No rider remittance handovers match the selected filters.</p>

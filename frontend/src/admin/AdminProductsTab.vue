@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Header & Actions -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -7,7 +7,7 @@
           <span class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
             <i class="pi pi-box"></i> MENU & PRICING MANAGEMENT
           </span>
-          <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">Product Menu</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white mt-1">Product Menu</h2>
           <p class="text-xs text-gray-400">Manage menu items, toggle stock availability, and configure promotional discounts.</p>
         </div>
 
@@ -40,7 +40,7 @@
         class="p-4 rounded-2xl bg-surface-900 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
-            <i class="pi pi-tag text-base animate-pulse"></i>
+            <i class="pi pi-tag text-base "></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -86,7 +86,7 @@
               ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 font-bold shadow-sm' 
               : 'bg-surface-850/80 text-neutral-400 hover:text-white border-surface-750/60'">
             <span>{{ cat }}</span>
-            <span v-if="categoryDiscountCount(cat) > 0" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Discount active in this section"></span>
+            <span v-if="categoryDiscountCount(cat) > 0" class="w-2 h-2 rounded-full bg-amber-400 " title="Discount active in this section"></span>
           </button>
         </div>
 
@@ -118,7 +118,7 @@
         <div 
           v-for="product in filteredProducts" 
           :key="product.id"
-          class="rounded-3xl bg-surface-800/90 border overflow-hidden flex flex-col justify-between shadow-xl transition-all"
+          class="rounded-2xl bg-surface-800/90 border overflow-hidden flex flex-col justify-between  transition-all"
           :class="isProductDiscounted(product) ? 'border-rose-500/40 hover:border-rose-400 shadow-rose-950/20 ring-1 ring-rose-500/20' : 'border-surface-700 hover:border-surface-600'">
           
           <!-- Image Container -->
@@ -236,7 +236,7 @@
       </div>
       <!-- ================= DISCOUNT MANAGER MODAL ================= -->
       <div v-if="discountModalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-        <div class="w-full max-w-xl bg-surface-900 border border-surface-700 rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto">
+        <div class="w-full max-w-xl bg-surface-900 border border-surface-700 rounded-2xl p-3.5 sm:p-5 sm:p-7 space-y-5  max-h-[92vh] overflow-y-auto">
           
           <!-- Modal Header -->
           <div class="flex justify-between items-start border-b border-surface-800 pb-4">
@@ -495,7 +495,7 @@
       </div>
       <!-- ================= ADD / EDIT PRODUCT MODAL ================= -->
       <div v-if="modalOpen" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-        <div class="w-full max-w-3xl bg-surface-900 border border-surface-700 rounded-3xl p-6 space-y-5 max-h-[92vh] overflow-y-auto shadow-2xl">
+        <div class="w-full max-w-3xl bg-surface-900 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-5 max-h-[92vh] overflow-y-auto ">
           <div class="flex justify-between items-center border-b border-surface-700 pb-3">
             <div>
               <h3 class="text-lg font-black text-white">
@@ -672,7 +672,7 @@
               </div>
 
               <div class="p-3 rounded-2xl bg-surface-950/90 border border-surface-800">
-                <div class="rounded-2xl bg-surface-800/90 border border-surface-700/80 overflow-hidden shadow-xl flex flex-col">
+                <div class="rounded-2xl bg-surface-800/90 border border-surface-700/80 overflow-hidden  flex flex-col">
                   <!-- Preview Picture -->
                   <div class="relative h-44 bg-surface-900 overflow-hidden flex items-center justify-center group">
                     <img 

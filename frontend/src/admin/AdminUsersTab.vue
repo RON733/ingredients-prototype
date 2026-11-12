@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -9,7 +9,7 @@
               <i class="pi pi-shield text-[9px]"></i> Authorized Administration Console
             </span>
           </div>
-          <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">User & Role Management</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white tracking-tight">User & Role Management</h2>
           <p class="text-xs text-gray-400 mt-1 max-w-2xl">
             Manage store personnel accounts: Baristas, Delivery Riders, and Administrators. Assign 4-digit POS PINs for staff and operational privileges.
           </p>
@@ -133,7 +133,7 @@
       </div>
 
       <!-- Users Table & Mobile Cards -->
-      <div class="rounded-3xl bg-surface-800/90 border border-surface-700 overflow-hidden shadow-2xl">
+      <div class="rounded-2xl bg-surface-800/90 border border-surface-700 overflow-hidden ">
         <!-- Desktop Table (hidden on mobile) -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">
@@ -370,7 +370,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
         @click.self="createModalOpen = false">
         
-        <div class="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-7 shadow-2xl text-white space-y-5 animate-scale-up">
+        <div class="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-2xl p-5 sm:p-7  text-white space-y-5 animate-scale-up">
           
           <!-- Close button -->
           <button 

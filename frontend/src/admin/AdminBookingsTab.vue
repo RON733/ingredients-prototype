@@ -1,5 +1,5 @@
 <template>
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
       
       <!-- Top Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -7,7 +7,7 @@
           <span class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
             <i class="pi pi-calendar"></i> RESERVATIONS & CATERING
           </span>
-          <h2 class="text-2xl sm:text-3xl font-black text-white mt-1">Event Bookings</h2>
+          <h2 class="text-lg sm:text-2xl font-bold text-white mt-1">Event Bookings</h2>
           <p class="text-xs text-gray-400">Manage customer reservations and edit booking packages, prices, pictures, and descriptions.</p>
         </div>
 
@@ -68,7 +68,7 @@
           <div 
             v-for="b in bookings" 
             :key="b.id"
-            class="p-5 sm:p-6 rounded-3xl bg-surface-800/90 border border-surface-700 shadow-xl space-y-4">
+            class="p-3.5 sm:p-5 rounded-2xl bg-surface-800/90 border border-surface-700  space-y-4">
             
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-700/60 pb-3">
               <div>
@@ -148,7 +148,7 @@
           </div>
         </div>
 
-        <div v-else class="text-center py-20 bg-surface-800/40 rounded-3xl border border-surface-700/50">
+        <div v-else class="text-center py-20 bg-surface-800/40 rounded-2xl border border-surface-700/50">
           <div class="text-4xl mb-3">📅</div>
           <p class="text-base font-bold text-white">No event booking requests</p>
           <p class="text-xs text-gray-500 mt-1">Catering and mobile bar reservations will appear here.</p>
@@ -180,7 +180,7 @@
           <div
             v-for="pkg in store.bookingPackages"
             :key="pkg.id"
-            class="rounded-3xl bg-surface-900 border overflow-hidden flex flex-col justify-between shadow-lg transition-all"
+            class="rounded-2xl bg-surface-900 border overflow-hidden flex flex-col justify-between shadow-lg transition-all"
             :class="pkg.is_active !== false ? 'border-surface-700 hover:border-amber-500/40' : 'border-dashed border-surface-700 opacity-75'">
 
             <div>
@@ -288,7 +288,7 @@
         v-if="packageModalOpen"
         class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
         @click.self="packageModalOpen = false">
-        <div class="w-full max-w-3xl bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-6 space-y-5 max-h-[92vh] overflow-y-auto shadow-2xl">
+        <div class="w-full max-w-3xl bg-surface-900 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-5 max-h-[92vh] overflow-y-auto ">
 
           <div class="flex items-start justify-between border-b border-surface-800 pb-3">
             <div>
@@ -585,7 +585,7 @@
         v-if="bookingEditModalOpen"
         class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
         @click.self="bookingEditModalOpen = false">
-        <div class="w-full max-w-xl bg-surface-900 border border-surface-700 rounded-3xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+        <div class="w-full max-w-xl bg-surface-900 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-4 max-h-[92vh] overflow-y-auto ">
           <div class="flex items-start justify-between border-b border-surface-800 pb-3">
             <div>
               <h3 class="text-lg font-black text-white">Edit Booking #{{ editingBooking?.id }}</h3>

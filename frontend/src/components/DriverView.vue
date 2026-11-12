@@ -1,67 +1,60 @@
 <template>
-<div class="min-h-screen bg-surface-950 text-gray-100 py-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
+<div class="min-h-screen bg-surface-950 text-gray-100 py-3 sm:py-6 px-3 sm:px-6 max-w-4xl mx-auto space-y-4">
       
       <!-- Top Driver Profile & Operational Bar -->
-      <div class="bg-surface-900 border border-surface-700/80 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3.5 min-w-0">
-          <div class="w-12 h-12 rounded-2xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center text-2xl shadow-lg shrink-0">
+      <div class="bg-surface-900 border border-surface-800 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-lg shrink-0">
             🛵
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <h2 class="text-base sm:text-lg font-black text-white truncate">{{ store.user?.name || 'Delivery Rider' }}</h2>
+              <h2 class="text-sm sm:text-base font-bold text-white truncate">{{ store.user?.name || 'Delivery Rider' }}</h2>
               <span 
-                class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0"
+                class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0 border"
                 :class="hasPendingNotice 
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                  ? 'bg-surface-800 text-amber-300 border-amber-500/30' 
                   : (!isAvailable 
-                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' 
-                    : (isOnDelivery ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 animate-pulse' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'))">
-                {{ hasPendingNotice ? 'PENDING APPROVAL' : (!isAvailable ? 'ON BREAK' : (isOnDelivery ? 'ON DELIVERY' : 'ON DUTY')) }}
+                    ? 'bg-surface-800 text-rose-400 border-rose-500/30' 
+                    : (isOnDelivery ? 'bg-surface-800 text-amber-400 border-amber-500/30' : 'bg-surface-800 text-emerald-400 border-emerald-500/30'))">
+                {{ hasPendingNotice ? 'Pending' : (!isAvailable ? 'On Break' : (isOnDelivery ? 'On Delivery' : 'On Duty')) }}
               </span>
             </div>
-            <p class="text-xs text-neutral-400 truncate mt-0.5">
-              G Shot Teas Delivery Fleet • Santa Rosa Hub
-            </p>
+            <p class="text-[11px] text-gray-400 truncate">Santa Rosa Hub</p>
           </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <!-- Rider Availability Toggle Switch / Notice Status -->
           <button 
             type="button"
             @click="handleAvailabilityClick"
-            class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl text-xs font-black border transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer active:scale-95"
+            class="flex-1 sm:flex-initial px-3 py-2 rounded-xl text-xs font-semibold border transition-colors flex items-center justify-center gap-1.5 cursor-pointer bg-surface-800 hover:bg-surface-700"
             :class="hasPendingNotice 
-              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30' 
+              ? 'text-amber-300 border-amber-500/40' 
               : (isAvailable 
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' 
-                : 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30')">
-            <span class="w-2.5 h-2.5 rounded-full shrink-0" 
-              :class="hasPendingNotice 
-                ? 'bg-amber-400 animate-ping' 
-                : (isAvailable ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400')"></span>
-            <span class="truncate">{{ hasPendingNotice ? 'Pending Acceptance' : (isAvailable ? 'Available for Orders' : 'On Break / Offline') }}</span>
+                ? 'text-emerald-400 border-surface-700' 
+                : 'text-rose-400 border-rose-500/40')">
+            <span class="w-2 h-2 rounded-full shrink-0" 
+              :class="hasPendingNotice ? 'bg-amber-400' : (isAvailable ? 'bg-emerald-400' : 'bg-rose-400')"></span>
+            <span class="truncate">{{ hasPendingNotice ? 'Pending' : (isAvailable ? 'Available' : 'On Break') }}</span>
           </button>
 
-          <!-- Return to Management Console (Staff & Admin) -->
           <button 
             v-if="store.isStaffOrAdmin"
             type="button"
             @click="store.currentView = 'admin'"
-            class="px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-95 shrink-0">
+            class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 text-xs font-semibold border border-surface-700 transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
             <i class="pi pi-arrow-left text-xs"></i>
-            <span class="hidden xs:inline">{{ store.isStaffOnly ? 'Console' : 'Admin' }}</span>
+            <span>{{ store.isStaffOnly ? 'Console' : 'Admin' }}</span>
           </button>
 
-          <!-- Sign Out from Operations Portal -->
           <button 
             type="button"
             @click="handleLogout"
-            class="px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-95 shrink-0"
+            class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-rose-400 text-xs font-semibold border border-surface-700 transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
             title="Sign Out">
             <i class="pi pi-power-off text-xs"></i>
-            <span class="hidden xs:inline">Sign Out</span>
+            <span class="hidden sm:inline">Sign Out</span>
           </button>
         </div>
       </div>
@@ -126,33 +119,26 @@
         </div>
       </div>
 
-      <!-- Quick Delivery KPIs (Responsive 4-Card Fleet Metric Grid) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-        <!-- Assigned Dispatches -->
-        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-sky-400">Assigned Dispatches</p>
-          <p class="text-2xl font-black text-white mt-1">{{ activeDeliveries.length }}</p>
+      <!-- Quick Delivery KPIs -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+        <div class="bg-surface-900 border border-surface-800 rounded-xl p-3">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Assigned</p>
+          <p class="text-xl font-bold text-white mt-0.5">{{ activeDeliveries.length }}</p>
         </div>
-
-        <!-- Delivered Today (Strictly completed today in rider local time) -->
-        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Delivered Today</p>
-          <p class="text-2xl font-black text-white mt-1">{{ deliveredTodayDeliveries.length }}</p>
+        <div class="bg-surface-900 border border-surface-800 rounded-xl p-3">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Today</p>
+          <p class="text-xl font-bold text-white mt-0.5">{{ deliveredTodayDeliveries.length }}</p>
         </div>
-
-        <!-- Total Delivery (All completed deliveries) -->
-        <div class="bg-surface-900 border border-surface-700 rounded-2xl p-4 flex flex-col justify-between">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Total Delivery</p>
-          <p class="text-2xl font-black text-white mt-1">{{ completedDeliveries.length }}</p>
+        <div class="bg-surface-900 border border-surface-800 rounded-xl p-3">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Total</p>
+          <p class="text-xl font-bold text-white mt-0.5">{{ completedDeliveries.length }}</p>
         </div>
-
-        <!-- COD Cash to Remit -->
-        <div class="bg-surface-900 border rounded-2xl p-4 flex flex-col justify-between"
-          :class="pendingRemittance ? 'border-amber-500/50 bg-amber-500/5' : (totalCashToRemit > 0 ? 'border-brand-500/40' : 'border-surface-700')">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-brand-400">COD Cash to Remit</p>
-          <p class="text-2xl font-black text-white mt-1">₱{{ Number(totalCashToRemit).toFixed(2) }}</p>
-          <p class="text-[10px] mt-1 font-semibold" :class="pendingRemittance ? 'text-amber-300' : (totalCashToRemit > 0 ? 'text-brand-300' : 'text-emerald-400')">
-            {{ pendingRemittance ? '⏳ Pending Staff Acceptance' : (totalCashToRemit > 0 ? readyToRemitOrdersCount + ' order(s) unremitted' : 'All settled ✓') }}
+        <div class="bg-surface-900 border rounded-xl p-3"
+          :class="pendingRemittance || totalCashToRemit > 0 ? 'border-amber-500/40' : 'border-surface-800'">
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-gray-400">COD Cash</p>
+          <p class="text-xl font-bold text-white mt-0.5">₱{{ Number(totalCashToRemit).toFixed(2) }}</p>
+          <p class="text-[10px] mt-0.5" :class="pendingRemittance ? 'text-amber-400' : (totalCashToRemit > 0 ? 'text-amber-300' : 'text-emerald-400')">
+            {{ pendingRemittance ? 'Pending' : (totalCashToRemit > 0 ? readyToRemitOrdersCount + ' to remit' : 'Settled') }}
           </p>
         </div>
       </div>
@@ -211,7 +197,7 @@
       </div>
 
       <!-- Delivery Tabs (Segmented Controller) -->
-      <div class="grid grid-cols-3 p-1 rounded-2xl bg-surface-900 border border-surface-800 shadow-md gap-1">
+      <div class="grid grid-cols-3 p-1 rounded-xl bg-surface-900 border border-surface-800 gap-1">
         <button 
           @click="activeTab = 'active'"
           class="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
@@ -232,7 +218,7 @@
           :class="activeTab === 'remittances' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
           <i class="pi pi-wallet text-xs"></i>
           <span class="truncate">Remittances ({{ remittanceHistory.length }})</span>
-          <span v-if="pendingRemittance" class="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0"></span>
+          <span v-if="pendingRemittance" class="w-2 h-2 rounded-full bg-amber-400  shrink-0"></span>
         </button>
       </div>
 
@@ -242,7 +228,7 @@
         <!-- Rider Takeoff / On-Delivery Lock Card -->
         <div 
           v-if="activeDeliveries.length > 0 && isAvailable && !hasPendingNotice"
-          class="p-4 sm:p-5 rounded-3xl border shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all"
+          class="p-4 sm:p-5 rounded-2xl border shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all"
           :class="isOnDelivery 
             ? 'bg-cyan-950/40 border-cyan-500/50 text-cyan-100' 
             : 'bg-surface-900 border-sky-500/40 text-gray-100'">
@@ -250,7 +236,7 @@
             <div 
               class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 border"
               :class="isOnDelivery ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' : 'bg-sky-500/15 text-sky-400 border-sky-500/30'">
-              <span v-if="isOnDelivery" class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+              <span v-if="isOnDelivery" class="w-3 h-3 rounded-full bg-cyan-400 "></span>
               <i v-else class="pi pi-send text-base"></i>
             </div>
             <div>
@@ -294,7 +280,7 @@
         </div>
         
         <!-- Empty State -->
-        <div v-if="activeDeliveries.length === 0" class="text-center py-16 bg-surface-900/60 border border-surface-700 rounded-3xl p-6">
+        <div v-if="activeDeliveries.length === 0" class="text-center py-16 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5">
           <div class="text-4xl mb-3">🛵✨</div>
           <h3 class="text-base font-bold text-white">No Dispatches Right Now</h3>
           <p class="text-xs text-gray-400 mt-1">When kitchen staff dispatches a delivery to you, it will appear here immediately.</p>
@@ -309,14 +295,14 @@
         <div 
           v-for="order in activeDeliveries" 
           :key="order.id"
-          class="bg-surface-900 border border-surface-700/80 rounded-3xl p-4 sm:p-6 space-y-4 shadow-xl relative overflow-hidden">
+          class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-3.5 sm:p-5 space-y-4 shadow-xl relative overflow-hidden">
           
           <!-- Header: Order ID & Status Badge -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-800">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-base sm:text-lg font-black text-white">{{ order.order_number }}</span>
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/20 text-sky-400 border border-sky-500/30 animate-pulse">
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-500/20 text-sky-400 border border-sky-500/30 ">
                   OUT FOR DELIVERY
                 </span>
               </div>
@@ -376,7 +362,7 @@
                   @click="broadcastOrderGps(order)"
                   class="w-full py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer border"
                   :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/50' : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
-                  <span class="w-2.5 h-2.5 rounded-full" :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-400 animate-ping' : 'bg-white'"></span>
+                  <span class="w-2.5 h-2.5 rounded-full" :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-400 ' : 'bg-white'"></span>
                   <i class="pi pi-send text-xs"></i>
                   <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? 'Sharing Real-Time GPS (Tap to Refresh)' : 'Share My Location Real-Time with Customer' }}</span>
                 </button>
@@ -395,7 +381,7 @@
                   : 'bg-amber-500/10 border-amber-500/30 text-amber-200'">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div class="flex items-center gap-2 text-xs">
-                    <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="order.on_the_way_notified_at ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'"></span>
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" :class="order.on_the_way_notified_at ? 'bg-emerald-400' : 'bg-amber-400 '"></span>
                     <div>
                       <p v-if="order.on_the_way_notified_at" class="font-bold leading-tight">
                         Customer Alerted: On The Way
@@ -474,7 +460,7 @@
           <!-- Mark Completed Button (Rider Exclusive Authority) -->
           <div class="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-surface-800">
             <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400  shrink-0"></span>
               <span>Only you can mark this order delivered. Staff page will update immediately.</span>
             </div>
 
@@ -569,7 +555,7 @@
           <!-- Filter Summary & Totals -->
           <div class="pt-2.5 border-t border-surface-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
             <div class="flex items-center gap-2 text-gray-400">
-              <span class="w-2 h-2 rounded-full" :class="historyFilterDate ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'"></span>
+              <span class="w-2 h-2 rounded-full" :class="historyFilterDate ? 'bg-amber-400 ' : 'bg-emerald-400'"></span>
               <span v-if="historyFilterDate">
                 Showing deliveries for: <strong class="text-white">{{ formatFilterDisplayDate(historyFilterDate) }}</strong>
               </span>
@@ -591,14 +577,14 @@
         </div>
 
         <!-- Empty State Case 1: Driver has 0 completed deliveries ever -->
-        <div v-if="completedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-3xl p-6 space-y-2">
+        <div v-if="completedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-2">
           <div class="text-4xl mb-2">📋</div>
           <h3 class="text-base font-bold text-white">No Deliveries Completed Yet</h3>
           <p class="text-xs text-gray-400">When you complete dispatches, your delivery history and remittance details will show up here.</p>
         </div>
 
         <!-- Empty State Case 2: Deliveries exist, but none on selected date -->
-        <div v-else-if="filteredCompletedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-3xl p-6 space-y-3">
+        <div v-else-if="filteredCompletedDeliveries.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-3">
           <div class="text-4xl mb-1">📅</div>
           <h3 class="text-base font-bold text-white">No Deliveries on {{ formatFilterDisplayDate(historyFilterDate) }}</h3>
           <p class="text-xs text-gray-400 max-w-md mx-auto">
@@ -665,7 +651,7 @@
       <div v-if="activeTab === 'remittances'" class="space-y-4">
         
         <!-- Remittance Summary Card -->
-        <div class="bg-surface-900 border border-surface-700/80 rounded-3xl p-5 shadow-xl space-y-4">
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-5 shadow-xl space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
@@ -732,7 +718,7 @@
         </div>
 
         <!-- Empty Remittance History -->
-        <div v-if="filteredRemittanceHistory.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-3xl p-6 space-y-2">
+        <div v-if="filteredRemittanceHistory.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-2">
           <div class="text-4xl mb-2">🧾</div>
           <h3 class="text-base font-bold text-white">No Remittance History Yet</h3>
           <p class="text-xs text-gray-400">When you hand over COD cash to the store, your remittance records and approvals will appear here.</p>
@@ -753,7 +739,7 @@
                   :class="rem.status === 'accepted'
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                     : (rem.status === 'pending'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 animate-pulse'
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 '
                       : 'bg-rose-500/20 text-rose-300 border-rose-500/30')">
                   {{ rem.status === 'pending' ? 'Pending Staff Acceptance' : rem.status.toUpperCase() }}
                 </span>
@@ -820,7 +806,7 @@
         v-if="showRemitModal"
         class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
         @click.self="showRemitModal = false">
-        <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-3xl p-6 shadow-2xl space-y-4 relative overflow-hidden text-xs max-h-[90vh] flex flex-col">
+        <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-2xl p-3.5 sm:p-5 shadow-2xl space-y-4 relative overflow-hidden text-xs max-h-[90vh] flex flex-col">
           <div class="flex items-center justify-between pb-3 border-b border-surface-800 shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl">
@@ -901,7 +887,7 @@
         class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
         @click.self="showUnavailableModal = false">
         
-        <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="w-full max-w-lg bg-surface-900 border border-surface-750 rounded-2xl p-3.5 sm:p-5 sm:p-7 shadow-2xl space-y-5 relative overflow-hidden flex flex-col max-h-[92vh]">
           
           <!-- Ambient Glow -->
           <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-48 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -1063,7 +1049,7 @@
         class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
         @click.self="showReturnOnlineModal = false">
         
-        <div class="w-full max-w-md bg-surface-900 border border-surface-750 rounded-3xl p-6 shadow-2xl space-y-4 relative overflow-hidden text-xs">
+        <div class="w-full max-w-md bg-surface-900 border border-surface-750 rounded-2xl p-3.5 sm:p-5 shadow-2xl space-y-4 relative overflow-hidden text-xs">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xl">
               🛵
