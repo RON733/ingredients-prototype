@@ -1,9 +1,9 @@
 <template>
 <div 
       v-if="store.bookingModalOpen"
-      class="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      class="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-2.5 sm:p-4 animate-fade-in"
       @click.self="store.bookingModalOpen = false">
-           <div class="relative w-full max-w-xl bg-surface-900 border border-surface-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+           <div class="relative w-full max-w-2xl bg-surface-900 border border-surface-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[92vh] transition-all duration-300">
         
         <!-- Header -->
         <div class="p-4 sm:p-6 bg-surface-850 border-b border-surface-700 flex items-center justify-between shrink-0">
@@ -63,49 +63,111 @@
         <!-- Form Body -->
         <form v-if="store.bookingModalTab === 'form'" @submit.prevent="submitBooking" class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
           
-          <!-- Package Quick Select Banner -->
+          <!-- Package Quick Select Carousel -->
           <div
             v-if="bannerPackages.length > 0"
-            class="grid grid-cols-1 gap-2 sm:gap-3 p-3 rounded-2xl bg-surface-950/70 border border-surface-800"
-            :class="bannerPackages.length >= 2 ? 'sm:grid-cols-2' : ''">
-            <div 
-              v-for="pkg in bannerPackages"
-              :key="pkg.id"
-              @click="selectPackage(pkg)" 
-              class="p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 group"
-              :class="[
-                getAccentCardClass(pkg.accent_color, selectedPackageId === pkg.id),
-              ]">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div 
-                  v-if="pkg.image_url"
-                  @click.stop="openEnlargedImage(pkg.name, pkg.image_url, formatPriceTag(pkg), pkg)"
-                  class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden shrink-0 bg-surface-900 border border-surface-700 group/thumb cursor-zoom-in shadow-inner"
-                  :title="`Click to enlarge ${pkg.name} flyer`">
-                  <img :src="pkg.image_url" :alt="pkg.name" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-115" />
-                  <div class="absolute inset-0 bg-black/45 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity text-amber-300">
-                    <i class="pi pi-search-plus text-xs"></i>
-                  </div>
-                </div>
-                <div
-                  v-else
-                  class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl shrink-0 bg-surface-900 border border-surface-700 text-amber-400 flex items-center justify-center text-base">
-                  <i class="pi pi-calendar"></i>
-                </div>
-                <div class="min-w-0">
-                  <p class="font-black text-[11px] truncate" :class="selectedPackageId === pkg.id ? getAccentTitleClass(pkg.accent_color) : 'text-gray-300'">{{ pkg.name }}</p>
-                  <p class="text-[10px] text-gray-400 truncate">{{ formatPriceTag(pkg) }}</p>
-                </div>
+            class="p-3 sm:p-3.5 rounded-2xl bg-surface-950/75 border border-surface-800 space-y-2.5">
+            <!-- Carousel Header & Controls -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-gray-400">
+                  Available Packages
+                </span>
+                <span class="px-1.5 py-0.5 rounded-md bg-surface-800 border border-surface-700 text-[10px] font-bold text-amber-400 tabular-nums">
+                  {{ bannerPackages.length }}
+                </span>
               </div>
 
+              <div v-if="showBannerControls" class="flex items-center gap-1.5 shrink-0">
+                <span class="text-[10px] font-mono text-gray-500 mr-1 tabular-nums">
+                  {{ bannerCarouselIndex + 1 }}/{{ bannerTotalStops }}
+                </span>
+                <button
+                  type="button"
+                  @click="prevBannerSlide"
+                  aria-label="Previous package"
+                  class="w-7 h-7 rounded-full bg-surface-800 hover:bg-yellow-400 text-gray-300 hover:text-black border border-surface-700 hover:border-yellow-400 flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer">
+                  <i class="pi pi-chevron-left text-[10px]"></i>
+                </button>
+                <button
+                  type="button"
+                  @click="nextBannerSlide"
+                  aria-label="Next package"
+                  class="w-7 h-7 rounded-full bg-surface-800 hover:bg-yellow-400 text-gray-300 hover:text-black border border-surface-700 hover:border-yellow-400 flex items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer">
+                  <i class="pi pi-chevron-right text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sliding Track -->
+            <div
+              class="overflow-hidden"
+              @touchstart.passive="onBannerTouchStart"
+              @touchend.passive="onBannerTouchEnd">
+              <div
+                class="flex transition-transform duration-300 ease-out"
+                :class="bannerPackages.length >= 2 ? 'sm:-mx-1.5' : ''"
+                :style="bannerTrackStyle">
+                <div
+                  v-for="pkg in bannerPackages"
+                  :key="pkg.id"
+                  class="shrink-0"
+                  :class="bannerPackages.length >= 2 ? 'w-full sm:w-1/2 sm:px-1.5' : 'w-full'">
+                  <div
+                    @click="selectPackage(pkg)"
+                    class="h-full p-2.5 sm:p-3 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between gap-2.5 group hover:-translate-y-0.5 active:scale-[0.98]"
+                    :class="[
+                      getAccentCardClass(pkg.accent_color, selectedPackageId === pkg.id),
+                      selectedPackageId === pkg.id ? 'shadow-lg shadow-amber-500/10' : ''
+                    ]">
+                    <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div
+                        v-if="pkg.image_url"
+                        @click.stop="openEnlargedImage(pkg.name, pkg.image_url, formatPriceTag(pkg), pkg)"
+                        class="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-surface-900 border border-surface-700 group/thumb cursor-zoom-in shadow-inner"
+                        :title="`Click to enlarge ${pkg.name} flyer`">
+                        <img :src="pkg.image_url" :alt="pkg.name" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-110" />
+                        <div class="absolute inset-0 bg-black/45 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity duration-200 text-amber-300">
+                          <i class="pi pi-search-plus text-xs"></i>
+                        </div>
+                      </div>
+                      <div
+                        v-else
+                        class="w-12 h-12 rounded-xl shrink-0 bg-surface-900 border border-surface-700 text-amber-400 flex items-center justify-center text-base">
+                        <i class="pi pi-calendar"></i>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p class="font-black text-xs leading-snug line-clamp-2" :class="selectedPackageId === pkg.id ? getAccentTitleClass(pkg.accent_color) : 'text-gray-200'">
+                          {{ pkg.name }}
+                        </p>
+                        <p class="text-[11px] text-gray-400 truncate mt-0.5">{{ formatPriceTag(pkg) }}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      v-if="pkg.image_url"
+                      type="button"
+                      @click.stop="openEnlargedImage(pkg.name, pkg.image_url, formatPriceTag(pkg), pkg)"
+                      class="px-2.5 py-1.5 rounded-lg bg-surface-800/90 hover:bg-amber-500/20 text-gray-300 hover:text-amber-300 border border-surface-700/80 text-[10px] font-bold flex items-center gap-1 transition-all duration-200 active:scale-95 shrink-0 cursor-pointer"
+                      title="View full flyer">
+                      <i class="pi pi-search-plus text-[10px]"></i>
+                      <span>View</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination Dots -->
+            <div v-if="bannerTotalStops > 1" class="flex items-center justify-center gap-1.5 pt-0.5">
               <button
-                v-if="pkg.image_url"
+                v-for="stopIdx in bannerTotalStops"
+                :key="stopIdx"
                 type="button"
-                @click.stop="openEnlargedImage(pkg.name, pkg.image_url, formatPriceTag(pkg), pkg)"
-                class="px-2 py-1 rounded-lg bg-surface-800/90 hover:bg-amber-500/20 text-gray-300 hover:text-amber-300 border border-surface-700/80 text-[10px] font-semibold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
-                title="View full flyer">
-                <i class="pi pi-search-plus text-[9px]"></i>
-                <span class="hidden sm:inline">Enlarge</span>
+                @click="bannerCarouselIndex = stopIdx - 1"
+                :aria-label="`Go to package slide ${stopIdx}`"
+                class="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
+                :class="bannerCarouselIndex === stopIdx - 1 ? 'w-5 bg-yellow-400' : 'w-1.5 bg-surface-700 hover:bg-surface-500'">
               </button>
             </div>
           </div>
@@ -690,12 +752,19 @@ export default {
       }
     };
 
+    const isDesktopBanner = Vue.ref(typeof window !== 'undefined' ? window.innerWidth >= 640 : true);
+    const updateBannerViewport = () => {
+      isDesktopBanner.value = window.innerWidth >= 640;
+    };
+
     Vue.onMounted(() => {
       window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('resize', updateBannerViewport);
     });
 
     Vue.onBeforeUnmount(() => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', updateBannerViewport);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     });
@@ -724,9 +793,71 @@ export default {
       return list.length > 0 ? list : (store.bookingPackages || []);
     });
 
-    const bannerPackages = Vue.computed(() =>
-      availablePackages.value.filter(p => p.show_in_banner)
+    const bannerPackages = Vue.computed(() => {
+      const list = availablePackages.value;
+      const featured = list.filter(p => p.show_in_banner || Boolean(p.image_url));
+      return featured.length > 0 ? featured : list;
+    });
+
+    const bannerCarouselIndex = Vue.ref(0);
+    const bannerTouchStartX = Vue.ref(0);
+    const bannerCardsPerView = Vue.computed(() =>
+      isDesktopBanner.value && bannerPackages.value.length >= 2 ? 2 : 1
     );
+    const maxBannerIndex = Vue.computed(() =>
+      Math.max(0, bannerPackages.value.length - bannerCardsPerView.value)
+    );
+    const showBannerControls = Vue.computed(() => maxBannerIndex.value > 0);
+    const bannerTotalStops = Vue.computed(() => maxBannerIndex.value + 1);
+    const bannerTrackStyle = Vue.computed(() => ({
+      transform: `translateX(-${bannerCarouselIndex.value * (100 / bannerCardsPerView.value)}%)`,
+    }));
+
+    Vue.watch([bannerPackages, maxBannerIndex], () => {
+      if (bannerCarouselIndex.value > maxBannerIndex.value) {
+        bannerCarouselIndex.value = maxBannerIndex.value;
+      }
+    });
+
+    const prevBannerSlide = () => {
+      if (maxBannerIndex.value <= 0) return;
+      bannerCarouselIndex.value = bannerCarouselIndex.value <= 0
+        ? maxBannerIndex.value
+        : bannerCarouselIndex.value - 1;
+    };
+
+    const nextBannerSlide = () => {
+      if (maxBannerIndex.value <= 0) return;
+      bannerCarouselIndex.value = bannerCarouselIndex.value >= maxBannerIndex.value
+        ? 0
+        : bannerCarouselIndex.value + 1;
+    };
+
+    const onBannerTouchStart = (e) => {
+      bannerTouchStartX.value = e.touches?.[0]?.clientX ?? 0;
+    };
+
+    const onBannerTouchEnd = (e) => {
+      const endX = e.changedTouches?.[0]?.clientX ?? 0;
+      const diff = bannerTouchStartX.value - endX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) nextBannerSlide();
+        else prevBannerSlide();
+      }
+    };
+
+    const ensurePackageVisible = (pkgId) => {
+      const idx = bannerPackages.value.findIndex(p => p.id === pkgId);
+      if (idx === -1) return;
+      if (idx < bannerCarouselIndex.value) {
+        bannerCarouselIndex.value = idx;
+      } else if (idx >= bannerCarouselIndex.value + bannerCardsPerView.value) {
+        bannerCarouselIndex.value = Math.min(
+          maxBannerIndex.value,
+          idx - bannerCardsPerView.value + 1
+        );
+      }
+    };
 
     const selectedPackageId = Vue.ref(availablePackages.value[0]?.id ?? null);
 
@@ -854,6 +985,7 @@ export default {
       const resolved = resolvePackage(pkgOrName);
       if (!resolved) return;
       selectedPackageId.value = resolved.id;
+      ensurePackageVisible(resolved.id);
       form.event_type = formatEventType(resolved);
       if (adjustGuests && resolved.pricing_type === 'per_pack' && resolved.base_pax) {
         form.guest_count = Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, Number(resolved.base_pax)));
@@ -863,6 +995,7 @@ export default {
     const onPackageDropdownChange = () => {
       if (selectedPackage.value) {
         form.event_type = formatEventType(selectedPackage.value);
+        ensurePackageVisible(selectedPackage.value.id);
       }
     };
 
@@ -1046,6 +1179,14 @@ export default {
       closeEnlargedImage,
       availablePackages,
       bannerPackages,
+      bannerCarouselIndex,
+      showBannerControls,
+      bannerTotalStops,
+      bannerTrackStyle,
+      prevBannerSlide,
+      nextBannerSlide,
+      onBannerTouchStart,
+      onBannerTouchEnd,
       selectedPackageId,
       selectedPackage,
       formatPriceTag,
