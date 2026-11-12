@@ -225,13 +225,40 @@
             </p>
           </div>
 
-          <!-- Dynamic Official Booking Packages Grid -->
-          <div class="grid grid-cols-1 gap-8" :class="showcasePackages.length >= 2 ? 'lg:grid-cols-2' : 'max-w-2xl mx-auto'">
-            
-            <div 
-              v-for="pkg in showcasePackages"
-              :key="pkg.id"
-              class="rounded-3xl bg-surface-900 border border-surface-700 hover:border-amber-500/50 overflow-hidden shadow-2xl transition-all duration-300 flex flex-col justify-between group">
+          <!-- Dynamic Official Booking Packages Carousel -->
+          <div class="relative" :class="showcasePackages.length <= 1 ? 'max-w-2xl mx-auto' : ''">
+            <!-- Desktop Side Arrows -->
+            <button
+              v-if="showCarouselControls"
+              type="button"
+              @click="prevPackageSlide"
+              aria-label="Previous catering package"
+              class="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-surface-900/95 hover:bg-yellow-400 text-white hover:text-black border border-surface-700 hover:border-yellow-400 shadow-2xl items-center justify-center transition-all cursor-pointer backdrop-blur-md">
+              <i class="pi pi-chevron-left text-sm"></i>
+            </button>
+            <button
+              v-if="showCarouselControls"
+              type="button"
+              @click="nextPackageSlide"
+              aria-label="Next catering package"
+              class="hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-surface-900/95 hover:bg-yellow-400 text-white hover:text-black border border-surface-700 hover:border-yellow-400 shadow-2xl items-center justify-center transition-all cursor-pointer backdrop-blur-md">
+              <i class="pi pi-chevron-right text-sm"></i>
+            </button>
+
+            <div
+              class="overflow-hidden"
+              @touchstart.passive="onCarouselTouchStart"
+              @touchend.passive="onCarouselTouchEnd">
+              <div
+                class="flex transition-transform duration-500 ease-out"
+                :class="showcasePackages.length >= 2 ? '-mx-3 sm:-mx-4' : ''"
+                :style="carouselTrackStyle">
+                <div
+                  v-for="pkg in showcasePackages"
+                  :key="pkg.id"
+                  class="shrink-0"
+                  :class="showcasePackages.length >= 2 ? 'w-full lg:w-1/2 px-3 sm:px-4' : 'w-full'">
+                  <div class="h-full rounded-3xl bg-surface-900 border border-surface-700 hover:border-amber-500/50 overflow-hidden shadow-2xl transition-all duration-300 flex flex-col justify-between group">
               <div>
                 <!-- Top Flyer Display Area -->
                 <div 
@@ -331,6 +358,39 @@
                   <span>Book {{ pkg.name }} (₱{{ Number(pkg.price || 0).toLocaleString() }})</span>
                 </button>
               </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Carousel Controls & Dots -->
+            <div v-if="showCarouselControls" class="mt-6 flex items-center justify-center gap-4">
+              <button
+                type="button"
+                @click="prevPackageSlide"
+                aria-label="Previous catering package"
+                class="w-9 h-9 rounded-full bg-surface-900 hover:bg-yellow-400 text-gray-200 hover:text-black border border-surface-700 hover:border-yellow-400 flex items-center justify-center transition-all cursor-pointer">
+                <i class="pi pi-chevron-left text-xs"></i>
+              </button>
+
+              <div class="flex items-center gap-2">
+                <button
+                  v-for="(_, idx) in carouselTotalStops"
+                  :key="idx"
+                  type="button"
+                  @click="goToPackageSlide(idx)"
+                  :aria-label="'Go to package slide ' + (idx + 1)"
+                  class="h-2 rounded-full transition-all duration-300 cursor-pointer"
+                  :class="carouselIndex === idx ? 'w-7 bg-yellow-400' : 'w-2 bg-surface-700 hover:bg-surface-500'"></button>
+              </div>
+
+              <button
+                type="button"
+                @click="nextPackageSlide"
+                aria-label="Next catering package"
+                class="w-9 h-9 rounded-full bg-surface-900 hover:bg-yellow-400 text-gray-200 hover:text-black border border-surface-700 hover:border-yellow-400 flex items-center justify-center transition-all cursor-pointer">
+                <i class="pi pi-chevron-right text-xs"></i>
+              </button>
             </div>
 
           </div>
@@ -561,8 +621,65 @@ export default {
     const showcasePackages = Vue.computed(() => {
       const active = store.activeBookingPackages || [];
       const banners = active.filter(p => p.show_in_banner);
-      return banners.length > 0 ? banners : active.slice(0, 2);
+      return banners.length > 0 ? banners : active;
     });
+
+    const carouselIndex = ref(0);
+    const isDesktop = ref(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
+    const touchStartX = ref(0);
+
+    const updateViewport = () => {
+      isDesktop.value = window.innerWidth >= 1024;
+    };
+
+    onMounted(() => {
+      window.addEventListener('resize', updateViewport);
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', updateViewport);
+    });
+
+    const cardsPerView = computed(() => (isDesktop.value && showcasePackages.value.length >= 2 ? 2 : 1));
+    const maxCarouselIndex = computed(() => Math.max(0, showcasePackages.value.length - cardsPerView.value));
+    const showCarouselControls = computed(() => maxCarouselIndex.value > 0);
+    const carouselTotalStops = computed(() => maxCarouselIndex.value + 1);
+    const carouselTrackStyle = computed(() => ({
+      transform: `translateX(-${carouselIndex.value * (100 / cardsPerView.value)}%)`,
+    }));
+
+    watch([showcasePackages, maxCarouselIndex], () => {
+      if (carouselIndex.value > maxCarouselIndex.value) {
+        carouselIndex.value = maxCarouselIndex.value;
+      }
+    });
+
+    const prevPackageSlide = () => {
+      if (maxCarouselIndex.value <= 0) return;
+      carouselIndex.value = carouselIndex.value <= 0 ? maxCarouselIndex.value : carouselIndex.value - 1;
+    };
+
+    const nextPackageSlide = () => {
+      if (maxCarouselIndex.value <= 0) return;
+      carouselIndex.value = carouselIndex.value >= maxCarouselIndex.value ? 0 : carouselIndex.value + 1;
+    };
+
+    const goToPackageSlide = (idx) => {
+      carouselIndex.value = Math.max(0, Math.min(idx, maxCarouselIndex.value));
+    };
+
+    const onCarouselTouchStart = (e) => {
+      touchStartX.value = e.changedTouches?.[0]?.clientX || 0;
+    };
+
+    const onCarouselTouchEnd = (e) => {
+      const endX = e.changedTouches?.[0]?.clientX || 0;
+      const diff = touchStartX.value - endX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) nextPackageSlide();
+        else prevPackageSlide();
+      }
+    };
 
     const formatPackagePriceBadge = (pkg) => {
       const price = Number(pkg?.price || 0).toLocaleString();
@@ -631,6 +748,15 @@ export default {
       store,
       bestsellers,
       showcasePackages,
+      carouselIndex,
+      carouselTotalStops,
+      showCarouselControls,
+      carouselTrackStyle,
+      prevPackageSlide,
+      nextPackageSlide,
+      goToPackageSlide,
+      onCarouselTouchStart,
+      onCarouselTouchEnd,
       formatPackagePriceBadge,
       getPackageBadgeClass,
       getPackageAccentTextClass,
