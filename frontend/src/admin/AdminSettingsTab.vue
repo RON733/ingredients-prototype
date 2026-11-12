@@ -44,7 +44,7 @@
           @click="togglePaymongoAvailability"
           :disabled="isTogglingPaymongo"
           class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer border"
-          :class="isPaymongoAvailable ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/25' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 border-transparent'">
+          :class="isPaymongoAvailable ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/25' : 'bg-white hover:bg-zinc-200 text-zinc-950 border-transparent'">
           <i v-if="isTogglingPaymongo" class="pi pi-spin pi-spinner"></i>
           <i v-else class="pi" :class="isPaymongoAvailable ? 'pi-power-off' : 'pi-check'"></i>
           <span>{{ isPaymongoAvailable ? 'Disable' : 'Enable' }}</span>
@@ -136,7 +136,7 @@
       type="button"
       @click="saveAreaNoteSettings"
       :disabled="isSavingAreaNote"
-      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-white hover:bg-zinc-200 text-zinc-950 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
       <i v-if="isSavingAreaNote" class="pi pi-spin pi-spinner"></i>
       <i v-else class="pi pi-save"></i>
       <span>Save Notice</span>
@@ -190,7 +190,7 @@
       type="button"
       @click="saveGeneralSettings"
       :disabled="isSavingStore"
-      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-white hover:bg-zinc-200 text-zinc-950 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
       <i v-if="isSavingStore" class="pi pi-spin pi-spinner"></i>
       <i v-else class="pi pi-save"></i>
       <span>Save Preferences</span>
@@ -264,7 +264,7 @@
             @click="saveMaintenanceSettings"
             :disabled="isSavingMaint"
             class="px-4 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            :class="maintForm.maintenance_mode ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950'">
+            :class="maintForm.maintenance_mode ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-white hover:bg-zinc-200 text-zinc-950'">
             <i v-if="isSavingMaint" class="pi pi-spin pi-spinner"></i>
             <i v-else class="pi pi-save"></i>
             <span>{{ maintForm.maintenance_mode ? 'Apply Shutdown' : 'Save Settings' }}</span>

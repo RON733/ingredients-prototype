@@ -108,7 +108,7 @@
       <div
         v-for="rem in pendingRemittances"
         :key="rem.id"
-        class="bg-amber-950/25 border border-amber-500/40 rounded-2xl p-5  space-y-4">
+        class="bg-[#0b0b0d] border border-amber-500/40 rounded-2xl p-5  space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-amber-500/20">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center text-xl shrink-0">
@@ -181,7 +181,7 @@
               type="button"
               :disabled="processingId === rem.id"
               @click="handleAccept(rem)"
-              class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95">
+              class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition-all  flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95">
               <i class="pi" :class="processingId === rem.id ? 'pi-spin pi-spinner' : 'pi-check'"></i>
               <span>Accept Remittance (₱{{ Number(rem.amount).toFixed(2) }})</span>
             </button>

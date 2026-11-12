@@ -31,7 +31,7 @@
         <button 
           type="button"
           @click="returnToConsole"
-          class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
+          class="px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5">
           <i class="pi pi-arrow-left text-xs"></i>
           <span>{{ store.isStaffOnly ? 'Console' : 'Admin' }}</span>
         </button>
@@ -41,7 +41,7 @@
     <!-- Rider Notice Pending Staff Approval Alert Banner -->
     <div 
       v-if="pendingNotices.length > 0" 
-      class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+      class="p-4 rounded-2xl bg-[#0b0b0d] border border-amber-500/30 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
       <div class="flex items-center gap-3">
         <i class="pi pi-exclamation-triangle text-2xl text-amber-400 shrink-0"></i>
         <div>
@@ -65,7 +65,7 @@
         <button 
           type="button"
           @click="handleAcceptNotice(pendingNotices[0].id)" 
-          class="px-3.5 py-1.5 rounded-xl bg-amber-500 text-black font-black text-xs hover:bg-amber-400 transition-colors shadow cursor-pointer">
+          class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-xs hover:bg-amber-400 transition-colors shadow cursor-pointer">
           Accept Notice
         </button>
       </div>
@@ -74,7 +74,7 @@
     <!-- Pending COD Remittance Handover Alert Banner -->
     <div
       v-if="pendingRemittances.length > 0"
-      class="p-4 rounded-2xl bg-emerald-950/35 border border-emerald-500/40 text-emerald-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
+      class="p-4 rounded-2xl bg-[#0b0b0d] border border-emerald-500/30 text-emerald-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 flex items-center justify-center text-lg shrink-0"><i class="pi pi-wallet"></i></div>
         <div>
@@ -167,13 +167,13 @@
         @click="activeTab = 'riders'"
         class="flex-1 py-3 px-3 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border"
         :class="activeTab === 'riders' 
-          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm' 
+          ? 'bg-zinc-800 text-white border-white/15' 
           : 'text-neutral-400 hover:text-white border-transparent hover:bg-surface-800/60'">
         <i class="pi pi-users text-sm"></i>
         <span>Available Riders</span>
         <span 
           class="px-2 py-0.5 rounded-full text-[10px] font-black"
-          :class="activeTab === 'riders' ? 'bg-amber-500 text-black' : 'bg-surface-800 text-neutral-300'">
+          :class="activeTab === 'riders' ? 'bg-white text-zinc-950' : 'bg-surface-800 text-neutral-300'">
           {{ availableRiders.length }} / {{ riders.length }}
         </span>
       </button>
@@ -264,7 +264,7 @@
             type="button"
             @click="riderFilter = 'offline'"
             class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer flex items-center gap-1.5"
-            :class="riderFilter === 'offline' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'text-neutral-400 border-transparent hover:text-amber-300'">
+            :class="riderFilter === 'offline' ? 'bg-zinc-800 text-white border-white/15' : 'text-neutral-400 border-transparent hover:text-amber-300'">
             <span class="w-2 h-2 rounded-full bg-amber-400"></span>
             <span>On Break ({{ offlineRiders.length }})</span>
           </button>
@@ -393,7 +393,7 @@
           <!-- Reason Alert if offline or pending notice -->
           <div 
             v-else-if="rider.availability_reason || rider.pending_notice" 
-            class="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/25 text-xs text-amber-200/90 space-y-1">
+            class="p-3 rounded-2xl bg-[#0b0b0d] border border-white/[0.08] text-xs text-amber-200/90 space-y-1">
             <div class="flex items-center justify-between">
               <span class="font-bold text-white text-[11px]">Reason Note:</span>
               <button 
@@ -411,7 +411,7 @@
               <button 
                 type="button" 
                 @click="handleAcceptNotice(rider.pending_notice.id)"
-                class="px-3 py-1 rounded-xl bg-amber-500 text-black text-[11px] font-black hover:bg-amber-400 cursor-pointer shadow">
+                class="px-3 py-1 rounded-xl bg-white text-zinc-950 text-[11px] font-black hover:bg-amber-400 cursor-pointer shadow">
                 Accept Notice
               </button>
             </div>

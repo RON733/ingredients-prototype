@@ -16,7 +16,7 @@
             v-if="activeSubTab === 'packages'"
             type="button"
             @click="openCreatePackageModal"
-            class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-amber-500/20">
+            class="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-amber-500/20">
             <i class="pi pi-plus text-xs"></i>
             <span>Add Package</span>
           </button>
@@ -264,7 +264,7 @@
                 <button
                   type="button"
                   @click="openEditPackageModal(pkg)"
-                  class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
+                  class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
                   <i class="pi pi-pencil text-[11px]"></i>
                   <span>Edit Package</span>
                 </button>
@@ -516,7 +516,7 @@
 
                 <!-- Upload & Presets -->
                 <div class="flex flex-wrap items-center gap-2">
-                  <label class="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold flex items-center gap-1.5 cursor-pointer transition-colors">
+                  <label class="px-3 py-2 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold flex items-center gap-1.5 cursor-pointer transition-colors">
                     <i class="pi" :class="isUploadingImg ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
                     <span>{{ pkgForm.image_url ? 'Change Photo' : 'Upload Photo' }}</span>
                     <input

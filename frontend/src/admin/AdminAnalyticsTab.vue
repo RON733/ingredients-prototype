@@ -364,7 +364,7 @@
             <div 
               v-for="ing in lowStockList" 
               :key="ing.id"
-              class="p-2.5 sm:p-3 rounded-xl bg-amber-950/20 border border-amber-700/40 flex items-center justify-between text-xs">
+              class="p-2.5 sm:p-3 rounded-xl bg-[#0b0b0d] border border-amber-700/40 flex items-center justify-between text-xs">
               <div class="min-w-0 flex-1 mr-2">
                 <p class="font-bold text-white truncate">{{ ing.name }}</p>
                 <p class="text-[10px] text-amber-400 font-medium truncate">

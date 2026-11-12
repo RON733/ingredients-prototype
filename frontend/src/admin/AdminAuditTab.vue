@@ -85,7 +85,7 @@
           @click="selectedRole = 'admin'"
           class="p-4 rounded-2xl border transition-all cursor-pointer"
           :class="selectedRole === 'admin' 
-            ? 'bg-amber-950/40 border-amber-500/70 shadow-lg shadow-amber-500/20 ring-1 ring-amber-500/40' 
+            ? 'bg-[#0b0b0d] border-amber-500/70  ring-1 ring-amber-500/40' 
             : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Admin (Owner)</span>
@@ -115,7 +115,7 @@
           @click="selectedRole = 'driver'"
           class="p-4 rounded-2xl border transition-all cursor-pointer"
           :class="selectedRole === 'driver' 
-            ? 'bg-emerald-950/40 border-emerald-500/70 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-500/40' 
+            ? 'bg-emerald-950/40 border-emerald-500/70  ring-1 ring-emerald-500/40' 
             : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Drivers (Fleet)</span>
@@ -150,10 +150,10 @@
           <button 
             @click="selectedRole = 'admin'"
             class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
-            :class="selectedRole === 'admin' ? 'bg-amber-600 text-white shadow-sm' : 'text-amber-300/70 hover:text-amber-200 hover:bg-amber-950/40'">
+            :class="selectedRole === 'admin' ? 'bg-zinc-800 text-white border border-white/15' : 'text-amber-300/70 hover:text-amber-200 hover:bg-[#0b0b0d]'">
             <i class="pi pi-shield text-[10px]"></i>
             <span>Admin</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-amber-950 text-amber-200 font-mono">{{ adminCount }}</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-zinc-900 text-amber-200 font-mono">{{ adminCount }}</span>
           </button>
 
           <button 
@@ -582,7 +582,7 @@ export default {
         return 'bg-purple-950/60 border-purple-700/60 text-purple-300';
       }
       if (act.includes('menu') || act.includes('product') || act.includes('recipe')) {
-        return 'bg-amber-950/60 border-amber-700/60 text-amber-300';
+        return 'bg-zinc-900 border-amber-700/60 text-amber-300';
       }
       if (act.includes('stock') || act.includes('ingredient') || act.includes('inventory')) {
         return 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300';

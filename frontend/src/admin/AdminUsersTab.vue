@@ -19,7 +19,7 @@
           <!-- Create New Personnel Button (Admin & Super Admin) -->
           <button 
             @click="openCreateModal"
-            class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
+            class="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
             <i class="pi pi-user-plus text-xs"></i>
             <span>Create Personnel</span>
           </button>
@@ -75,7 +75,7 @@
         <div 
           @click="selectedRoleFilter = 'admin'"
           class="p-4 rounded-2xl border transition-all cursor-pointer"
-          :class="selectedRoleFilter === 'admin' ? 'bg-amber-950/40 border-amber-500/70 ring-1 ring-amber-500/30' : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
+          :class="selectedRoleFilter === 'admin' ? 'bg-[#0b0b0d] border-amber-500/70 ring-1 ring-amber-500/30' : 'bg-surface-850/60 border-surface-700/60 hover:bg-surface-800/60'">
           <div class="flex items-center justify-between text-amber-300 text-[10px] font-bold uppercase tracking-wider">
             <span>Store Admins</span>
             <i class="pi pi-shield text-amber-400 text-xs"></i>
@@ -110,7 +110,7 @@
           <button 
             @click="selectedRoleFilter = 'admin'"
             class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-amber-300"
-            :class="selectedRoleFilter === 'admin' ? 'bg-amber-600 text-white shadow-sm' : 'hover:bg-amber-950/40'">
+            :class="selectedRoleFilter === 'admin' ? 'bg-zinc-800 text-white border border-white/15' : 'hover:bg-[#0b0b0d]'">
             Admin ({{ adminCount }})
           </button>
         </div>
@@ -500,7 +500,7 @@
               <button 
                 type="submit" 
                 :disabled="savingUser"
-                class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm shadow-amber-500/20 active:scale-95">
+                class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm shadow-amber-500/20 active:scale-95">
                 <i class="pi pi-check" :class="{ 'pi-spin pi-spinner': savingUser }"></i>
                 <span>{{ savingUser ? 'Provisioning...' : 'Create Account' }}</span>
               </button>
