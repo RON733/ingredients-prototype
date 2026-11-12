@@ -204,7 +204,7 @@
             <div class="p-3 sm:p-4 bg-surface-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 border-t border-surface-700">
               <span class="text-[11px] sm:text-xs text-gray-300 font-medium truncate text-center sm:text-left">Direct: Jefferson Alulod • 0994 612 1933</span>
               <button 
-                @click="store.closeFlyer(); store.openBookingWithPackage(store.previewFlyerImage.includes('coffee') ? 'Coffee Package' : 'Fruity Float Package')"
+                @click="const targetPkg = store.previewFlyerPackage || (store.previewFlyerImage.includes('coffee') ? 'Coffee Package' : 'Fruity Float Package'); store.closeFlyer(); store.openBookingWithPackage(targetPkg)"
                 class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all shrink-0 text-center">
                 Book This Package
               </button>

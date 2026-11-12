@@ -173,7 +173,15 @@ export const GST_API = {
   getBookings: (params) => apiClient.get('/bookings', { params }),
   getMyBookings: (params) => apiClient.get('/bookings/my', { params }),
   createBooking: (data) => apiClient.post('/bookings', data),
+  updateBooking: (id, data) => apiClient.patch(`/bookings/${id}`, data),
   updateBookingStatus: (id, status) => apiClient.patch(`/bookings/${id}/status`, { status }),
+
+  getBookingPackages: (params) => apiClient.get('/booking-packages', { params }),
+  getAllBookingPackages: () => apiClient.get('/booking-packages', { params: { all: 1 } }),
+  createBookingPackage: (data) => apiClient.post('/booking-packages', data),
+  updateBookingPackage: (id, data) => apiClient.patch(`/booking-packages/${id}`, data),
+  toggleBookingPackage: (id) => apiClient.patch(`/booking-packages/${id}/toggle`),
+  deleteBookingPackage: (id) => apiClient.delete(`/booking-packages/${id}`),
 
   // Chatbot Support
   chatWithBot: (message, history = []) => apiClient.post('/chatbot', { message, history }),

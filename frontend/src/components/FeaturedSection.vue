@@ -227,33 +227,45 @@
             </p>
           </div>
 
-          <!-- The Two Official Booking Packages Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Dynamic Official Booking Packages Grid -->
+          <div class="grid grid-cols-1 gap-8" :class="showcasePackages.length >= 2 ? 'lg:grid-cols-2' : 'max-w-2xl mx-auto'">
             
-            <!-- Package 1: Coffee Package -->
-            <div class="rounded-3xl bg-surface-900 border border-surface-700 hover:border-amber-500/50 overflow-hidden shadow-2xl transition-all duration-300 flex flex-col justify-between group">
+            <div 
+              v-for="pkg in showcasePackages"
+              :key="pkg.id"
+              class="rounded-3xl bg-surface-900 border border-surface-700 hover:border-amber-500/50 overflow-hidden shadow-2xl transition-all duration-300 flex flex-col justify-between group">
               <div>
                 <!-- Top Flyer Display Area -->
-                <div class="relative h-72 sm:h-80 overflow-hidden bg-surface-950 cursor-pointer" @click="viewFlyer('/assets/booking-coffee-package.jpg')">
+                <div 
+                  class="relative h-72 sm:h-80 overflow-hidden bg-surface-950"
+                  :class="pkg.image_url ? 'cursor-pointer' : ''"
+                  @click="pkg.image_url && viewFlyer(pkg.image_url, pkg)">
                   <img 
-                    src="/assets/booking-coffee-package.jpg" 
-                    alt="G Shot Teas Coffee Package Flyer" 
+                    v-if="pkg.image_url"
+                    :src="pkg.image_url" 
+                    :alt="pkg.name + ' Flyer'" 
                     class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   />
+                  <div v-else class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-surface-900 to-surface-950 text-gray-500 gap-2">
+                    <span class="text-5xl">🎉</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-400">{{ pkg.name }}</span>
+                  </div>
                   <div class="absolute inset-0 bg-gradient-to-t from-surface-900 via-surface-900/20 to-transparent"></div>
                   
                   <!-- Badge Pill -->
                   <div class="absolute top-4 left-4 flex flex-wrap gap-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-black bg-amber-500 text-surface-950 uppercase tracking-wider shadow-lg">
-                      ☕ COFFEE PACKAGE
+                    <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg" :class="getPackageBadgeClass(pkg.accent_color)">
+                      {{ pkg.badge || pkg.name }}
                     </span>
                     <span class="px-3 py-1 rounded-full text-xs font-black bg-surface-900/90 text-white border border-surface-700 backdrop-blur-md">
-                      ₱3,500 / 50 PAX
+                      {{ formatPackagePriceBadge(pkg) }}
                     </span>
                   </div>
 
                   <!-- Zoom hint -->
-                  <div class="absolute bottom-4 right-4 px-3 py-1.5 rounded-xl bg-surface-950/80 border border-surface-700 text-gray-200 text-xs font-bold flex items-center gap-1.5 backdrop-blur-md group-hover:bg-amber-500 group-hover:text-surface-950 transition-colors">
+                  <div 
+                    v-if="pkg.image_url"
+                    class="absolute bottom-4 right-4 px-3 py-1.5 rounded-xl bg-surface-950/80 border border-surface-700 text-gray-200 text-xs font-bold flex items-center gap-1.5 backdrop-blur-md group-hover:bg-amber-500 group-hover:text-surface-950 transition-colors">
                     <i class="pi pi-search-plus"></i>
                     <span>View Flyer</span>
                   </div>
@@ -262,11 +274,11 @@
                 <!-- Package Details -->
                 <div class="p-6 sm:p-8 space-y-6">
                   <div>
-                    <h3 class="text-2xl font-black text-white group-hover:text-amber-400 transition-colors">
-                      Coffee Package
+                    <h3 class="text-2xl font-black text-white transition-colors" :class="getPackageTitleHoverClass(pkg.accent_color)">
+                      {{ pkg.name }}
                     </h3>
-                    <p class="text-xs text-amber-400 font-bold mt-1">
-                      Featuring Coldbrew & Signature Artisan Brews
+                    <p v-if="pkg.subtitle" class="text-xs font-bold mt-1" :class="getPackageAccentTextClass(pkg.accent_color)">
+                      {{ pkg.subtitle }}
                     </p>
                   </div>
 
@@ -285,32 +297,27 @@
                   <!-- Package Inclusions List -->
                   <div class="p-4 rounded-2xl bg-surface-800/70 border border-surface-700/80 space-y-2.5">
                     <p class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-                      <i class="pi pi-check-circle text-amber-400"></i> Package Inclusions:
+                      <i class="pi pi-check-circle" :class="getPackageAccentTextClass(pkg.accent_color)"></i> Package Inclusions:
                     </p>
-                    <ul class="space-y-1.5 text-xs text-gray-300">
-                      <li class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                        <strong class="text-white">50 Cups of 12oz</strong> servings
-                      </li>
-                      <li class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                        <strong class="text-white">3 Hours of Service</strong> with on-site barista staff
-                      </li>
-                      <li class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                        <strong class="text-white">5 Choices of Drinks</strong> (Coldbrew & Specialty Coffee selections)
+                    <ul v-if="Array.isArray(pkg.inclusions) && pkg.inclusions.length > 0" class="space-y-1.5 text-xs text-gray-300">
+                      <li v-for="(inc, idx) in pkg.inclusions" :key="idx" class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full shrink-0" :class="getPackageDotClass(pkg.accent_color)"></span>
+                        <span>{{ inc }}</span>
                       </li>
                     </ul>
+                    <p v-else-if="pkg.description" class="text-xs text-gray-300 leading-relaxed">
+                      {{ pkg.description }}
+                    </p>
                   </div>
 
                   <!-- Transpo note & Contact -->
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-gray-400 gap-2 pt-2 border-t border-surface-800">
                     <div class="flex items-center gap-2">
-                      <i class="pi pi-car text-amber-400"></i>
+                      <i class="pi pi-car" :class="getPackageAccentTextClass(pkg.accent_color)"></i>
                       <span>Transpo fee: Varies by location</span>
                     </div>
                     <div class="flex items-center gap-1.5 text-gray-300 font-bold">
-                      <i class="pi pi-phone text-amber-400"></i>
+                      <i class="pi pi-phone" :class="getPackageAccentTextClass(pkg.accent_color)"></i>
                       <span>Jefferson Alulod — 0994 612 1933</span>
                     </div>
                   </div>
@@ -320,108 +327,10 @@
               <!-- Card Action Button -->
               <div class="p-6 sm:p-8 pt-0">
                 <button 
-                  @click="bookPackage('Coffee Package')"
+                  @click="bookPackage(pkg)"
                   class="w-full py-3 rounded-xl font-bold text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
                   <i class="pi pi-calendar-plus text-xs"></i>
-                  <span>Book Coffee Package (₱3,500)</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Package 2: Fruity Float Package -->
-            <div class="rounded-3xl bg-surface-900 border border-surface-700 hover:border-amber-500/50 overflow-hidden shadow-2xl transition-all duration-300 flex flex-col justify-between group">
-              <div>
-                <!-- Top Flyer Display Area -->
-                <div class="relative h-72 sm:h-80 overflow-hidden bg-surface-950 cursor-pointer" @click="viewFlyer('/assets/booking-fruity-float.jpg')">
-                  <img 
-                    src="/assets/booking-fruity-float.jpg" 
-                    alt="G Shot Teas Fruity Float Package Flyer" 
-                    class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-surface-900 via-surface-900/20 to-transparent"></div>
-                  
-                  <!-- Badge Pill -->
-                  <div class="absolute top-4 left-4 flex flex-wrap gap-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-black bg-rose-500 text-white uppercase tracking-wider shadow-lg">
-                      🍹 FRUITY FLOAT PACKAGE
-                    </span>
-                    <span class="px-3 py-1 rounded-full text-xs font-black bg-surface-900/90 text-white border border-surface-700 backdrop-blur-md">
-                      ₱3,500 / 50 PAX
-                    </span>
-                  </div>
-
-                  <!-- Zoom hint -->
-                  <div class="absolute bottom-4 right-4 px-3 py-1.5 rounded-xl bg-surface-950/80 border border-surface-700 text-gray-200 text-xs font-bold flex items-center gap-1.5 backdrop-blur-md group-hover:bg-rose-500 group-hover:text-white transition-colors">
-                    <i class="pi pi-search-plus"></i>
-                    <span>View Flyer</span>
-                  </div>
-                </div>
-
-                <!-- Package Details -->
-                <div class="p-6 sm:p-8 space-y-6">
-                  <div>
-                    <h3 class="text-2xl font-black text-white group-hover:text-rose-400 transition-colors">
-                      Fruity float Package
-                    </h3>
-                    <p class="text-xs text-rose-400 font-bold mt-1">
-                      Featuring Sparkling Sodas & Ice Cream Floats
-                    </p>
-                  </div>
-
-                  <!-- Events We Service -->
-                  <div>
-                    <p class="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">We Service:</p>
-                    <div class="flex flex-wrap gap-1.5 text-xs">
-                      <span class="px-2.5 py-1 rounded-lg bg-surface-800 text-gray-300 border border-surface-700 font-medium">Birthday</span>
-                      <span class="px-2.5 py-1 rounded-lg bg-surface-800 text-gray-300 border border-surface-700 font-medium">Wedding</span>
-                      <span class="px-2.5 py-1 rounded-lg bg-surface-800 text-gray-300 border border-surface-700 font-medium">Anniversary</span>
-                      <span class="px-2.5 py-1 rounded-lg bg-surface-800 text-gray-300 border border-surface-700 font-medium">Corporate Events</span>
-                      <span class="px-2.5 py-1 rounded-lg bg-surface-800 text-gray-300 border border-surface-700 font-medium">Any Social Gathering</span>
-                    </div>
-                  </div>
-
-                  <!-- Package Inclusions List -->
-                  <div class="p-4 rounded-2xl bg-surface-800/70 border border-surface-700/80 space-y-2.5">
-                    <p class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-                      <i class="pi pi-check-circle text-rose-400"></i> Package Inclusions:
-                    </p>
-                    <ul class="space-y-1.5 text-xs text-gray-300">
-                      <li class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                        <strong class="text-white">50 Cups of 16oz</strong> servings (larger size!)
-                      </li>
-                      <li class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                        <strong class="text-white">3 Hours of Service</strong> with on-site barista staff
-                      </li>
-                      <li class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                        <strong class="text-white">7 Choices of Drinks</strong> (Fruity float & sparkling refreshers)
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Transpo note & Contact -->
-                  <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-gray-400 gap-2 pt-2 border-t border-surface-800">
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-car text-rose-400"></i>
-                      <span>Transpo fee: Varies by location</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 text-gray-300 font-bold">
-                      <i class="pi pi-phone text-rose-400"></i>
-                      <span>Jefferson Alulod — 0994 612 1933</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Card Action Button -->
-              <div class="p-6 sm:p-8 pt-0">
-                <button 
-                  @click="bookPackage('Fruity Float Package')"
-                  class="w-full py-3 rounded-xl font-bold text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
-                  <i class="pi pi-calendar-plus text-xs"></i>
-                  <span>Book Fruity Float Package (₱3,500)</span>
+                  <span>Book {{ pkg.name }} (₱{{ Number(pkg.price || 0).toLocaleString() }})</span>
                 </button>
               </div>
             </div>
@@ -514,7 +423,7 @@
                 3
               </span>
               <h3 class="font-bold text-white text-sm">Track & Enjoy Fresh</h3>
-              <p class="text-xs text-gray-400 mt-1">Watch your order update in real-time as our kitchen prepares and dispatches your order.</p>
+              <p class="text-xs text-gray-400 mt-1">Watch your order update as our kitchen prepares and dispatches your order.</p>
             </div>
           </div>
         </div>
@@ -651,12 +560,69 @@ export default {
       }
     };
 
+    const showcasePackages = Vue.computed(() => {
+      const active = store.activeBookingPackages || [];
+      const banners = active.filter(p => p.show_in_banner);
+      return banners.length > 0 ? banners : active.slice(0, 2);
+    });
+
+    const formatPackagePriceBadge = (pkg) => {
+      const price = Number(pkg?.price || 0).toLocaleString();
+      if (pkg?.pricing_type === 'per_guest') return `₱${price} / PAX`;
+      if (pkg?.pricing_type === 'flat') return `₱${price} FLAT`;
+      return `₱${price} / ${pkg?.base_pax || 50} PAX`;
+    };
+
+    const getPackageBadgeClass = (color) => {
+      const map = {
+        amber: 'bg-amber-500 text-surface-950',
+        rose: 'bg-rose-500 text-white',
+        emerald: 'bg-emerald-500 text-surface-950',
+        sky: 'bg-sky-500 text-surface-950',
+        purple: 'bg-purple-500 text-white',
+      };
+      return map[color] || map.amber;
+    };
+
+    const getPackageAccentTextClass = (color) => {
+      const map = {
+        amber: 'text-amber-400',
+        rose: 'text-rose-400',
+        emerald: 'text-emerald-400',
+        sky: 'text-sky-400',
+        purple: 'text-purple-400',
+      };
+      return map[color] || map.amber;
+    };
+
+    const getPackageTitleHoverClass = (color) => {
+      const map = {
+        amber: 'group-hover:text-amber-400',
+        rose: 'group-hover:text-rose-400',
+        emerald: 'group-hover:text-emerald-400',
+        sky: 'group-hover:text-sky-400',
+        purple: 'group-hover:text-purple-400',
+      };
+      return map[color] || map.amber;
+    };
+
+    const getPackageDotClass = (color) => {
+      const map = {
+        amber: 'bg-amber-400',
+        rose: 'bg-rose-400',
+        emerald: 'bg-emerald-400',
+        sky: 'bg-sky-400',
+        purple: 'bg-purple-400',
+      };
+      return map[color] || map.amber;
+    };
+
     const bookPackage = (pkgName) => {
       store.openBookingWithPackage(pkgName);
     };
 
-    const viewFlyer = (url) => {
-      store.viewFlyer(url);
+    const viewFlyer = (url, pkg = null) => {
+      store.viewFlyer(url, pkg);
     };
 
     const openImage = (item) => {
@@ -666,6 +632,12 @@ export default {
     return {
       store,
       bestsellers,
+      showcasePackages,
+      formatPackagePriceBadge,
+      getPackageBadgeClass,
+      getPackageAccentTextClass,
+      getPackageTitleHoverClass,
+      getPackageDotClass,
       reviews,
       handleOrder,
       bookPackage,

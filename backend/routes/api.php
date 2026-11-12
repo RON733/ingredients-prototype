@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\EventBookingController;
+use App\Http\Controllers\BookingPackageController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\AnnouncementController;
@@ -63,6 +64,7 @@ Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
+Route::get('/booking-packages', [BookingPackageController::class, 'index']);
 
 // PayMongo Online Payment Gateway
 Route::get('/paymongo/config', [PayMongoController::class, 'config']);
@@ -105,9 +107,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/discount/remove', [ProductController::class, 'removeDiscount']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
-    // Event Bookings
+    // Event Bookings & Packages
     Route::get('/bookings', [EventBookingController::class, 'index']);
+    Route::match(['put', 'patch'], '/bookings/{id}', [EventBookingController::class, 'update']);
     Route::match(['put', 'patch'], '/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);
+    Route::post('/booking-packages', [BookingPackageController::class, 'store']);
+    Route::match(['put', 'patch'], '/booking-packages/{id}', [BookingPackageController::class, 'update']);
+    Route::match(['put', 'patch'], '/booking-packages/{id}/toggle', [BookingPackageController::class, 'toggleActive']);
+    Route::delete('/booking-packages/{id}', [BookingPackageController::class, 'destroy']);
 
     // Analytics (Owner / Admin Exclusive)
     Route::get('/analytics/overview', [AnalyticsController::class, 'overview']);
@@ -161,7 +168,13 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
     Route::get('/bookings', [EventBookingController::class, 'index']);
+    Route::match(['put', 'patch'], '/bookings/{id}', [EventBookingController::class, 'update']);
     Route::match(['put', 'patch'], '/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);
+    Route::get('/booking-packages', [BookingPackageController::class, 'index']);
+    Route::post('/booking-packages', [BookingPackageController::class, 'store']);
+    Route::match(['put', 'patch'], '/booking-packages/{id}', [BookingPackageController::class, 'update']);
+    Route::match(['put', 'patch'], '/booking-packages/{id}/toggle', [BookingPackageController::class, 'toggleActive']);
+    Route::delete('/booking-packages/{id}', [BookingPackageController::class, 'destroy']);
     Route::get('/analytics/overview', [AnalyticsController::class, 'overview']);
     Route::get('/users', [AuthController::class, 'listUsers']);
     Route::post('/users', [AuthController::class, 'createUser']);

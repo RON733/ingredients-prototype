@@ -260,6 +260,119 @@ const DEFAULT_ANNOUNCEMENTS = [
   }
 ];
 
+const DEFAULT_BOOKING_PACKAGES = [
+  {
+    id: 1,
+    slug: 'coffee-package',
+    name: 'Coffee Package',
+    subtitle: 'Featuring Coldbrew & Signature Artisan Brews',
+    badge: '☕ COFFEE PACKAGE',
+    accent_color: 'amber',
+    price: 3500,
+    pricing_type: 'per_pack',
+    base_pax: 50,
+    option_label: 'Coffee Package (₱3,500 • 50 cups 12oz • 5 choices • 3 hrs)',
+    description: 'Includes: 50 cups of 12oz, 3 hours of on-site service, 5 choices of drinks (Coldbrew & specialty blends), and trained barista staff.',
+    inclusions: [
+      '50 Cups of 12oz servings',
+      '3 Hours of Service with on-site barista staff',
+      '5 Choices of Drinks (Coldbrew & Specialty Coffee selections)',
+    ],
+    image_url: '/assets/booking-coffee-package.jpg',
+    show_in_banner: true,
+    is_active: true,
+    sort_order: 1,
+  },
+  {
+    id: 2,
+    slug: 'fruity-float-package',
+    name: 'Fruity Float Package',
+    subtitle: 'Featuring Sparkling Sodas & Ice Cream Floats',
+    badge: '🍹 FRUITY FLOAT PACKAGE',
+    accent_color: 'rose',
+    price: 3500,
+    pricing_type: 'per_pack',
+    base_pax: 50,
+    option_label: 'Fruity Float Package (₱3,500 • 50 cups 16oz • 7 choices • 3 hrs)',
+    description: 'Includes: 50 cups of 16oz, 3 hours of on-site service, 7 choices of drinks (Sparkling sodas & ice cream fruity floats), and trained barista staff.',
+    inclusions: [
+      '50 Cups of 16oz servings (larger size!)',
+      '3 Hours of Service with on-site barista staff',
+      '7 Choices of Drinks (Fruity float & sparkling refreshers)',
+    ],
+    image_url: '/assets/booking-fruity-float.jpg',
+    show_in_banner: true,
+    is_active: true,
+    sort_order: 2,
+  },
+  {
+    id: 3,
+    slug: 'mobile-bar-milktea-booth',
+    name: 'Mobile Bar & Milktea Booth',
+    subtitle: 'Custom Event & Mobile Bar Booth',
+    badge: '🧋 MOBILE BAR BOOTH',
+    accent_color: 'amber',
+    price: 95,
+    pricing_type: 'per_guest',
+    base_pax: 1,
+    option_label: 'Custom Mobile Bar & Milktea Booth',
+    description: 'Includes custom milk tea & snack booth setup, drink cups, straws, pearls, and on-site staff. Transpo fee varies by location.',
+    inclusions: [
+      'Custom milk tea & drink bar setup',
+      'Cups, straws, pearls & sinkers included',
+      'On-site trained service staff',
+    ],
+    image_url: null,
+    show_in_banner: false,
+    is_active: true,
+    sort_order: 3,
+  },
+  {
+    id: 4,
+    slug: 'comfort-food-catering',
+    name: 'Comfort Food Catering',
+    subtitle: 'Burgers & Pizza Party Catering',
+    badge: '🍔 FOOD CATERING',
+    accent_color: 'emerald',
+    price: 95,
+    pricing_type: 'per_guest',
+    base_pax: 1,
+    option_label: 'Comfort Food Catering (Burgers & Pizza)',
+    description: 'Includes freshly prepared burgers, pizzas, and party food packs with serving setup. Transpo fee varies by location.',
+    inclusions: [
+      'Freshly grilled burgers & artisan pizzas',
+      'Party food packaging & serving setup',
+      'Dedicated event coordination',
+    ],
+    image_url: null,
+    show_in_banner: false,
+    is_active: true,
+    sort_order: 4,
+  },
+  {
+    id: 5,
+    slug: 'bulk-order-delivery',
+    name: 'Bulk Order Delivery',
+    subtitle: 'Bulk Party Pack Delivery',
+    badge: '📦 BULK PARTY PACK',
+    accent_color: 'sky',
+    price: 95,
+    pricing_type: 'per_guest',
+    base_pax: 1,
+    option_label: 'Bulk Party Pack Delivery',
+    description: 'Includes bulk drink and snack party packs delivered straight to your venue. Delivery fee varies by location.',
+    inclusions: [
+      'Bulk milk tea, coffee & snack packs',
+      'Individually sealed & labeled cups',
+      'Scheduled venue delivery',
+    ],
+    image_url: null,
+    show_in_banner: false,
+    is_active: true,
+    sort_order: 5,
+  },
+];
+
 const useGShotStore = defineStore('gshot', {
   state: () => ({
     // User & Session
@@ -344,8 +457,10 @@ const useGShotStore = defineStore('gshot', {
     editingAnnouncement: null,
 
     // Booking & Flyer Preview
+    bookingPackages: JSON.parse(JSON.stringify(DEFAULT_BOOKING_PACKAGES)),
     selectedBookingPackage: null,
     previewFlyerImage: null,
+    previewFlyerPackage: null,
 
     // Food & Drink Menu Item Photo Lightbox Preview
     previewProduct: null,
@@ -370,6 +485,7 @@ const useGShotStore = defineStore('gshot', {
 
   getters: {
     activeAnnouncements: (state) => state.announcements.filter(a => a.is_active),
+    activeBookingPackages: (state) => (state.bookingPackages || []).filter(p => p.is_active !== false),
     cartCount: (state) => state.cart.reduce((sum, item) => sum + item.quantity, 0),
     cartSubtotal: (state) => state.cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0),
     cartDeliveryFee: (state) => (state.cart.length > 0 ? 40 : 0),
@@ -511,12 +627,13 @@ const useGShotStore = defineStore('gshot', {
 
     async refreshAllData() {
       try {
-        const [prodRes, ingRes, setRes, googRes, annRes] = await Promise.allSettled([
+        const [prodRes, ingRes, setRes, googRes, annRes, pkgRes] = await Promise.allSettled([
           GST_API.getProducts(),
           GST_API.getIngredients(),
           GST_API.getSettings(),
           GST_API.getGoogleConfig(),
           this.isStaffOrAdmin ? GST_API.getAllAnnouncements() : GST_API.getAnnouncements(),
+          this.isStaffOrAdmin ? GST_API.getAllBookingPackages() : GST_API.getBookingPackages(),
         ]);
 
         if (prodRes.status === 'fulfilled' && prodRes.value.data) {
@@ -536,6 +653,9 @@ const useGShotStore = defineStore('gshot', {
         }
         if (annRes.status === 'fulfilled' && annRes.value.data) {
           this.announcements = annRes.value.data;
+        }
+        if (pkgRes.status === 'fulfilled' && Array.isArray(pkgRes.value.data) && pkgRes.value.data.length > 0) {
+          this.bookingPackages = pkgRes.value.data;
         }
 
         // Fetch user's active order and event booking history
@@ -1442,12 +1562,92 @@ const useGShotStore = defineStore('gshot', {
       this.bookingModalOpen = true;
     },
 
-    viewFlyer(imgUrl) {
+    viewFlyer(imgUrl, pkg = null) {
       this.previewFlyerImage = imgUrl;
+      this.previewFlyerPackage = pkg;
     },
 
     closeFlyer() {
       this.previewFlyerImage = null;
+      this.previewFlyerPackage = null;
+    },
+
+    async fetchBookingPackages(all = null) {
+      try {
+        const useAll = all !== null ? Boolean(all) : this.isStaffOrAdmin;
+        const res = useAll ? await GST_API.getAllBookingPackages() : await GST_API.getBookingPackages();
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          this.bookingPackages = res.data;
+        }
+        return this.bookingPackages;
+      } catch (err) {
+        console.error('Error fetching booking packages:', err);
+        return this.bookingPackages;
+      }
+    },
+
+    async createBookingPackage(data) {
+      try {
+        const res = await GST_API.createBookingPackage(data);
+        await this.fetchBookingPackages(true);
+        this.notify(res.data?.message || 'Booking package created!', 'success');
+        return res.data?.package;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to create booking package.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
+    async updateBookingPackage(id, data) {
+      try {
+        const res = await GST_API.updateBookingPackage(id, data);
+        await this.fetchBookingPackages(true);
+        this.notify(res.data?.message || 'Booking package updated!', 'success');
+        return res.data?.package;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to update booking package.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
+    async toggleBookingPackage(id) {
+      try {
+        const res = await GST_API.toggleBookingPackage(id);
+        await this.fetchBookingPackages(true);
+        this.notify(res.data?.message || 'Booking package visibility updated!', 'success');
+        return res.data?.package;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to update package visibility.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
+    async deleteBookingPackage(id) {
+      try {
+        const res = await GST_API.deleteBookingPackage(id);
+        await this.fetchBookingPackages(true);
+        this.notify(res.data?.message || 'Booking package deleted!', 'success');
+        return true;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to delete booking package.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
+    async updateBooking(id, data) {
+      try {
+        const res = await GST_API.updateBooking(id, data);
+        this.notify(res.data?.message || 'Booking updated successfully!', 'success');
+        return res.data?.booking;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to update booking.';
+        this.notify(msg, 'error');
+        throw err;
+      }
     },
 
     openProductPreview(item) {

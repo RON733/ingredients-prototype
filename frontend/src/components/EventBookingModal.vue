@@ -64,61 +64,45 @@
         <form v-if="store.bookingModalTab === 'form'" @submit.prevent="submitBooking" class="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto flex-1">
           
           <!-- Package Quick Select Banner -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 p-3 rounded-2xl bg-surface-950/70 border border-surface-800">
+          <div
+            v-if="bannerPackages.length > 0"
+            class="grid grid-cols-1 gap-2 sm:gap-3 p-3 rounded-2xl bg-surface-950/70 border border-surface-800"
+            :class="bannerPackages.length >= 2 ? 'sm:grid-cols-2' : ''">
             <div 
-              @click="selectPackage('Coffee Package')" 
-              class="p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 group hover:border-amber-500/50"
-              :class="isCoffeePackage ? 'bg-amber-500/15 border-amber-500 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-400 hover:text-white'">
+              v-for="pkg in bannerPackages"
+              :key="pkg.id"
+              @click="selectPackage(pkg)" 
+              class="p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 group"
+              :class="[
+                getAccentCardClass(pkg.accent_color, selectedPackageId === pkg.id),
+              ]">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div 
-                  @click.stop="openEnlargedImage('Coffee Package', '/assets/booking-coffee-package.jpg', '₱3,500 / 50 pax')"
+                  v-if="pkg.image_url"
+                  @click.stop="openEnlargedImage(pkg.name, pkg.image_url, formatPriceTag(pkg), pkg)"
                   class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden shrink-0 bg-surface-900 border border-surface-700 group/thumb cursor-zoom-in shadow-inner"
-                  title="Click to enlarge Coffee Package flyer">
-                  <img src="/assets/booking-coffee-package.jpg" alt="Coffee Package" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-115" />
+                  :title="`Click to enlarge ${pkg.name} flyer`">
+                  <img :src="pkg.image_url" :alt="pkg.name" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-115" />
                   <div class="absolute inset-0 bg-black/45 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity text-amber-300">
                     <i class="pi pi-search-plus text-xs"></i>
                   </div>
                 </div>
+                <div
+                  v-else
+                  class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl shrink-0 bg-surface-900 border border-surface-700 flex items-center justify-center text-base">
+                  🎉
+                </div>
                 <div class="min-w-0">
-                  <p class="font-black text-[11px] truncate" :class="isCoffeePackage ? 'text-amber-400' : 'text-gray-300'">Coffee Package</p>
-                  <p class="text-[10px] text-gray-400">₱3,500 / 50 pax</p>
+                  <p class="font-black text-[11px] truncate" :class="selectedPackageId === pkg.id ? getAccentTitleClass(pkg.accent_color) : 'text-gray-300'">{{ pkg.name }}</p>
+                  <p class="text-[10px] text-gray-400 truncate">{{ formatPriceTag(pkg) }}</p>
                 </div>
               </div>
 
               <button
+                v-if="pkg.image_url"
                 type="button"
-                @click.stop="openEnlargedImage('Coffee Package', '/assets/booking-coffee-package.jpg', '₱3,500 / 50 pax')"
+                @click.stop="openEnlargedImage(pkg.name, pkg.image_url, formatPriceTag(pkg), pkg)"
                 class="px-2 py-1 rounded-lg bg-surface-800/90 hover:bg-amber-500/20 text-gray-300 hover:text-amber-300 border border-surface-700/80 text-[10px] font-semibold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
-                title="View full flyer">
-                <i class="pi pi-search-plus text-[9px]"></i>
-                <span class="hidden sm:inline">Enlarge</span>
-              </button>
-            </div>
-
-            <div 
-              @click="selectPackage('Fruity Float Package')" 
-              class="p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 group hover:border-rose-500/50"
-              :class="isFruityPackage ? 'bg-rose-500/15 border-rose-500 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-400 hover:text-white'">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div 
-                  @click.stop="openEnlargedImage('Fruity Float Package', '/assets/booking-fruity-float.jpg', '₱3,500 / 50 pax')"
-                  class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden shrink-0 bg-surface-900 border border-surface-700 group/thumb cursor-zoom-in shadow-inner"
-                  title="Click to enlarge Fruity Float flyer">
-                  <img src="/assets/booking-fruity-float.jpg" alt="Fruity Float" class="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-115" />
-                  <div class="absolute inset-0 bg-black/45 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity text-rose-300">
-                    <i class="pi pi-search-plus text-xs"></i>
-                  </div>
-                </div>
-                <div class="min-w-0">
-                  <p class="font-black text-[11px] truncate" :class="isFruityPackage ? 'text-rose-400' : 'text-gray-300'">Fruity Float</p>
-                  <p class="text-[10px] text-gray-400">₱3,500 / 50 pax</p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                @click.stop="openEnlargedImage('Fruity Float Package', '/assets/booking-fruity-float.jpg', '₱3,500 / 50 pax')"
-                class="px-2 py-1 rounded-lg bg-surface-800/90 hover:bg-rose-500/20 text-gray-300 hover:text-rose-300 border border-surface-700/80 text-[10px] font-semibold flex items-center gap-1 transition-all shrink-0 cursor-pointer"
                 title="View full flyer">
                 <i class="pi pi-search-plus text-[9px]"></i>
                 <span class="hidden sm:inline">Enlarge</span>
@@ -169,13 +153,12 @@
                 Selected Event / Package
               </label>
               <select 
-                v-model="form.event_type"
+                v-model="selectedPackageId"
+                @change="onPackageDropdownChange"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white focus:outline-none focus:border-brand-500 cursor-pointer">
-                <option value="Coffee Package (₱3,500 / 50 pax)">Coffee Package (₱3,500 • 50 cups 12oz • 5 choices • 3 hrs)</option>
-                <option value="Fruity Float Package (₱3,500 / 50 pax)">Fruity Float Package (₱3,500 • 50 cups 16oz • 7 choices • 3 hrs)</option>
-                <option value="Mobile Bar & Milktea Booth">Custom Mobile Bar & Milktea Booth</option>
-                <option value="Comfort Food Catering">Comfort Food Catering (Burgers & Pizza)</option>
-                <option value="Bulk Order Delivery">Bulk Party Pack Delivery</option>
+                <option v-for="pkg in availablePackages" :key="pkg.id" :value="pkg.id">
+                  {{ formatOptionLabel(pkg) }}
+                </option>
               </select>
             </div>
             <div>
@@ -278,9 +261,9 @@
                 {{ packageDetailsText }}
               </p>
               <button
-                v-if="isCoffeePackage || isFruityPackage"
+                v-if="selectedPackage?.image_url"
                 type="button"
-                @click="openEnlargedImage(isCoffeePackage ? 'Coffee Package' : 'Fruity Float Package', isCoffeePackage ? '/assets/booking-coffee-package.jpg' : '/assets/booking-fruity-float.jpg', '₱3,500 / 50 pax')"
+                @click="openEnlargedImage(selectedPackage.name, selectedPackage.image_url, formatPriceTag(selectedPackage), selectedPackage)"
                 class="px-2.5 py-1 rounded-lg bg-surface-700/80 hover:bg-surface-700 text-amber-400 hover:text-amber-300 text-[10px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer border border-surface-600/60 shrink-0 self-start sm:self-auto">
                 <i class="pi pi-search-plus text-[10px]"></i>
                 <span>Enlarge Flyer</span>
@@ -483,7 +466,7 @@
               </button>
               <button 
                 type="button"
-                @click="selectPackage(enlargedPreview.title); closeEnlargedImage()"
+                @click="selectPackage(enlargedPreview.pkg || enlargedPreview.title); closeEnlargedImage()"
                 class="px-4 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-bold transition-all shadow-md cursor-pointer">
                 Select This Package
               </button>
@@ -687,8 +670,8 @@ export default {
       toggleZoom();
     };
 
-    const openEnlargedImage = (title, url, price) => {
-      enlargedPreview.value = { title, url, price };
+    const openEnlargedImage = (title, url, price, pkg = null) => {
+      enlargedPreview.value = { title, url, price, pkg };
       resetZoom();
     };
 
@@ -736,11 +719,73 @@ export default {
       return `${year}-${month}-${day}`;
     });
 
+    const availablePackages = Vue.computed(() => {
+      const list = store.activeBookingPackages || [];
+      return list.length > 0 ? list : (store.bookingPackages || []);
+    });
+
+    const bannerPackages = Vue.computed(() =>
+      availablePackages.value.filter(p => p.show_in_banner)
+    );
+
+    const selectedPackageId = Vue.ref(availablePackages.value[0]?.id ?? null);
+
+    const selectedPackage = Vue.computed(() => {
+      const list = availablePackages.value;
+      return list.find(p => p.id === selectedPackageId.value) || list[0] || null;
+    });
+
+    const formatPriceTag = (pkg) => {
+      if (!pkg) return '₱0';
+      const price = Number(pkg.price || 0).toLocaleString();
+      if (pkg.pricing_type === 'per_guest') return `₱${price} / pax`;
+      if (pkg.pricing_type === 'flat') return `₱${price} flat`;
+      return `₱${price} / ${pkg.base_pax || 50} pax`;
+    };
+
+    const formatOptionLabel = (pkg) => {
+      if (!pkg) return '';
+      if (pkg.option_label && String(pkg.option_label).trim() !== '') {
+        return pkg.option_label;
+      }
+      return `${pkg.name} (${formatPriceTag(pkg)})`;
+    };
+
+    const formatEventType = (pkg) => {
+      if (!pkg) return 'Event Package';
+      if (pkg.pricing_type === 'per_guest') {
+        return `${pkg.name} (₱${Number(pkg.price || 0).toLocaleString()} / pax)`;
+      }
+      return `${pkg.name} (${formatPriceTag(pkg)})`;
+    };
+
+    const getAccentCardClass = (color, isSelected) => {
+      const map = {
+        amber: isSelected ? 'bg-amber-500/15 border-amber-500 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-400 hover:text-white hover:border-amber-500/50',
+        rose: isSelected ? 'bg-rose-500/15 border-rose-500 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-400 hover:text-white hover:border-rose-500/50',
+        emerald: isSelected ? 'bg-emerald-500/15 border-emerald-500 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-400 hover:text-white hover:border-emerald-500/50',
+        sky: isSelected ? 'bg-sky-500/15 border-sky-500 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-400 hover:text-white hover:border-sky-500/50',
+        purple: isSelected ? 'bg-purple-500/15 border-purple-500 text-white' : 'bg-surface-800/60 border-surface-700/60 text-gray-400 hover:text-white hover:border-purple-500/50',
+      };
+      return map[color] || map.amber;
+    };
+
+    const getAccentTitleClass = (color) => {
+      const map = {
+        amber: 'text-amber-400',
+        rose: 'text-rose-400',
+        emerald: 'text-emerald-400',
+        sky: 'text-sky-400',
+        purple: 'text-purple-400',
+      };
+      return map[color] || 'text-amber-400';
+    };
+
     const form = Vue.reactive({
       client_name: (store.user?.name || '').slice(0, 80),
       client_phone: sanitizePhone(store.user?.phone),
       client_email: store.user?.email || '',
-      event_type: 'Coffee Package (₱3,500 / 50 pax)',
+      event_type: formatEventType(selectedPackage.value),
       event_date: '',
       event_time: '2:00 PM – 5:00 PM (3 Hours)',
       guest_count: 50,
@@ -788,18 +833,47 @@ export default {
       }
     };
 
-    const isCoffeePackage = Vue.computed(() => form.event_type.includes('Coffee'));
-    const isFruityPackage = Vue.computed(() => form.event_type.includes('Fruity Float'));
+    const resolvePackage = (pkgOrName) => {
+      const list = availablePackages.value;
+      if (!pkgOrName) return list[0] || null;
+      if (typeof pkgOrName === 'object') {
+        return list.find(p => p.id === pkgOrName.id || p.slug === pkgOrName.slug) || pkgOrName;
+      }
+      const query = String(pkgOrName).toLowerCase();
+      return (
+        list.find(p => String(p.name || '').toLowerCase() === query) ||
+        list.find(p => String(p.slug || '').toLowerCase() === query) ||
+        list.find(p => query.includes(String(p.name || '').toLowerCase())) ||
+        list.find(p => String(p.name || '').toLowerCase().includes(query)) ||
+        list[0] ||
+        null
+      );
+    };
 
-    const selectPackage = (pkg) => {
-      if (pkg === 'Coffee Package') {
-        form.event_type = 'Coffee Package (₱3,500 / 50 pax)';
-        form.guest_count = 50;
-      } else if (pkg === 'Fruity Float Package') {
-        form.event_type = 'Fruity Float Package (₱3,500 / 50 pax)';
-        form.guest_count = 50;
+    const selectPackage = (pkgOrName, adjustGuests = true) => {
+      const resolved = resolvePackage(pkgOrName);
+      if (!resolved) return;
+      selectedPackageId.value = resolved.id;
+      form.event_type = formatEventType(resolved);
+      if (adjustGuests && resolved.pricing_type === 'per_pack' && resolved.base_pax) {
+        form.guest_count = Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, Number(resolved.base_pax)));
       }
     };
+
+    const onPackageDropdownChange = () => {
+      if (selectedPackage.value) {
+        form.event_type = formatEventType(selectedPackage.value);
+      }
+    };
+
+    Vue.watch(availablePackages, (list) => {
+      if (!list || list.length === 0) return;
+      if (!list.some(p => p.id === selectedPackageId.value)) {
+        selectPackage(list[0], false);
+      } else if (selectedPackage.value) {
+        form.event_type = formatEventType(selectedPackage.value);
+      }
+    });
 
     const justSubmitted = Vue.ref(false);
     const hasApprovedBooking = Vue.computed(() =>
@@ -822,7 +896,7 @@ export default {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    Vue.watch(() => store.bookingModalOpen, (isOpen) => {
+    Vue.watch(() => store.bookingModalOpen, async (isOpen) => {
       if (isOpen) {
         justSubmitted.value = false;
         if (!form.client_name && store.user?.name) {
@@ -835,17 +909,12 @@ export default {
           form.client_email = store.user.email;
         }
         store.fetchMyBookings();
+        await store.fetchBookingPackages(false);
         if (store.selectedBookingPackage) {
           store.bookingModalTab = 'form';
-          if (store.selectedBookingPackage.includes('Coffee')) {
-            form.event_type = 'Coffee Package (₱3,500 / 50 pax)';
-            form.guest_count = 50;
-          } else if (store.selectedBookingPackage.includes('Fruity')) {
-            form.event_type = 'Fruity Float Package (₱3,500 / 50 pax)';
-            form.guest_count = 50;
-          } else {
-            form.event_type = 'Mobile Bar & Milktea Booth';
-          }
+          selectPackage(store.selectedBookingPackage, true);
+        } else if (selectedPackage.value) {
+          form.event_type = formatEventType(selectedPackage.value);
         }
       }
     });
@@ -858,21 +927,26 @@ export default {
 
     const estimatedCost = Vue.computed(() => {
       const guests = clampedGuestCount.value;
-      if (isCoffeePackage.value || isFruityPackage.value) {
-        const units = Math.max(1, Math.ceil(guests / 50));
-        return units * 3500;
+      const pkg = selectedPackage.value;
+      if (!pkg) return guests * 95;
+      const price = Math.max(0, Number(pkg.price || 0));
+      if (pkg.pricing_type === 'flat') {
+        return Math.round(price);
       }
-      return guests * 95;
+      if (pkg.pricing_type === 'per_guest') {
+        return Math.round(guests * price);
+      }
+      const packSize = Math.max(1, Number(pkg.base_pax || 50));
+      const units = Math.max(1, Math.ceil(guests / packSize));
+      return Math.round(units * price);
     });
 
     const packageDetailsText = Vue.computed(() => {
-      if (isCoffeePackage.value) {
-        return 'Includes: 50 cups of 12oz, 3 hours of on-site service, 5 choices of drinks (Coldbrew & specialty blends), and trained barista staff.';
+      const pkg = selectedPackage.value;
+      if (pkg?.description && String(pkg.description).trim() !== '') {
+        return pkg.description;
       }
-      if (isFruityPackage.value) {
-        return 'Includes: 50 cups of 16oz, 3 hours of on-site service, 7 choices of drinks (Sparkling sodas & ice cream fruity floats), and trained barista staff.';
-      }
-      return 'Includes custom milk tea & snack booth setup, drink cups, straws, pearls, and on-site staff. Transpo fee varies by location.';
+      return 'Includes custom mobile bar & catering setup, cups, straws, and on-site staff. Transpo fee varies by location.';
     });
 
     const submitBooking = async () => {
@@ -903,15 +977,18 @@ export default {
 
       loading.value = true;
       try {
+        const pkg = selectedPackage.value;
         const res = await GST_API.createBooking({
           ...form,
+          event_type: pkg ? formatEventType(pkg) : form.event_type,
+          booking_package_id: pkg?.id || undefined,
           user_id: store.user?.id || undefined,
           client_name: cleanName,
           guest_count: guests,
           event_time: (form.event_time || '').trim().slice(0, 60),
           location: cleanLocation,
           notes: (form.notes || '').trim().slice(0, 500),
-          package_name: form.event_type,
+          package_name: pkg?.name || form.event_type,
           estimated_cost: estimatedCost.value,
         });
 
@@ -967,8 +1044,15 @@ export default {
       handleCanvasClick,
       openEnlargedImage,
       closeEnlargedImage,
-      isCoffeePackage,
-      isFruityPackage,
+      availablePackages,
+      bannerPackages,
+      selectedPackageId,
+      selectedPackage,
+      formatPriceTag,
+      formatOptionLabel,
+      getAccentCardClass,
+      getAccentTitleClass,
+      onPackageDropdownChange,
       selectPackage,
       justSubmitted,
       hasApprovedBooking,

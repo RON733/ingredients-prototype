@@ -222,6 +222,25 @@ class SystemController extends Controller
         }
         $announcementsSummary = !empty($announcementList) ? implode("\n", $announcementList) : "None at the moment.";
 
+        // Live event booking packages
+        \App\Models\BookingPackage::seedDefaultsIfEmpty();
+        $bookingPackages = \App\Models\BookingPackage::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $bookingPackageLines = [];
+        foreach ($bookingPackages as $pkg) {
+            $priceStr = '₱' . number_format($pkg->price, 0);
+            if ($pkg->pricing_type === 'per_pack') {
+                $priceStr .= " per {$pkg->base_pax} pax";
+            } elseif ($pkg->pricing_type === 'per_guest') {
+                $priceStr .= " per pax";
+            } else {
+                $priceStr .= " flat rate";
+            }
+            $bookingPackageLines[] = "{$pkg->name} ({$priceStr}" . ($pkg->description ? " — {$pkg->description}" : '') . ")";
+        }
+        $bookingPackagesSummary = !empty($bookingPackageLines)
+            ? implode('; ', $bookingPackageLines)
+            : "Coffee Package (₱3,500 for 50 pax) and Fruity Float Package (₱3,500 for 50 pax)";
+
         // Build comprehensive knowledge context for Gemini AI
         $systemPrompt = "You are G Shot Assistant, the official, intelligent, and friendly AI assistant for 'G Shot Teas' (a premier milk tea, burger, pizza, and coffee destination in Santa Rosa, Laguna).\n"
             . "You think freely, converse warmly, and answer customer inquiries accurately and naturally (in friendly English or Taglish).\n\n"
@@ -232,7 +251,7 @@ class SystemController extends Controller
             . "- Business Hours: Monday to Saturday, 9:00 AM – 10:00 PM (Closed on Sundays)\n"
             . "- Walk-In Orders: YES! Walk-in orders for dine-in and takeout are 100% welcomed directly at our physical store at {$address}. Customers can also order online through this website for delivery or pickup!\n"
             . "- Payment Methods: PayMongo Online Payment (QR Ph, E-Wallets & Online Banking) and Cash on Delivery (COD) / Cash at Counter for walk-ins.\n"
-            . "- Event Catering & Mobile Bar: Coffee Package (₱3,500 for 50 pax, 5 drink choices, 3 hrs barista service) and Fruity Float Package (₱3,500 for 50 pax, 7 drink choices). Inquiries handled directly by {$owner} ({$phone}).\n\n"
+            . "- Event Catering & Mobile Bar: {$bookingPackagesSummary}. Inquiries handled directly by {$owner} ({$phone}).\n\n"
             . "CURRENT STORE MENU & PRICES:\n{$menuSummary}\n\n"
             . "LIVE PROMOTIONS & ANNOUNCEMENTS:\n{$announcementsSummary}\n\n"
             . "GUIDELINES FOR YOUR RESPONSE:\n"

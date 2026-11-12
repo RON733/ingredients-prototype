@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\EventBooking;
+use App\Models\BookingPackage;
 use App\Models\AuditLog;
 use App\Models\User;
 
@@ -16,6 +17,17 @@ class EventBookingController extends Controller
             $digits = '0' . substr($digits, 2);
         }
         return $digits;
+    }
+
+    private function authorizeOperator(Request $request)
+    {
+        $user = auth('sanctum')->user() ?? $request->user();
+        if ($user && !in_array($user->role, ['staff', 'admin', 'super_admin'])) {
+            return [null, response()->json([
+                'message' => 'Access Denied: Only Staff or Admin can manage bookings.',
+            ], 403)];
+        }
+        return [$user, null];
     }
 
     public function index()
@@ -128,13 +140,14 @@ class EventBookingController extends Controller
             'client_name' => 'required|string|max:80',
             'client_phone' => 'required|string|max:20',
             'client_email' => 'nullable|email|max:120',
-            'event_type' => 'required|string|max:120',
+            'event_type' => 'required|string|max:180',
             'event_date' => 'required|date|after_or_equal:today',
             'event_time' => 'nullable|string|max:60',
             'guest_count' => 'required|integer|min:10|max:500',
             'location' => 'required|string|max:200',
-            'package_name' => 'nullable|string|max:120',
-            'estimated_cost' => 'nullable|numeric|min:0|max:100000',
+            'package_name' => 'nullable|string|max:180',
+            'booking_package_id' => 'nullable|integer',
+            'estimated_cost' => 'nullable|numeric|min:0|max:500000',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -147,10 +160,21 @@ class EventBookingController extends Controller
         }
         $validated['client_phone'] = $cleanPhone;
 
-        $isFixedPackage = str_contains($validated['event_type'], 'Coffee') || str_contains($validated['event_type'], 'Fruity Float');
-        $serverEstimatedCost = $isFixedPackage
-            ? max(1, (int) ceil($validated['guest_count'] / 50)) * 3500
-            : $validated['guest_count'] * 95;
+        BookingPackage::seedDefaultsIfEmpty();
+        $matchedPackage = BookingPackage::findMatchingPackage(
+            isset($validated['booking_package_id']) ? (int) $validated['booking_package_id'] : null,
+            $validated['event_type'],
+            $validated['package_name'] ?? null
+        );
+
+        if ($matchedPackage) {
+            $serverEstimatedCost = $matchedPackage->computeEstimatedCost((int) $validated['guest_count']);
+        } else {
+            $isFixedPackage = str_contains($validated['event_type'], 'Coffee') || str_contains($validated['event_type'], 'Fruity Float');
+            $serverEstimatedCost = $isFixedPackage
+                ? max(1, (int) ceil($validated['guest_count'] / 50)) * 3500
+                : $validated['guest_count'] * 95;
+        }
 
         $booking = EventBooking::create([
             'user_id' => $actingUser?->id ?? null,
@@ -162,7 +186,7 @@ class EventBookingController extends Controller
             'event_time' => $validated['event_time'] ?? 'TBD',
             'guest_count' => $validated['guest_count'],
             'location' => trim($validated['location']),
-            'package_name' => $validated['package_name'] ?? 'Standard Catering Package',
+            'package_name' => $validated['package_name'] ?? $matchedPackage?->name ?? 'Standard Catering Package',
             'estimated_cost' => $serverEstimatedCost,
             'status' => 'Pending',
             'notes' => $validated['notes'] ?? null,
@@ -186,14 +210,92 @@ class EventBookingController extends Controller
         ], 201);
     }
 
+    public function update(Request $request, $id)
+    {
+        [$operator, $denied] = $this->authorizeOperator($request);
+        if ($denied) {
+            return $denied;
+        }
+
+        $booking = EventBooking::findOrFail($id);
+
+        $validated = $request->validate([
+            'client_name' => 'sometimes|required|string|max:80',
+            'client_phone' => 'sometimes|required|string|max:20',
+            'client_email' => 'nullable|email|max:120',
+            'event_type' => 'sometimes|required|string|max:180',
+            'package_name' => 'nullable|string|max:180',
+            'booking_package_id' => 'nullable|integer',
+            'event_date' => 'sometimes|required|date',
+            'event_time' => 'nullable|string|max:60',
+            'guest_count' => 'sometimes|required|integer|min:10|max:500',
+            'location' => 'sometimes|required|string|max:200',
+            'estimated_cost' => 'sometimes|required|numeric|min:0|max:500000',
+            'status' => 'sometimes|required|in:Pending,Approved,Declined,Completed',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        if (array_key_exists('client_phone', $validated)) {
+            $cleanPhone = $this->normalizePhone($validated['client_phone']);
+            if (strlen($cleanPhone) !== 11 || !str_starts_with($cleanPhone, '09')) {
+                return response()->json([
+                    'message' => 'Please provide a valid 11-digit mobile number starting with 09 (e.g. 09123456789).'
+                ], 422);
+            }
+            $validated['client_phone'] = $cleanPhone;
+        }
+
+        if (array_key_exists('client_name', $validated)) {
+            $validated['client_name'] = trim($validated['client_name']);
+        }
+        if (array_key_exists('location', $validated)) {
+            $validated['location'] = trim($validated['location']);
+        }
+
+        $oldStatus = $booking->status;
+        if (array_key_exists('status', $validated) && $validated['status'] !== $oldStatus) {
+            if ($validated['status'] !== 'Pending') {
+                $booking->reviewed_by_name = $operator?->name ?? 'Store Staff';
+                $booking->reviewed_by_role = $operator?->role ?? 'staff';
+                $booking->reviewed_at = now();
+            } else {
+                $booking->reviewed_by_name = null;
+                $booking->reviewed_by_role = null;
+                $booking->reviewed_at = null;
+            }
+        }
+
+        unset($validated['booking_package_id']);
+        $booking->fill($validated);
+        $booking->save();
+
+        AuditLog::create([
+            'user_id' => $operator?->id,
+            'user_name' => $operator?->name ?? 'Staff',
+            'user_role' => $operator?->role ?? 'staff',
+            'action' => 'Event Booking Updated',
+            'details' => "Edited booking #{$booking->id} for {$booking->client_name} ({$booking->event_type}, ₱" . number_format((float) $booking->estimated_cost, 2) . ", {$booking->guest_count} pax)",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => "Booking #{$booking->id} updated successfully.",
+            'booking' => $booking->fresh(),
+        ]);
+    }
+
     public function updateStatus(Request $request, $id)
     {
+        [$reviewer, $denied] = $this->authorizeOperator($request);
+        if ($denied) {
+            return $denied;
+        }
+
         $booking = EventBooking::findOrFail($id);
         $validated = $request->validate([
             'status' => 'required|in:Pending,Approved,Declined,Completed',
         ]);
 
-        $reviewer = auth('sanctum')->user() ?? $request->user();
         $oldStatus = $booking->status;
         $booking->status = $validated['status'];
 
