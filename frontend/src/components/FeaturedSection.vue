@@ -411,50 +411,7 @@
 
         </div>
 
-        <!-- 4. Real Customer Reviews & Social Proof -->
-        <div>
-          <div class="text-center max-w-3xl mx-auto mb-12">
-<span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 uppercase tracking-widest border border-emerald-500/30">
-              <i class="pi pi-star-fill text-[10px]"></i> Verified Reviews
-            </span>
-            <h2 class="text-3xl sm:text-4xl font-black text-white mt-3">
-              Loved by Milk Tea Lovers Across Laguna
-            </h2>
-            <p class="text-xs sm:text-sm text-gray-400 mt-2">
-              Over 2,500+ happy students, families, and foodies in Santa Rosa.
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div 
-              v-for="rev in reviews" 
-              :key="rev.name"
-              class="p-6 rounded-3xl bg-surface-900 border border-surface-700/80 shadow-xl flex flex-col justify-between">
-              
-              <div class="space-y-3">
-                <div class="flex items-center gap-1 text-amber-400 text-xs">
-                  <i v-for="i in 5" :key="i" class="pi pi-star-fill"></i>
-                </div>
-                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed italic">
-                  "{{ rev.comment }}"
-                </p>
-              </div>
-
-              <div class="flex items-center gap-3 pt-4 mt-4 border-t border-surface-800">
-                <div class="w-9 h-9 rounded-full bg-surface-800 border border-surface-700 flex items-center justify-center text-yellow-400 font-bold text-xs">
-                  {{ rev.name.charAt(0) }}
-                </div>
-                <div>
-                  <p class="font-bold text-white text-xs">{{ rev.name }}</p>
-                  <p class="text-[10px] text-gray-500">{{ rev.location }}</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- 5. How It Works (3 Steps) -->
+        <!-- 4. How It Works (3 Steps) -->
         <div class="text-center pt-6 border-t border-surface-800">
           <p class="text-xs font-bold text-brand-400 uppercase tracking-widest mb-2">Simple & Convenient</p>
           <h2 class="text-2xl sm:text-3xl font-black text-white mb-8">How to Order from G Shot Teas</h2>
@@ -496,7 +453,7 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
-// G Shot Teas — Featured Highlights, Craftsmanship, Catering & Reviews Section
+// G Shot Teas — Featured Highlights, Craftsmanship & Catering Section
 export default {
   name: 'FeaturedSection',
   setup() {
@@ -568,24 +525,6 @@ export default {
         };
       });
     });
-
-    const reviews = [
-      {
-        name: 'Alyssa Marie Santos',
-        location: 'STI College Santa Rosa',
-        comment: 'The brown sugar boba is absolute perfection! The pearls are always warm and chewy, never hard like other shops. Best milk tea spot in Santa Rosa!',
-      },
-      {
-        name: 'Kenrick Villanueva',
-        location: 'Cabuyao, Laguna',
-        comment: 'Their pepperoni pizza and loaded fries are our favorite weekend comfort food. Super fast delivery and the rider was very polite.',
-      },
-      {
-        name: 'Sarah Mae Tan',
-        location: 'Amira Townhomes, Santa Rosa',
-        comment: 'We booked G Shot Teas for our 18th debut party mobile bar. Our guests could not stop praising the matcha and classic milk tea!',
-      },
-    ];
 
     const handleOrder = (item) => {
       // Find matching product in store if available
@@ -762,7 +701,6 @@ export default {
       getPackageAccentTextClass,
       getPackageTitleHoverClass,
       getPackageDotClass,
-      reviews,
       handleOrder,
       bookPackage,
       viewFlyer,
