@@ -8,10 +8,14 @@
             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30">
               <i class="pi pi-shield text-[9px]"></i> Authorized Administration Console
             </span>
+            <span v-if="store.isSuperAdmin" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              <i class="pi pi-crown text-[9px]"></i> Super Admin Full Control Active
+            </span>
           </div>
           <h2 class="text-lg sm:text-2xl font-bold text-white tracking-tight">User & Role Management</h2>
           <p class="text-xs text-gray-400 mt-1 max-w-2xl">
             Manage store personnel accounts: Baristas, Delivery Riders, and Administrators. Assign 4-digit POS PINs for staff and operational privileges.
+            <span v-if="store.isSuperAdmin" class="text-amber-400 font-medium">As Super Admin, you have full rights to modify emails, change passwords, and permanently delete accounts.</span>
           </p>
         </div>
 
@@ -27,7 +31,7 @@
           <button 
             @click="refresh"
             :disabled="loading"
-            class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 text-xs transition-colors"
+            class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 text-xs transition-colors cursor-pointer"
             title="Refresh Users">
             <i class="pi pi-refresh" :class="{ 'pi-spin': loading }"></i>
           </button>
@@ -91,25 +95,25 @@
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           <button 
             @click="selectedRoleFilter = 'all'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer"
             :class="selectedRoleFilter === 'all' ? 'bg-surface-700 text-white shadow-sm' : 'text-gray-400 hover:text-white'">
             All ({{ users.length }})
           </button>
           <button 
             @click="selectedRoleFilter = 'staff'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-sky-300"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-sky-300 cursor-pointer"
             :class="selectedRoleFilter === 'staff' ? 'bg-sky-600 text-white shadow-sm' : 'hover:bg-sky-950/40'">
             Staff ({{ staffCount }})
           </button>
           <button 
             @click="selectedRoleFilter = 'driver'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-emerald-300"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-emerald-300 cursor-pointer"
             :class="selectedRoleFilter === 'driver' ? 'bg-emerald-600 text-white shadow-sm' : 'hover:bg-emerald-950/40'">
             Delivery Rider ({{ driverCount }})
           </button>
           <button 
             @click="selectedRoleFilter = 'admin'"
-            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-amber-300"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-amber-300 cursor-pointer"
             :class="selectedRoleFilter === 'admin' ? 'bg-amber-600 text-white shadow-sm' : 'hover:bg-amber-950/40'">
             Admin ({{ adminCount }})
           </button>
@@ -126,14 +130,14 @@
           <button 
             v-if="searchQuery" 
             @click="searchQuery = ''" 
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs">
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer">
             <i class="pi pi-times"></i>
           </button>
         </div>
       </div>
 
       <!-- Users Table & Mobile Cards -->
-      <div class="rounded-2xl bg-surface-800/90 border border-surface-700 overflow-hidden ">
+      <div class="rounded-2xl bg-surface-800/90 border border-surface-700 overflow-hidden">
         <!-- Desktop Table (hidden on mobile) -->
         <div class="hidden md:block overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">
@@ -144,7 +148,7 @@
                 <th class="px-6 py-4">4-Digit Staff PIN</th>
                 <th class="px-6 py-4">Contact Phone</th>
                 <th class="px-6 py-4">Account Status</th>
-                <th class="px-6 py-4 text-right">Modify Role & Status</th>
+                <th class="px-6 py-4 text-right">Modify Role & Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-surface-700/50">
@@ -181,7 +185,17 @@
                           Google
                         </span>
                       </div>
-                      <p class="text-gray-400 text-[11px] font-mono mt-0.5">{{ u.email }}</p>
+                      <div class="flex items-center gap-2 mt-0.5">
+                        <p class="text-gray-400 text-[11px] font-mono">{{ u.email }}</p>
+                        <!-- Super Admin Quick Email Edit Shortcut -->
+                        <button 
+                          v-if="store.isSuperAdmin"
+                          @click="openEditModal(u, 'email')"
+                          class="p-0.5 text-gray-500 hover:text-amber-400 transition-colors cursor-pointer"
+                          title="Super Admin: Change Email Address">
+                          <i class="pi pi-pencil text-[10px]"></i>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -204,13 +218,13 @@
                     <button 
                       v-if="u.pin"
                       @click="togglePinReveal(u.id)"
-                      class="p-1 text-gray-400 hover:text-white text-xs"
+                      class="p-1 text-gray-400 hover:text-white text-xs cursor-pointer"
                       :title="revealedPins[u.id] ? 'Hide PIN' : 'Reveal PIN'">
                       <i class="pi" :class="revealedPins[u.id] ? 'pi-eye-slash' : 'pi-eye'"></i>
                     </button>
                     <button 
                       @click="promptEditPin(u)"
-                      class="p-1 text-sky-400 hover:text-sky-300 text-xs"
+                      class="p-1 text-sky-400 hover:text-sky-300 text-xs cursor-pointer"
                       title="Change PIN">
                       <i class="pi pi-pencil"></i>
                     </button>
@@ -235,7 +249,17 @@
 
                 <!-- Role Selector & Actions -->
                 <td class="px-6 py-4 text-right whitespace-nowrap">
-                  <div class="flex items-center justify-end gap-2">
+                  <div class="flex items-center justify-end gap-1.5">
+                    
+                    <!-- Super Admin Edit Credentials Trigger (Password & Email) -->
+                    <button 
+                      v-if="store.isSuperAdmin"
+                      @click="openEditModal(u)"
+                      class="p-1.5 rounded-lg bg-surface-900 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 border border-surface-700 transition-colors cursor-pointer text-xs"
+                      title="Super Admin: Edit Email / Change Password">
+                      <i class="pi pi-user-edit"></i>
+                    </button>
+
                     <select 
                       :value="u.role" 
                       @change="changeRole(u, $event.target.value)"
@@ -251,6 +275,16 @@
                       :class="u.status === 'active' ? 'border-rose-500/40 text-rose-400 hover:bg-rose-500/20' : 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20'">
                       {{ u.status === 'active' ? 'Deactivate' : 'Activate' }}
                     </button>
+
+                    <!-- Super Admin Permanent Delete Account Action -->
+                    <button 
+                      v-if="store.isSuperAdmin"
+                      @click="confirmDeleteUser(u)"
+                      class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 transition-colors cursor-pointer text-xs ml-1"
+                      title="Super Admin: Permanently Delete Account">
+                      <i class="pi pi-trash"></i>
+                    </button>
+
                   </div>
                 </td>
 
@@ -288,7 +322,16 @@
                       Google
                     </span>
                   </div>
-                  <p class="text-gray-400 text-[11px] font-mono truncate">{{ u.email }}</p>
+                  <div class="flex items-center gap-1.5">
+                    <p class="text-gray-400 text-[11px] font-mono truncate">{{ u.email }}</p>
+                    <button 
+                      v-if="store.isSuperAdmin"
+                      @click="openEditModal(u, 'email')"
+                      class="text-gray-500 hover:text-amber-400 transition-colors cursor-pointer text-[10px]"
+                      title="Super Admin: Edit Email">
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -338,9 +381,9 @@
               </div>
             </div>
 
-            <!-- Role Change Dropdown & Account Status Toggle -->
-            <div class="flex items-center justify-between gap-2 pt-1 border-t border-surface-700/40">
-              <div class="flex items-center gap-1.5 flex-1 min-w-0">
+            <!-- Role Change Dropdown, Status Toggle & Super Admin Actions -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-surface-700/40">
+              <div class="flex items-center gap-1.5 flex-1 min-w-[140px]">
                 <span class="text-[10px] text-gray-400 uppercase font-bold shrink-0">Role:</span>
                 <select 
                   :value="u.role" 
@@ -352,12 +395,30 @@
                 </select>
               </div>
 
-              <button 
-                @click="toggleStatus(u)"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer shrink-0"
-                :class="u.status === 'active' ? 'border-rose-500/40 text-rose-400 hover:bg-rose-500/20' : 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20'">
-                {{ u.status === 'active' ? 'Deactivate' : 'Activate' }}
-              </button>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button 
+                  v-if="store.isSuperAdmin"
+                  @click="openEditModal(u)"
+                  class="p-1.5 rounded-xl bg-surface-900 border border-surface-700 text-amber-400 hover:bg-amber-500/20 text-xs cursor-pointer"
+                  title="Super Admin: Edit Credentials">
+                  <i class="pi pi-user-edit"></i>
+                </button>
+
+                <button 
+                  @click="toggleStatus(u)"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer"
+                  :class="u.status === 'active' ? 'border-rose-500/40 text-rose-400 hover:bg-rose-500/20' : 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20'">
+                  {{ u.status === 'active' ? 'Deactivate' : 'Activate' }}
+                </button>
+
+                <button 
+                  v-if="store.isSuperAdmin"
+                  @click="confirmDeleteUser(u)"
+                  class="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 text-xs cursor-pointer"
+                  title="Super Admin: Delete Account">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
             </div>
 
           </div>
@@ -370,12 +431,12 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
         @click.self="createModalOpen = false">
         
-        <div class="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-2xl p-5 sm:p-7  text-white space-y-5 animate-scale-up">
+        <div class="relative w-full max-w-lg max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-2xl p-5 sm:p-7 text-white space-y-5 animate-scale-up">
           
           <!-- Close button -->
           <button 
             @click="createModalOpen = false" 
-            class="absolute top-5 right-5 p-2 text-gray-400 hover:text-white hover:bg-surface-800 rounded-xl transition-colors">
+            class="absolute top-5 right-5 p-2 text-gray-400 hover:text-white hover:bg-surface-800 rounded-xl transition-colors cursor-pointer">
             <i class="pi pi-times text-sm"></i>
           </button>
 
@@ -436,7 +497,7 @@
                   <button 
                     type="button" 
                     @click="generateRandomPin" 
-                    class="text-[10px] text-brand-400 hover:text-brand-300 underline font-bold">
+                    class="text-[10px] text-brand-400 hover:text-brand-300 underline font-bold cursor-pointer">
                     Generate
                   </button>
                 </div>
@@ -494,7 +555,7 @@
               <button 
                 type="button" 
                 @click="createModalOpen = false" 
-                class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 font-bold transition-colors">
+                class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 font-bold transition-colors cursor-pointer">
                 Cancel
               </button>
               <button 
@@ -506,6 +567,114 @@
               </button>
             </div>
 
+          </form>
+
+        </div>
+      </div>
+
+      <!-- Super Admin Edit Personnel Modal (Email, Password, Name, Phone) -->
+      <div 
+        v-if="editModalOpen && editingUser" 
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+        @click.self="editModalOpen = false">
+        
+        <div class="relative w-full max-w-md max-h-[92vh] overflow-y-auto bg-surface-900 border border-surface-700 rounded-2xl p-5 sm:p-7 text-white space-y-5 animate-scale-up shadow-2xl">
+          
+          <!-- Close button -->
+          <button 
+            @click="editModalOpen = false" 
+            class="absolute top-5 right-5 p-2 text-gray-400 hover:text-white hover:bg-surface-800 rounded-xl transition-colors cursor-pointer">
+            <i class="pi pi-times text-sm"></i>
+          </button>
+
+          <!-- Modal Header -->
+          <div>
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 uppercase tracking-widest">
+              <i class="pi pi-crown"></i> Super Admin Privileged Action
+            </span>
+            <h3 class="text-xl font-black text-white mt-1">Modify Account Credentials</h3>
+            <p class="text-xs text-gray-400 mt-0.5">
+              Change email address, set new password, or update details for <strong class="text-white">{{ editingUser.name }}</strong>.
+            </p>
+          </div>
+
+          <!-- Edit Form -->
+          <form @submit.prevent="submitEditUser" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Full Name</label>
+              <input 
+                v-model="editForm.name" 
+                type="text" 
+                required 
+                placeholder="Full Name"
+                class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500" />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-bold text-gray-300">Email Address (Super Admin)</label>
+                <span class="text-[10px] text-amber-400 font-mono">Requires Super Admin</span>
+              </div>
+              <input 
+                v-model="editForm.email" 
+                type="email" 
+                required 
+                placeholder="personnel@gshotteas.com"
+                class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-amber-500/40 text-amber-200 focus:outline-none focus:border-amber-400 font-mono" />
+              <p class="text-[10px] text-gray-400 mt-1">Changing email updates login credentials across all store sessions immediately.</p>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-bold text-gray-300">New Password (Super Admin)</label>
+                <span class="text-[10px] text-gray-500 font-mono">Leave blank to keep unchanged</span>
+              </div>
+              <div class="relative">
+                <input 
+                  v-model="editForm.password" 
+                  :type="showPasswordInEdit ? 'text' : 'password'" 
+                  minlength="6"
+                  placeholder="Enter new strong password (min 6 chars)"
+                  class="w-full pl-3 pr-10 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white font-mono focus:outline-none focus:border-brand-500" />
+                <button 
+                  type="button" 
+                  @click="showPasswordInEdit = !showPasswordInEdit"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer">
+                  <i class="pi" :class="showPasswordInEdit ? 'pi-eye-slash' : 'pi-eye'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Contact Phone</label>
+              <input 
+                v-model="editForm.phone" 
+                type="text" 
+                placeholder="09171234567"
+                class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500 font-mono" />
+            </div>
+
+            <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] flex items-start gap-2">
+              <i class="pi pi-shield text-xs shrink-0 mt-0.5"></i>
+              <span>All changes to emails and passwords are recorded in the immutable <strong>Audit Trail</strong> for security tracking.</span>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-surface-800">
+              <button 
+                type="button" 
+                @click="editModalOpen = false" 
+                class="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-750 text-gray-300 font-bold transition-colors cursor-pointer">
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                :disabled="savingEdit"
+                class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm shadow-amber-500/20 active:scale-95">
+                <i class="pi pi-check" :class="{ 'pi-spin pi-spinner': savingEdit }"></i>
+                <span>{{ savingEdit ? 'Saving Changes...' : 'Save Credentials' }}</span>
+              </button>
+            </div>
           </form>
 
         </div>
@@ -542,6 +711,18 @@ export default {
       pin: '1234',
       phone: '',
       address: '',
+    });
+
+    // Super Admin Edit Credentials Modal state
+    const editModalOpen = Vue.ref(false);
+    const savingEdit = Vue.ref(false);
+    const editingUser = Vue.ref(null);
+    const showPasswordInEdit = Vue.ref(false);
+    const editForm = Vue.ref({
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
     });
 
     Vue.onMounted(() => {
@@ -614,17 +795,7 @@ export default {
 
     const promptEditPin = async (user) => {
       const currentPin = user.pin || '1234';
-      const newPin = await store.promptDialog({
-        title: 'Update Staff PIN',
-        message: `Enter new 4-digit PIN for ${user.name}:`,
-        defaultValue: currentPin,
-        placeholder: '4-digit PIN',
-        maxLength: 8,
-        confirmText: 'Save PIN',
-        cancelText: 'Cancel',
-        variant: 'brand',
-        icon: 'pi-key',
-      });
+      const newPin = window.prompt(`Enter new 4-digit PIN for ${user.name}:`, currentPin);
       if (newPin && newPin.trim().length >= 4) {
         try {
           await GST_API.updateUser(user.id, { pin: newPin.trim() });
@@ -692,6 +863,68 @@ export default {
       }
     };
 
+    // Super Admin: Open Edit Credentials Modal
+    const openEditModal = (user) => {
+      editingUser.value = user;
+      editForm.value = {
+        name: user.name || '',
+        email: user.email || '',
+        password: '',
+        phone: user.phone || '',
+      };
+      showPasswordInEdit.value = false;
+      editModalOpen.value = true;
+    };
+
+    // Super Admin: Save Edited Credentials
+    const submitEditUser = async () => {
+      if (!editingUser.value) return;
+      savingEdit.value = true;
+      try {
+        const payload = {
+          name: editForm.value.name,
+          email: editForm.value.email,
+          phone: editForm.value.phone,
+        };
+        if (editForm.value.password && editForm.value.password.trim().length > 0) {
+          payload.password = editForm.value.password.trim();
+        }
+
+        await GST_API.updateUser(editingUser.value.id, payload);
+        store.notify(`Successfully updated credentials for ${editingUser.value.name}`, 'success');
+        editModalOpen.value = false;
+        refresh();
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to update account credentials.';
+        store.notify(msg, 'error');
+      } finally {
+        savingEdit.value = false;
+      }
+    };
+
+    // Super Admin: Delete Personnel Account
+    const confirmDeleteUser = async (user) => {
+      if (!store.isSuperAdmin) {
+        store.notify('Only Super Admins have permission to delete accounts.', 'error');
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Are you sure you want to permanently delete account "${user.name}" (${user.email})?\n\nThis will remove their login access and credentials immediately. This action cannot be undone.`
+      );
+
+      if (!confirmed) return;
+
+      try {
+        await GST_API.deleteUser(user.id);
+        store.notify(`Account for "${user.name}" deleted permanently.`, 'success');
+        refresh();
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to delete account.';
+        store.notify(msg, 'error');
+      }
+    };
+
     return {
       store,
       loading,
@@ -716,6 +949,14 @@ export default {
       generateRandomPin,
       submitCreateUser,
       refresh,
+      editModalOpen,
+      savingEdit,
+      editingUser,
+      showPasswordInEdit,
+      editForm,
+      openEditModal,
+      submitEditUser,
+      confirmDeleteUser,
     };
   },
 };

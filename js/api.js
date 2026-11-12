@@ -36,6 +36,7 @@
     getUsers: () => apiClient.get('/v1/users'),
     createUser: (data) => apiClient.post('/v1/users', data),
     updateUser: (id, data) => apiClient.patch(`/v1/users/${id}`, data),
+    deleteUser: (id) => apiClient.delete(`/v1/users/${id}`),
     getStaffList: () => apiClient.get('/auth/staff-list'),
     quickPinLogin: (pin, userId) => apiClient.post('/auth/pin-switch', { pin, user_id: userId }),
     verifyPassword: (data) => apiClient.post('/auth/verify-password', data),

@@ -846,7 +846,7 @@ class AuthController extends Controller
     {
         $creator = $request->user();
         if (!$creator || !in_array($creator->role, ['super_admin', 'admin'])) {
-            return response()->json(['message' => 'Unauthorized. Only Admin and Super Admin can manage personnel roles and status.'], 403);
+            return response()->json(['message' => 'Unauthorized. Only Admin and Super Admin can manage personnel accounts.'], 403);
         }
 
         $user = User::findOrFail($id);
@@ -855,6 +855,8 @@ class AuthController extends Controller
             'status' => 'sometimes|string|in:active,deactivated',
             'pin' => 'sometimes|nullable|string|min:4|max:10',
             'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'sometimes|nullable|string|min:6',
             'phone' => 'sometimes|nullable|string|max:20',
         ]);
 
@@ -866,6 +868,15 @@ class AuthController extends Controller
             return response()->json(['message' => 'Only Super Admins can modify another Super Admin account.'], 403);
         }
 
+        // Only Super Admin can change email or password of other accounts
+        if (isset($validated['email']) && strtolower(trim($validated['email'])) !== strtolower(trim($user->email)) && $creator->role !== 'super_admin') {
+            return response()->json(['message' => 'Only Super Admins have permission to modify account email addresses.'], 403);
+        }
+
+        if (!empty($validated['password']) && $creator->role !== 'super_admin') {
+            return response()->json(['message' => 'Only Super Admins have permission to change account passwords.'], 403);
+        }
+
         if (isset($validated['role'])) $user->role = $validated['role'];
         if (isset($validated['status'])) $user->status = $validated['status'];
         if ($user->role !== 'staff') {
@@ -874,21 +885,68 @@ class AuthController extends Controller
             $user->pin = !empty($validated['pin']) ? trim($validated['pin']) : null;
         }
         if (isset($validated['name'])) $user->name = $validated['name'];
+        if (isset($validated['email'])) $user->email = strtolower(trim($validated['email']));
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
         if (isset($validated['phone'])) $user->phone = $validated['phone'];
         $user->save();
+
+        $changes = [];
+        if (isset($validated['role'])) $changes[] = "role: {$user->role}";
+        if (isset($validated['status'])) $changes[] = "status: {$user->status}";
+        if (isset($validated['email'])) $changes[] = "email: {$user->email}";
+        if (!empty($validated['password'])) $changes[] = "password updated";
+        if (isset($validated['pin'])) $changes[] = "PIN updated";
+        $changeDesc = !empty($changes) ? implode(', ', $changes) : 'details updated';
 
         AuditLog::create([
             'user_id' => $request->user()?->id,
             'user_name' => $request->user()?->name ?? 'Admin',
             'user_role' => $request->user()?->role ?? 'admin',
-            'action' => 'User Role / Status Updated',
-            'details' => "Updated user #{$user->id} ({$user->name}) role to {$user->role}, status to {$user->status}" . (isset($validated['pin']) ? ", PIN updated." : "."),
+            'action' => 'User Account Updated',
+            'details' => "Updated user #{$user->id} ({$user->name}) by {$creator->role} ({$creator->name}): {$changeDesc}.",
             'ip_address' => $request->ip(),
         ]);
 
         return response()->json([
-            'message' => 'User updated successfully',
+            'message' => 'User account updated successfully.',
             'user' => $user,
+        ]);
+    }
+
+    public function deleteUser(Request $request, $id)
+    {
+        $creator = $request->user();
+        if (!$creator || $creator->role !== 'super_admin') {
+            return response()->json(['message' => 'Unauthorized. Only Super Admins can delete accounts.'], 403);
+        }
+
+        $user = User::findOrFail($id);
+
+        if ((int)$user->id === (int)$creator->id) {
+            return response()->json(['message' => 'Action forbidden. You cannot delete your own Super Admin account.'], 422);
+        }
+
+        $deletedDetails = "#{$user->id} {$user->name} ({$user->email}, role: {$user->role})";
+
+        // Revoke Sanctum tokens
+        $user->tokens()->delete();
+
+        // Permanently delete user
+        $user->delete();
+
+        AuditLog::create([
+            'user_id' => $creator->id,
+            'user_name' => $creator->name,
+            'user_role' => $creator->role,
+            'action' => 'User Account Deleted',
+            'details' => "Super Admin {$creator->name} permanently deleted account {$deletedDetails}.",
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'message' => "User {$deletedDetails} has been permanently deleted.",
         ]);
     }
     public function verifyPassword(Request $request)

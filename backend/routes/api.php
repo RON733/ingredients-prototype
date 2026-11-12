@@ -131,6 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [AuthController::class, 'listUsers']);
     Route::post('/users', [AuthController::class, 'createUser']);
     Route::match(['put', 'patch'], '/users/{id}', [AuthController::class, 'updateUserRole']);
+    Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
     Route::post('/settings', [SystemController::class, 'updateSettings']);
     Route::get('/audit-logs', [SystemController::class, 'auditLogs']);
 });
@@ -181,6 +182,7 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::get('/users', [AuthController::class, 'listUsers']);
     Route::post('/users', [AuthController::class, 'createUser']);
     Route::match(['put', 'patch'], '/users/{id}', [AuthController::class, 'updateUserRole']);
+    Route::delete('/users/{id}', [AuthController::class, 'deleteUser']);
     Route::get('/auth/staff-list', [AuthController::class, 'listStaff']);
     Route::get('/staff-list', [AuthController::class, 'listStaff']);
     Route::post('/auth/pin-switch', [AuthController::class, 'quickPinLogin']);
