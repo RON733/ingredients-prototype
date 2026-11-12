@@ -1,31 +1,34 @@
 <template>
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-fade-in space-y-8">
+<div class="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-10 pb-24 sm:pb-12 animate-fade-in space-y-4 sm:space-y-6">
       
       <!-- Page Navigation Header -->
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between gap-2 px-1">
         <button 
           @click="backToMenu"
-          class="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white transition-colors">
+          class="inline-flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-amber-200 transition-colors py-1">
           <i class="pi pi-arrow-left text-xs"></i>
           <span>Back to Menu</span>
         </button>
-        <span class="text-xs font-mono text-gray-500">Secure 256-bit Encrypted Checkout</span>
+        <span class="text-[11px] sm:text-xs font-mono text-gray-500">
+          <span class="sm:hidden">Secure Checkout</span>
+          <span class="hidden sm:inline">Secure 256-bit Encrypted Checkout</span>
+        </span>
       </div>
 
       <!-- Order Availability Notice Banner (Editable by Staff, Admin, Super Admin) -->
       <div 
         v-if="store.isOrderAreaNoteEnabled && store.orderAreaNote" 
-        class="p-4 sm:p-5 rounded-3xl bg-amber-500/15 border-2 border-amber-500/40 shadow-xl flex items-start sm:items-center justify-between gap-4 animate-fade-in backdrop-blur-md">
-        <div class="flex items-start sm:items-center gap-3.5">
-          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-lg sm:text-xl font-black shrink-0 shadow-md">
+        class="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-amber-500/10 border border-amber-500/25 shadow-lg flex items-start sm:items-center justify-between gap-3 sm:gap-4 animate-fade-in backdrop-blur-md">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-400/30 text-amber-300 flex items-center justify-center text-base sm:text-lg font-black shrink-0">
             <i class="pi pi-map-marker"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-black text-amber-300 uppercase tracking-wider">Order Availability Notice</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-200 border border-amber-400/30">Coverage</span>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span class="text-[11px] sm:text-xs font-black text-amber-300 uppercase tracking-wider">Order Availability</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-200/90 border border-amber-400/25">Coverage</span>
             </div>
-            <p class="text-sm sm:text-base font-bold text-white mt-1">
+            <p class="text-xs sm:text-sm font-semibold text-stone-100 mt-0.5 leading-relaxed">
               {{ store.orderAreaNote }}
             </p>
           </div>
@@ -35,20 +38,20 @@
       <!-- Sign-In Required Notice Banner -->
       <div 
         v-if="!store.user" 
-        class="p-5 sm:p-6 rounded-3xl bg-amber-500/15 border-2 border-amber-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in backdrop-blur-md">
-        <div class="flex items-start sm:items-center gap-3.5">
-          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-400 text-black flex items-center justify-center text-lg sm:text-xl font-black shrink-0 shadow-md">
+        class="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-amber-500/10 border border-amber-500/25 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 animate-fade-in backdrop-blur-md">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-400/30 text-amber-300 flex items-center justify-center text-base sm:text-lg font-black shrink-0">
             <i class="pi pi-lock"></i>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-black text-amber-300 uppercase tracking-wider">Account Required</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-200 border border-amber-400/30">Sign In to Continue</span>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span class="text-[11px] sm:text-xs font-black text-amber-300 uppercase tracking-wider">Account Required</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-200/90 border border-amber-400/25">Sign In to Continue</span>
             </div>
-            <p class="text-sm sm:text-base font-bold text-white mt-1">
+            <p class="text-xs sm:text-sm font-bold text-stone-100 mt-1">
               Customers must be signed in to place and check out orders.
             </p>
-            <p class="text-xs text-gray-300 mt-0.5">
+            <p class="text-[11px] sm:text-xs text-gray-300/90 mt-0.5 leading-relaxed">
               Signing in connects your order to real-time live GPS driver tracking, SMS status updates, and order history.
             </p>
           </div>
@@ -56,27 +59,27 @@
         <button 
           type="button"
           @click="promptSignIn"
-          class="px-5 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+          class="w-full sm:w-auto px-5 py-2.5 sm:py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-surface-950 text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-amber-500/15 flex items-center justify-center gap-2 shrink-0 cursor-pointer">
           <i class="pi pi-sign-in text-xs"></i>
           <span>Sign In / Register</span>
         </button>
       </div>
 
       <!-- Main Checkout Layout Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 items-start">
         
         <!-- Left Column: Checkout Details Form (Matches Figure 10) -->
-        <div class="lg:col-span-7 bg-surface-800/90 rounded-3xl border border-surface-700 p-6 sm:p-8 space-y-6">
-          <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-black text-white">Checkout Details</h2>
-            <span class="text-xs text-gray-400 font-medium"><span class="text-rose-400 font-bold">*</span> Required fields</span>
+        <div class="lg:col-span-7 bg-surface-800/90 rounded-2xl sm:rounded-3xl border border-surface-700/80 p-4 sm:p-7 space-y-5 sm:space-y-6">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-xl sm:text-2xl font-black text-white">Checkout Details</h2>
+            <span class="text-[11px] sm:text-xs text-gray-400 font-medium shrink-0"><span class="text-amber-400 font-bold">*</span> Required</span>
           </div>
 
           <!-- Full Name -->
           <div>
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center justify-between mb-1.5">
               <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Full Name <span class="text-rose-500">*</span>
+                Full Name <span class="text-amber-400">*</span>
               </label>
               <span v-if="nameError" class="text-rose-400 text-[11px] font-semibold flex items-center gap-1">
                 <i class="pi pi-exclamation-circle text-[10px]"></i> {{ nameError }}
@@ -93,11 +96,11 @@
 
           <!-- Phone Number (Numbers only, 11-digit limit) -->
           <div>
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center justify-between mb-1.5">
               <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Phone Number <span class="text-rose-500">*</span>
+                Phone Number <span class="text-amber-400">*</span>
               </label>
-              <span class="text-[11px] font-mono" :class="form.customer_phone.length === 11 ? 'text-emerald-400 font-bold' : 'text-gray-400'">
+              <span class="text-[11px] font-mono" :class="form.customer_phone.length === 11 ? 'text-amber-300 font-bold' : 'text-gray-400'">
                 {{ form.customer_phone.length }} / 11 digits
               </span>
             </div>
@@ -122,24 +125,24 @@
 
           <!-- Order Type (Delivery vs Store Pickup) -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Order Type <span class="text-rose-500">*</span>
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              Order Type <span class="text-amber-400">*</span>
             </label>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
               <button 
                 type="button"
                 @click="form.order_type = 'Delivery'"
-                class="py-3 px-4 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs sm:text-sm transition-all"
-                :class="form.order_type === 'Delivery' ? 'border-brand-500 bg-brand-500/10 text-brand-400' : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600'">
-                <i class="pi pi-truck"></i>
+                class="py-3 px-2.5 sm:px-4 rounded-xl border flex items-center justify-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer"
+                :class="form.order_type === 'Delivery' ? 'border-amber-400/70 bg-amber-500/12 text-amber-300' : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600'">
+                <i class="pi pi-truck text-xs sm:text-sm"></i>
                 <span>Delivery (+₱40)</span>
               </button>
               <button 
                 type="button"
                 @click="form.order_type = 'Store Pickup'"
-                class="py-3 px-4 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs sm:text-sm transition-all"
-                :class="form.order_type === 'Store Pickup' ? 'border-brand-500 bg-brand-500/10 text-brand-400' : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600'">
-                <i class="pi pi-shopping-bag"></i>
+                class="py-3 px-2.5 sm:px-4 rounded-xl border flex items-center justify-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-sm transition-all whitespace-nowrap cursor-pointer"
+                :class="form.order_type === 'Store Pickup' ? 'border-amber-400/70 bg-amber-500/12 text-amber-300' : 'border-surface-700 bg-surface-900 text-gray-400 hover:border-surface-600'">
+                <i class="pi pi-shopping-bag text-xs sm:text-sm"></i>
                 <span>Store Pickup (Free)</span>
               </button>
             </div>
@@ -147,22 +150,22 @@
 
           <!-- Delivery Address (Only if Delivery selected) -->
           <div v-if="form.order_type === 'Delivery'">
-            <div class="mb-2">
+            <div class="mb-1.5">
               <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Delivery Address <span class="text-rose-500">*</span>
+                Delivery Address <span class="text-amber-400">*</span>
               </label>
             </div>
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
               <button 
                 type="button"
                 @click="locateUserGPS" 
                 :disabled="isLocatingGPS"
-                class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
-                <i class="pi" :class="isLocatingGPS ? 'pi-spin pi-spinner text-emerald-300' : 'pi-compass text-emerald-400'"></i>
+                class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 active:scale-95 text-amber-300 border border-amber-500/35 text-xs font-bold flex items-center gap-2 transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                <i class="pi" :class="isLocatingGPS ? 'pi-spin pi-spinner text-amber-200' : 'pi-compass text-amber-300'"></i>
                 <span>{{ isLocatingGPS ? 'Scanning Device Location...' : 'Use Device Location' }}</span>
               </button>
 
-              <span v-if="form.customer_lat && form.customer_lng" class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+              <span v-if="form.customer_lat && form.customer_lng" class="text-[11px] text-amber-300/90 font-semibold flex items-center gap-1">
                 <i class="pi pi-check-circle"></i> Pinned ({{ Number(form.customer_lat).toFixed(4) }}, {{ Number(form.customer_lng).toFixed(4) }})
               </span>
             </div>
@@ -170,8 +173,8 @@
             <!-- Delivery Area Notice Reminder -->
             <div 
               v-if="store.isOrderAreaNoteEnabled && store.orderAreaNote" 
-              class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2.5 text-xs text-amber-200 mb-2">
-              <i class="pi pi-info-circle text-amber-400 text-sm shrink-0"></i>
+              class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start sm:items-center gap-2.5 text-xs text-amber-200/90 mb-2.5 leading-relaxed">
+              <i class="pi pi-info-circle text-amber-300 text-sm shrink-0 mt-0.5 sm:mt-0"></i>
               <span class="font-medium"><strong>Delivery Notice:</strong> {{ store.orderAreaNote }}</span>
             </div>
 
@@ -188,21 +191,19 @@
             </p>
 
             <!-- Estimated Delivery Time Card (Customer View) -->
-            <div class="mt-3 p-4 rounded-2xl bg-surface-900 border border-surface-700/80 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/30 text-amber-300 flex items-center justify-center text-xl shrink-0">
+            <div class="mt-3 p-3.5 sm:p-4 rounded-2xl bg-surface-900/90 border border-surface-700/80 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/15 border border-amber-500/25 text-amber-300 flex items-center justify-center text-base sm:text-lg shrink-0">
                   <i class="pi pi-clock"></i>
                 </div>
-                <div>
-                  <p class="text-xs font-black text-white uppercase tracking-wider">Estimated Delivery Time</p>
-                  <p class="text-[11px] text-gray-400 mt-0.5">Freshly brewed & dispatched across Santa Rosa, Laguna</p>
+                <div class="min-w-0">
+                  <p class="text-[11px] sm:text-xs font-black text-stone-100 uppercase tracking-wider">Est. Delivery Time</p>
+                  <p class="text-[11px] text-gray-400 mt-0.5 leading-snug">Freshly brewed • Santa Rosa, Laguna</p>
                 </div>
               </div>
-              <div class="flex items-center gap-2 self-start sm:self-auto">
-                <span class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-400/20 text-amber-300 border border-amber-400/40 font-mono shadow-sm">
-                  30–45 Mins
-                </span>
-              </div>
+              <span class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-black bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono shrink-0 whitespace-nowrap">
+                30–45 Mins
+              </span>
             </div>
           </div>
 
@@ -217,28 +218,28 @@
 
           <!-- Payment Method (PayMongo QR vs Cash) -->
           <div>
-            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Payment Method <span class="text-rose-500">*</span>
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              Payment Method <span class="text-amber-400">*</span>
             </label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <div class="grid grid-cols-2 gap-2.5 sm:gap-3 mb-4">
               <!-- Online QR Payment Option -->
               <button 
                 type="button"
                 @click="store.isPaymongoAvailable ? (form.payment_method = 'PayMongo') : store.notify('Online QR payment is currently unavailable. Please select Cash.', 'info')"
                 :disabled="!store.isPaymongoAvailable"
-                class="py-3 px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all relative text-center"
+                class="py-3 px-2.5 sm:px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all relative text-center"
                 :class="[
                   !store.isPaymongoAvailable 
                     ? 'border-surface-800 bg-surface-950/60 text-gray-500 cursor-not-allowed opacity-60' 
                     : form.payment_method === 'PayMongo' 
-                      ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400 shadow-md ring-1 ring-emerald-500/50 cursor-pointer' 
+                      ? 'border-amber-400/70 bg-amber-500/12 text-amber-300 shadow-md ring-1 ring-amber-400/40 cursor-pointer' 
                       : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600 cursor-pointer'
                 ]">
                 <div class="flex items-center gap-1.5">
-                  <i class="pi pi-qrcode text-emerald-400"></i>
+                  <i class="pi pi-qrcode text-amber-400"></i>
                   <span class="font-extrabold tracking-wide text-xs">QR Payment</span>
                 </div>
-                <span class="text-[9px] text-emerald-300/80 font-semibold leading-tight">
+                <span class="text-[10px] text-gray-400 font-medium leading-tight">
                   PayMongo • QR Ph
                 </span>
                 <span v-if="!store.isPaymongoAvailable" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
@@ -250,46 +251,46 @@
               <button 
                 type="button"
                 @click="form.payment_method = 'Cash'"
-                class="py-3 px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer text-center"
-                :class="form.payment_method === 'Cash' ? 'border-amber-500 bg-amber-500/15 text-amber-400 shadow-md ring-1 ring-amber-500/50' : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600'">
+                class="py-3 px-2.5 sm:px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer text-center"
+                :class="form.payment_method === 'Cash' ? 'border-amber-400/70 bg-amber-500/12 text-amber-300 shadow-md ring-1 ring-amber-400/40' : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600'">
                 <div class="flex items-center gap-1.5">
                   <i class="pi pi-money-bill text-amber-400"></i>
                   <span class="font-extrabold text-xs">Cash</span>
                 </div>
-                <span class="text-[9px] text-gray-400 font-medium leading-tight">
-                  {{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}
+                <span class="text-[10px] text-gray-400 font-medium leading-tight">
+                  {{ form.order_type === 'Delivery' ? 'Cash on Delivery' : 'Cash at Counter' }}
                 </span>
               </button>
             </div>
 
             <!-- Notice when Online QR is unavailable -->
-            <div v-if="!store.isPaymongoAvailable" class="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center gap-2.5 text-xs text-rose-300 animate-fade-in">
-              <i class="pi pi-info-circle text-rose-400 text-sm shrink-0"></i>
+            <div v-if="!store.isPaymongoAvailable" class="mb-4 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center gap-2.5 text-xs text-amber-200 animate-fade-in">
+              <i class="pi pi-info-circle text-amber-300 text-sm shrink-0"></i>
               <span>Online QR payment is currently unavailable. Please proceed with <strong>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</strong>.</span>
             </div>
 
             <!-- PayMongo Online Checkout Card -->
-            <div v-if="form.payment_method === 'PayMongo'" class="p-4 sm:p-5 rounded-3xl bg-surface-900 border border-emerald-500/40 space-y-3.5 relative overflow-hidden animate-fade-in shadow-xl mb-4">
-              <div class="absolute -top-16 -right-16 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div v-if="form.payment_method === 'PayMongo'" class="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-900 border border-amber-500/30 space-y-3.5 relative overflow-hidden animate-fade-in shadow-xl mb-4">
+              <div class="absolute -top-16 -right-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-              <div class="flex items-center justify-between pb-3 border-b border-surface-800">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-base shadow-inner">
+              <div class="flex items-center justify-between gap-2 pb-3 border-b border-surface-800">
+                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 text-base shrink-0">
                     <i class="pi pi-qrcode"></i>
                   </div>
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <p class="text-xs font-black uppercase tracking-wider text-emerald-300">QR Ph Checkout</p>
-                      <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 sm:gap-2">
+                      <p class="text-xs font-black uppercase tracking-wider text-amber-300">QR Ph Checkout</p>
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-amber-500/15 text-amber-200 border border-amber-500/25">
                         Instant
                       </span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-0.5">Scan with any e-wallet or banking app</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5 truncate">Scan with any e-wallet or bank app</p>
                   </div>
                 </div>
-                <div class="text-right">
-                  <span class="text-xs text-gray-400">Total:</span>
-                  <span class="text-base font-black text-emerald-400 ml-1">₱{{ Number(grandTotal).toFixed(2) }}</span>
+                <div class="text-right shrink-0">
+                  <span class="text-[11px] text-gray-400 block sm:inline">Total</span>
+                  <span class="text-sm sm:text-base font-black text-amber-300 sm:ml-1">₱{{ Number(grandTotal).toFixed(2) }}</span>
                 </div>
               </div>
 
@@ -299,17 +300,17 @@
                   type="button"
                   @click="submitOrder"
                   :disabled="isSubmitting || store.cart.length === 0"
-                  class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                  class="w-full py-3.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-surface-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/15 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
                   <span v-else class="flex items-center gap-2">
-                    <i class="pi" :class="!store.user ? 'pi-lock text-base' : 'pi-qrcode text-base'"></i>
+                    <i class="pi" :class="!store.user ? 'pi-lock text-sm' : 'pi-qrcode text-sm'"></i>
                     <span>{{ !store.user ? 'Sign In to Pay with QR' : ('Place Order & Pay via QR (₱' + Number(grandTotal).toFixed(2) + ')') }}</span>
                     <i class="pi pi-arrow-right text-xs"></i>
                   </span>
                 </button>
 
-                <p class="text-[11px] text-emerald-300/80 text-center flex items-center justify-center gap-1.5 font-medium">
-                  <i class="pi pi-shield text-emerald-400 text-[10px]"></i>
+                <p class="text-[11px] text-amber-200/80 text-center flex items-center justify-center gap-1.5 font-medium">
+                  <i class="pi pi-shield text-amber-400 text-[10px]"></i>
                   <span>Instant confirmation • No receipt upload needed</span>
                 </p>
               </div>
@@ -347,8 +348,8 @@
         </div>
 
         <!-- Right Column: Order Summary (Matches Figure 10) -->
-        <div class="lg:col-span-5 bg-surface-800/90 rounded-3xl border border-surface-700 p-6 sm:p-8 space-y-6">
-          <h2 class="text-2xl font-black text-white">Order Summary</h2>
+        <div class="lg:col-span-5 bg-surface-800/90 rounded-2xl sm:rounded-3xl border border-surface-700/80 p-4 sm:p-7 space-y-5 sm:space-y-6">
+          <h2 class="text-xl sm:text-2xl font-black text-white">Order Summary</h2>
 
           <!-- Items list -->
           <div class="space-y-4 max-h-72 overflow-y-auto pr-2">
@@ -431,7 +432,7 @@
           <button 
             @click="submitOrder"
             :disabled="isSubmitting || store.cart.length === 0"
-            class="w-full py-3.5 rounded-xl text-sm sm:text-base font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            class="w-full py-3.5 rounded-xl text-sm sm:text-base font-black bg-amber-400 hover:bg-amber-300 text-surface-950 shadow-lg shadow-amber-500/15 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
             <span v-else class="flex items-center gap-2">
               <i v-if="!store.user" class="pi pi-lock text-sm"></i>
@@ -454,7 +455,7 @@
         @click.self="gpsPromptModalOpen = false">
         <div class="relative max-w-md w-full bg-surface-900 border border-surface-700 rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-up text-center">
           
-          <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-2xl mx-auto shadow-lg">
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center justify-center text-2xl mx-auto shadow-lg">
             <i class="pi pi-compass text-2xl"></i>
           </div>
 
@@ -468,15 +469,15 @@
           <!-- Step by Step instructions -->
           <div class="p-4 rounded-2xl bg-surface-950 border border-surface-800 text-left space-y-3 text-xs text-gray-300">
             <div class="flex items-start gap-2.5">
-              <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
+              <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">1</span>
               <span><strong>Turn ON GPS / Location</strong> in your phone's swipe-down quick settings or computer settings.</span>
             </div>
             <div class="flex items-start gap-2.5">
-              <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
+              <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">2</span>
               <span>When your browser prompts <em>"Allow this site to access your location"</em>, tap <strong>Allow</strong>.</span>
             </div>
             <div class="flex items-start gap-2.5">
-              <span class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
+              <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">3</span>
               <span>Your location will <strong>automatically appear on the address text box</strong> and on the map. You can drag the pin or tap anywhere on the map to fine-tune your exact door or gate!</span>
             </div>
           </div>
@@ -485,7 +486,7 @@
             <button 
               type="button"
               @click="locateUserGPS(); gpsPromptModalOpen = false;"
-              class="flex-1 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+              class="flex-1 py-2.5 rounded-xl font-black text-xs bg-amber-400 hover:bg-amber-300 text-surface-950 shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer">
               <i class="pi pi-refresh"></i>
               <span>Try GPS Again</span>
             </button>
@@ -505,20 +506,20 @@
         v-if="paymongoModalOpen" 
         class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
         @click.self="dismissPaymongoModal">
-        <div class="relative max-w-md w-full bg-surface-900 border-2 border-emerald-500/50 rounded-3xl p-6 shadow-2xl space-y-4 animate-scale-up text-center overflow-hidden">
+        <div class="relative max-w-md w-full bg-surface-900 border border-amber-500/35 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-center overflow-hidden">
           
-          <div class="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
           <!-- Header -->
           <div class="flex items-center justify-between pb-3 border-b border-surface-800">
             <div class="flex items-center gap-2 text-left">
-              <span class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">
+              <span class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-300 flex items-center justify-center font-bold text-base">
                 <i class="pi pi-qrcode"></i>
               </span>
               <div>
                 <h4 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <span>QR Ph Payment</span>
-                  <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-amber-500/15 text-amber-200 border border-amber-400/30">
                     Auto-Checkout
                   </span>
                 </h4>
@@ -556,11 +557,11 @@
             <div class="p-4 rounded-2xl bg-surface-950/90 border border-surface-800 space-y-3">
               <div class="flex items-center justify-between px-1">
                 <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total to Pay</span>
-                <span class="text-sm font-black text-emerald-400">₱{{ Number(activePaymongoOrder?.total_amount || grandTotal).toFixed(2) }}</span>
+                <span class="text-sm font-black text-amber-300">₱{{ Number(activePaymongoOrder?.total_amount || grandTotal).toFixed(2) }}</span>
               </div>
 
               <div class="relative group inline-block mx-auto">
-                <div class="w-56 h-56 sm:w-64 sm:h-64 mx-auto rounded-2xl bg-white p-3 border-2 border-emerald-400/60 shadow-xl flex items-center justify-center overflow-hidden">
+                <div class="w-52 h-52 sm:w-64 sm:h-64 mx-auto rounded-2xl bg-white p-3 border-2 border-amber-400/50 shadow-xl flex items-center justify-center overflow-hidden">
                   <img 
                     v-if="activePaymongoQr" 
                     :src="activePaymongoQr" 
@@ -568,26 +569,26 @@
                     class="w-full h-full object-contain"
                   />
                   <div v-else class="text-center py-10 space-y-2">
-                    <i class="pi pi-spin pi-spinner text-2xl text-emerald-500"></i>
+                    <i class="pi pi-spin pi-spinner text-2xl text-amber-500"></i>
                     <p class="text-xs text-gray-500 font-medium">Loading QR Code...</p>
                   </div>
                 </div>
               </div>
 
               <!-- Badges -->
-              <div class="flex items-center justify-center gap-1.5 text-[10px] text-gray-300 font-bold flex-wrap pt-1">
-                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">PayMongo QR Ph</span>
-                <span class="px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-400/30">Maya</span>
-                <span class="px-2 py-0.5 rounded-md bg-violet-500/20 text-violet-300 border border-violet-400/30">BDO / BPI</span>
-                <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30">Any QR Ph App</span>
+              <div class="flex items-center justify-center gap-1.5 text-[10px] text-amber-200/90 font-bold flex-wrap pt-1">
+                <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-400/25">PayMongo QR Ph</span>
+                <span class="px-2 py-0.5 rounded-md bg-surface-800 text-gray-300 border border-surface-700">Maya</span>
+                <span class="px-2 py-0.5 rounded-md bg-surface-800 text-gray-300 border border-surface-700">BDO / BPI</span>
+                <span class="px-2 py-0.5 rounded-md bg-surface-800 text-gray-300 border border-surface-700">Any QR Ph App</span>
               </div>
             </div>
 
             <!-- Live Status Radar -->
-            <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center justify-center gap-2.5 text-xs text-emerald-300">
+            <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center justify-center gap-2.5 text-xs text-amber-300">
               <span class="relative flex h-2.5 w-2.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>
               </span>
               <span class="font-bold">Awaiting Payment Confirmation...</span>
             </div>
@@ -602,7 +603,7 @@
                 type="button" 
                 @click="checkModalPaymongoStatus"
                 :disabled="isCheckingModalPayment"
-                class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50">
+                class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-surface-950 font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50">
                 <i class="pi" :class="isCheckingModalPayment ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
                 <span>{{ isCheckingModalPayment ? 'Checking...' : 'Check Payment Status' }}</span>
               </button>

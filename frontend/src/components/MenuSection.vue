@@ -691,18 +691,18 @@
   <!-- 7. FLOATING QUICK CART PILL (Bottom Mobile) -->
   <div 
     v-if="isStandalonePage && store.cartCount > 0" 
-    class="fixed bottom-20 left-4 right-4 z-30 max-w-md mx-auto block lg:hidden">
+    class="fixed bottom-20 left-4 right-20 z-30 max-w-md mx-auto block lg:hidden">
     <button 
       @click="store.cartOpen = true"
       type="button"
-      class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black text-xs sm:text-sm flex items-center justify-between shadow-2xl hover:brightness-105 active:scale-98 transition-all cursor-pointer">
-      <div class="flex items-center gap-2">
-        <span class="w-6 h-6 rounded-full bg-black text-yellow-400 flex items-center justify-center text-xs font-black">
+      class="w-full py-3 px-3.5 rounded-2xl bg-gradient-to-r from-yellow-400 to-amber-400 text-black font-black text-xs sm:text-sm flex items-center justify-between gap-2 shadow-2xl hover:brightness-105 active:scale-98 transition-all cursor-pointer">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-6 h-6 shrink-0 rounded-full bg-black text-yellow-400 flex items-center justify-center text-xs font-black">
           {{ store.cartCount }}
         </span>
-        <span>View Shopping Cart</span>
+        <span class="truncate">View Shopping Cart</span>
       </div>
-      <div class="flex items-center gap-2 font-black">
+      <div class="flex items-center gap-1.5 font-black shrink-0">
         <span>₱{{ store.cartTotal.toFixed(2) }}</span>
         <i class="pi pi-arrow-right text-xs"></i>
       </div>
