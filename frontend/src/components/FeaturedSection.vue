@@ -470,7 +470,7 @@ export default {
           emoji: '🧋',
           badge: 'TOP SELLER',
           rating: '4.9 (1.4k+)',
-          image: './assets/menu-coffee.png',
+          image: '/assets/menu-coffee.png',
         },
         {
           id: 'pepperoni-pizza',
@@ -481,7 +481,7 @@ export default {
           emoji: '🍕',
           badge: 'FAN FAVORITE',
           rating: '4.8 (980+)',
-          image: './assets/menu-pizza.png',
+          image: '/assets/menu-pizza.png',
         },
         {
           id: 'classic-cheeseburger',
@@ -492,7 +492,7 @@ export default {
           emoji: '🍔',
           badge: 'POPULAR',
           rating: '4.9 (820+)',
-          image: './assets/hero-banner.png',
+          image: '/assets/hero-banner.png',
         },
         {
           id: 'classic-milktea',
@@ -503,7 +503,7 @@ export default {
           emoji: '🧋',
           badge: 'VALUE CRAVE',
           rating: '4.9 (2.1k+)',
-          image: './assets/menu-coffee.png',
+          image: '/assets/menu-coffee.png',
         },
       ];
 

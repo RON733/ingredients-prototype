@@ -18,9 +18,28 @@
     RewriteRule ^ - [L]
 
     # 2. If static file exists inside backend/public/
-    RewriteCond %{DOCUMENT_ROOT}/backend/public/ -f
-    RewriteRule ^(.*)$ backend/public/ [L]
+    RewriteCond %{DOCUMENT_ROOT}/backend/public/$1 -f
+    RewriteRule ^(.*)$ backend/public/$1 [L]
 
-    # 3. All other requests go through Laravel
+    # 3. Do not serve index.html for missing static assets (prevents strict MIME type errors)
+    RewriteCond %{REQUEST_URI} ^/assets/ [OR]
+    RewriteCond %{REQUEST_URI} \.(js|css|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf|eot)$ [NC]
+    RewriteRule ^ - [R=404,L]
+
+    # 4. All other requests go through Laravel
     RewriteRule ^ backend/public/index.php [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Never cache SPA entry HTML files so browsers always fetch the latest hashed bundles
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Cache Vite content-hashed JS/CSS bundles long-term
+    <FilesMatch "-[A-Za-z0-9_-]{8,}\.(js|css)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
 </IfModule>
