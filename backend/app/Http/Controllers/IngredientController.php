@@ -19,8 +19,7 @@ class IngredientController extends Controller
 
     public function index()
     {
-        // High-Performance In-Memory Cache: Serves ingredients in 3ms
-        $ingredients = Cache::remember('ingredients_all', 60, function () {
+        $fetchIngredients = function () {
             return Ingredient::orderBy('category')->orderBy('name')->get()->map(function ($ing) {
                 $status = 'ok';
                 if ($ing->stock <= 0) {
@@ -28,10 +27,18 @@ class IngredientController extends Controller
                 } elseif ($ing->stock <= $ing->low_threshold) {
                     $status = 'low_stock';
                 }
-                $ing->status = $status;
-                return $ing;
-            });
-        });
+                $row = $ing->toArray();
+                $row['status'] = $status;
+                return $row;
+            })->values()->all();
+        };
+
+        // Cache plain associative arrays (never Eloquent objects/Collections) to prevent __PHP_Incomplete_Class on unserialize
+        $ingredients = Cache::get('ingredients_all');
+        if (!is_array($ingredients)) {
+            Cache::forget('ingredients_all');
+            $ingredients = Cache::remember('ingredients_all', 60, $fetchIngredients);
+        }
 
         return response()->json($ingredients);
     }

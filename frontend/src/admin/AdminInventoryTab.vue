@@ -82,7 +82,7 @@
               <i class="pi pi-box text-xs"></i>
             </div>
           </div>
-          <p class="text-2xl sm:text-3xl font-extrabold text-white mt-2">{{ store.ingredients.length }}</p>
+          <p class="text-2xl sm:text-3xl font-extrabold text-white mt-2">{{ safeIngredients.length }}</p>
           <p class="text-[11px] text-neutral-400/80 mt-1">Raw inventory items</p>
         </div>
 
@@ -614,26 +614,33 @@ export default {
       }
     };
 
+    const safeIngredients = Vue.computed(() => {
+      return Array.isArray(store.ingredients) ? store.ingredients.filter(Boolean) : [];
+    });
+
     const healthyCount = Vue.computed(() => {
-      return store.ingredients.filter(i => i.stock > i.low_threshold).length;
+      return safeIngredients.value.filter(i => Number(i.stock) > Number(i.low_threshold)).length;
     });
 
     const lowCount = Vue.computed(() => {
-      return store.ingredients.filter(i => i.stock > 0 && i.stock <= i.low_threshold).length;
+      return safeIngredients.value.filter(i => Number(i.stock) > 0 && Number(i.stock) <= Number(i.low_threshold)).length;
     });
 
     const depletedCount = Vue.computed(() => {
-      return store.ingredients.filter(i => i.stock <= 0).length;
+      return safeIngredients.value.filter(i => Number(i.stock) <= 0).length;
     });
 
     const filteredIngredients = Vue.computed(() => {
-      let list = [...store.ingredients];
+      let list = [...safeIngredients.value];
       if (selectedCategory.value !== 'All') {
         list = list.filter(i => i.category === selectedCategory.value);
       }
       if (searchQuery.value.trim()) {
         const q = searchQuery.value.toLowerCase().trim();
-        list = list.filter(i => i.name.toLowerCase().includes(q) || i.id.toLowerCase().includes(q));
+        list = list.filter(i =>
+          String(i.name || '').toLowerCase().includes(q) ||
+          String(i.id || '').toLowerCase().includes(q)
+        );
       }
       return list;
     });
@@ -695,9 +702,8 @@ export default {
     };
 
     const getCategoryCount = (cat) => {
-      if (!store.ingredients || !Array.isArray(store.ingredients)) return 0;
-      if (cat === 'All') return store.ingredients.length;
-      return store.ingredients.filter(i => i.category === cat).length;
+      if (cat === 'All') return safeIngredients.value.length;
+      return safeIngredients.value.filter(i => i.category === cat).length;
     };
 
     const getStatusText = (ing) => {
@@ -763,20 +769,25 @@ export default {
       modalOpen.value = true;
     };
 
-    const formatDate = (dateStr) => {
-      if (!dateStr) return '';
+    const parseExpiryDate = (dateStr) => {
+      if (!dateStr) return null;
       const clean = String(dateStr).split('T')[0];
       const [year, month, day] = clean.split('-');
-      if (!year || !month || !day) return dateStr;
+      if (!year || !month || !day) return null;
       const d = new Date(Number(year), Number(month) - 1, Number(day));
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
+
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const d = parseExpiryDate(dateStr);
+      if (!d) return String(dateStr);
       return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     const getExpiryStatus = (dateStr) => {
-      if (!dateStr) return '';
-      const clean = String(dateStr).split('T')[0];
-      const [year, month, day] = clean.split('-');
-      const exp = new Date(Number(year), Number(month) - 1, Number(day));
+      const exp = parseExpiryDate(dateStr);
+      if (!exp) return '';
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       const diffTime = exp.getTime() - now.getTime();
@@ -789,10 +800,8 @@ export default {
     };
 
     const getExpiryBadge = (dateStr) => {
-      if (!dateStr) return '';
-      const clean = String(dateStr).split('T')[0];
-      const [year, month, day] = clean.split('-');
-      const exp = new Date(Number(year), Number(month) - 1, Number(day));
+      const exp = parseExpiryDate(dateStr);
+      if (!exp) return '';
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       const diffTime = exp.getTime() - now.getTime();
@@ -835,8 +844,17 @@ export default {
       }
     };
 
+    Vue.onMounted(() => {
+      store.fetchIngredients();
+    });
+
+    Vue.onActivated(() => {
+      store.fetchIngredients();
+    });
+
     return {
       store,
+      safeIngredients,
       loading,
       selectedCategory,
       searchQuery,

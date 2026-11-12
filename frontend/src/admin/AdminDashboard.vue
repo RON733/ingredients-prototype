@@ -646,9 +646,27 @@
           </div>
         </div>
 
+        <!-- Error Boundary Fallback if a Tab Fails to Render -->
+        <div
+          v-if="tabError"
+          class="p-6 sm:p-8 rounded-2xl bg-rose-950/30 border border-rose-500/40 text-center space-y-3">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center text-xl">
+            <i class="pi pi-exclamation-triangle"></i>
+          </div>
+          <h3 class="text-base font-black text-white">Unable to Display This Tab</h3>
+          <p class="text-xs text-rose-200/80 max-w-md mx-auto">{{ tabError }}</p>
+          <button
+            type="button"
+            @click="reloadActiveTab"
+            class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold inline-flex items-center gap-2 cursor-pointer">
+            <i class="pi pi-refresh"></i>
+            <span>Reload Tab</span>
+          </button>
+        </div>
+
         <!-- Tab Content with KeepAlive to prevent blinking & preserve state on switch -->
-        <KeepAlive :max="10">
-          <component :is="activeTabComponent"></component>
+        <KeepAlive v-else :max="15">
+          <component :is="activeTabComponent" :key="activeTabComponent + '-' + tabRenderKey"></component>
         </KeepAlive>
       </main>
 
@@ -1061,7 +1079,7 @@
 
 <script>
 import * as Vue from 'vue';
-import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, onErrorCaptured, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
@@ -1183,6 +1201,24 @@ export default {
       dashboardLightboxImage.value = img;
     };
 
+    const tabError = ref('');
+    const tabRenderKey = ref(0);
+
+    const reloadActiveTab = () => {
+      tabError.value = '';
+      tabRenderKey.value += 1;
+    };
+
+    onErrorCaptured((err) => {
+      console.error('Admin tab render error:', err);
+      tabError.value = err?.message || 'An unexpected error occurred while rendering this section.';
+      return false;
+    });
+
+    watch(() => store.adminTab, () => {
+      tabError.value = '';
+    });
+
     const activeTabComponent = computed(() => {
       switch (store.adminTab) {
         case 'analytics': return store.isAdminOrSuper ? 'AdminAnalyticsTab' : 'AdminOrdersTab';
@@ -1302,6 +1338,9 @@ export default {
       currentTime,
       activeOrdersCount,
       activeTabComponent,
+      tabError,
+      tabRenderKey,
+      reloadActiveTab,
       handleLogout,
       showUnlockPassword,
       unlockPassword,

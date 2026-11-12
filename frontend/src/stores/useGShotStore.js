@@ -524,12 +524,14 @@ const useGShotStore = defineStore('gshot', {
 
     ingredientMap: (state) => {
       const map = {};
-      state.ingredients.forEach(ing => { map[ing.id] = ing; });
+      const list = Array.isArray(state.ingredients) ? state.ingredients : [];
+      list.forEach(ing => { if (ing && ing.id) map[ing.id] = ing; });
       return map;
     },
 
     lowStockAlerts: (state) => {
-      return state.ingredients.filter(ing => ing.stock <= ing.low_threshold);
+      if (!Array.isArray(state.ingredients)) return [];
+      return state.ingredients.filter(ing => ing && Number(ing.stock) <= Number(ing.low_threshold));
     },
 
     isPaymongoAvailable: (state) => {
@@ -643,7 +645,11 @@ const useGShotStore = defineStore('gshot', {
           this.backendConnected = true;
         }
         if (ingRes.status === 'fulfilled' && ingRes.value.data) {
-          this.ingredients = ingRes.value.data;
+          const ingPayload = ingRes.value.data;
+          const ingList = Array.isArray(ingPayload) ? ingPayload : (Array.isArray(ingPayload?.data) ? ingPayload.data : null);
+          if (ingList) {
+            this.ingredients = ingList;
+          }
         }
         if (setRes.status === 'fulfilled' && setRes.value.data) {
           this.settings = setRes.value.data;
@@ -684,7 +690,11 @@ const useGShotStore = defineStore('gshot', {
     async fetchIngredients() {
       try {
         const res = await GST_API.getIngredients();
-        this.ingredients = res.data;
+        const payload = res.data;
+        const list = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : null);
+        if (list) {
+          this.ingredients = list;
+        }
       } catch (err) {
         console.error('Error fetching ingredients:', err);
       }
