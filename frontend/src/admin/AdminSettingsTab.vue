@@ -18,9 +18,14 @@
   <!-- PayMongo Payment Gateway -->
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-800">
-      <div>
-        <h3 class="text-sm sm:text-base font-bold text-white">PayMongo Gateway</h3>
-        <p class="text-xs text-gray-400">QR Ph, e-wallets & online banking</p>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0">
+          <i class="pi pi-credit-card text-amber-400 text-sm"></i>
+        </div>
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-white">PayMongo Gateway</h3>
+          <p class="text-xs text-gray-400">QR Ph, e-wallets & online banking</p>
+        </div>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
         <span
@@ -42,38 +47,48 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-1.5 min-w-0">
-        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Public Key</p>
-        <p class="font-mono text-xs text-white bg-surface-900 px-2.5 py-2 rounded-lg border border-surface-800 select-all truncate">
-          pk_test_BGTyBKi9iXHVsforUZ2WyCLz
-        </p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+          <i class="pi pi-shield text-emerald-400 text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[11px] font-semibold text-surface-400 uppercase tracking-wider">Credentials</p>
+          <p class="text-xs font-medium text-amber-50 truncate">Server-managed</p>
+        </div>
       </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-1.5 min-w-0">
-        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Secret Key</p>
-        <p class="font-mono text-xs text-gray-300 bg-surface-900 px-2.5 py-2 rounded-lg border border-surface-800 truncate">
-          sk_test_••••••••••••••••4e1e
-        </p>
+      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+          <i class="pi pi-wallet text-amber-400 text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[11px] font-semibold text-surface-400 uppercase tracking-wider">Channels</p>
+          <p class="text-xs font-medium text-amber-50 truncate">QR Ph, E-Wallets, Bank</p>
+        </div>
       </div>
-    </div>
-
-    <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-      <div class="min-w-0">
-        <p class="font-semibold text-gray-300">Webhook Endpoint</p>
-        <p class="text-gray-400 text-[11px] font-mono select-all truncate">/api/paymongo/webhook</p>
+      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+          <i class="pi pi-sync text-sky-400 text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[11px] font-semibold text-surface-400 uppercase tracking-wider">POS Sync</p>
+          <p class="text-xs font-medium text-amber-50 truncate">Auto POS Sync</p>
+        </div>
       </div>
-      <span class="text-[11px] text-gray-400 px-2.5 py-1 rounded-lg bg-surface-900 border border-surface-800 shrink-0 self-start sm:self-auto">
-        Auto POS Sync
-      </span>
     </div>
   </div>
 
   <!-- Customer Order Availability & Area Notice -->
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
-      <div>
-        <h3 class="text-sm sm:text-base font-bold text-white">Order Availability Notice</h3>
-        <p class="text-xs text-gray-400">Shown on storefront, menu & checkout</p>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/25 flex items-center justify-center shrink-0">
+          <i class="pi pi-map-marker text-orange-300 text-sm"></i>
+        </div>
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-white">Order Availability Notice</h3>
+          <p class="text-xs text-surface-400">Shown on storefront, menu & checkout</p>
+        </div>
       </div>
       <span
         class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border self-start sm:self-auto flex items-center gap-1.5"
@@ -106,7 +121,7 @@
 
     <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-2">
       <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Preview</p>
-      <div class="p-2.5 rounded-xl bg-surface-900 border border-amber-500/30 text-xs text-amber-200 flex items-center gap-2">
+      <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200 flex items-center gap-2">
         <i class="pi pi-map-marker text-amber-400 text-xs shrink-0"></i>
         <span class="font-medium">{{ areaNoteForm.order_area_note || 'Orders are only available in Santa Rosa bayan.' }}</span>
       </div>
@@ -116,7 +131,7 @@
       type="button"
       @click="saveAreaNoteSettings"
       :disabled="isSavingAreaNote"
-      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-500 text-amber-50 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm">
       <i v-if="isSavingAreaNote" class="pi pi-spin pi-spinner"></i>
       <i v-else class="pi pi-save"></i>
       <span>Save Notice</span>

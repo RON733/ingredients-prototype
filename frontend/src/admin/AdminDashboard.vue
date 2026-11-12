@@ -157,9 +157,9 @@
           <!-- Brand Logo & Header -->
           <div class="flex items-center justify-between cursor-pointer" @click="selectTab(store.isAdminOrSuper ? 'analytics' : 'orders')">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700/80 flex items-center justify-center font-black text-base text-amber-400 shadow-sm">G'</div>
+              <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center font-black text-base text-amber-300 shadow-sm">G'</div>
               <div>
-                <h1 class="text-base font-extrabold text-white tracking-tight leading-none">G SHOT TEAS</h1>
+                <h1 class="text-base font-extrabold text-amber-50 tracking-tight leading-none">G SHOT TEAS</h1>
                 <p class="text-[10px] text-amber-400/80 font-semibold tracking-wider uppercase mt-1">Management Console</p>
               </div>
             </div>
@@ -213,7 +213,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-list text-sm"></i>
+                  <i class="pi pi-list text-sm text-amber-400"></i>
                   <span>Active Orders</span>
                 </div>
                 <span v-if="activeOrdersCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -228,7 +228,7 @@
                 :class="store.adminTab === 'completed' 
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <i class="pi pi-check-circle text-sm"></i>
+                <i class="pi pi-check-circle text-sm text-emerald-400/85"></i>
                 <span>Completed Orders</span>
               </button>
 
@@ -240,7 +240,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-server text-sm"></i>
+                  <i class="pi pi-server text-sm text-orange-400/85"></i>
                   <span>Kitchen Inventory</span>
                 </div>
                 <span v-if="store.lowStockAlerts.length > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
@@ -256,7 +256,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-wallet text-sm"></i>
+                  <i class="pi pi-wallet text-sm text-teal-400/85"></i>
                   <span>COD Remittances</span>
                 </div>
                 <span v-if="store.pendingRemittancesCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
@@ -290,7 +290,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-chart-line text-sm"></i>
+                  <i class="pi pi-chart-line text-sm text-sky-400/85"></i>
                   <span>Sales Analytics</span>
                 </div>
               </button>
@@ -303,7 +303,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-box text-sm"></i>
+                  <i class="pi pi-box text-sm text-amber-400/85"></i>
                   <span>Product Menu</span>
                 </div>
               </button>
@@ -317,7 +317,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-book text-sm"></i>
+                  <i class="pi pi-book text-sm text-orange-300/85"></i>
                   <span>Recipes & Portions</span>
                 </div>
               </button>
@@ -330,7 +330,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-calendar text-sm"></i>
+                  <i class="pi pi-calendar text-sm text-rose-400/85"></i>
                   <span>Event Bookings</span>
                 </div>
               </button>
@@ -348,7 +348,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-megaphone text-sm"></i>
+                  <i class="pi pi-megaphone text-sm text-amber-300/85"></i>
                   <span>Announcements</span>
                 </div>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -365,7 +365,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-users text-sm"></i>
+                  <i class="pi pi-users text-sm text-indigo-300/85"></i>
                   <span>User & Roles</span>
                 </div>
               </button>
@@ -379,7 +379,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-history text-sm"></i>
+                  <i class="pi pi-history text-sm text-stone-300/85"></i>
                   <span>Audit Trail</span>
                 </div>
               </button>
@@ -393,7 +393,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-cog text-sm"></i>
+                  <i class="pi pi-cog text-sm text-amber-400/90"></i>
                   <span>Store & Settings</span>
                 </div>
               </button>

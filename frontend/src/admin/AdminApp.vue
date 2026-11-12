@@ -17,23 +17,27 @@
       </div>
 
       <!-- 3. LOGIN PAGE: Always Shown First When Accessing /admin, /staff, /driver, or /superadmin -->
-      <div v-else class="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 relative">
-        <div class="w-full max-w-md space-y-4">
+      <div v-else class="flex-1 flex flex-col items-center justify-center p-3 sm:p-6 relative overflow-hidden">
+        <!-- Soft warm ambient background glow -->
+        <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-600/8 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-orange-700/8 blur-3xl"></div>
+
+        <div class="w-full max-w-md space-y-4 relative z-10">
           
           <!-- Portal Branding Header -->
           <div class="text-center space-y-1.5">
-            <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-surface-900 border border-surface-700 text-amber-400 font-black text-xl">
+            <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-300 font-black text-xl shadow-sm">
               G'
             </div>
             <div class="flex items-center justify-center gap-2 flex-wrap">
-              <h1 class="text-xl font-bold tracking-tight text-white">G SHOT TEAS</h1>
+              <h1 class="text-xl font-bold tracking-tight text-amber-50">G SHOT TEAS</h1>
               <span 
                 class="text-[10px] px-2 py-0.5 rounded-md font-bold border uppercase tracking-wider"
                 :class="portalBadgeClass">
                 {{ portalBadgeText }}
               </span>
             </div>
-            <p class="text-xs text-gray-400">{{ portalSubtext }}</p>
+            <p class="text-xs text-surface-400">{{ portalSubtext }}</p>
           </div>
 
           <!-- Connected Role Navigation Tabs (/staff, /driver, /admin, /superadmin) -->
@@ -42,7 +46,7 @@
               type="button"
               @click="setPortalRole('staff')"
               class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
-              :class="activeRole === 'staff' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'text-gray-400 hover:text-white border-transparent'">
+              :class="activeRole === 'staff' ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 font-semibold' : 'text-surface-400 hover:text-amber-100 border-transparent'">
               <i class="pi pi-id-card text-xs"></i>
               <span class="text-[11px] sm:text-xs">Staff</span>
             </button>
@@ -50,7 +54,7 @@
               type="button"
               @click="setPortalRole('driver')"
               class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
-              :class="activeRole === 'driver' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'text-gray-400 hover:text-white border-transparent'">
+              :class="activeRole === 'driver' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 font-semibold' : 'text-surface-400 hover:text-emerald-100 border-transparent'">
               <i class="pi pi-compass text-xs"></i>
               <span class="text-[11px] sm:text-xs">Rider</span>
             </button>
@@ -58,7 +62,7 @@
               type="button"
               @click="setPortalRole('admin')"
               class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
-              :class="activeRole === 'admin' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'text-gray-400 hover:text-white border-transparent'">
+              :class="activeRole === 'admin' ? 'bg-orange-500/15 text-orange-300 border-orange-500/40 font-semibold' : 'text-surface-400 hover:text-orange-100 border-transparent'">
               <i class="pi pi-shield text-xs"></i>
               <span class="text-[11px] sm:text-xs">Admin</span>
             </button>
@@ -66,7 +70,7 @@
               type="button"
               @click="setPortalRole('super_admin')"
               class="py-2 px-1 rounded-lg transition-colors flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer text-center border"
-              :class="activeRole === 'super_admin' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'text-gray-400 hover:text-white border-transparent'">
+              :class="activeRole === 'super_admin' ? 'bg-rose-500/15 text-rose-300 border-rose-500/40 font-semibold' : 'text-surface-400 hover:text-rose-100 border-transparent'">
               <i class="pi pi-lock text-xs"></i>
               <span class="text-[11px] sm:text-xs truncate">Super</span>
             </button>
@@ -115,7 +119,7 @@
                     type="button"
                     @click="selectedStaff = s; pinDigits = ''"
                     class="p-2.5 rounded-xl border text-left transition-colors cursor-pointer flex flex-col min-w-0"
-                    :class="selectedStaff?.id === s.id ? 'bg-surface-800 border-amber-500/50 text-white' : 'bg-surface-950 border-surface-800 text-gray-400 hover:border-surface-700'">
+                    :class="selectedStaff?.id === s.id ? 'bg-amber-500/10 border-amber-500/45 text-amber-50' : 'bg-surface-950 border-surface-800 text-surface-400 hover:border-surface-700'">
                     <span class="text-xs font-semibold truncate">{{ s.name }}</span>
                     <span class="text-[10px]" :class="selectedStaff?.id === s.id ? 'text-amber-400' : 'text-gray-500'">
                       Staff
@@ -135,8 +139,8 @@
                     :key="i"
                     class="w-11 h-11 rounded-xl border flex items-center justify-center text-xl font-bold transition-colors"
                     :class="pinDigits.length >= i 
-                      ? 'bg-surface-800 border-amber-500 text-amber-400' 
-                      : 'bg-surface-950 border-surface-800 text-gray-600'">
+                      ? 'bg-amber-500/15 border-amber-500/60 text-amber-300' 
+                      : 'bg-surface-950 border-surface-800 text-surface-500'">
                     {{ pinDigits.length >= i ? '•' : '' }}
                   </div>
                 </div>
@@ -180,7 +184,7 @@
                 type="button"
                 @click="submitPinLogin"
                 :disabled="pinLoading || pinDigits.length < 4"
-                class="w-full py-2.5 rounded-xl disabled:opacity-40 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer bg-amber-500 hover:bg-amber-400 text-neutral-950">
+                class="w-full py-2.5 rounded-xl disabled:opacity-40 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-amber-50 shadow-md shadow-amber-950/40">
                 <i v-if="pinLoading" class="pi pi-spin pi-spinner"></i>
                 <span v-else>Sign In</span>
               </button>
@@ -223,7 +227,7 @@
               <button 
                 type="submit"
                 :disabled="credentialsLoading"
-                class="w-full py-2.5 rounded-xl disabled:opacity-50 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer bg-amber-500 hover:bg-amber-400 text-neutral-950">
+                class="w-full py-2.5 rounded-xl disabled:opacity-50 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-amber-50 shadow-md shadow-amber-950/40">
                 <i v-if="credentialsLoading" class="pi pi-spin pi-spinner"></i>
                 <span v-else>Sign In</span>
               </button>
