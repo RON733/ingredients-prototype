@@ -269,22 +269,22 @@
             </div>
 
             <!-- PayMongo Online Checkout Card -->
-            <div v-if="form.payment_method === 'PayMongo'" class="p-5 sm:p-6 rounded-3xl bg-surface-900 border border-emerald-500/40 space-y-4 relative overflow-hidden animate-fade-in shadow-xl mb-4">
+            <div v-if="form.payment_method === 'PayMongo'" class="p-4 sm:p-5 rounded-3xl bg-surface-900 border border-emerald-500/40 space-y-3.5 relative overflow-hidden animate-fade-in shadow-xl mb-4">
               <div class="absolute -top-16 -right-16 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
               <div class="flex items-center justify-between pb-3 border-b border-surface-800">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-lg shadow-inner">
-                    <i class="pi pi-shield"></i>
+                  <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400 text-base shadow-inner">
+                    <i class="pi pi-qrcode"></i>
                   </div>
                   <div>
                     <div class="flex items-center gap-2">
-                      <p class="text-xs font-black uppercase tracking-wider text-emerald-300">QR Ph Instant Checkout</p>
+                      <p class="text-xs font-black uppercase tracking-wider text-emerald-300">QR Ph Checkout</p>
                       <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                        Automated & Instant
+                        Instant
                       </span>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-0.5">Pay via PayMongo QR Ph, e-wallets, or banking app</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Scan with any e-wallet or banking app</p>
                   </div>
                 </div>
                 <div class="text-right">
@@ -293,47 +293,24 @@
                 </div>
               </div>
 
-              <!-- Supported Channels: PayMongo QR Ph -->
-              <div class="grid grid-cols-2 gap-2 pt-1">
-                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]"><i class="pi pi-qrcode"></i></span>
-                  <div>
-                    <p class="text-xs font-bold text-white leading-tight">E-Wallets</p>
-                    <p class="text-[10px] text-gray-500">QR Ph Scan</p>
-                  </div>
-                </div>
-                <div class="p-2.5 rounded-xl bg-surface-950/70 border border-surface-800 flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-black text-[10px]"><i class="pi pi-building"></i></span>
-                  <div>
-                    <p class="text-xs font-bold text-white leading-tight">Online Banks</p>
-                    <p class="text-[10px] text-gray-500">QR Ph Scan</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-3 rounded-2xl bg-surface-950/60 border border-emerald-500/20 text-xs text-emerald-200/90 flex items-start gap-2.5">
-                <i class="pi pi-check-circle text-emerald-400 text-sm shrink-0 mt-0.5"></i>
-                <span>Clicking <strong>Place Order & Generate QR Ph Code</strong> below will generate your instant scan-to-pay QR code. No manual reference number or receipt upload is needed!</span>
-              </div>
-
               <!-- Direct Action Button inside PayMongo Card -->
-              <div class="pt-2 space-y-2">
+              <div class="space-y-2">
                 <button 
                   type="button"
                   @click="submitOrder"
                   :disabled="isSubmitting || store.cart.length === 0"
-                  class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                  class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 active:scale-[0.99] text-black font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
                   <span v-else class="flex items-center gap-2">
                     <i class="pi" :class="!store.user ? 'pi-lock text-base' : 'pi-qrcode text-base'"></i>
-                    <span>{{ !store.user ? 'Sign In to Pay with QR' : ('Place Order & Generate QR Ph Code (₱' + Number(grandTotal).toFixed(2) + ')') }}</span>
+                    <span>{{ !store.user ? 'Sign In to Pay with QR' : ('Place Order & Pay via QR (₱' + Number(grandTotal).toFixed(2) + ')') }}</span>
                     <i class="pi pi-arrow-right text-xs"></i>
                   </span>
                 </button>
 
-                <p class="text-[11px] text-emerald-300/90 text-center flex items-center justify-center gap-1.5 font-medium">
+                <p class="text-[11px] text-emerald-300/80 text-center flex items-center justify-center gap-1.5 font-medium">
                   <i class="pi pi-shield text-emerald-400 text-[10px]"></i>
-                  <span>Scan na All • No forms or receipt upload needed • Instant automated confirmation</span>
+                  <span>Instant confirmation • No receipt upload needed</span>
                 </p>
               </div>
 

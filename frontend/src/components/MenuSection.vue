@@ -297,6 +297,51 @@
               <i class="pi pi-ban text-[9px]"></i>
               <span>Unavailable</span>
             </button>
+            <div
+              v-else-if="!isCustomizableProduct(product) && store.getProductCartQty(product.id) > 0"
+              class="flex items-center justify-between gap-1 bg-surface-900/90 border border-yellow-400/40 rounded-xl p-0.5">
+              <button
+                type="button"
+                @click="reduceFromCart(product)"
+                class="w-7 h-7 rounded-lg bg-surface-800 hover:bg-rose-500/20 hover:text-rose-300 text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Reduce quantity">
+                <i class="pi pi-minus text-[9px]"></i>
+              </button>
+              <span class="text-xs font-black text-yellow-400 px-1">{{ store.getProductCartQty(product.id) }}</span>
+              <button
+                type="button"
+                @click="quickAdd(product)"
+                :disabled="store.getRemainingStock(product) <= 0"
+                class="w-7 h-7 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                title="Add 1 more">
+                <i class="pi pi-plus text-[9px]"></i>
+              </button>
+            </div>
+            <div v-else-if="isCustomizableProduct(product) && store.getProductCartQty(product.id) > 0" class="flex items-center gap-1">
+              <button
+                type="button"
+                @click="reduceFromCart(product)"
+                class="px-2 py-1.5 sm:py-2 rounded-xl bg-surface-900 hover:bg-rose-500/20 hover:text-rose-300 text-gray-200 border border-surface-700 text-[10px] font-black flex items-center gap-1 cursor-pointer shrink-0"
+                title="Reduce 1 from cart">
+                <i class="pi pi-minus text-[8px]"></i>
+                <span>{{ store.getProductCartQty(product.id) }}</span>
+              </button>
+              <button 
+                v-if="store.getRemainingStock(product) <= 0"
+                disabled
+                type="button"
+                class="flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-[10px] bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1">
+                <span>Max</span>
+              </button>
+              <button 
+                v-else
+                @click="openCustomize(product)"
+                type="button"
+                class="flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-[10px] sm:text-xs bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-1 cursor-pointer shadow-md active:scale-95">
+                <i class="pi pi-plus text-[9px]"></i>
+                <span>Add</span>
+              </button>
+            </div>
             <button 
               v-else-if="store.getRemainingStock(product) <= 0"
               disabled
@@ -307,11 +352,11 @@
             </button>
             <button 
               v-else
-              @click="openCustomize(product)"
+              @click="quickAdd(product)"
               type="button"
               class="w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-1 cursor-pointer shadow-md active:scale-95">
               <i class="pi pi-plus text-[9px]"></i>
-              <span>{{ product.category === 'Drinks' ? 'Customize' : 'Add' }}</span>
+              <span>{{ isCustomizableProduct(product) ? 'Customize' : 'Add' }}</span>
             </button>
           </div>
 
@@ -408,6 +453,24 @@
               class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-surface-700 text-gray-500 cursor-not-allowed flex items-center justify-center gap-1">
               <span>Sold Out</span>
             </button>
+            <div
+              v-else-if="!isCustomizableProduct(product) && store.getProductCartQty(product.id) > 0"
+              class="mt-1.5 flex items-center justify-between bg-surface-900/90 border border-yellow-400/40 rounded-lg p-0.5">
+              <button
+                type="button"
+                @click="reduceFromCart(product)"
+                class="w-6 h-6 rounded bg-surface-800 hover:bg-rose-500/20 hover:text-rose-300 text-white flex items-center justify-center cursor-pointer">
+                <i class="pi pi-minus text-[8px]"></i>
+              </button>
+              <span class="text-[11px] font-black text-yellow-400">{{ store.getProductCartQty(product.id) }}</span>
+              <button
+                type="button"
+                @click="quickAdd(product)"
+                :disabled="store.getRemainingStock(product) <= 0"
+                class="w-6 h-6 rounded bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed">
+                <i class="pi pi-plus text-[8px]"></i>
+              </button>
+            </div>
             <button 
               v-else-if="store.getRemainingStock(product) <= 0"
               disabled
@@ -417,11 +480,11 @@
             </button>
             <button 
               v-else
-              @click="openCustomize(product)"
+              @click="quickAdd(product)"
               type="button"
               class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-1 active:scale-95 cursor-pointer shadow">
               <i class="pi pi-plus text-[8px]"></i>
-              <span>Add</span>
+              <span>{{ isCustomizableProduct(product) ? 'Customize' : 'Add' }}</span>
             </button>
           </div>
 
@@ -541,6 +604,55 @@
             <i class="pi pi-ban text-xs"></i>
             <span>Unavailable</span>
           </button>
+          <div
+            v-else-if="!isCustomizableProduct(product) && store.getProductCartQty(product.id) > 0"
+            class="flex items-center justify-between gap-2 bg-surface-900/90 border border-yellow-400/40 rounded-xl p-1">
+            <button
+              type="button"
+              @click="reduceFromCart(product)"
+              class="w-9 h-9 rounded-lg bg-surface-800 hover:bg-rose-500/20 hover:text-rose-300 text-white flex items-center justify-center transition-colors cursor-pointer"
+              title="Reduce 1 from cart">
+              <i class="pi pi-minus text-xs"></i>
+            </button>
+            <div class="text-center">
+              <span class="text-sm font-black text-yellow-400">{{ store.getProductCartQty(product.id) }}</span>
+              <span class="text-[11px] text-gray-400 ml-1">in cart</span>
+            </div>
+            <button
+              type="button"
+              @click="quickAdd(product)"
+              :disabled="store.getRemainingStock(product) <= 0"
+              class="w-9 h-9 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              title="Add 1 more to cart">
+              <i class="pi pi-plus text-xs"></i>
+            </button>
+          </div>
+          <div v-else-if="isCustomizableProduct(product) && store.getProductCartQty(product.id) > 0" class="flex items-center gap-2">
+            <button
+              type="button"
+              @click="reduceFromCart(product)"
+              class="px-3 py-2.5 rounded-xl bg-surface-900 hover:bg-rose-500/20 hover:text-rose-300 text-gray-200 border border-surface-700 text-xs font-black flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Reduce 1 from cart">
+              <i class="pi pi-minus text-[10px]"></i>
+              <span>{{ store.getProductCartQty(product.id) }}</span>
+            </button>
+            <button 
+              v-if="store.getRemainingStock(product) <= 0"
+              disabled
+              type="button"
+              class="flex-1 py-2.5 rounded-xl font-bold text-xs bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1.5">
+              <i class="pi pi-check text-xs"></i>
+              <span>Max in Cart</span>
+            </button>
+            <button 
+              v-else
+              @click="openCustomize(product)"
+              type="button"
+              class="flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98">
+              <i class="pi pi-plus text-xs"></i>
+              <span>Customize & Add</span>
+            </button>
+          </div>
           <button 
             v-else-if="store.getRemainingStock(product) <= 0"
             disabled
@@ -551,11 +663,11 @@
           </button>
           <button 
             v-else
-            @click="openCustomize(product)"
+            @click="quickAdd(product)"
             type="button"
             class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98">
             <i class="pi pi-plus text-xs"></i>
-            <span>{{ product.category === 'Drinks' ? 'Customize & Add' : 'Add to Cart' }}</span>
+            <span>{{ isCustomizableProduct(product) ? 'Customize & Add' : 'Add to Cart' }}</span>
           </button>
         </div>
       </div>
@@ -763,11 +875,33 @@ export default {
       store.customizeModalOpen = true;
     };
 
+    const isCustomizableProduct = (product) => {
+      if (!product) return false;
+      return product.category === 'Drinks' || product.category === 'Coffee';
+    };
+
+    const quickAdd = (product) => {
+      if (!product) return;
+      if (isCustomizableProduct(product)) {
+        openCustomize(product);
+        return;
+      }
+      store.addToCart(product, null, 1);
+    };
+
+    const reduceFromCart = (product) => {
+      if (!product) return;
+      store.decrementProductCart(product.id);
+    };
+
     const openImage = (product) => {
       store.openProductPreview(product);
     };
 
     return {
+      isCustomizableProduct,
+      quickAdd,
+      reduceFromCart,
       store,
       categoryOptions,
       priceOptions,

@@ -413,6 +413,7 @@ const useGShotStore = defineStore('gshot', {
     pendingCheckout: false,
     customizeModalOpen: false,
     selectedProductForCustomize: null,
+    customizeInitialQty: 1,
     bookingModalOpen: false,
     bookingModalTab: 'form', // 'form' | 'history'
     lastSubmittedBookingId: null,
@@ -1076,6 +1077,16 @@ const useGShotStore = defineStore('gshot', {
     removeFromCart(cartItemId) {
       this.cart = this.cart.filter(i => i.cartItemId !== cartItemId);
       this.saveCart();
+    },
+
+    decrementProductCart(productId) {
+      if (!productId) return false;
+      for (let i = this.cart.length - 1; i >= 0; i--) {
+        if (this.cart[i].product_id === productId) {
+          return this.updateCartQty(this.cart[i].cartItemId, -1);
+        }
+      }
+      return false;
     },
 
     clearCart() {

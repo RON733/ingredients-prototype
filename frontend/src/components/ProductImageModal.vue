@@ -189,39 +189,93 @@
           </div>
 
           <!-- Action Buttons Row -->
-          <div class="pt-3 border-t border-surface-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <button 
-              type="button"
-              @click="close"
-              class="order-2 sm:order-1 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 transition-all text-center cursor-pointer">
-              Back to Menu
-            </button>
+          <div class="pt-3 border-t border-surface-800 flex flex-col gap-3">
+            <!-- Already in cart quick adjuster -->
+            <div 
+              v-if="liveMaxPortions > 0 && inCartQty > 0"
+              class="flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-surface-800/80 border border-surface-700/80">
+              <div class="flex items-center gap-2 text-xs text-gray-300 min-w-0">
+                <i class="pi pi-shopping-cart text-yellow-400 shrink-0"></i>
+                <span class="truncate">In your cart: <strong class="text-white">{{ inCartQty }}</strong></span>
+                <span class="text-[11px] text-gray-500 hidden sm:inline">({{ remainingStock }} more available)</span>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  @click="reduceFromCart"
+                  class="w-7 h-7 rounded-lg bg-surface-700 hover:bg-rose-500/20 hover:text-rose-300 text-gray-200 border border-surface-600 flex items-center justify-center transition-colors cursor-pointer"
+                  title="Reduce 1 from cart">
+                  <i class="pi pi-minus text-[10px]"></i>
+                </button>
+                <span class="w-7 text-center text-xs font-black text-white">{{ inCartQty }}</span>
+                <button
+                  v-if="!isCustomizable"
+                  type="button"
+                  @click="incrementInCart"
+                  :disabled="remainingStock <= 0"
+                  class="w-7 h-7 rounded-lg bg-surface-700 hover:bg-yellow-400 hover:text-black text-gray-200 border border-surface-600 flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                  title="Add 1 more to cart">
+                  <i class="pi pi-plus text-[10px]"></i>
+                </button>
+              </div>
+            </div>
 
-            <div class="order-1 sm:order-2 flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <button 
-                v-if="liveMaxPortions <= 0"
-                disabled
                 type="button"
-                class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2">
-                <i class="pi pi-ban"></i>
-                <span>Currently Unavailable</span>
+                @click="close"
+                class="order-2 sm:order-1 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 transition-all text-center cursor-pointer">
+                Back to Menu
               </button>
-              <button 
-                v-else-if="remainingStock <= 0"
-                disabled
-                type="button"
-                class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-2">
-                <i class="pi pi-check"></i>
-                <span>Max Stock in Cart</span>
-              </button>
-              <button 
-                v-else
-                type="button"
-                @click="handleAction"
-                class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 transition-all cursor-pointer">
-                <i class="pi" :class="isCustomizable ? 'pi-sliders-h' : 'pi-plus'"></i>
-                <span>{{ isCustomizable ? 'Customize & Add to Cart' : 'Add to Cart (' + (store.previewProduct.price ? '₱' + Number(store.previewProduct.price).toFixed(2) : '') + ')' }}</span>
-              </button>
+
+              <div class="order-1 sm:order-2 flex items-center gap-2">
+                <button 
+                  v-if="liveMaxPortions <= 0"
+                  disabled
+                  type="button"
+                  class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-gray-500 cursor-not-allowed flex items-center justify-center gap-2">
+                  <i class="pi pi-ban"></i>
+                  <span>Currently Unavailable</span>
+                </button>
+                <button 
+                  v-else-if="remainingStock <= 0"
+                  disabled
+                  type="button"
+                  class="w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-2">
+                  <i class="pi pi-check"></i>
+                  <span>Max Stock in Cart</span>
+                </button>
+                <template v-else>
+                  <!-- Order Quantity Stepper -->
+                  <div class="flex items-center bg-surface-800 border border-surface-700 rounded-xl p-1 shrink-0">
+                    <button
+                      type="button"
+                      @click="decreaseQty"
+                      :disabled="orderQty <= 1"
+                      class="w-8 h-8 rounded-lg bg-surface-700/80 hover:bg-surface-600 text-white flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                      title="Decrease quantity">
+                      <i class="pi pi-minus text-[11px]"></i>
+                    </button>
+                    <span class="w-9 text-center text-sm font-black text-white select-none">{{ orderQty }}</span>
+                    <button
+                      type="button"
+                      @click="increaseQty"
+                      :disabled="orderQty >= remainingStock"
+                      class="w-8 h-8 rounded-lg bg-surface-700/80 hover:bg-surface-600 text-white flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                      title="Increase quantity">
+                      <i class="pi pi-plus text-[11px]"></i>
+                    </button>
+                  </div>
+
+                  <button 
+                    type="button"
+                    @click="handleAction"
+                    class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <i class="pi" :class="isCustomizable ? 'pi-sliders-h' : 'pi-plus'"></i>
+                    <span>{{ isCustomizable ? ('Customize & Add' + (orderQty > 1 ? ' (' + orderQty + ')' : '')) : ('Add' + (orderQty > 1 ? ' ' + orderQty : '') + ' to Cart' + (store.previewProduct.price !== null ? ' (₱' + (Number(store.previewProduct.price) * orderQty).toFixed(2) + ')' : '')) }}</span>
+                  </button>
+                </template>
+              </div>
             </div>
           </div>
 
@@ -422,9 +476,16 @@ export default {
       toggleZoom();
     };
 
+    const orderQty = Vue.ref(1);
+
     const liveMaxPortions = Vue.computed(() => {
       if (!store.previewProduct) return 0;
       return store.getProductMaxStock(store.previewProduct);
+    });
+
+    const inCartQty = Vue.computed(() => {
+      if (!store.previewProduct) return 0;
+      return store.getProductCartQty(store.previewProduct.id);
     });
 
     const remainingStock = Vue.computed(() => {
@@ -437,6 +498,29 @@ export default {
       const cat = store.previewProduct.category;
       return cat === 'Drinks' || cat === 'Coffee';
     });
+
+    const decreaseQty = () => {
+      if (orderQty.value > 1) {
+        orderQty.value -= 1;
+      }
+    };
+
+    const increaseQty = () => {
+      if (orderQty.value < remainingStock.value) {
+        orderQty.value += 1;
+      }
+    };
+
+    const reduceFromCart = () => {
+      if (!store.previewProduct) return;
+      store.decrementProductCart(store.previewProduct.id);
+    };
+
+    const incrementInCart = () => {
+      if (!store.previewProduct) return;
+      const matched = store.products.find(item => item.id === store.previewProduct.id) || store.previewProduct;
+      store.addToCart(matched, null, 1);
+    };
 
     const close = () => {
       resetZoom();
@@ -456,14 +540,16 @@ export default {
         store.notify(`Cannot add more ${matched.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available and you already have them in your cart.`, 'warning');
         return;
       }
+      const qty = Math.min(Math.max(1, orderQty.value), store.getRemainingStock(matched));
       if (isCustomizable.value) {
+        store.customizeInitialQty = qty;
         close();
         store.selectedProductForCustomize = matched;
         store.customizeModalOpen = true;
       } else {
-        const added = store.addToCart(matched);
+        const added = store.addToCart(matched, null, qty);
         if (added) {
-          close();
+          orderQty.value = 1;
         }
       }
     };
@@ -486,6 +572,15 @@ export default {
 
     Vue.watch(() => store.previewProduct, () => {
       resetZoom();
+      orderQty.value = 1;
+    });
+
+    Vue.watch(remainingStock, (rem) => {
+      if (rem > 0 && orderQty.value > rem) {
+        orderQty.value = rem;
+      } else if (rem <= 0) {
+        orderQty.value = 1;
+      }
     });
 
     return {
@@ -505,9 +600,15 @@ export default {
       onTouchMove,
       onTouchEnd,
       handleCanvasClick,
+      orderQty,
       liveMaxPortions,
+      inCartQty,
       remainingStock,
       isCustomizable,
+      decreaseQty,
+      increaseQty,
+      reduceFromCart,
+      incrementInCart,
       close,
       handleAction,
     };

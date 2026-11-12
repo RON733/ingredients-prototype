@@ -168,50 +168,82 @@
         </div>
 
         <!-- Footer with Dynamic Calculated Price & Add Button -->
-        <div class="p-5 bg-surface-900 border-t border-surface-700 flex items-center justify-between">
-          <div>
-            <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Price</p>
-            <div class="flex items-baseline gap-2">
-              <p class="text-2xl font-black text-brand-400">₱{{ computedTotal.toFixed(2) }}</p>
-              <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="text-xs line-through text-gray-400 font-semibold">
-                ₱{{ (computedTotal + (Number(product.original_price) - Number(product.price))).toFixed(2) }}
-              </span>
-              <span v-if="product.discount_percent > 0" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                {{ product.discount_percent }}% OFF
-              </span>
-            </div>
+        <div class="p-5 bg-surface-900 border-t border-surface-700 flex flex-col gap-3">
+          <div v-if="maxStock > 0 && inCartQty > 0" class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-surface-800/80 border border-surface-700/80 text-xs text-gray-300">
+            <span>In cart: <strong class="text-white">{{ inCartQty }}</strong> <span class="text-gray-500">({{ remainingStock }} left)</span></span>
+            <button
+              type="button"
+              @click="reduceFromCart"
+              class="px-2.5 py-1 rounded-lg bg-surface-700 hover:bg-rose-500/20 hover:text-rose-300 text-gray-200 border border-surface-600 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+              title="Reduce 1 from cart">
+              <i class="pi pi-minus text-[9px]"></i>
+              <span>Reduce 1</span>
+            </button>
           </div>
 
-          <div class="flex items-center gap-3">
-            <button 
-              @click="close"
-              class="px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition-colors">
-              Cancel
-            </button>
-            <button 
-              v-if="maxStock <= 0"
-              disabled
-              type="button"
-              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-surface-700 text-gray-500 cursor-not-allowed flex items-center gap-2">
-              <i class="pi pi-ban"></i>
-              <span>Sold Out</span>
-            </button>
-            <button 
-              v-else-if="remainingStock <= 0"
-              disabled
-              type="button"
-              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center gap-2">
-              <i class="pi pi-check"></i>
-              <span>Max in Cart</span>
-            </button>
-            <button 
-              v-else
-              @click="confirmAdd"
-              type="button"
-              class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
-              <i class="pi pi-shopping-cart"></i>
-              <span>Add to Cart</span>
-            </button>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-[10px] text-gray-400 uppercase font-semibold">Total Price</p>
+              <div class="flex items-baseline gap-2">
+                <p class="text-2xl font-black text-brand-400">₱{{ (computedTotal * orderQty).toFixed(2) }}</p>
+                <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="text-xs line-through text-gray-400 font-semibold">
+                  ₱{{ ((computedTotal + (Number(product.original_price) - Number(product.price))) * orderQty).toFixed(2) }}
+                </span>
+                <span v-if="product.discount_percent > 0" class="text-[10px] font-black px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                  {{ product.discount_percent }}% OFF
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <button 
+                @click="close"
+                class="px-3 py-2.5 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition-colors cursor-pointer">
+                Cancel
+              </button>
+              <button 
+                v-if="maxStock <= 0"
+                disabled
+                type="button"
+                class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-surface-700 text-gray-500 cursor-not-allowed flex items-center gap-2">
+                <i class="pi pi-ban"></i>
+                <span>Sold Out</span>
+              </button>
+              <button 
+                v-else-if="remainingStock <= 0"
+                disabled
+                type="button"
+                class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center gap-2">
+                <i class="pi pi-check"></i>
+                <span>Max in Cart</span>
+              </button>
+              <template v-else>
+                <div class="flex items-center bg-surface-800 border border-surface-700 rounded-xl p-1">
+                  <button
+                    type="button"
+                    @click="decreaseQty"
+                    :disabled="orderQty <= 1"
+                    class="w-7 h-7 rounded-lg bg-surface-700/80 hover:bg-surface-600 text-white flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed">
+                    <i class="pi pi-minus text-[10px]"></i>
+                  </button>
+                  <span class="w-8 text-center text-xs font-black text-white select-none">{{ orderQty }}</span>
+                  <button
+                    type="button"
+                    @click="increaseQty"
+                    :disabled="orderQty >= remainingStock"
+                    class="w-7 h-7 rounded-lg bg-surface-700/80 hover:bg-surface-600 text-white flex items-center justify-center transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed">
+                    <i class="pi pi-plus text-[10px]"></i>
+                  </button>
+                </div>
+                <button 
+                  @click="confirmAdd"
+                  type="button"
+                  class="px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center gap-2 cursor-pointer">
+                  <i class="pi pi-shopping-cart"></i>
+                  <span>Add{{ orderQty > 1 ? ' ' + orderQty : '' }} to Cart</span>
+                </button>
+              </template>
+            </div>
           </div>
         </div>
 
@@ -271,6 +303,8 @@ export default {
       notes: '',
     });
 
+    const orderQty = Vue.ref(1);
+
     Vue.watch(product, (newVal) => {
       if (newVal) {
         customization.size = 'Regular';
@@ -278,8 +312,31 @@ export default {
         customization.ice = 'Regular Ice';
         customization.toppings = [];
         customization.notes = '';
+        const initQty = Number(store.customizeInitialQty) || 1;
+        orderQty.value = remainingStock.value > 0 ? Math.min(Math.max(1, initQty), remainingStock.value) : 1;
       }
     });
+
+    Vue.watch(remainingStock, (rem) => {
+      if (rem > 0 && orderQty.value > rem) {
+        orderQty.value = rem;
+      } else if (rem <= 0) {
+        orderQty.value = 1;
+      }
+    });
+
+    const decreaseQty = () => {
+      if (orderQty.value > 1) orderQty.value -= 1;
+    };
+
+    const increaseQty = () => {
+      if (orderQty.value < remainingStock.value) orderQty.value += 1;
+    };
+
+    const reduceFromCart = () => {
+      if (!product.value) return;
+      store.decrementProductCart(product.value.id);
+    };
 
     const computedTotal = Vue.computed(() => {
       if (!product.value) return 0;
@@ -311,8 +368,10 @@ export default {
       if (customization.notes && customization.notes.trim()) {
         cleanCustomization.notes = customization.notes.trim();
       }
-      const added = store.addToCart(product.value, cleanCustomization);
+      const qty = Math.min(Math.max(1, orderQty.value), Math.max(1, remainingStock.value));
+      const added = store.addToCart(product.value, cleanCustomization, qty);
       if (added) {
+        store.customizeInitialQty = 1;
         close();
       }
     };
@@ -321,9 +380,13 @@ export default {
       store,
       product,
       isDrink,
+      orderQty,
       maxStock,
       inCartQty,
       remainingStock,
+      decreaseQty,
+      increaseQty,
+      reduceFromCart,
       sugarLevels,
       iceLevels,
       availableToppings,
