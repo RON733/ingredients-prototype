@@ -159,7 +159,7 @@
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center font-black text-base text-amber-300 shadow-sm">G'</div>
               <div>
-                <h1 class="text-base font-extrabold text-amber-50 tracking-tight leading-none">G SHOT TEAS</h1>
+                <h1 class="text-base font-extrabold text-white tracking-tight leading-none">G SHOT TEAS</h1>
                 <p class="text-[10px] text-amber-400/80 font-semibold tracking-wider uppercase mt-1">Management Console</p>
               </div>
             </div>
@@ -379,7 +379,7 @@
                   ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
                   : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
                 <div class="flex items-center gap-3">
-                  <i class="pi pi-history text-sm text-stone-300/85"></i>
+                  <i class="pi pi-history text-sm text-slate-300/85"></i>
                   <span>Audit Trail</span>
                 </div>
               </button>

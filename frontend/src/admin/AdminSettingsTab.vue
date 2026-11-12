@@ -1,16 +1,21 @@
 <template>
 <div class="space-y-4 sm:space-y-6">
   <!-- Header -->
-  <div class="flex items-center justify-between gap-3 pb-3 border-b border-surface-800">
-    <div>
-      <h2 class="text-lg sm:text-xl font-bold text-white">Store & Payment Settings</h2>
-      <p class="text-xs text-gray-400">Payments, availability notice & store info</p>
+  <div class="flex items-center justify-between gap-3 pb-3.5 border-b border-surface-800">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0">
+        <i class="pi pi-sliders-h text-amber-400 text-base"></i>
+      </div>
+      <div>
+        <h2 class="text-lg sm:text-xl font-bold text-white">Store & Payment Settings</h2>
+        <p class="text-xs text-gray-400">Payments, availability notice & store info</p>
+      </div>
     </div>
     <button
       @click="reloadSettings"
       :disabled="isLoading"
-      class="px-3 py-2 rounded-xl bg-surface-900 hover:bg-surface-800 text-gray-300 text-xs font-semibold border border-surface-800 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0">
-      <i class="pi" :class="isLoading ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
+      class="px-3 py-2 rounded-xl bg-surface-900 hover:bg-amber-500/10 text-gray-300 hover:text-white text-xs font-semibold border border-surface-700 hover:border-amber-500/30 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0">
+      <i class="pi" :class="isLoading ? 'pi-spin pi-spinner text-amber-400' : 'pi-refresh text-amber-400/80'"></i>
       <span class="hidden sm:inline">Refresh</span>
     </button>
   </div>
@@ -30,7 +35,7 @@
       <div class="flex items-center gap-2 flex-wrap">
         <span
           class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border flex items-center gap-1.5"
-          :class="isPaymongoAvailable ? 'bg-surface-950 text-emerald-400 border-surface-700' : 'bg-surface-950 text-rose-400 border-surface-700'">
+          :class="isPaymongoAvailable ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25' : 'bg-rose-500/10 text-rose-300 border-rose-500/25'">
           <span class="w-1.5 h-1.5 rounded-full" :class="isPaymongoAvailable ? 'bg-emerald-400' : 'bg-rose-400'"></span>
           <span>{{ isPaymongoAvailable ? 'Active' : 'Disabled' }}</span>
         </span>
@@ -39,7 +44,7 @@
           @click="togglePaymongoAvailability"
           :disabled="isTogglingPaymongo"
           class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer border"
-          :class="isPaymongoAvailable ? 'bg-surface-800 hover:bg-surface-700 text-rose-300 border-surface-700' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 border-transparent'">
+          :class="isPaymongoAvailable ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/25' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 border-transparent'">
           <i v-if="isTogglingPaymongo" class="pi pi-spin pi-spinner"></i>
           <i v-else class="pi" :class="isPaymongoAvailable ? 'pi-power-off' : 'pi-check'"></i>
           <span>{{ isPaymongoAvailable ? 'Disable' : 'Enable' }}</span>
@@ -48,31 +53,31 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-2.5">
+      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
           <i class="pi pi-shield text-emerald-400 text-sm"></i>
         </div>
         <div class="min-w-0">
-          <p class="text-[11px] font-semibold text-surface-400 uppercase tracking-wider">Credentials</p>
-          <p class="text-xs font-medium text-amber-50 truncate">Server-managed</p>
+          <p class="text-[11px] font-semibold text-emerald-300/80 uppercase tracking-wider">Credentials</p>
+          <p class="text-xs font-medium text-gray-200 truncate">Server-managed</p>
         </div>
       </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-2.5">
+      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
           <i class="pi pi-wallet text-amber-400 text-sm"></i>
         </div>
         <div class="min-w-0">
-          <p class="text-[11px] font-semibold text-surface-400 uppercase tracking-wider">Channels</p>
-          <p class="text-xs font-medium text-amber-50 truncate">QR Ph, E-Wallets, Bank</p>
+          <p class="text-[11px] font-semibold text-amber-300/80 uppercase tracking-wider">Channels</p>
+          <p class="text-xs font-medium text-gray-200 truncate">QR Ph, E-Wallets, Bank</p>
         </div>
       </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
-          <i class="pi pi-sync text-sky-400 text-sm"></i>
+      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-teal-500/10 border border-surface-800 flex items-center justify-center shrink-0">
+          <i class="pi pi-sync text-teal-400 text-sm"></i>
         </div>
         <div class="min-w-0">
-          <p class="text-[11px] font-semibold text-surface-400 uppercase tracking-wider">POS Sync</p>
-          <p class="text-xs font-medium text-amber-50 truncate">Auto POS Sync</p>
+          <p class="text-[11px] font-semibold text-teal-300/80 uppercase tracking-wider">POS Sync</p>
+          <p class="text-xs font-medium text-gray-200 truncate">Auto POS Sync</p>
         </div>
       </div>
     </div>
@@ -82,24 +87,24 @@
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/25 flex items-center justify-center shrink-0">
-          <i class="pi pi-map-marker text-orange-300 text-sm"></i>
+        <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+          <i class="pi pi-megaphone text-amber-400 text-sm"></i>
         </div>
         <div>
           <h3 class="text-sm sm:text-base font-bold text-white">Order Availability Notice</h3>
-          <p class="text-xs text-surface-400">Shown on storefront, menu & checkout</p>
+          <p class="text-xs text-gray-400">Shown on storefront, menu & checkout</p>
         </div>
       </div>
       <span
         class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border self-start sm:self-auto flex items-center gap-1.5"
-        :class="areaNoteForm.order_area_note_enabled ? 'bg-surface-950 text-emerald-400 border-surface-700' : 'bg-surface-950 text-gray-400 border-surface-800'">
+        :class="areaNoteForm.order_area_note_enabled ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25' : 'bg-surface-950 text-gray-400 border-surface-700'">
         <span class="w-1.5 h-1.5 rounded-full" :class="areaNoteForm.order_area_note_enabled ? 'bg-emerald-400' : 'bg-gray-500'"></span>
         <span>{{ areaNoteForm.order_area_note_enabled ? 'Active' : 'Hidden' }}</span>
       </span>
     </div>
 
     <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-950 border border-surface-800">
-      <span class="text-xs font-semibold text-white">Show Banner to Customers</span>
+      <span class="text-xs font-semibold text-gray-200">Show Banner to Customers</span>
       <label class="relative inline-flex items-center cursor-pointer shrink-0">
         <input type="checkbox" v-model="areaNoteForm.order_area_note_enabled" class="sr-only peer" />
         <div class="w-11 h-6 bg-surface-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
@@ -109,19 +114,19 @@
     <div class="space-y-1.5">
       <div class="flex items-center justify-between">
         <label class="text-xs font-semibold text-gray-300">Notice Message</label>
-        <span class="text-[11px] text-gray-500 font-mono">{{ areaNoteForm.order_area_note.length }} chars</span>
+        <span class="text-[11px] text-gray-400 font-mono">{{ areaNoteForm.order_area_note.length }} chars</span>
       </div>
       <textarea
         v-model="areaNoteForm.order_area_note"
         rows="2"
         placeholder="Orders are only available in Santa Rosa bayan."
-        class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500 transition-colors resize-none"
+        class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors resize-none"
       ></textarea>
     </div>
 
     <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-2">
       <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Preview</p>
-      <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200 flex items-center gap-2">
+      <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-white flex items-center gap-2">
         <i class="pi pi-map-marker text-amber-400 text-xs shrink-0"></i>
         <span class="font-medium">{{ areaNoteForm.order_area_note || 'Orders are only available in Santa Rosa bayan.' }}</span>
       </div>
@@ -131,7 +136,7 @@
       type="button"
       @click="saveAreaNoteSettings"
       :disabled="isSavingAreaNote"
-      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-600 hover:bg-amber-500 text-amber-50 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm">
+      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
       <i v-if="isSavingAreaNote" class="pi pi-spin pi-spinner"></i>
       <i v-else class="pi pi-save"></i>
       <span>Save Notice</span>
@@ -140,39 +145,44 @@
 
   <!-- General Store & Operations Settings -->
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
-    <div class="pb-3 border-b border-surface-800">
-      <h3 class="text-sm sm:text-base font-bold text-white">Store Preferences</h3>
-      <p class="text-xs text-gray-400">Contact info, hours & delivery fee</p>
+    <div class="flex items-center gap-3 pb-3 border-b border-surface-800">
+      <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0">
+        <i class="pi pi-shop text-amber-400 text-sm"></i>
+      </div>
+      <div>
+        <h3 class="text-sm sm:text-base font-bold text-white">Store Preferences</h3>
+        <p class="text-xs text-gray-400">Contact info, hours & delivery fee</p>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Store Name</label>
-        <input v-model="storeForm.store_name" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500" />
+        <label class="block text-xs font-medium text-gray-300 mb-1">Store Name</label>
+        <input v-model="storeForm.store_name" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors" />
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Tagline</label>
-        <input v-model="storeForm.store_tagline" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500" />
+        <label class="block text-xs font-medium text-gray-300 mb-1">Tagline</label>
+        <input v-model="storeForm.store_tagline" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors" />
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Delivery Fee (₱)</label>
-        <input v-model="storeForm.delivery_fee" type="number" step="5" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500 font-mono" />
+        <label class="block text-xs font-medium text-gray-300 mb-1">Delivery Fee (₱)</label>
+        <input v-model="storeForm.delivery_fee" type="number" step="5" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400/70 transition-colors font-mono" />
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Contact Phone</label>
-        <input v-model="storeForm.store_phone" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500 font-mono" />
+        <label class="block text-xs font-medium text-gray-300 mb-1">Contact Phone</label>
+        <input v-model="storeForm.store_phone" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors font-mono" />
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Store Email</label>
-        <input v-model="storeForm.store_email" type="email" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500" />
+        <label class="block text-xs font-medium text-gray-300 mb-1">Store Email</label>
+        <input v-model="storeForm.store_email" type="email" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors" />
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-400 mb-1">Operating Hours</label>
-        <input v-model="storeForm.business_hours" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500" />
+        <label class="block text-xs font-medium text-gray-300 mb-1">Operating Hours</label>
+        <input v-model="storeForm.business_hours" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors" />
       </div>
       <div class="sm:col-span-2 lg:col-span-3">
-        <label class="block text-xs font-medium text-gray-400 mb-1">Physical Address</label>
-        <input v-model="storeForm.store_address" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500" />
+        <label class="block text-xs font-medium text-gray-300 mb-1">Physical Address</label>
+        <input v-model="storeForm.store_address" type="text" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors" />
       </div>
     </div>
 
@@ -188,18 +198,28 @@
   </div>
 
   <!-- Super Admin Maintenance Mode -->
-  <div v-if="store.isSuperAdmin" class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
+  <div
+    v-if="store.isSuperAdmin"
+    class="p-3.5 sm:p-5 rounded-2xl border space-y-4 transition-colors"
+    :class="maintForm.maintenance_mode ? 'bg-surface-900 border-rose-500/30' : 'border-surface-800'">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
-      <div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <h3 class="text-sm sm:text-base font-bold text-white">Maintenance Mode</h3>
-          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-800 text-gray-300 border border-surface-700">Super Admin</span>
+      <div class="flex items-center gap-3">
+        <div
+          class="w-9 h-9 rounded-xl border flex items-center justify-center shrink-0"
+          :class="maintForm.maintenance_mode ? 'bg-rose-500/10 border-rose-500/25 text-rose-400' : 'bg-amber-500/10 border-amber-500/25 text-amber-400'">
+          <i class="pi pi-wrench text-sm"></i>
         </div>
-        <p class="text-xs text-gray-400">Temporarily take the customer site offline</p>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-sm sm:text-base font-bold text-white">Maintenance Mode</h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/25">Super Admin</span>
+          </div>
+          <p class="text-xs text-gray-400">Temporarily take the customer site offline</p>
+        </div>
       </div>
       <span
         class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border self-start sm:self-auto flex items-center gap-1.5"
-        :class="maintForm.maintenance_mode ? 'bg-surface-950 text-rose-400 border-rose-500/30' : 'bg-surface-950 text-emerald-400 border-surface-700'">
+        :class="maintForm.maintenance_mode ? 'bg-rose-500/10 text-rose-300 border-rose-500/25' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25'">
         <span class="w-1.5 h-1.5 rounded-full" :class="maintForm.maintenance_mode ? 'bg-rose-400' : 'bg-emerald-400'"></span>
         <span>{{ maintForm.maintenance_mode ? 'Offline' : 'Live' }}</span>
       </span>
@@ -209,7 +229,7 @@
       <div class="lg:col-span-7 space-y-3 text-xs">
         <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center justify-between gap-3">
           <div>
-            <p class="font-semibold text-white">Maintenance Shutdown</p>
+            <p class="font-semibold text-gray-200">Maintenance Shutdown</p>
             <p class="text-[11px] text-gray-400">Show maintenance page to visitors</p>
           </div>
           <button
@@ -224,18 +244,18 @@
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Title</label>
-          <input v-model="maintForm.maintenance_title" type="text" placeholder="Website Under Maintenance" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500" />
+          <label class="block text-xs font-medium text-gray-300 mb-1">Title</label>
+          <input v-model="maintForm.maintenance_title" type="text" placeholder="Website Under Maintenance" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors" />
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Message</label>
-          <textarea v-model="maintForm.maintenance_message" rows="2" placeholder="Maintenance reason..." class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500 resize-none"></textarea>
+          <label class="block text-xs font-medium text-gray-300 mb-1">Message</label>
+          <textarea v-model="maintForm.maintenance_message" rows="2" placeholder="Maintenance reason..." class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors resize-none"></textarea>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-gray-400 mb-1">Back Online (Optional)</label>
-          <input v-model="maintForm.maintenance_until" type="text" placeholder="e.g. Today at 4:00 PM" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500" />
+          <label class="block text-xs font-medium text-gray-300 mb-1">Back Online (Optional)</label>
+          <input v-model="maintForm.maintenance_until" type="text" placeholder="e.g. Today at 4:00 PM" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70 transition-colors" />
         </div>
 
         <div class="flex flex-col sm:flex-row gap-2 pt-1">
@@ -263,8 +283,8 @@
 
       <div class="lg:col-span-5 p-3.5 rounded-xl bg-surface-950 border border-surface-800 space-y-2.5 text-center">
         <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Preview</p>
-        <div class="p-3.5 rounded-xl bg-surface-900 border border-surface-800 space-y-2">
-          <div class="w-8 h-8 rounded-lg bg-surface-800 border border-surface-700 mx-auto flex items-center justify-center font-black text-amber-400 text-sm">G'</div>
+        <div class="p-3.5 rounded-xl bg-surface-900 border border-amber-500/20 space-y-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/25 mx-auto flex items-center justify-center font-black text-amber-400 text-sm">G'</div>
           <h5 class="text-xs font-bold text-white line-clamp-1">{{ maintForm.maintenance_title || 'Website Under Maintenance' }}</h5>
           <p class="text-[11px] text-gray-400 line-clamp-2">{{ maintForm.maintenance_message || 'Undergoing system updates.' }}</p>
           <div v-if="maintForm.maintenance_until" class="text-[10px] text-amber-300">Back: {{ maintForm.maintenance_until }}</div>
@@ -276,11 +296,16 @@
   <!-- Loyverse POS Integration -->
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
-      <div>
-        <h3 class="text-sm sm:text-base font-bold text-white">Loyverse POS Sync</h3>
-        <p class="text-xs text-gray-400">Store: {{ loyverseInfo.store_name }}</p>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center shrink-0">
+          <i class="pi pi-sync text-teal-400 text-sm"></i>
+        </div>
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-white">Loyverse POS Sync</h3>
+          <p class="text-xs text-gray-400">Store: {{ loyverseInfo.store_name }}</p>
+        </div>
       </div>
-      <span class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-surface-950 text-emerald-400 border border-surface-700 self-start sm:self-auto flex items-center gap-1.5">
+      <span class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 self-start sm:self-auto flex items-center gap-1.5">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
         <span>Auto-Sync Active</span>
       </span>
@@ -288,20 +313,20 @@
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
       <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-gray-400 uppercase">Ingredients</p>
+        <p class="text-[10px] font-semibold text-amber-300/80 uppercase tracking-wider">Ingredients</p>
         <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ store.ingredients.length }}</p>
       </div>
       <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-gray-400 uppercase">Recipes</p>
+        <p class="text-[10px] font-semibold text-sky-400/80 uppercase tracking-wider">Recipes</p>
         <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ store.products.length }}</p>
       </div>
       <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-gray-400 uppercase">Catalog Items</p>
+        <p class="text-[10px] font-semibold text-teal-300/80 uppercase tracking-wider">Catalog Items</p>
         <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ loyverseInfo.items_count }}</p>
       </div>
       <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-gray-400 uppercase">Stock Sync</p>
-        <p class="text-base sm:text-lg font-bold text-emerald-400 mt-0.5">2-Way</p>
+        <p class="text-[10px] font-semibold text-emerald-300/80 uppercase tracking-wider">Stock Sync</p>
+        <p class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5">2-Way</p>
       </div>
     </div>
 
@@ -312,7 +337,7 @@
           type="button"
           @click="handleRegisterWebhook"
           :disabled="isRegisteringWebhook"
-          class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-surface-800 hover:bg-surface-700 text-white border border-surface-700 transition-colors flex items-center gap-1 self-start sm:self-auto cursor-pointer">
+          class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-teal-500/10 hover:bg-teal-500/20 text-white border border-teal-500/25 transition-colors flex items-center gap-1 self-start sm:self-auto cursor-pointer">
           <i class="pi" :class="isRegisteringWebhook ? 'pi-spin pi-spinner' : 'pi-check'"></i>
           <span>{{ isRegisteringWebhook ? 'Registering...' : 'Register Webhook' }}</span>
         </button>
@@ -321,12 +346,12 @@
         <input
           readonly
           :value="loyverseWebhookUrl"
-          class="w-full min-w-0 px-3 py-2 rounded-lg bg-surface-900 border border-surface-800 text-xs font-mono text-gray-400 focus:outline-none select-all"
+          class="w-full min-w-0 px-3 py-2 rounded-lg bg-surface-900 border border-surface-800 text-xs font-mono text-gray-300 focus:outline-none select-all"
         />
         <button
           type="button"
           @click="copyWebhookUrl"
-          class="px-3 py-2 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-200 border border-surface-700 text-xs font-semibold flex items-center gap-1 shrink-0 cursor-pointer">
+          class="px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-white border border-amber-500/25 text-xs font-semibold flex items-center gap-1 shrink-0 cursor-pointer">
           <i class="pi pi-copy"></i>
           <span>Copy</span>
         </button>

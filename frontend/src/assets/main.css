@@ -16,18 +16,18 @@
   --color-brand-900: #78350f;
   --color-brand-950: #451a03;
 
-  --color-surface-950: #13100e;
-  --color-surface-900: #1b1613;
-  --color-surface-850: #221c18;
-  --color-surface-800: #2a231e;
-  --color-surface-750: #352c26;
-  --color-surface-700: #453931;
-  --color-surface-600: #5e4f44;
-  --color-surface-500: #8a786a;
-  --color-surface-400: #b8a698;
+  --color-surface-950: #0d0f12;
+  --color-surface-900: #13161b;
+  --color-surface-850: #181c22;
+  --color-surface-800: #1f232b;
+  --color-surface-750: #272c36;
+  --color-surface-700: #323846;
+  --color-surface-600: #475063;
+  --color-surface-500: #6b778d;
+  --color-surface-400: #9aa5b9;
 }
 
-/* G Shot Teas — Warm Espresso & Honey-Gold Theme */
+/* G Shot Teas — Refined Minimal Styles (Slate Charcoal & Warm Honey Gold) */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 html, body { 
@@ -36,24 +36,24 @@ html, body {
   width: 100%; 
   max-width: 100vw; 
   overflow-x: clip; 
-  background: #13100e; 
-  color: #f4ede6;
+  background: #0d0f12; 
+  color: #e4e7eb;
   font-family: 'Inter', system-ui, sans-serif; 
   -webkit-tap-highlight-color: transparent;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #13100e; }
-::-webkit-scrollbar-thumb { background: #352c26; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #d97706; }
+::-webkit-scrollbar-track { background: #0d0f12; }
+::-webkit-scrollbar-thumb { background: #272c36; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
 
 .glass {
-  background: #1b1613;
-  border: 1px solid #352c26;
+  background: #13161b;
+  border: 1px solid #272c36;
 }
 .glass-card {
-  background: #221c18;
-  border: 1px solid #352c26;
+  background: #181c22;
+  border: 1px solid #272c36;
 }
 .glow-orange, .glow-yellow, .glow-white, .glow-green { 
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); 
