@@ -721,7 +721,9 @@ class AuthController extends Controller
         if (!$request->boolean('include_customers')) {
             $query->where('role', '!=', 'customer');
         }
-        if (!$request->boolean('include_super_admin')) {
+        $creator = $request->user();
+        $isSuper = ($creator && $creator->role === 'super_admin') || $request->boolean('include_super_admin');
+        if (!$isSuper) {
             $query->where('role', '!=', 'super_admin');
         }
         $users = $query->get();
@@ -758,6 +760,17 @@ class AuthController extends Controller
 
         if ($validated['role'] === 'super_admin' && $creator->role !== 'super_admin') {
             return response()->json(['message' => 'Only Super Admins can create another Super Admin account.'], 403);
+        }
+
+        // Security requirement: Must verify the creator's own password before creating a Super Admin account
+        if ($validated['role'] === 'super_admin' || !empty($request->input('admin_password'))) {
+            $adminPassword = $request->input('admin_password');
+            if (empty($adminPassword)) {
+                return response()->json(['message' => 'Password confirmation required. Please enter your own Super Admin password to create this account.'], 422);
+            }
+            if (!Hash::check($adminPassword, $creator->password)) {
+                return response()->json(['message' => 'Incorrect password. Verification of your Super Admin credentials failed.'], 401);
+            }
         }
 
         $pin = $validated['role'] === 'staff'
@@ -866,6 +879,25 @@ class AuthController extends Controller
 
         if ($user->role === 'super_admin' && $creator->role !== 'super_admin') {
             return response()->json(['message' => 'Only Super Admins can modify another Super Admin account.'], 403);
+        }
+
+        // Security requirement: When editing an account as Super Admin, verify the active Super Admin's own password
+        $adminPassword = $request->input('admin_password');
+        $isSuperAdminAction = ($creator->role === 'super_admin') && (
+            $user->role === 'super_admin' || 
+            (isset($validated['role']) && $validated['role'] === 'super_admin') ||
+            isset($validated['email']) || 
+            !empty($validated['password']) ||
+            !empty($adminPassword)
+        );
+
+        if ($isSuperAdminAction) {
+            if (empty($adminPassword)) {
+                return response()->json(['message' => 'Security confirmation required. Please enter your own Super Admin password to authorize changes.'], 422);
+            }
+            if (!Hash::check($adminPassword, $creator->password)) {
+                return response()->json(['message' => 'Incorrect password. Verification of your Super Admin credentials failed.'], 401);
+            }
         }
 
         // Only Super Admin can change email or password of other accounts

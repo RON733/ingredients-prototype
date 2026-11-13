@@ -117,6 +117,13 @@
             :class="selectedRoleFilter === 'admin' ? 'bg-amber-600 text-white shadow-sm' : 'hover:bg-amber-950/40'">
             Admin ({{ adminCount }})
           </button>
+          <button 
+            v-if="store.isSuperAdmin"
+            @click="selectedRoleFilter = 'super_admin'"
+            class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 text-purple-300 cursor-pointer"
+            :class="selectedRoleFilter === 'super_admin' ? 'bg-purple-600 text-white shadow-sm' : 'hover:bg-purple-950/40'">
+            Super Admin ({{ superAdminCount }})
+          </button>
         </div>
 
         <!-- Search Input -->
@@ -267,6 +274,7 @@
                       <option value="staff">Staff (Barista)</option>
                       <option value="driver">Delivery Rider</option>
                       <option value="admin">Admin (Owner)</option>
+                      <option v-if="store.isSuperAdmin" value="super_admin">Super Admin</option>
                     </select>
 
                     <button 
@@ -392,6 +400,7 @@
                   <option value="staff">Staff (Barista)</option>
                   <option value="driver">Delivery Rider</option>
                   <option value="admin">Admin (Owner)</option>
+                  <option v-if="store.isSuperAdmin" value="super_admin">Super Admin</option>
                 </select>
               </div>
 
@@ -487,6 +496,7 @@
                   <option value="staff">Staff / Barista (Counter & Orders)</option>
                   <option value="driver">Delivery Rider (Fleet & GPS)</option>
                   <option value="admin">Admin (Store Owner / Manager)</option>
+                  <option v-if="store.isSuperAdmin" value="super_admin">Super Admin (System Administrator)</option>
                 </select>
               </div>
 
@@ -509,6 +519,34 @@
                   required 
                   placeholder="e.g. 5678"
                   class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-brand-400 font-mono font-bold tracking-widest focus:outline-none focus:border-brand-500" />
+              </div>
+            </div>
+
+            <!-- Super Admin Security Verification: Requires Creator's Own Password -->
+            <div v-if="newUser.role === 'super_admin'" class="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-2 animate-fade-in">
+              <div class="flex items-center justify-between">
+                <label class="font-bold text-purple-200 flex items-center gap-1.5">
+                  <i class="pi pi-shield text-purple-400"></i>
+                  <span>Your Super Admin Password *</span>
+                </label>
+                <span class="text-[10px] text-purple-300 font-mono">Security Check</span>
+              </div>
+              <p class="text-[11px] text-purple-300/80">
+                To create a new Super Admin account, enter <strong>your own password</strong> (the one you used to log into this session) to authorize this high-privilege action.
+              </p>
+              <div class="relative">
+                <input 
+                  v-model="newUser.admin_password" 
+                  :type="showCreatorPasswordInCreate ? 'text' : 'password'" 
+                  required 
+                  placeholder="Enter your own Super Admin password"
+                  class="w-full pl-3 pr-10 py-2 rounded-xl bg-surface-950 border border-purple-500/50 text-white font-mono focus:outline-none focus:border-purple-400" />
+                <button 
+                  type="button" 
+                  @click="showCreatorPasswordInCreate = !showCreatorPasswordInCreate"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer">
+                  <i class="pi" :class="showCreatorPasswordInCreate ? 'pi-eye-slash' : 'pi-eye'"></i>
+                </button>
               </div>
             </div>
 
@@ -654,9 +692,37 @@
                 class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500 font-mono" />
             </div>
 
+            <!-- Super Admin Security Verification: Confirm changes with active admin password -->
+            <div v-if="store.isSuperAdmin" class="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="font-bold text-purple-200 flex items-center gap-1.5">
+                  <i class="pi pi-lock text-purple-400"></i>
+                  <span>Your Super Admin Password *</span>
+                </label>
+                <span class="text-[10px] text-purple-300 font-mono">Authorization</span>
+              </div>
+              <p class="text-[11px] text-purple-300/80">
+                Enter <strong>your own Super Admin password</strong> to authorize saving modifications to this account.
+              </p>
+              <div class="relative">
+                <input 
+                  v-model="editForm.admin_password" 
+                  :type="showCreatorPasswordInEdit ? 'text' : 'password'" 
+                  required
+                  placeholder="Enter your current Super Admin password"
+                  class="w-full pl-3 pr-10 py-2 rounded-xl bg-surface-950 border border-purple-500/50 text-white font-mono focus:outline-none focus:border-purple-400" />
+                <button 
+                  type="button" 
+                  @click="showCreatorPasswordInEdit = !showCreatorPasswordInEdit"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer">
+                  <i class="pi" :class="showCreatorPasswordInEdit ? 'pi-eye-slash' : 'pi-eye'"></i>
+                </button>
+              </div>
+            </div>
+
             <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] flex items-start gap-2">
               <i class="pi pi-shield text-xs shrink-0 mt-0.5"></i>
-              <span>All changes to emails and passwords are recorded in the immutable <strong>Audit Trail</strong> for security tracking.</span>
+              <span>All changes to credentials and roles are verified with your password and recorded in the immutable <strong>Audit Trail</strong>.</span>
             </div>
 
             <!-- Modal Action Buttons -->
@@ -703,6 +769,8 @@ export default {
     // Create Modal state
     const createModalOpen = Vue.ref(false);
     const savingUser = Vue.ref(false);
+    const showCreatorPasswordInCreate = Vue.ref(false);
+    const showCreatorPasswordInEdit = Vue.ref(false);
     const newUser = Vue.ref({
       name: '',
       email: '',
@@ -711,6 +779,7 @@ export default {
       pin: '1234',
       phone: '',
       address: '',
+      admin_password: '',
     });
 
     // Super Admin Edit Credentials Modal state
@@ -723,6 +792,8 @@ export default {
       email: '',
       password: '',
       phone: '',
+      role: '',
+      admin_password: '',
     });
 
     Vue.onMounted(() => {
@@ -740,7 +811,8 @@ export default {
         const res = await GST_API.getUsers();
         const rawList = Array.isArray(res.data) ? res.data : [];
         // Strictly filter workers only: exclude customers and super_admin
-        users.value = rawList.filter(u => u.role !== 'customer' && u.role !== 'super_admin');
+        // Show all management accounts (staff, driver, admin, super_admin); exclude customers
+        users.value = rawList.filter(u => u.role !== 'customer');
       } catch (err) {
         console.error(err);
       } finally {
@@ -751,6 +823,7 @@ export default {
     const staffCount = Vue.computed(() => users.value.filter(u => u.role === 'staff').length);
     const driverCount = Vue.computed(() => users.value.filter(u => u.role === 'driver').length);
     const adminCount = Vue.computed(() => users.value.filter(u => u.role === 'admin').length);
+    const superAdminCount = Vue.computed(() => users.value.filter(u => u.role === 'super_admin').length);
 
     const filteredUsers = Vue.computed(() => {
       return users.value.filter(u => {
@@ -808,12 +881,31 @@ export default {
     };
 
     const changeRole = async (user, newRole) => {
+      let adminPassword = null;
+      if (store.isSuperAdmin) {
+        adminPassword = await store.promptDialog({
+          title: 'Verify Super Admin Password',
+          message: `Enter your own Super Admin password to confirm assigning the "${formatRoleName(newRole)}" role to ${user.name}:`,
+          confirmText: 'Authorize Change',
+          inputType: 'password',
+          placeholder: 'Your Super Admin Password',
+          icon: 'pi-shield',
+        });
+        if (!adminPassword) {
+          refresh();
+          return;
+        }
+      }
       try {
-        await GST_API.updateUser(user.id, { role: newRole });
-        store.notify(`Updated ${user.name} role to ${newRole}`);
+        const payload = { role: newRole };
+        if (adminPassword) payload.admin_password = adminPassword;
+        await GST_API.updateUser(user.id, payload);
+        store.notify(`Updated ${user.name} role to ${formatRoleName(newRole)}`, 'success');
         refresh();
       } catch (err) {
-        store.notify('Error updating user role', 'error');
+        const msg = err.response?.data?.message || 'Error updating user role';
+        store.notify(msg, 'error');
+        refresh();
       }
     };
 
@@ -833,9 +925,11 @@ export default {
       newUser.value.name = '';
       newUser.value.email = '';
       newUser.value.password = 'password123';
-      newUser.value.role = 'staff';
+      newUser.value.role = store.isSuperAdmin ? 'super_admin' : 'staff';
       newUser.value.phone = '';
       newUser.value.address = '';
+      newUser.value.admin_password = '';
+      showCreatorPasswordInCreate.value = false;
       createModalOpen.value = true;
     };
 
@@ -845,15 +939,23 @@ export default {
     };
 
     const submitCreateUser = async () => {
+      if (newUser.value.role === 'super_admin' && !newUser.value.admin_password) {
+        store.notify('Please enter your own Super Admin password to authorize creating a Super Admin account.', 'error');
+        return;
+      }
       savingUser.value = true;
       try {
         const payload = { ...newUser.value };
         if (payload.role !== 'staff') {
           delete payload.pin;
         }
+        if (payload.role !== 'super_admin' && !payload.admin_password) {
+          delete payload.admin_password;
+        }
         await GST_API.createUser(payload);
         store.notify(`Account for ${newUser.value.name} created successfully!`, 'success');
         createModalOpen.value = false;
+        newUser.value.admin_password = '';
         refresh();
       } catch (err) {
         const msg = err.response?.data?.message || 'Failed to create personnel account.';
@@ -871,28 +973,37 @@ export default {
         email: user.email || '',
         password: '',
         phone: user.phone || '',
+        role: user.role || 'staff',
+        admin_password: '',
       };
       showPasswordInEdit.value = false;
+      showCreatorPasswordInEdit.value = false;
       editModalOpen.value = true;
     };
 
     // Super Admin: Save Edited Credentials
     const submitEditUser = async () => {
       if (!editingUser.value) return;
+      if (store.isSuperAdmin && !editForm.value.admin_password) {
+        store.notify('Please enter your own Super Admin password to confirm modifications.', 'error');
+        return;
+      }
       savingEdit.value = true;
       try {
         const payload = {
           name: editForm.value.name,
           email: editForm.value.email,
           phone: editForm.value.phone,
+          admin_password: editForm.value.admin_password,
         };
         if (editForm.value.password && editForm.value.password.trim().length > 0) {
           payload.password = editForm.value.password.trim();
         }
 
         await GST_API.updateUser(editingUser.value.id, payload);
-        store.notify(`Successfully updated credentials for ${editingUser.value.name}`, 'success');
+        store.notify(`Successfully updated account credentials for ${editingUser.value.name}`, 'success');
         editModalOpen.value = false;
+        editForm.value.admin_password = '';
         refresh();
       } catch (err) {
         const msg = err.response?.data?.message || 'Failed to update account credentials.';
@@ -909,9 +1020,14 @@ export default {
         return;
       }
 
-      const confirmed = window.confirm(
-        `Are you sure you want to permanently delete account "${user.name}" (${user.email})?\n\nThis will remove their login access and credentials immediately. This action cannot be undone.`
-      );
+      const confirmed = await store.confirmDialog({
+        title: 'Delete Account Permanently',
+        message: `Are you sure you want to permanently delete account "${user.name}" (${user.email})? This action cannot be undone.`,
+        confirmText: 'Delete Permanently',
+        cancelText: 'Cancel',
+        variant: 'danger',
+        icon: 'pi-trash',
+      });
 
       if (!confirmed) return;
 
@@ -957,6 +1073,9 @@ export default {
       openEditModal,
       submitEditUser,
       confirmDeleteUser,
+      superAdminCount,
+      showCreatorPasswordInCreate,
+      showCreatorPasswordInEdit,
     };
   },
 };
