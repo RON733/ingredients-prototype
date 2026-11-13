@@ -1,18 +1,18 @@
 <template>
-<div class="min-h-screen bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-amber-400 selection:text-black">
+<div class="min-h-screen w-full max-w-full overflow-x-clip bg-surface-950 text-gray-100 flex flex-col font-sans selection:bg-amber-400 selection:text-black">
       
       <!-- 1. Authenticated Delivery Rider: Render Dedicated Driver View for actual drivers -->
-      <div v-if="isLoggedIn && store.user && store.user.role === 'driver'" class="flex-1 flex flex-col">
+      <div v-if="isLoggedIn && store.user && store.user.role === 'driver'" class="flex-1 flex flex-col w-full min-w-0">
         <DriverView />
       </div>
 
       <!-- 2. Authenticated Staff, Admin, or Super Admin: Render Dedicated Delivery Rider Fleet View -->
-      <div v-else-if="isLoggedIn && store.user && store.isStaffOrAdmin && (store.currentView === 'driver' || store.currentView === 'fleet')" class="flex-1 flex flex-col">
+      <div v-else-if="isLoggedIn && store.user && store.isStaffOrAdmin && (store.currentView === 'driver' || store.currentView === 'fleet')" class="flex-1 flex flex-col w-full min-w-0">
         <DeliveryFleetView />
       </div>
 
       <!-- 3. Authenticated Staff, Admin, or Super Admin: Render Full Management Dashboard -->
-      <div v-else-if="isLoggedIn && store.user && (store.isStaffOrAdmin || store.currentView === 'admin')" class="flex-1 flex flex-col">
+      <div v-else-if="isLoggedIn && store.user && (store.isStaffOrAdmin || store.currentView === 'admin')" class="flex-1 flex flex-col w-full min-w-0">
         <AdminDashboard />
       </div>
 

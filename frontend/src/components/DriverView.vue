@@ -1,5 +1,5 @@
 <template>
-<div class="min-h-screen bg-surface-950 text-gray-100 py-3 sm:py-6 px-3 sm:px-6 max-w-4xl mx-auto space-y-4">
+<div class="min-h-screen w-full min-w-0 max-w-4xl mx-auto overflow-x-hidden bg-surface-950 text-gray-100 py-3 sm:py-6 px-3 sm:px-6 space-y-4">
       
       <!-- Top Driver Profile & Operational Bar -->
       <div class="bg-surface-900 border border-surface-800 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -144,10 +144,10 @@
       </div>
 
       <!-- COD Remittance Handover Bar / Pending Status -->
-      <div v-if="pendingRemittance" class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
-        <div class="flex items-center gap-3">
+      <div v-if="pendingRemittance" class="p-3.5 sm:p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in min-w-0">
+        <div class="flex items-start sm:items-center gap-3 min-w-0">
           <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xl text-amber-300 shrink-0"><i class="pi pi-clock"></i></div>
-          <div>
+          <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <p class="font-black text-sm text-white">Remittance Handover Pending Acceptance</p>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">{{ pendingRemittance.reference_number }}</span>
@@ -177,10 +177,10 @@
         </div>
       </div>
 
-      <div v-else-if="readyToRemitAmount > 0" class="p-4 rounded-2xl bg-surface-900 border border-brand-500/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in">
-        <div class="flex items-center gap-3">
+      <div v-else-if="readyToRemitAmount > 0" class="p-3.5 sm:p-4 rounded-2xl bg-surface-900 border border-brand-500/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in min-w-0">
+        <div class="flex items-start sm:items-center gap-3 min-w-0">
           <div class="w-10 h-10 rounded-2xl bg-brand-500/15 text-brand-400 border border-brand-500/30 flex items-center justify-center text-xl shrink-0"><i class="pi pi-wallet"></i></div>
-          <div>
+          <div class="min-w-0">
             <p class="font-black text-sm text-white">Ready to Remit COD Cash: <span class="text-brand-400 font-mono">₱{{ Number(readyToRemitAmount).toFixed(2) }}</span></p>
             <p class="text-[11px] text-neutral-400 mt-0.5">
               Collected from {{ readyToRemitOrdersCount }} completed Cash delivery order{{ readyToRemitOrdersCount === 1 ? '' : 's' }}. Hand over cash to staff/owner and request approval.
@@ -461,20 +461,16 @@
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
             
             <!-- Quick Date Filter Presets -->
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x pb-0.5">
-              <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-1 flex items-center gap-1 shrink-0">
-                <i class="pi pi-filter text-[10px] text-amber-400"></i> Date:
-              </span>
-              
+            <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-1.5 w-full md:w-auto min-w-0">
               <button
                 type="button"
                 @click="historyFilterDate = ''"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0"
                 :class="historyFilterDate === '' 
                   ? 'bg-amber-500 text-surface-950 font-black shadow-md shadow-amber-500/20' 
                   : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
-                <span>All</span>
-                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="historyFilterDate === '' ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
+                <span class="truncate">All</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono shrink-0" :class="historyFilterDate === '' ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
                   {{ completedDeliveries.length }}
                 </span>
               </button>
@@ -482,12 +478,12 @@
               <button
                 type="button"
                 @click="historyFilterDate = getTodayDateKey()"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0"
                 :class="historyFilterDate === getTodayDateKey() 
                   ? 'bg-emerald-500 text-surface-950 font-black shadow-md shadow-emerald-500/20' 
                   : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
-                <span>Today</span>
-                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="historyFilterDate === getTodayDateKey() ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
+                <span class="truncate">Today</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono shrink-0" :class="historyFilterDate === getTodayDateKey() ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
                   {{ deliveredTodayDeliveries.length }}
                 </span>
               </button>
@@ -495,23 +491,23 @@
               <button
                 type="button"
                 @click="historyFilterDate = getYesterdayDateKey()"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0"
                 :class="historyFilterDate === getYesterdayDateKey() 
                   ? 'bg-sky-500 text-surface-950 font-black shadow-md shadow-sky-500/20' 
                   : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
-                <span>Yesterday</span>
+                <span class="truncate">Yesterday</span>
               </button>
             </div>
 
             <!-- Specific Calendar Day Picker -->
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <div class="flex-1 sm:flex-initial flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-3 py-2 transition-colors">
+            <div class="flex items-center gap-2 w-full md:w-auto min-w-0">
+              <div class="flex-1 md:flex-initial min-w-0 flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-3 py-2 transition-colors">
                 <i class="pi pi-calendar text-xs text-amber-400 shrink-0"></i>
                 <input
                   type="date"
                   v-model="historyFilterDate"
                   style="color-scheme: dark;"
-                  class="bg-transparent text-white text-xs focus:outline-none cursor-pointer w-full"
+                  class="bg-transparent text-white text-xs focus:outline-none cursor-pointer w-full min-w-0"
                   title="Select delivery date to view"
                 />
               </div>
@@ -628,7 +624,7 @@
       <div v-if="activeTab === 'remittances'" class="space-y-4">
         
         <!-- Remittance Summary Card -->
-        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5 sm:space-y-4">
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-5 shadow-xl space-y-3.5 sm:space-y-4 min-w-0">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
@@ -677,55 +673,52 @@
         </div>
 
         <!-- Remittance History Filter Bar -->
-        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-4 space-y-2.5 sm:space-y-3 text-xs shadow-lg">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x pb-0.5">
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-4 space-y-2.5 sm:space-y-3 text-xs shadow-lg min-w-0">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3 min-w-0">
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full lg:w-auto min-w-0">
               <button
                 v-for="f in [{id:'all',label:'All'},{id:'pending',label:'Pending'},{id:'accepted',label:'Accepted'},{id:'rejected',label:'Rejected / Cancelled'}]"
                 :key="f.id"
                 type="button"
                 @click="remittanceStatusFilter = f.id"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                class="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center truncate min-w-0"
                 :class="remittanceStatusFilter === f.id ? 'bg-brand-500/20 text-brand-300 border-brand-500/40' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
                 {{ f.label }}
               </button>
             </div>
 
-            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
-                <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-0.5 flex items-center gap-1 shrink-0">
-                  <i class="pi pi-calendar text-[10px] text-amber-400"></i> Date:
-                </span>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0 w-full lg:w-auto">
+              <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto min-w-0">
                 <button
                   type="button"
                   @click="remittanceDateFilter = ''"
-                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center truncate min-w-0"
                   :class="remittanceDateFilter === '' ? 'bg-amber-500 text-surface-950 border-amber-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
                   All Dates
                 </button>
                 <button
                   type="button"
                   @click="remittanceDateFilter = getTodayDateKey()"
-                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center truncate min-w-0"
                   :class="remittanceDateFilter === getTodayDateKey() ? 'bg-emerald-500 text-surface-950 border-emerald-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
                   Today
                 </button>
                 <button
                   type="button"
                   @click="remittanceDateFilter = getYesterdayDateKey()"
-                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center truncate min-w-0"
                   :class="remittanceDateFilter === getYesterdayDateKey() ? 'bg-sky-500 text-surface-950 border-sky-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
                   Yesterday
                 </button>
               </div>
-              <div class="flex items-center gap-1.5 w-full sm:w-auto">
-                <div class="flex-1 sm:flex-initial flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-2.5 py-1.5 transition-colors">
+              <div class="flex items-center gap-1.5 w-full sm:w-auto min-w-0">
+                <div class="flex-1 sm:flex-initial min-w-0 flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-2.5 py-1.5 transition-colors">
                   <i class="pi pi-calendar text-xs text-amber-400 shrink-0"></i>
                   <input
                     type="date"
                     v-model="remittanceDateFilter"
                     style="color-scheme: dark;"
-                    class="bg-transparent text-white text-xs focus:outline-none cursor-pointer w-full sm:w-auto"
+                    class="bg-transparent text-white text-xs focus:outline-none cursor-pointer w-full min-w-0 sm:w-auto"
                     title="Filter remittances by date"
                   />
                 </div>
@@ -820,7 +813,7 @@
             </span>
           </div>
 
-          <p v-if="rem.rider_notes" class="text-[11px] text-gray-300 bg-surface-950/60 p-2.5 rounded-xl border border-surface-800 leading-relaxed">
+          <p v-if="rem.rider_notes" class="text-[11px] text-gray-300 bg-surface-950/60 p-2.5 rounded-xl border border-surface-800 leading-relaxed break-words">
             <strong class="text-gray-400">Your Note:</strong> {{ rem.rider_notes }}
           </p>
 
