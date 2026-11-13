@@ -1,5 +1,5 @@
 <template>
-<section id="home" class="relative overflow-hidden hero-min-h flex flex-col items-center justify-center text-center px-4 pt-16 pb-28 sm:py-12 lg:py-16">
+<section id="home" class="relative overflow-hidden hero-min-h flex flex-col items-center justify-center text-center px-4 pt-16 pb-10 sm:py-12 lg:py-16">
       
       <!-- Background Image with Dark Vignette Gradient -->
       <div class="absolute inset-0 z-0">

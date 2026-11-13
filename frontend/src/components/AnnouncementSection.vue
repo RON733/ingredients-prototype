@@ -1,5 +1,5 @@
 <template>
-<section id="announcements" v-if="visibleAnnouncements.length > 0 || store.isStaffOrAdmin" class="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
+<section id="announcements" v-if="visibleAnnouncements.length > 0 || store.isStaffOrAdmin" class="pt-4 pb-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
       
       <!-- Section Header with Staff/Admin Quick Action -->
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
