@@ -28,9 +28,6 @@
                   <span class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">
                     {{ item.badge }}
                   </span>
-                  <span class="text-xs text-amber-400 font-bold flex items-center gap-1">
-                    <i class="pi pi-star-fill text-[10px]"></i> {{ item.rating }}
-                  </span>
                 </div>
 
                 <!-- Visual Media (Click to Enlarge Food / Drink Picture) -->
@@ -469,7 +466,6 @@ export default {
           desc: 'Tiger-striped brown sugar caramel, cold fresh milk, and warm chewy boba pearls.',
           emoji: '🧋',
           badge: 'TOP SELLER',
-          rating: '4.9 (1.4k+)',
           image: '/assets/menu-coffee.png',
         },
         {
@@ -480,7 +476,6 @@ export default {
           desc: 'Crispy thin crust topped with savory pepperoni cuts and melted mozzarella cheese.',
           emoji: '🍕',
           badge: 'FAN FAVORITE',
-          rating: '4.8 (980+)',
           image: '/assets/menu-pizza.png',
         },
         {
@@ -491,7 +486,6 @@ export default {
           desc: 'Juicy grilled beef patty in buttery toasted brioche with melted golden cheddar.',
           emoji: '🍔',
           badge: 'POPULAR',
-          rating: '4.9 (820+)',
           image: '/assets/hero-banner.png',
         },
         {
@@ -502,7 +496,6 @@ export default {
           desc: 'Timeless brewed black tea infused with creamy milk and chewy tapioca pearls.',
           emoji: '🧋',
           badge: 'VALUE CRAVE',
-          rating: '4.9 (2.1k+)',
           image: '/assets/menu-coffee.png',
         },
       ];

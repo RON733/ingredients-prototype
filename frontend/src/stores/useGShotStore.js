@@ -1780,7 +1780,6 @@ const useGShotStore = defineStore('gshot', {
         recipes: matched.recipes || item.recipes || [],
         is_available: matched.is_available !== undefined ? matched.is_available : (item.is_available !== false),
         badge: item.badge || null,
-        rating: item.rating || null,
       };
     },
 

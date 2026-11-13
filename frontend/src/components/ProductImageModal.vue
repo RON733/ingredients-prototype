@@ -135,9 +135,6 @@
               <div>
                 <h4 class="text-base sm:text-xl font-black text-white flex items-center gap-2">
                   {{ store.previewProduct.name }}
-                  <span v-if="store.previewProduct.rating" class="text-xs text-amber-400 font-bold flex items-center gap-1">
-                    <i class="pi pi-star-fill text-[10px]"></i> {{ store.previewProduct.rating }}
-                  </span>
                 </h4>
               </div>
 
