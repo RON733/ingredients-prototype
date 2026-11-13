@@ -25,7 +25,7 @@
         <Navbar />
 
         <!-- Main Content Area -->
-        <main class="flex-1 pt-16 sm:pt-20">
+        <main class="flex-1">
           <!-- 0. Website Shutdown / Maintenance Mode for Customers -->
           <div v-if="store.isMaintenanceMode" class="animate-fade-in">
             <MaintenanceView />
