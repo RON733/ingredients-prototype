@@ -143,10 +143,10 @@
         </div>
       </div>
 
-      <!-- Users Table & Mobile Cards -->
-      <div class="rounded-2xl bg-surface-800/90 border border-surface-700 overflow-hidden">
+      <!-- Users Table (Desktop) -->
+      <div class="hidden md:block rounded-2xl bg-surface-800/90 border border-surface-700 overflow-hidden">
         <!-- Desktop Table (hidden on mobile) -->
-        <div class="hidden md:block overflow-x-auto">
+        <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-gray-300">
             <thead class="bg-surface-900/80 text-gray-400 uppercase text-[10px] tracking-wider border-b border-surface-700">
               <tr>
@@ -300,21 +300,23 @@
             </tbody>
           </table>
         </div>
+      </div>
 
-        <!-- Mobile Cards (md:hidden) -->
-        <div class="md:hidden divide-y divide-surface-700/60 p-3.5 space-y-3.5">
-          <div v-if="filteredUsers.length === 0" class="py-10 text-center text-gray-400">
-            <div class="w-12 h-12 rounded-2xl bg-surface-900 border border-surface-700 flex items-center justify-center mx-auto mb-3 text-gray-500">
-              <i class="pi pi-users text-lg"></i>
-            </div>
-            <p class="text-sm font-bold text-gray-200">No users match your filter</p>
-            <p class="text-xs text-gray-500 mt-1">Try clearing your search terms or filter selection.</p>
+      <!-- Mobile Cards (md:hidden) -->
+      <div class="md:hidden space-y-3">
+        <div v-if="filteredUsers.length === 0" class="rounded-2xl bg-surface-800/90 border border-surface-700 p-8 text-center text-gray-400">
+          <div class="w-12 h-12 rounded-2xl bg-surface-900 border border-surface-700 flex items-center justify-center mx-auto mb-3 text-gray-500">
+            <i class="pi pi-users text-lg"></i>
           </div>
+          <p class="text-sm font-bold text-gray-200">No users match your filter</p>
+          <p class="text-xs text-gray-500 mt-1">Try clearing your search terms or filter selection.</p>
+        </div>
 
+        <template v-else>
           <div 
             v-for="u in filteredUsers" 
             :key="'mobile-' + u.id" 
-            class="pt-3.5 first:pt-0 space-y-3">
+            class="rounded-2xl bg-surface-800/90 border border-surface-700 p-4 space-y-3">
             
             <!-- User Header: Avatar, Name, Email, Badges -->
             <div class="flex items-start justify-between gap-2">
@@ -390,7 +392,7 @@
             </div>
 
             <!-- Role Change Dropdown, Status Toggle & Super Admin Actions -->
-            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-surface-700/40">
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-surface-700/50">
               <div class="flex items-center gap-1.5 flex-1 min-w-[140px]">
                 <span class="text-[10px] text-gray-400 uppercase font-bold shrink-0">Role:</span>
                 <select 
@@ -431,7 +433,7 @@
             </div>
 
           </div>
-        </div>
+        </template>
       </div>
 
       <!-- Create New Personnel Modal -->
