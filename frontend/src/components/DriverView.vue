@@ -349,29 +349,6 @@
                 <p class="font-medium text-gray-200 line-clamp-2 mt-0.5" :title="order.delivery_address">
                   <i class="pi pi-map-marker text-emerald-400 text-xs mr-1"></i>{{ order.delivery_address || 'Santa Rosa, Laguna' }}
                 </p>
-                <p v-if="order.customer_lat && order.customer_lng" class="text-[11px] text-emerald-400 font-mono mt-1 flex items-center gap-1">
-                  <i class="pi pi-check-circle text-[10px]"></i>
-                  <span>Exact GPS Pinned: {{ Number(order.customer_lat).toFixed(5) }}, {{ Number(order.customer_lng).toFixed(5) }}</span>
-                </p>
-              </div>
-
-              <!-- 1-Click Share Real-Time GPS Location Button -->
-              <div class="space-y-1.5">
-                <button 
-                  type="button" 
-                  @click="broadcastOrderGps(order)"
-                  class="w-full py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer border"
-                  :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 ring-1 ring-emerald-500/50' : 'bg-surface-800 hover:bg-surface-700 text-white border border-surface-700'">
-                  <span class="w-2.5 h-2.5 rounded-full" :class="(order.isBroadcastingGps || isGpsBroadcasting) ? 'bg-emerald-400 ' : 'bg-white'"></span>
-                  <i class="pi pi-send text-xs"></i>
-                  <span>{{ (order.isBroadcastingGps || isGpsBroadcasting) ? 'Sharing Real-Time GPS (Tap to Refresh)' : 'Share My Location Real-Time with Customer' }}</span>
-                </button>
-                <div v-if="order.isBroadcastingGps || isGpsBroadcasting" class="flex items-center justify-between px-1 text-[10px] text-emerald-400 font-mono">
-                  <span>GPS: {{ order.driver_lat || 'Acquiring...' }}, {{ order.driver_lng || 'Acquiring...' }}</span>
-                  <button type="button" @click="stopOrderGps(order)" class="text-rose-400 hover:text-rose-300 underline font-sans font-bold cursor-pointer">
-                    Stop Sharing
-                  </button>
-                </div>
               </div>
 
               <!-- "On The Way" Customer Alert Status & Quick Action -->
