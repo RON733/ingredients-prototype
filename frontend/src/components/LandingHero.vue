@@ -5,7 +5,7 @@
       <div class="absolute inset-0 z-0">
         <img 
           src="/assets/hero-banner.png" 
-          alt="G Shot Teas Banner" 
+          alt="G Shot Teas — Milk Tea, Coffee, Pizza, Burgers, and Rice Meals in Santa Rosa, Laguna" 
           class="w-full h-full object-cover object-center filter brightness-[0.28] contrast-125 transform scale-105 transition-transform duration-1000"
         />
         <div class="absolute inset-0 bg-gradient-to-t from-surface-900 via-surface-900/60 to-surface-900/80"></div>
@@ -47,7 +47,7 @@
 
         <!-- Main Headline (Satisfy Yourself) -->
         <h1 class="text-[2.25rem] sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white mb-3 sm:mb-6 drop-shadow-2xl leading-[1.08] sm:leading-tight">
-          Satisfy Yourself
+          <span class="sr-only">G Shot Teas Santa Rosa Laguna — </span>Satisfy Yourself
         </h1>
 
         <!-- Subheadline -->

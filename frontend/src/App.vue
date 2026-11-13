@@ -317,6 +317,34 @@ export default {
       enforceWorkerDashboardOnly();
     });
 
+    // Dynamically update document title for SEO & browser tabs per view/section
+    watch(
+      [() => store.currentView, () => store.activeSection],
+      ([view, section]) => {
+        const defaultTitle = 'G Shot Teas — Milk Tea, Coffee, Pizza, Burgers & Rice Meals in Santa Rosa, Laguna';
+        if (view === 'menu') {
+          document.title = 'Menu — G Shot Teas | Milk Tea, Coffee, Pizza, Burgers & Rice Meals';
+        } else if (view === 'checkout') {
+          document.title = 'Checkout — G Shot Teas';
+        } else if (view === 'track') {
+          document.title = 'Track Your Order — G Shot Teas';
+        } else if (view === 'history') {
+          document.title = 'Order History — G Shot Teas';
+        } else if (view === 'bookings') {
+          document.title = 'Event Catering Bookings — G Shot Teas';
+        } else if (section === 'about') {
+          document.title = 'About Us — G Shot Teas | Santa Rosa, Laguna';
+        } else if (section === 'contact') {
+          document.title = 'Contact & Location — G Shot Teas | Santa Rosa, Laguna';
+        } else if (section === 'menu') {
+          document.title = 'Menu — G Shot Teas | Milk Tea, Coffee, Pizza, Burgers & Rice Meals';
+        } else {
+          document.title = defaultTitle;
+        }
+      },
+      { immediate: true }
+    );
+
     const getToastClass = (type) => {
       if (type === 'error') return 'bg-rose-950/95 border-rose-600 text-rose-100 shadow-rose-950/50';
       if (type === 'warning') return 'bg-amber-950/95 border-amber-500 text-amber-100 shadow-amber-950/50';

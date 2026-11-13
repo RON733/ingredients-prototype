@@ -1,2 +1,18 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin
+Disallow: /staff
+Disallow: /superadmin
+Disallow: /super-admin
+Disallow: /dashboard
+Disallow: /driver
+Disallow: /rider
+Disallow: /operations
+Disallow: /operation
+Disallow: /ops
+Disallow: /terminal
+Disallow: /portal
+Disallow: /api/
+Disallow: /sanctum/
+
+Sitemap: /sitemap.xml

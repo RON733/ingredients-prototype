@@ -10,7 +10,7 @@
               <span class="text-base sm:text-xl font-extrabold tracking-tight text-white group-hover:text-brand-400 transition-colors">G SHOT</span>
               <span class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-surface-800 text-yellow-400 font-bold border border-surface-700 tracking-wider">TEAS</span>
             </div>
-            <p class="hidden sm:block text-[10px] text-gray-400 uppercase tracking-widest font-medium">Santa Rosa â€¢ Laguna</p>
+            <p class="hidden sm:block text-[10px] text-gray-400 uppercase tracking-widest font-medium">Santa Rosa &bull; Laguna</p>
           </div>
         </div>
 
