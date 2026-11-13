@@ -1,5 +1,5 @@
 <template>
-<div class="py-12 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 animate-fade-in">
+<div class="py-5 sm:py-12 pb-28 sm:pb-16 max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 animate-fade-in">
       
       <!-- Back to Home -->
       <button 

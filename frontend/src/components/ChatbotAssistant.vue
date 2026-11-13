@@ -4,9 +4,9 @@
       <button 
         v-if="!isOpen" 
         @click="isOpen = true"
-        class="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-40 w-12 h-12 rounded-full bg-yellow-400 hover:bg-yellow-300 text-black shadow-2xl flex items-center justify-center transition-all cursor-pointer active:scale-95"
+        class="fixed bottom-[4.5rem] right-3 sm:right-4 lg:bottom-6 lg:right-6 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-yellow-400 hover:bg-yellow-300 text-black shadow-2xl ring-2 ring-surface-950/90 flex items-center justify-center transition-all cursor-pointer active:scale-95"
         aria-label="Open AI Assistant">
-        <i class="pi pi-comments text-xl"></i>
+        <i class="pi pi-comments text-lg sm:text-xl"></i>
         <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-surface-900 rounded-full animate-pulse"></span>
       </button>
 

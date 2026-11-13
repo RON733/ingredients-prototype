@@ -1,5 +1,5 @@
 <template>
-<section id="menu" :class="isStandalonePage ? 'py-4 sm:py-8 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-32 sm:pb-20' : 'scroll-mt-20 lg:scroll-mt-24 py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'">
+<section id="menu" :class="isStandalonePage ? 'py-4 sm:py-8 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-28 sm:pb-20' : 'scroll-mt-20 lg:scroll-mt-24 py-10 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'">
       
   <!-- 1. Dedicated Standalone Menu Page Header (Cellphones Only) -->
   <div v-if="isStandalonePage" class="mb-4 border-b border-surface-800 pb-3">
@@ -119,17 +119,17 @@
     </div>
 
     <!-- Row 3: Secondary Filters: Stock Availability & Price Range Filter Chips -->
-    <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-surface-800/80 text-xs">
+    <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-surface-800/80 text-xs">
       
       <!-- Filter Chips: Availability & Price -->
-      <div class="flex flex-wrap items-center gap-1.5">
-        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mr-1">Filter:</span>
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5 max-w-full">
+        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mr-0.5 shrink-0">Filter:</span>
         
         <!-- Availability Toggle -->
         <button 
           @click="toggleAvailability"
           type="button"
-          class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border shrink-0 whitespace-nowrap"
           :class="availabilityFilter === 'in_stock' 
             ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 font-bold' 
             : 'bg-surface-800 text-gray-400 hover:text-gray-200 border-surface-700/60'">
@@ -143,7 +143,7 @@
           :key="pFilter.id"
           @click="priceRangeFilter = pFilter.id"
           type="button"
-          class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border shrink-0 whitespace-nowrap"
           :class="priceRangeFilter === pFilter.id 
             ? 'bg-yellow-400/20 text-yellow-300 border-yellow-400/50 font-bold' 
             : 'bg-surface-800 text-gray-400 hover:text-gray-200 border-surface-700/60'">

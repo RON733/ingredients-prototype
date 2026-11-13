@@ -1,8 +1,8 @@
 <template>
-<section id="announcements" v-if="visibleAnnouncements.length > 0 || store.isStaffOrAdmin" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
+<section id="announcements" v-if="visibleAnnouncements.length > 0 || store.isStaffOrAdmin" class="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
       
       <!-- Section Header with Staff/Admin Quick Action -->
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
         <div>
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-400 text-xs font-bold tracking-wider uppercase mb-2">
             <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
@@ -44,24 +44,27 @@
         <p class="text-xs text-gray-500 mt-1">Click the button above to publish promos, new drink launches, or event advisories.</p>
       </div>
 
-      <!-- Announcements Grid: Auto-Adaptive Card Architecture -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+      <!-- Announcements Grid: Horizontal Swipe on Mobile, Grid on Desktop -->
+      <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 -mx-4 px-4 no-scrollbar lg:grid lg:grid-cols-2 lg:gap-8 lg:mx-0 lg:px-0 lg:overflow-visible lg:pb-0">
         
         <div 
           v-for="item in visibleAnnouncements" 
           :key="item.id"
-          class="transition-all duration-300"
-          :class="item.image_url ? 'lg:col-span-2 xl:col-span-1' : ''">
+          class="transition-all duration-300 shrink-0 snap-start lg:shrink"
+          :class="[
+            visibleAnnouncements.length === 1 ? 'w-full' : 'w-[84vw] max-w-[350px] sm:w-[70vw] sm:max-w-[440px] lg:w-auto lg:max-w-none',
+            item.image_url ? 'lg:col-span-2 xl:col-span-1' : ''
+          ]">
 
           <!-- OPTION A: WITH PHOTO (Optimized Side-by-Side Split on Desktop, Stacked on Mobile) -->
           <article 
             v-if="item.image_url"
-            class="h-full rounded-3xl bg-surface-900 border border-surface-700/80 hover:border-brand-500/40 shadow-xl hover:shadow-2xl hover:shadow-brand-500/5 transition-all overflow-hidden flex flex-col md:flex-row group relative">
+            class="h-full rounded-2xl sm:rounded-3xl bg-surface-900 border border-surface-700/80 hover:border-brand-500/40 shadow-xl hover:shadow-2xl hover:shadow-brand-500/5 transition-all overflow-hidden flex flex-col md:flex-row group relative">
             
             <!-- Media Container with Dark Gradient Mask (Click to view full photo) -->
             <div 
               @click="store.openProductPreview({ name: item.title, image: item.image_url, description: item.content, category: 'Announcement' })"
-              class="w-full md:w-5/12 h-52 sm:h-60 md:h-auto min-h-[220px] md:min-h-[260px] relative overflow-hidden shrink-0 bg-surface-950 cursor-pointer group/image select-none"
+              class="w-full md:w-5/12 h-44 sm:h-56 md:h-auto md:min-h-[260px] relative overflow-hidden shrink-0 bg-surface-950 cursor-pointer group/image select-none"
               title="Click to view whole enlarged picture">
               <img 
                 :src="item.image_url" 
@@ -88,7 +91,7 @@
             </div>
 
             <!-- Content Container -->
-            <div class="w-full md:w-7/12 p-6 sm:p-7 flex flex-col justify-between">
+            <div class="w-full md:w-7/12 p-4 sm:p-6 md:p-7 flex flex-col justify-between">
               <div>
                 <!-- Badge & Date Pill (Desktop) -->
                 <div class="hidden md:flex items-center justify-between gap-2 mb-3">
@@ -112,7 +115,7 @@
               </div>
 
               <!-- Footer with Call to Action and Staff Controls -->
-              <div class="mt-6 pt-4 border-t border-surface-800/80 flex flex-wrap items-center justify-between gap-3">
+              <div class="mt-4 pt-3 sm:mt-6 sm:pt-4 border-t border-surface-800/80 flex flex-wrap items-center justify-between gap-3">
                 <button 
                   v-if="item.cta_text"
                   @click="handleCta(item)"
@@ -149,7 +152,7 @@
           <!-- OPTION B: WITHOUT PHOTO (Optimized Typographic Glassmorphism Card with Glowing Accent) -->
           <article 
             v-else
-            class="h-full rounded-3xl bg-surface-900 border border-surface-800 hover:border-yellow-400/50 transition-all p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden group">
+            class="h-full rounded-2xl sm:rounded-3xl bg-surface-900 border border-surface-800 hover:border-yellow-400/50 transition-all p-4 sm:p-6 md:p-7 flex flex-col justify-between relative overflow-hidden group">
             
             <!-- Left Accent Strip -->
             <div class="absolute left-0 top-0 bottom-0 w-2 bg-yellow-400 rounded-l-3xl"></div>
@@ -182,7 +185,7 @@
             </div>
 
             <!-- Footer: CTA & Controls -->
-            <div class="relative z-10 mt-6 pt-4 border-t border-surface-800/80 flex flex-wrap items-center justify-between gap-3 pl-2">
+            <div class="relative z-10 mt-4 pt-3 sm:mt-6 sm:pt-4 border-t border-surface-800/80 flex flex-wrap items-center justify-between gap-3 pl-2">
               <button 
                 v-if="item.cta_text"
                 @click="handleCta(item)"

@@ -1,13 +1,13 @@
 <template>
-<section id="about" class="scroll-mt-20 lg:scroll-mt-24 py-20 bg-surface-900 border-t border-surface-800">
+<section id="about" class="scroll-mt-20 lg:scroll-mt-24 py-12 sm:py-20 bg-surface-900 border-t border-surface-800">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Section Header -->
-        <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-16">
           <span class="text-xs font-bold px-3 py-1 rounded-full bg-brand-500/15 text-brand-400 uppercase tracking-widest">
             About G Shot Teas
           </span>
-          <h2 class="text-4xl sm:text-5xl font-black text-white mt-3">
+          <h2 class="text-3xl sm:text-5xl font-black text-white mt-3">
             OUR <span class="text-brand-500">STORY</span>
           </h2>
           <p class="text-base sm:text-lg text-gray-300 mt-4 leading-relaxed font-normal">
@@ -19,10 +19,10 @@
         </div>
 
         <!-- Mission & Vision Cards (Matches Figure 5 "OUR PURPOSE") -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-12">
           
           <!-- Mission -->
-          <div class="p-8 rounded-3xl bg-surface-800/80 border border-surface-700/80 hover:border-brand-500/50 transition-all shadow-xl group">
+          <div class="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface-800/80 border border-surface-700/80 hover:border-brand-500/50 transition-all shadow-xl group">
             <div class="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition-transform">
               M
             </div>
@@ -33,7 +33,7 @@
           </div>
 
           <!-- Vision -->
-          <div class="p-8 rounded-3xl bg-surface-800/80 border border-surface-700/80 hover:border-amber-500/50 transition-all shadow-xl group">
+          <div class="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface-800/80 border border-surface-700/80 hover:border-amber-500/50 transition-all shadow-xl group">
             <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xl mb-4 group-hover:scale-110 transition-transform">
               V
             </div>
@@ -46,7 +46,7 @@
         </div>
 
         <!-- Store Leadership & Location Banner -->
-        <div class="p-6 rounded-3xl bg-surface-850 border border-surface-700/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface-850 border border-surface-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div class="flex items-center gap-3.5">
             <div class="w-10 h-10 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center text-yellow-400 font-bold text-lg shrink-0">
               <div class="w-full h-full bg-surface-900 rounded-[14px] flex items-center justify-center text-brand-400 font-black text-lg">

@@ -25,7 +25,7 @@
         <Navbar />
 
         <!-- Main Content Area -->
-        <main class="flex-1">
+        <main class="flex-1 pt-16 sm:pt-20">
           <!-- 0. Website Shutdown / Maintenance Mode for Customers -->
           <div v-if="store.isMaintenanceMode" class="animate-fade-in">
             <MaintenanceView />
@@ -98,79 +98,79 @@
 
         <!-- Mobile Bottom App Bar (Customer Cellphone Navigation) -->
         <nav v-if="!store.isMaintenanceMode"
-          class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-1 py-1.5 flex items-center justify-around shadow-2xl">
+          class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-1.5 pt-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))] grid grid-cols-6 gap-0.5 shadow-2xl">
           
           <!-- 1. Home -->
           <button 
             @click="navToSection('home')"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
-            :class="store.currentView === 'customer' && store.activeSection === 'home' ? 'text-yellow-400 font-bold' : 'text-gray-400 hover:text-gray-200'">
-            <i class="pi pi-home text-base"></i>
-            <span class="text-[10px] tracking-tight">Home</span>
+            class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl transition-all cursor-pointer min-w-0"
+            :class="store.currentView === 'customer' && store.activeSection === 'home' ? 'text-yellow-400 font-bold bg-yellow-400/10' : 'text-gray-400 hover:text-gray-200'">
+            <i class="pi pi-home text-[15px]"></i>
+            <span class="text-[10px] tracking-tight truncate">Home</span>
           </button>
 
           <!-- 2. Menu (Opens Dedicated Mobile Menu Page) -->
           <button 
             @click="navToSection('menu')"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
-            :class="store.currentView === 'menu' ? 'text-yellow-400 font-bold scale-105' : 'text-gray-400 hover:text-gray-200'">
-            <i class="pi pi-th-large text-base"></i>
-            <span class="text-[10px] tracking-tight">Menu</span>
+            class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl transition-all cursor-pointer min-w-0"
+            :class="store.currentView === 'menu' ? 'text-yellow-400 font-bold bg-yellow-400/10' : 'text-gray-400 hover:text-gray-200'">
+            <i class="pi pi-th-large text-[15px]"></i>
+            <span class="text-[10px] tracking-tight truncate">Menu</span>
           </button>
 
           <!-- 3. Cart with Badge -->
           <button 
             @click="store.cartOpen = true"
             type="button"
-            class="relative flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">
+            class="relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">
             <div class="relative">
-              <i class="pi pi-shopping-bag text-base"></i>
+              <i class="pi pi-shopping-bag text-[15px]"></i>
               <span 
                 v-if="store.cartCount > 0" 
                 class="absolute -top-1.5 -right-2 px-1.5 py-0.2 bg-yellow-400 text-black text-[9px] font-black rounded-full leading-tight">
                 {{ store.cartCount }}
               </span>
             </div>
-            <span class="text-[10px] tracking-tight">Cart</span>
+            <span class="text-[10px] tracking-tight truncate">Cart</span>
           </button>
 
           <!-- 4. Order History (Mobile) -->
           <button 
             @click="store.currentView = 'history'; window.scrollTo({ top: 0, behavior: 'smooth' })"
             type="button"
-            class="relative flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
-            :class="store.currentView === 'history' ? 'text-yellow-400 font-bold scale-105' : 'text-gray-400 hover:text-gray-200'"
+            class="relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl transition-all cursor-pointer min-w-0"
+            :class="store.currentView === 'history' ? 'text-yellow-400 font-bold bg-yellow-400/10' : 'text-gray-400 hover:text-gray-200'"
             title="Order History">
             <div class="relative">
-              <i class="pi pi-history text-base"></i>
+              <i class="pi pi-history text-[15px]"></i>
               <span 
                 v-if="hasOngoingOrders" 
                 class="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"
                 title="Active order in progress">
               </span>
             </div>
-            <span class="text-[10px] tracking-tight">Orders</span>
+            <span class="text-[10px] tracking-tight truncate">Orders</span>
           </button>
 
           <!-- 5. Track Active Order -->
           <button 
             @click="store.currentView = 'track'; window.scrollTo({ top: 0, behavior: 'smooth' })"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0"
-            :class="store.currentView === 'track' ? 'text-yellow-400 font-bold' : 'text-gray-400 hover:text-gray-200'">
-            <i class="pi pi-map-marker text-base"></i>
-            <span class="text-[10px] tracking-tight">Track</span>
+            class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl transition-all cursor-pointer min-w-0"
+            :class="store.currentView === 'track' ? 'text-yellow-400 font-bold bg-yellow-400/10' : 'text-gray-400 hover:text-gray-200'">
+            <i class="pi pi-map-marker text-[15px]"></i>
+            <span class="text-[10px] tracking-tight truncate">Track</span>
           </button>
 
           <!-- 6. Book Catering Package -->
           <button 
             @click="store.openBookingModal('form')"
             type="button"
-            class="flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">
-            <i class="pi pi-calendar-plus text-base"></i>
-            <span class="text-[10px] tracking-tight">Book</span>
+            class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">
+            <i class="pi pi-calendar-plus text-[15px]"></i>
+            <span class="text-[10px] tracking-tight truncate">Book</span>
           </button>
 
         </nav>
@@ -216,7 +216,7 @@
         <AppDialog />
 
         <!-- Toast Notifications Overlay (Bottom Center, Non-intrusive & Instantly Dismissible) -->
-        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-2 pointer-events-none w-full max-w-md px-4">
+        <div class="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-2 pointer-events-none w-full max-w-md px-4">
           <div 
             v-for="toast in store.toasts" 
             :key="toast.id"

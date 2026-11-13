@@ -1,26 +1,26 @@
 <template>
-<section class="py-16 bg-surface-950/60 border-t border-surface-800/80">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
+<section class="py-10 sm:py-16 bg-surface-950/60 border-t border-surface-800/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-20">
         
         <!-- 1. Bestsellers Showcase -->
         <div>
-          <div class="text-center max-w-3xl mx-auto mb-12">
-            <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
+          <div class="text-center max-w-3xl mx-auto mb-6 sm:mb-12">
+            <span class="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold px-3 sm:px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
               <i class="pi pi-bolt text-amber-400 text-[10px]"></i> Customer Favorites
             </span>
-            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-3 tracking-tight">
+            <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white mt-2.5 sm:mt-3 tracking-tight">
               Santa Rosa's <span class="text-yellow-400">Top Cravings</span>
             </h2>
-            <p class="text-sm sm:text-base text-gray-400 mt-3 max-w-xl mx-auto">
+            <p class="text-xs sm:text-base text-gray-400 mt-2 sm:mt-3 max-w-xl mx-auto">
               Our most-loved milk teas, comfort burgers, and stone-baked pizzas freshly prepared to order.
             </p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-2 -mx-4 px-4 no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-5 lg:gap-6 sm:mx-0 sm:px-0 sm:overflow-visible sm:pb-0">
             <div 
               v-for="item in bestsellers" 
               :key="item.id"
-              class="group relative rounded-3xl bg-surface-900 border border-surface-700/80 hover:border-brand-500/50 p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-500/10">
+              class="w-[74vw] max-w-[275px] shrink-0 snap-center sm:w-auto sm:max-w-none group relative rounded-2xl sm:rounded-3xl bg-surface-900 border border-surface-700/80 hover:border-brand-500/50 p-3.5 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-500/10">
               
               <div>
                 <!-- Top Badges -->
@@ -36,7 +36,7 @@
                 <!-- Visual Media (Click to Enlarge Food / Drink Picture) -->
                 <div 
                   @click="openImage(item)"
-                  class="relative h-44 rounded-2xl overflow-hidden bg-surface-950 mb-4 flex items-center justify-center cursor-pointer group/image select-none"
+                  class="relative h-36 sm:h-44 rounded-xl sm:rounded-2xl overflow-hidden bg-surface-950 mb-3 sm:mb-4 flex items-center justify-center cursor-pointer group/image select-none"
                   title="Click to view whole enlarged picture">
                   <img 
                     :src="item.image" 
@@ -150,10 +150,10 @@
         </div>
 
         <!-- 2. The G Shot Quality Standard (Craftsmanship Story) -->
-        <div class="relative rounded-3xl bg-surface-900 border border-surface-800 p-8 sm:p-12 overflow-hidden">
+        <div class="relative rounded-2xl sm:rounded-3xl bg-surface-900 border border-surface-800 p-5 sm:p-8 lg:p-12 overflow-hidden">
           
 
-          <div class="max-w-2xl mb-12">
+          <div class="max-w-2xl mb-6 sm:mb-10">
 <span class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 uppercase tracking-widest">
               <i class="pi pi-sparkles text-[10px]"></i> Fresh Ingredients & Real Recipes
             </span>
@@ -165,44 +165,44 @@
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             
-            <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
-              <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-lg mb-4">
+            <div class="p-3.5 sm:p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-base sm:text-lg mb-2.5 sm:mb-4">
                 <i class="pi pi-verified"></i>
               </div>
-              <h3 class="font-bold text-white text-sm mb-1.5">Freshly Steeped Daily</h3>
-              <p class="text-xs text-gray-400 leading-relaxed">
+              <h3 class="font-bold text-white text-xs sm:text-sm mb-1 sm:mb-1.5">Freshly Steeped Daily</h3>
+              <p class="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 Brewed in small batches with authentic loose-leaf tea, ensuring smooth natural aroma and clean finish.
               </p>
             </div>
 
-            <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
-              <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg mb-4">
+            <div class="p-3.5 sm:p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-base sm:text-lg mb-2.5 sm:mb-4">
                 <i class="pi pi-sparkles"></i>
               </div>
-              <h3 class="font-bold text-white text-sm mb-1.5">Warm Slow-Cooked Boba</h3>
-              <p class="text-xs text-gray-400 leading-relaxed">
+              <h3 class="font-bold text-white text-xs sm:text-sm mb-1 sm:mb-1.5">Warm Slow-Cooked Boba</h3>
+              <p class="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 Signature caramelized brown sugar pearls simmered hourly for the dreamiest chewy texture.
               </p>
             </div>
 
-            <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
-              <div class="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center text-lg mb-4">
+            <div class="p-3.5 sm:p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center text-base sm:text-lg mb-2.5 sm:mb-4">
                 <i class="pi pi-heart"></i>
               </div>
-              <h3 class="font-bold text-white text-sm mb-1.5">100% Real Cheese & Beef</h3>
-              <p class="text-xs text-gray-400 leading-relaxed">
+              <h3 class="font-bold text-white text-xs sm:text-sm mb-1 sm:mb-1.5">100% Real Cheese & Beef</h3>
+              <p class="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 Stone-baked pizzas with real mozzarella and burgers made with grilled smash patties in brioche buns.
               </p>
             </div>
 
-            <div class="p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
-              <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center text-lg mb-4">
+            <div class="p-3.5 sm:p-6 rounded-2xl bg-surface-800/60 border border-surface-700/60 hover:border-brand-500/40 transition-colors">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center text-base sm:text-lg mb-2.5 sm:mb-4">
                 <i class="pi pi-car"></i>
               </div>
-              <h3 class="font-bold text-white text-sm mb-1.5">Fast Santa Rosa Delivery</h3>
-              <p class="text-xs text-gray-400 leading-relaxed">
+              <h3 class="font-bold text-white text-xs sm:text-sm mb-1 sm:mb-1.5">Fast Santa Rosa Delivery</h3>
+              <p class="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 Quick local dispatch covering Santa Rosa, Cabuyao, and Biñan with real-time status tracking.
               </p>
             </div>
@@ -262,7 +262,7 @@
               <div>
                 <!-- Top Flyer Display Area -->
                 <div 
-                  class="relative h-72 sm:h-80 overflow-hidden bg-surface-950"
+                  class="relative h-56 sm:h-72 md:h-80 overflow-hidden bg-surface-950"
                   :class="pkg.image_url ? 'cursor-pointer' : ''"
                   @click="pkg.image_url && viewFlyer(pkg.image_url, pkg)">
                   <img 
@@ -297,7 +297,7 @@
                 </div>
 
                 <!-- Package Details -->
-                <div class="p-6 sm:p-8 space-y-6">
+                <div class="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
                   <div>
                     <h3 class="text-2xl font-black text-white transition-colors" :class="getPackageTitleHoverClass(pkg.accent_color)">
                       {{ pkg.name }}

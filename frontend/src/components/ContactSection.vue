@@ -1,10 +1,10 @@
 ﻿<template>
-<section id="contact" class="scroll-mt-20 lg:scroll-mt-24 py-20 bg-surface-950 border-t border-surface-800">
+<section id="contact" class="scroll-mt-20 lg:scroll-mt-24 py-12 sm:py-20 bg-surface-950 border-t border-surface-800">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header -->
-        <div class="text-center max-w-3xl mx-auto mb-16">
-          <h2 class="text-4xl sm:text-5xl font-black text-white">
+        <div class="text-center max-w-3xl mx-auto mb-8 sm:mb-16">
+          <h2 class="text-3xl sm:text-5xl font-black text-white">
             CONTACT <span class="text-brand-500">US</span>
           </h2>
           <p class="text-sm sm:text-base text-gray-400 mt-3">
@@ -12,10 +12,10 @@
           </p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 items-start">
           
           <!-- Get In Touch Card (Matches Figure 6) -->
-          <div class="lg:col-span-5 p-8 rounded-3xl bg-surface-900 border border-surface-700/80 shadow-xl space-y-6">
+          <div class="lg:col-span-5 p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface-900 border border-surface-700/80 shadow-xl space-y-5 sm:space-y-6">
             <h3 class="text-xl font-black text-white">Get In Touch</h3>
 
             <div class="space-y-4 text-xs">
@@ -93,7 +93,7 @@
           </div>
 
           <!-- Send a Message Form (Matches Figure 6) -->
-          <div class="lg:col-span-7 p-8 rounded-3xl bg-surface-900 border border-surface-700/80 shadow-xl space-y-4 text-xs">
+          <div class="lg:col-span-7 p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface-900 border border-surface-700/80 shadow-xl space-y-4 text-xs">
             <h3 class="text-xl font-black text-white">Send a Message</h3>
 
             <form @submit.prevent="sendMessage" class="space-y-4">
