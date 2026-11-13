@@ -1,5 +1,5 @@
 <template>
-<section id="home" class="relative overflow-hidden min-h-[100vh] min-h-[100dvh] sm:min-h-[calc(100vh-5rem)] sm:min-h-[calc(100dvh-5rem)] flex flex-col items-center justify-center text-center px-4 pt-20 pb-20 sm:py-12 lg:py-16">
+<section id="home" class="relative overflow-hidden hero-min-h flex flex-col items-center justify-center text-center px-4 pt-16 pb-28 sm:py-12 lg:py-16">
       
       <!-- Background Image with Dark Vignette Gradient -->
       <div class="absolute inset-0 z-0">
@@ -13,7 +13,7 @@
       </div>
 
       <!-- Hero Content -->
-      <div class="relative z-10 max-w-4xl mx-auto py-4 sm:py-10 animate-fade-in w-full px-1 sm:px-2">
+      <div class="relative z-10 max-w-4xl mx-auto py-2 sm:py-10 animate-fade-in w-full px-1 sm:px-2">
         
         <!-- Top Badges / Info Stacks: Note Banner directly ABOVE the Category Pill Strip -->
         <div class="flex flex-col items-center justify-center gap-2.5 sm:gap-3.5 mb-4 sm:mb-6">

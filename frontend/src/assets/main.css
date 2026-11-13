@@ -272,3 +272,15 @@ select option { background: #121215; color: #ffffff; }
   }
 }
 
+
+.hero-min-h {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+@media (min-width: 640px) {
+  .hero-min-h {
+    min-height: calc(100vh - 5rem);
+    min-height: calc(100dvh - 5rem);
+  }
+}
