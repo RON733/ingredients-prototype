@@ -15,4 +15,4 @@ Disallow: /portal
 Disallow: /api/
 Disallow: /sanctum/
 
-Sitemap: /sitemap.xml
+Sitemap: https://gshotteas.shop/sitemap.xml
