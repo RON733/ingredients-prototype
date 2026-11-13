@@ -455,7 +455,11 @@ export default {
         isLoggedIn.value = true;
         store.currentView = 'admin';
       } catch (err) {
-        authError.value = err.response?.data?.message || 'Invalid 4-digit PIN code. Please verify.';
+        if (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('timeout'))) {
+          authError.value = 'Request timed out - the server may be waking up. Please try again in a moment.';
+        } else {
+          authError.value = err.response?.data?.message || 'Invalid 4-digit PIN code. Please verify.';
+        }
         pinDigits.value = '';
       } finally {
         pinLoading.value = false;
@@ -483,7 +487,11 @@ export default {
           }
         }
       } catch (err) {
-        authError.value = err.response?.data?.message || err.message || 'Invalid email or password.';
+        if (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('timeout'))) {
+          authError.value = 'Request timed out - the server may be waking up. Please try again in a moment.';
+        } else {
+          authError.value = err.response?.data?.message || err.message || 'Invalid email or password.';
+        }
       } finally {
         credentialsLoading.value = false;
       }
