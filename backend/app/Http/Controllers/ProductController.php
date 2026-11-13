@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use App\Models\Product;
+use App\Models\OrderItem;
 use App\Models\Recipe;
 use App\Models\AuditLog;
 use App\Services\LoyverseService;
@@ -26,6 +28,7 @@ class ProductController extends Controller
         // High-Performance In-Memory Cache: Serves default catalog in 3ms instead of 4,000ms
         if (!$hasFilters) {
             $products = Product::with('recipes.ingredient')->orderBy('name', 'asc')->get();
+            $this->attachBestsellerFlags($products);
             return response()->json($products);
         }
 
@@ -52,8 +55,41 @@ class ProductController extends Controller
         }
 
         $products = $query->get();
+        $this->attachBestsellerFlags($products);
 
         return response()->json($products);
+    }
+
+    /**
+     * Mark top-selling products from completed orders (with featured fallback if none yet).
+     */
+    protected function attachBestsellerFlags($products): void
+    {
+        $bestsellerIds = Cache::remember('product_bestseller_ids', 120, function () {
+            $ids = OrderItem::query()
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.status', 'Completed')
+                ->whereNotNull('order_items.product_id')
+                ->select('order_items.product_id', DB::raw('SUM(order_items.quantity) as total_qty'))
+                ->groupBy('order_items.product_id')
+                ->orderByDesc('total_qty')
+                ->limit(4)
+                ->pluck('order_items.product_id')
+                ->values()
+                ->all();
+
+            if (empty($ids)) {
+                return ['brown-sugar-milktea', 'pepperoni-pizza', 'classic-cheeseburger', 'classic-milktea'];
+            }
+
+            return $ids;
+        });
+
+        foreach ($products as $product) {
+            $rankIndex = array_search($product->id, $bestsellerIds, true);
+            $product->setAttribute('is_bestseller', $rankIndex !== false);
+            $product->setAttribute('bestseller_rank', $rankIndex !== false ? ($rankIndex + 1) : null);
+        }
     }
 
     public function show($id)

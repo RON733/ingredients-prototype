@@ -90,6 +90,7 @@
           v-model="sortOrder"
           class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-surface-800 text-gray-300 text-xs sm:text-sm border border-surface-700/80 focus:outline-none focus:border-yellow-400 cursor-pointer">
           <option value="default">Default Order</option>
+          <option value="bestsellers">Best Sellers First</option>
           <option value="price_asc">Price: Low to High</option>
           <option value="price_desc">Price: High to Low</option>
           <option value="name_asc">Name: A to Z</option>
@@ -125,6 +126,18 @@
       <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5 max-w-full">
         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mr-0.5 shrink-0">Filter:</span>
         
+        <!-- Best Sellers Toggle -->
+        <button 
+          @click="bestsellersOnly = !bestsellersOnly"
+          type="button"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border shrink-0 whitespace-nowrap"
+          :class="bestsellersOnly 
+            ? 'bg-amber-400/20 text-amber-300 border-amber-400/60 font-bold' 
+            : 'bg-surface-800 text-gray-400 hover:text-gray-200 border-surface-700/60'">
+          <i class="pi pi-star-fill text-[10px]" :class="bestsellersOnly ? 'text-amber-400' : 'text-gray-500'"></i>
+          <span>Best Sellers</span>
+        </button>
+
         <!-- Availability Toggle -->
         <button 
           @click="toggleAvailability"
@@ -212,7 +225,8 @@
       <div 
         v-for="product in filteredProducts" 
         :key="'grid-' + product.id"
-        class="rounded-2xl bg-surface-800/90 border border-surface-700/70 overflow-hidden flex flex-col justify-between shadow-lg hover:border-yellow-400/50 transition-all">
+        class="rounded-2xl bg-surface-800/90 border overflow-hidden flex flex-col justify-between shadow-lg hover:border-yellow-400/50 transition-all"
+        :class="isBestseller(product) ? 'border-amber-400/60 ring-1 ring-amber-400/20' : 'border-surface-700/70'">
         
         <!-- Food Image with Quick Zoom & Stock Badge -->
         <div 
@@ -230,9 +244,17 @@
           <span class="absolute top-1.5 left-1.5 text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-surface-950/85 backdrop-blur-md text-gray-200 border border-surface-700 pointer-events-none">
             {{ product.category }}
           </span>
-          <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="absolute top-1.5 right-1.5 text-[8px] font-black px-1.5 py-0.5 rounded-md bg-rose-600 text-white shadow animate-pulse pointer-events-none">
-            {{ product.discount_percent }}% OFF
-          </span>
+          <div class="absolute top-1.5 right-1.5 flex flex-col items-end gap-1 pointer-events-none z-10">
+            <span
+              v-if="isBestseller(product)"
+              class="inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-400 to-yellow-400 text-black shadow-md">
+              <i class="pi pi-star-fill text-[7px]"></i>
+              <span>{{ getBestsellerRank(product) === 1 ? '#1 Best Seller' : 'Best Seller' }}</span>
+            </span>
+            <span v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="text-[8px] font-black px-1.5 py-0.5 rounded-md bg-rose-600 text-white shadow animate-pulse">
+              {{ product.discount_percent }}% OFF
+            </span>
+          </div>
 
           <!-- Enlarge Button -->
           <button 
@@ -395,7 +417,8 @@
         <div 
           v-for="product in filteredProducts" 
           :key="'slide-' + product.id"
-          class="rounded-2xl bg-surface-800/90 border border-surface-700/70 overflow-hidden flex flex-col justify-between shadow-lg hover:border-yellow-400/50 transition-all">
+          class="rounded-2xl bg-surface-800/90 border overflow-hidden flex flex-col justify-between shadow-lg hover:border-yellow-400/50 transition-all"
+          :class="isBestseller(product) ? 'border-amber-400/60 ring-1 ring-amber-400/20' : 'border-surface-700/70'">
           
           <!-- Image -->
           <div 
@@ -411,6 +434,12 @@
 
             <span class="absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.2 rounded bg-surface-950/85 text-gray-200 border border-surface-700">
               {{ product.category }}
+            </span>
+            <span
+              v-if="isBestseller(product)"
+              class="absolute top-1 right-1 inline-flex items-center gap-0.5 text-[7px] font-black uppercase px-1 py-0.2 rounded bg-gradient-to-r from-amber-400 to-yellow-400 text-black shadow">
+              <i class="pi pi-star-fill text-[6px]"></i>
+              <span>{{ getBestsellerRank(product) === 1 ? '#1 Best' : 'Best' }}</span>
             </span>
 
             <span 
@@ -500,7 +529,8 @@
     <div 
       v-for="product in filteredProducts" 
       :key="'desk-' + product.id"
-      class="group rounded-2xl bg-surface-800/80 border border-surface-700/60 overflow-hidden flex flex-col justify-between hover:border-yellow-400/50 hover:shadow-2xl hover:shadow-yellow-400/10 transition-all duration-300 transform hover:-translate-y-1">
+      class="group rounded-2xl bg-surface-800/80 border overflow-hidden flex flex-col justify-between hover:border-yellow-400/50 hover:shadow-2xl hover:shadow-yellow-400/10 transition-all duration-300 transform hover:-translate-y-1"
+      :class="isBestseller(product) ? 'border-amber-400/60 ring-1 ring-amber-400/20' : 'border-surface-700/60'">
       
       <!-- Food Image with Hover Overlay & Stock Pill -->
       <div 
@@ -522,9 +552,17 @@
           </span>
         </div>
 
-        <div v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-600 text-white text-xs font-black uppercase tracking-wider shadow-lg border border-rose-400/40 z-10 animate-pulse pointer-events-none">
-          <i class="pi pi-bolt text-[10px]"></i>
-          <span>{{ product.discount_percent }}% OFF</span>
+        <div class="absolute top-3 left-3 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
+          <div
+            v-if="isBestseller(product)"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-black text-[11px] font-black uppercase tracking-wider shadow-lg">
+            <i class="pi pi-star-fill text-[10px]"></i>
+            <span>{{ getBestsellerRank(product) === 1 ? '#1 Best Seller' : 'Best Seller' }}</span>
+          </div>
+          <div v-if="product.original_price && Number(product.original_price) > Number(product.price)" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-600 text-white text-xs font-black uppercase tracking-wider shadow-lg border border-rose-400/40 animate-pulse">
+            <i class="pi pi-bolt text-[10px]"></i>
+            <span>{{ product.discount_percent }}% OFF</span>
+          </div>
         </div>
         <span class="absolute top-3 right-3 text-[11px] font-bold px-2.5 py-1 rounded-full bg-surface-900/80 backdrop-blur-md text-gray-200 border border-surface-700 pointer-events-none">
           {{ product.category }}
@@ -749,7 +787,31 @@ export default {
     const searchQuery = ref('');
     const sortOrder = ref('default');
     const availabilityFilter = ref('all'); // 'all' | 'in_stock'
+    const bestsellersOnly = ref(false);
     const priceRangeFilter = ref('all'); // 'all' | 'under100' | '100to150' | 'over150'
+
+    const DEFAULT_BESTSELLER_IDS = ['brown-sugar-milktea', 'pepperoni-pizza', 'classic-cheeseburger', 'classic-milktea'];
+    const DEFAULT_BESTSELLER_NAMES = ['brown sugar boba milk', 'pepperoni feast pizza', 'cheese burger', 'milktea classic'];
+
+    const hasBackendBestsellers = computed(() =>
+      Array.isArray(store.products) && store.products.some(p => p.is_bestseller)
+    );
+
+    const getBestsellerRank = (product) => {
+      if (!product) return null;
+      if (product.is_bestseller) {
+        return Number(product.bestseller_rank) || 1;
+      }
+      if (!hasBackendBestsellers.value) {
+        const idIdx = DEFAULT_BESTSELLER_IDS.indexOf(product.id);
+        if (idIdx !== -1) return idIdx + 1;
+        const nameIdx = DEFAULT_BESTSELLER_NAMES.indexOf((product.name || '').toLowerCase());
+        if (nameIdx !== -1) return nameIdx + 1;
+      }
+      return null;
+    };
+
+    const isBestseller = (product) => getBestsellerRank(product) !== null;
     const mobileViewMode = ref('grid'); // 'grid' (2-column grid) | 'slide' (2-row horizontal slide)
     const slideTrackRef = ref(null);
 
@@ -787,7 +849,11 @@ export default {
         );
       }
 
-      // 3. Stock Availability Filter
+      // 3. Best Sellers & Stock Availability Filters
+      if (bestsellersOnly.value) {
+        list = list.filter(p => isBestseller(p));
+      }
+
       if (availabilityFilter.value === 'in_stock') {
         list = list.filter(p => (Number(p.max_portions) > 0 || p.is_available));
       }
@@ -802,7 +868,14 @@ export default {
       }
 
       // 5. Sorting
-      if (sortOrder.value === 'price_asc') {
+      if (sortOrder.value === 'bestsellers') {
+        list.sort((a, b) => {
+          const rankA = getBestsellerRank(a) ?? 999;
+          const rankB = getBestsellerRank(b) ?? 999;
+          if (rankA !== rankB) return rankA - rankB;
+          return (a.name || '').localeCompare(b.name || '');
+        });
+      } else if (sortOrder.value === 'price_asc') {
         list.sort((a, b) => Number(a.price) - Number(b.price));
       } else if (sortOrder.value === 'price_desc') {
         list.sort((a, b) => Number(b.price) - Number(a.price));
@@ -816,6 +889,7 @@ export default {
     const hasActiveFilters = computed(() => {
       return selectedCategory.value !== 'All' ||
         searchQuery.value.trim() !== '' ||
+        bestsellersOnly.value ||
         availabilityFilter.value !== 'all' ||
         priceRangeFilter.value !== 'all' ||
         sortOrder.value !== 'default';
@@ -835,6 +909,7 @@ export default {
     const resetFilters = () => {
       selectedCategory.value = 'All';
       searchQuery.value = '';
+      bestsellersOnly.value = false;
       availabilityFilter.value = 'all';
       priceRangeFilter.value = 'all';
       sortOrder.value = 'default';
@@ -849,7 +924,7 @@ export default {
       slideTrackRef.value.scrollBy({ left: delta, behavior: 'smooth' });
     };
 
-    watch([selectedCategory, searchQuery, availabilityFilter, priceRangeFilter, sortOrder], () => {
+    watch([selectedCategory, searchQuery, bestsellersOnly, availabilityFilter, priceRangeFilter, sortOrder], () => {
       if (slideTrackRef.value) {
         slideTrackRef.value.scrollTo({ left: 0, behavior: 'smooth' });
       }
@@ -908,6 +983,9 @@ export default {
       selectedCategory,
       searchQuery,
       sortOrder,
+      bestsellersOnly,
+      isBestseller,
+      getBestsellerRank,
       availabilityFilter,
       priceRangeFilter,
       mobileViewMode,
