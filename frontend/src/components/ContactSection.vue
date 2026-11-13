@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 <section id="contact" class="scroll-mt-20 lg:scroll-mt-24 py-20 bg-surface-950 border-t border-surface-800">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -59,6 +59,23 @@
                 <div>
                   <p class="font-bold text-gray-300">Email Address</p>
                   <p class="text-gray-400 mt-0.5">gshotteas2@gmail.com</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-800 text-blue-400 flex items-center justify-center shrink-0">
+                  <i class="pi pi-facebook"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-gray-300">Facebook Page</p>
+                  <a 
+                    href="https://www.facebook.com/share/1LuMZhZXA9/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-semibold mt-0.5 transition-colors underline underline-offset-2">
+                    <span>G Shot Teas on Facebook</span>
+                    <i class="pi pi-external-link text-[10px]"></i>
+                  </a>
                 </div>
               </div>
 
@@ -140,7 +157,7 @@ import * as Vue from 'vue';
 import { ref } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 
-// G Shot Teas — Contact Us Section (Matches Figure 6)
+// G Shot Teas â€” Contact Us Section (Matches Figure 6)
 export default {
   name: 'ContactSection',
   setup() {

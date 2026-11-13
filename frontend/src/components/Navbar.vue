@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 <header class="fixed top-0 left-0 right-0 z-50 bg-surface-900/95 backdrop-blur-md border-b border-surface-700/60 shadow-xl transition-all">
       <div class="w-full px-3 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6">
         
@@ -10,7 +10,7 @@
               <span class="text-base sm:text-xl font-extrabold tracking-tight text-white group-hover:text-brand-400 transition-colors">G SHOT</span>
               <span class="text-[10px] sm:text-xs px-1.5 py-0.5 rounded bg-surface-800 text-yellow-400 font-bold border border-surface-700 tracking-wider">TEAS</span>
             </div>
-            <p class="hidden sm:block text-[10px] text-gray-400 uppercase tracking-widest font-medium">Santa Rosa • Laguna</p>
+            <p class="hidden sm:block text-[10px] text-gray-400 uppercase tracking-widest font-medium">Santa Rosa â€¢ Laguna</p>
           </div>
         </div>
 
@@ -55,6 +55,16 @@
             class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-yellow-400 border border-surface-700 flex items-center gap-1.5 transition-all cursor-pointer">
             <i class="pi pi-calendar-plus text-xs"></i><span>Book Event</span>
           </button>
+
+          <!-- Facebook Page Link -->
+          <a 
+            href="https://www.facebook.com/share/1LuMZhZXA9/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="px-3 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 border border-surface-700 hover:border-blue-500/40 flex items-center gap-1.5 transition-all"
+            title="Visit G Shot Teas on Facebook">
+            <i class="pi pi-facebook text-xs"></i><span>Facebook</span>
+          </a>
         </nav>
 
         <!-- 3. Right: Staff Tools & Customer Actions -->
@@ -230,7 +240,7 @@
         v-if="store.currentView === 'customer' && !store.isStoreOpen && !store.isMaintenanceMode"
         class="bg-surface-900 border-t border-b border-surface-700 text-gray-300 text-[11px] sm:text-xs py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
         <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
-        <span>Notice: G Shot Teas is currently <strong>CLOSED for live ordering</strong> (Hours: 9:00 AM – 10:00 PM). You can still browse our menu, customize ingredients, and book catering packages!</span>
+        <span>Notice: G Shot Teas is currently <strong>CLOSED for live ordering</strong> (Hours: 9:00 AM â€“ 10:00 PM). You can still browse our menu, customize ingredients, and book catering packages!</span>
       </div>
 
       <!-- Mobile Navigation Drawer / Slide-Down Menu -->
@@ -271,6 +281,16 @@
             <i class="pi pi-envelope text-sm"></i>
             <span>Contact</span>
           </button>
+
+          <a 
+            href="https://www.facebook.com/share/1LuMZhZXA9/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            @click="mobileMenuOpen = false"
+            class="col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 transition-all">
+            <i class="pi pi-facebook text-sm"></i>
+            <span>Follow G Shot Teas on Facebook</span>
+          </a>
         </nav>
 
         <!-- Customer Orders & Tracking Shortcuts (Mobile Drawer) -->
@@ -395,7 +415,7 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
-// G Shot Teas — Navbar Component
+// G Shot Teas â€” Navbar Component
 export default {
   name: 'Navbar',
   setup() {
