@@ -64,6 +64,7 @@ Route::get('/geocode-search', [SystemController::class, 'searchAddress']);
 Route::get('/announcements', [AnnouncementController::class, 'index']);
 Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
+Route::get('/bookings/availability', [EventBookingController::class, 'availability']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
 Route::get('/booking-packages', [BookingPackageController::class, 'index']);
 
@@ -170,6 +171,7 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::post('/products/discount/remove', [ProductController::class, 'removeDiscount']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
+    Route::get('/bookings/availability', [EventBookingController::class, 'availability']);
     Route::get('/bookings', [EventBookingController::class, 'index']);
     Route::match(['put', 'patch'], '/bookings/{id}', [EventBookingController::class, 'update']);
     Route::match(['put', 'patch'], '/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);

@@ -176,6 +176,7 @@ export const GST_API = {
 
   getBookings: (params) => apiClient.get('/bookings', { params }),
   getMyBookings: (params) => apiClient.get('/bookings/my', { params }),
+  getBookingAvailability: (params) => apiClient.get('/bookings/availability', { params }),
   createBooking: (data) => apiClient.post('/bookings', data),
   updateBooking: (id, data) => apiClient.patch(`/bookings/${id}`, data),
   updateBookingStatus: (id, status) => apiClient.patch(`/bookings/${id}/status`, { status }),

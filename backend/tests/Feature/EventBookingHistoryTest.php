@@ -42,7 +42,7 @@ class EventBookingHistoryTest extends TestCase
             'client_email' => 'other@example.com',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
             'event_date' => $futureDate,
-            'event_time' => '1:00 PM',
+            'event_time' => '9:00 AM – 12:00 PM (3 Hours)',
             'guest_count' => 50,
             'location' => 'Other Venue',
             'package_name' => 'Coffee Package',

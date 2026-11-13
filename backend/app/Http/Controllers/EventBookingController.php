@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\EventBooking;
 use App\Models\BookingPackage;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Support\BookingTimeSlot;
 
 class EventBookingController extends Controller
 {
@@ -34,6 +36,57 @@ class EventBookingController extends Controller
     {
         $bookings = EventBooking::latest()->get();
         return response()->json($bookings);
+    }
+
+    public function availability(Request $request)
+    {
+        $request->validate([
+            'date' => 'nullable|date',
+        ]);
+
+        $targetDate = $request->filled('date')
+            ? \Carbon\Carbon::parse($request->input('date'))->toDateString()
+            : null;
+
+        $occupiedSlots = [];
+        if ($targetDate !== null) {
+            $dayBookings = EventBooking::whereDate('event_date', $targetDate)
+                ->whereIn('status', ['Pending', 'Approved'])
+                ->orderBy('id')
+                ->get(['event_time', 'status']);
+
+            foreach ($dayBookings as $booking) {
+                $parsed = BookingTimeSlot::parse($booking->event_time);
+                $occupiedSlots[] = [
+                    'event_time' => $parsed ? $parsed['label'] : ($booking->event_time ?: 'TBD'),
+                    'range_label' => $parsed ? $parsed['range_label'] : ($booking->event_time ?: 'TBD'),
+                    'start_minutes' => $parsed['start_minutes'] ?? null,
+                    'end_minutes' => $parsed['end_minutes'] ?? null,
+                    'status' => $booking->status,
+                ];
+            }
+        }
+
+        $today = now()->toDateString();
+        $upcoming = EventBooking::whereDate('event_date', '>=', $today)
+            ->whereIn('status', ['Pending', 'Approved'])
+            ->get(['event_date']);
+
+        $occupiedDates = [];
+        foreach ($upcoming as $row) {
+            $dateKey = $row->event_date instanceof \Carbon\CarbonInterface
+                ? $row->event_date->toDateString()
+                : substr((string) $row->event_date, 0, 10);
+            $occupiedDates[$dateKey] = ($occupiedDates[$dateKey] ?? 0) + 1;
+        }
+
+        return response()->json([
+            'date' => $targetDate,
+            'is_occupied' => count($occupiedSlots) > 0,
+            'occupied_count' => count($occupiedSlots),
+            'occupied_slots' => $occupiedSlots,
+            'occupied_dates' => $occupiedDates,
+        ]);
     }
 
     public function myBookings(Request $request)
@@ -160,6 +213,20 @@ class EventBookingController extends Controller
         }
         $validated['client_phone'] = $cleanPhone;
 
+        $rawEventTime = trim((string) ($validated['event_time'] ?? ''));
+        $timeInput = $rawEventTime !== '' ? $rawEventTime : '2:00 PM – 5:00 PM (3 Hours)';
+        $parsedTimeSlot = BookingTimeSlot::parse($timeInput);
+        if (!$parsedTimeSlot) {
+            return response()->json([
+                'message' => 'Please select a target time slot or enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).',
+                'errors' => [
+                    'event_time' => ['Please enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).'],
+                ],
+            ], 422);
+        }
+
+        $targetDate = \Carbon\Carbon::parse($validated['event_date'])->toDateString();
+
         BookingPackage::seedDefaultsIfEmpty();
         $matchedPackage = BookingPackage::findMatchingPackage(
             isset($validated['booking_package_id']) ? (int) $validated['booking_package_id'] : null,
@@ -176,21 +243,59 @@ class EventBookingController extends Controller
                 : $validated['guest_count'] * 95;
         }
 
-        $booking = EventBooking::create([
-            'user_id' => $actingUser?->id ?? null,
-            'client_name' => trim($validated['client_name']),
-            'client_phone' => $validated['client_phone'],
-            'client_email' => $validated['client_email'] ?? $actingUser?->email ?? null,
-            'event_type' => $validated['event_type'],
-            'event_date' => $validated['event_date'],
-            'event_time' => $validated['event_time'] ?? 'TBD',
-            'guest_count' => $validated['guest_count'],
-            'location' => trim($validated['location']),
-            'package_name' => $validated['package_name'] ?? $matchedPackage?->name ?? 'Standard Catering Package',
-            'estimated_cost' => $serverEstimatedCost,
-            'status' => 'Pending',
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        $conflictError = null;
+        $booking = DB::transaction(function () use (
+            &$conflictError,
+            $targetDate,
+            $parsedTimeSlot,
+            $actingUser,
+            $validated,
+            $matchedPackage,
+            $serverEstimatedCost
+        ) {
+            $existingOnDate = EventBooking::whereDate('event_date', $targetDate)
+                ->whereIn('status', ['Pending', 'Approved'])
+                ->lockForUpdate()
+                ->get(['id', 'event_time', 'status']);
+
+            foreach ($existingOnDate as $existing) {
+                $existingSlot = BookingTimeSlot::parse($existing->event_time);
+                if ($existingSlot && BookingTimeSlot::overlaps($parsedTimeSlot, $existingSlot)) {
+                    $conflictError = [
+                        'message' => "This date already has an occupied booking at {$existingSlot['range_label']}. Your selected time ({$parsedTimeSlot['range_label']}) conflicts with it, so this slot cannot be booked.",
+                        'conflict' => [
+                            'event_date' => $targetDate,
+                            'conflicting_time' => $existingSlot['range_label'],
+                            'status' => $existing->status,
+                        ],
+                        'errors' => [
+                            'event_time' => ["Selected time ({$parsedTimeSlot['range_label']}) conflicts with an existing booking ({$existingSlot['range_label']}) on this date."],
+                        ],
+                    ];
+                    return null;
+                }
+            }
+
+            return EventBooking::create([
+                'user_id' => $actingUser?->id ?? null,
+                'client_name' => trim($validated['client_name']),
+                'client_phone' => $validated['client_phone'],
+                'client_email' => $validated['client_email'] ?? $actingUser?->email ?? null,
+                'event_type' => $validated['event_type'],
+                'event_date' => $targetDate,
+                'event_time' => $parsedTimeSlot['label'],
+                'guest_count' => $validated['guest_count'],
+                'location' => trim($validated['location']),
+                'package_name' => $validated['package_name'] ?? $matchedPackage?->name ?? 'Standard Catering Package',
+                'estimated_cost' => $serverEstimatedCost,
+                'status' => 'Pending',
+                'notes' => $validated['notes'] ?? null,
+            ]);
+        });
+
+        if ($conflictError !== null || !$booking) {
+            return response()->json($conflictError, 422);
+        }
 
         $bookingRole = $actingUser?->role;
         if ($bookingRole && in_array($bookingRole, ['staff', 'admin', 'super_admin'])) {

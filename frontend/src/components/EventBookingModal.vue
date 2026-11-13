@@ -248,30 +248,253 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Target Date & Target Time -->
+          <div class="space-y-4">
             <div>
-              <label class="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-                Target Date
-              </label>
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <label class="block font-bold text-gray-400 uppercase tracking-wider">
+                  Target Date
+                </label>
+                <span v-if="checkingAvailability" class="text-[10px] text-amber-400 flex items-center gap-1">
+                  <i class="pi pi-spin pi-spinner text-[10px]"></i>
+                  <span>Checking date...</span>
+                </span>
+                <span v-else-if="form.event_date && occupiedSlotsOnDate.length > 0" class="text-[10px] font-bold text-amber-300 flex items-center gap-1">
+                  <i class="pi pi-exclamation-triangle text-[10px]"></i>
+                  <span>Date Occupied ({{ occupiedSlotsOnDate.length }} {{ occupiedSlotsOnDate.length === 1 ? 'booking' : 'bookings' }})</span>
+                </span>
+                <span v-else-if="form.event_date" class="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                  <i class="pi pi-check-circle text-[10px]"></i>
+                  <span>Date Open</span>
+                </span>
+              </div>
+
               <input 
                 v-model="form.event_date"
                 type="date" 
                 :min="minEventDate"
                 required
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white focus:outline-none focus:border-brand-500"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border text-white focus:outline-none transition-colors"
+                :class="form.event_date && occupiedSlotsOnDate.length > 0
+                  ? 'border-amber-500/60 focus:border-amber-400'
+                  : 'border-surface-700 focus:border-brand-500'"
               />
+
+              <!-- Occupied Date Notification Banner -->
+              <div
+                v-if="form.event_date && occupiedSlotsOnDate.length > 0"
+                class="mt-2.5 p-3 rounded-2xl bg-amber-500/12 border border-amber-500/35 text-amber-100 space-y-2 animate-fade-in">
+                <div class="flex items-start gap-2">
+                  <i class="pi pi-exclamation-triangle text-amber-400 text-sm mt-0.5 shrink-0"></i>
+                  <div class="space-y-0.5 text-[11px] leading-relaxed">
+                    <p class="font-bold text-amber-300">
+                      {{ formattedSelectedDate }} is already occupied
+                    </p>
+                    <p class="text-amber-100/90">
+                      You can still book on this date if you pick a different non-overlapping time. Any conflicting time slot cannot be booked.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pl-6">
+                  <span
+                    v-for="(slot, idx) in occupiedSlotsOnDate"
+                    :key="idx"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-950/80 border border-amber-500/30 text-[10px] font-bold text-amber-200">
+                    <i class="pi pi-clock text-[9px] text-amber-400"></i>
+                    <span>{{ slot.range_label || slot.event_time }}</span>
+                    <span class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300">{{ slot.status }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div
+                v-else-if="form.event_date && !checkingAvailability"
+                class="mt-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-300 flex items-center gap-2">
+                <i class="pi pi-check-circle text-emerald-400 text-xs shrink-0"></i>
+                <span>{{ formattedSelectedDate }} is currently open — all time slots are available.</span>
+              </div>
             </div>
-            <div>
-              <label class="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-                Target Time
-              </label>
-              <input 
-                v-model="form.event_time"
-                type="text" 
-                maxlength="60"
-                placeholder="e.g. 2:00 PM – 5:00 PM (3 Hours)" 
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
-              />
+
+            <!-- Target Time (Click-to-Select + Optional Type Mode) -->
+            <div class="p-3.5 rounded-2xl bg-surface-950/60 border border-surface-800 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <label class="block font-bold text-gray-400 uppercase tracking-wider">
+                    Target Time
+                  </label>
+                  <p class="text-[10px] text-gray-500 mt-0.5">
+                    Click a time slot below or switch to type a custom time
+                  </p>
+                </div>
+
+                <!-- Mode Switcher: Click vs Type -->
+                <div class="inline-flex items-center p-0.5 rounded-xl bg-surface-900 border border-surface-700/80 text-[11px]">
+                  <button
+                    type="button"
+                    @click="setTimeMode('click')"
+                    class="px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    :class="timeMode === 'click'
+                      ? 'bg-yellow-400 text-black shadow-sm'
+                      : 'text-gray-400 hover:text-white'">
+                    <i class="pi pi-th-large text-[10px]"></i>
+                    <span>Click to Pick</span>
+                  </button>
+                  <button
+                    type="button"
+                    @click="setTimeMode('type')"
+                    class="px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    :class="timeMode === 'type'
+                      ? 'bg-yellow-400 text-black shadow-sm'
+                      : 'text-gray-400 hover:text-white'">
+                    <i class="pi pi-pencil text-[10px]"></i>
+                    <span>Type Time</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Recognized Exact Time Pill -->
+              <div
+                class="px-3 py-2 rounded-xl border flex items-center justify-between gap-2"
+                :class="conflictingOccupiedSlot
+                  ? 'bg-rose-500/12 border-rose-500/40 text-rose-200'
+                  : activeParsedTime
+                    ? 'bg-surface-900 border-surface-700 text-white'
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-200'">
+                <div class="flex items-center gap-2 min-w-0">
+                  <i
+                    class="pi text-xs shrink-0"
+                    :class="conflictingOccupiedSlot
+                      ? 'pi-ban text-rose-400'
+                      : activeParsedTime
+                        ? 'pi-clock text-amber-400'
+                        : 'pi-exclamation-circle text-amber-400'">
+                  </i>
+                  <span class="font-bold text-xs truncate">
+                    {{ activeParsedTime ? activeParsedTime.label : 'No recognizable time selected yet' }}
+                  </span>
+                </div>
+                <span
+                  v-if="form.event_date && activeParsedTime"
+                  class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full shrink-0"
+                  :class="conflictingOccupiedSlot
+                    ? 'bg-rose-500/25 text-rose-300'
+                    : 'bg-emerald-500/20 text-emerald-300'">
+                  {{ conflictingOccupiedSlot ? 'Conflicts' : 'Available' }}
+                </span>
+              </div>
+
+              <!-- Mode A: Click-to-Select -->
+              <div v-if="timeMode === 'click'" class="space-y-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <button
+                    v-for="preset in presetSlotCards"
+                    :key="preset.label"
+                    type="button"
+                    :disabled="preset.isOccupied"
+                    @click="selectPresetSlot(preset)"
+                    class="p-2.5 rounded-xl border text-left transition-all relative"
+                    :class="preset.isOccupied
+                      ? 'bg-rose-500/8 border-rose-500/25 text-rose-300/60 cursor-not-allowed opacity-70'
+                      : isPresetSelected(preset)
+                        ? 'bg-yellow-400/15 border-yellow-400 text-white shadow-sm shadow-yellow-400/10 cursor-pointer'
+                        : 'bg-surface-900/90 border-surface-700/80 text-gray-200 hover:border-amber-400/60 hover:bg-surface-800 cursor-pointer active:scale-[0.98]'">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-[11px] font-black leading-tight">{{ preset.rangeLabel }}</span>
+                      <i
+                        v-if="isPresetSelected(preset) && !preset.isOccupied"
+                        class="pi pi-check-circle text-yellow-400 text-[11px] shrink-0">
+                      </i>
+                    </div>
+                    <div class="flex items-center justify-between gap-1 mt-1">
+                      <span class="text-[10px]" :class="preset.isOccupied ? 'text-rose-400 font-bold' : 'text-gray-400'">
+                        {{ preset.isOccupied ? 'Occupied' : `${preset.tag} • ${preset.durationHours}h` }}
+                      </span>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Custom Start Time + Duration Click Selectors -->
+                <div class="pt-2 border-t border-surface-800/80 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                      Or Pick Start Time
+                    </label>
+                    <select
+                      v-model.number="selectedStartMinutes"
+                      @change="onClickStartOrDurationChange"
+                      class="w-full px-3 py-2 rounded-xl bg-surface-800 border border-surface-700 text-white text-xs focus:outline-none focus:border-brand-500 cursor-pointer">
+                      <option
+                        v-for="opt in startTimeOptionsWithStatus"
+                        :key="opt.minutes"
+                        :value="opt.minutes">
+                        {{ opt.label }}{{ opt.isOccupied ? ' (Occupied)' : '' }}
+                      </option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                      Service Duration
+                    </label>
+                    <div class="grid grid-cols-5 gap-1">
+                      <button
+                        v-for="hrs in durationHourOptions"
+                        :key="hrs"
+                        type="button"
+                        @click="selectDurationHours(hrs)"
+                        class="py-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer"
+                        :class="selectedDurationHours === hrs
+                          ? 'bg-yellow-400 text-black border-yellow-400 font-black'
+                          : 'bg-surface-800 text-gray-300 border-surface-700 hover:border-amber-400/50 hover:text-white'">
+                        {{ hrs }}h
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mode B: Type Custom Time -->
+              <div v-else class="space-y-2">
+                <input
+                  v-model="customTimeInput"
+                  type="text"
+                  maxlength="60"
+                  placeholder="e.g. 2:30 PM - 5:30 PM or 14:30 - 17:30"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border text-white placeholder-gray-500 focus:outline-none transition-colors"
+                  :class="conflictingOccupiedSlot
+                    ? 'border-rose-500 focus:border-rose-400'
+                    : activeParsedTime
+                      ? 'border-emerald-500/60 focus:border-emerald-400'
+                      : 'border-amber-500/50 focus:border-amber-400'"
+                />
+                <p v-if="activeParsedTime" class="text-[11px] text-emerald-300 flex items-center gap-1.5">
+                  <i class="pi pi-check-circle text-emerald-400 text-xs shrink-0"></i>
+                  <span>System recognized: <strong>{{ activeParsedTime.label }}</strong></span>
+                </p>
+                <p v-else class="text-[11px] text-amber-300 flex items-center gap-1.5">
+                  <i class="pi pi-info-circle text-amber-400 text-xs shrink-0"></i>
+                  <span>Type a start &amp; end time (e.g. <code>2:00 PM - 5:00 PM</code> or <code>14:00 - 17:00</code>) so the system recognizes the exact time.</span>
+                </p>
+              </div>
+
+              <!-- Conflict / Non-Conflict Alert under Target Time -->
+              <div
+                v-if="form.event_date && conflictingOccupiedSlot"
+                class="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex items-start gap-2 animate-fade-in">
+                <i class="pi pi-times-circle text-rose-400 text-sm mt-0.5 shrink-0"></i>
+                <div class="space-y-0.5">
+                  <p class="font-bold text-rose-300">Time Conflict — Cannot Book This Slot</p>
+                  <p class="leading-relaxed">
+                    <strong>{{ activeParsedTime?.rangeLabel }}</strong> overlaps with an already occupied booking (<strong>{{ conflictingOccupiedSlot.range_label || conflictingOccupiedSlot.event_time }}</strong>) on {{ formattedSelectedDate }}. Please choose a different non-overlapping time or date.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                v-else-if="form.event_date && activeParsedTime && occupiedSlotsOnDate.length > 0"
+                class="p-2.5 rounded-xl bg-emerald-500/12 border border-emerald-500/30 text-emerald-200 text-[11px] flex items-center gap-2">
+                <i class="pi pi-check-circle text-emerald-400 text-xs shrink-0"></i>
+                <span><strong>{{ activeParsedTime.rangeLabel }}</strong> does not conflict with existing bookings on {{ formattedSelectedDate }} — ready to book!</span>
+              </div>
             </div>
           </div>
 
@@ -343,9 +566,14 @@
             </button>
             <button 
               type="submit"
-              :disabled="loading"
-              class="px-5 py-2.5 rounded-xl font-bold bg-yellow-400 hover:bg-yellow-300 text-black transition-all flex items-center justify-center gap-2 cursor-pointer">
+              :disabled="loading || !canSubmitBooking"
+              class="px-5 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+              :class="loading || !canSubmitBooking
+                ? 'bg-surface-700 text-gray-400 cursor-not-allowed opacity-70'
+                : 'bg-yellow-400 hover:bg-yellow-300 text-black cursor-pointer'">
               <i v-if="loading" class="pi pi-spin pi-spinner"></i>
+              <span v-else-if="conflictingOccupiedSlot">Time Conflict — Pick Another Slot</span>
+              <span v-else-if="!activeParsedTime">Enter a Valid Time</span>
               <span v-else>Submit Booking Request</span>
             </button>
           </div>
@@ -544,6 +772,14 @@ import * as Vue from 'vue';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
+import {
+  PRESET_TIME_SLOTS,
+  START_TIME_OPTIONS,
+  DURATION_HOUR_OPTIONS,
+  buildSlotFromMinutes,
+  parseBookingTime,
+  slotsOverlap,
+} from '@/utils/bookingTime';
 
 // G Shot Teas — Event Booking Modal (Catering & Mobile Bar Reservations)
 export default {
@@ -924,6 +1160,176 @@ export default {
       notes: '',
     });
 
+    // Target Date & Time Availability + Click/Type Picker State
+    const timeMode = Vue.ref('click'); // 'click' | 'type'
+    const selectedStartMinutes = Vue.ref(14 * 60); // 2:00 PM
+    const selectedDurationHours = Vue.ref(3);
+    const customTimeInput = Vue.ref('2:00 PM - 5:00 PM');
+    const checkingAvailability = Vue.ref(false);
+    const occupiedDatesMap = Vue.ref({});
+    const occupiedSlotsOnDate = Vue.ref([]);
+    const lastNotifiedOccupiedDate = Vue.ref('');
+
+    const formattedSelectedDate = Vue.computed(() => {
+      if (!form.event_date) return '';
+      const [y, m, d] = form.event_date.split('-').map(Number);
+      if (!y || !m || !d) return form.event_date;
+      const dt = new Date(y, m - 1, d);
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    });
+
+    const activeParsedTime = Vue.computed(() => {
+      if (timeMode.value === 'click') {
+        const start = Number(selectedStartMinutes.value);
+        const dur = Number(selectedDurationHours.value) || 3;
+        if (!Number.isFinite(start)) return null;
+        return buildSlotFromMinutes(start, start + dur * 60);
+      }
+      return parseBookingTime(customTimeInput.value);
+    });
+
+    Vue.watch(activeParsedTime, (slot) => {
+      if (slot) {
+        form.event_time = slot.label;
+      } else if (timeMode.value === 'type') {
+        form.event_time = customTimeInput.value;
+      }
+    }, { immediate: true });
+
+    const findSlotConflict = (candidateSlot) => {
+      if (!candidateSlot || !form.event_date || occupiedSlotsOnDate.value.length === 0) {
+        return null;
+      }
+      return occupiedSlotsOnDate.value.find((occupied) => {
+        if (occupied.start_minutes === null || occupied.end_minutes === null) return false;
+        return slotsOverlap(candidateSlot, occupied);
+      }) || null;
+    };
+
+    const conflictingOccupiedSlot = Vue.computed(() => findSlotConflict(activeParsedTime.value));
+
+    const canSubmitBooking = Vue.computed(() => {
+      if (!activeParsedTime.value) return false;
+      if (form.event_date && conflictingOccupiedSlot.value) return false;
+      return true;
+    });
+
+    const presetSlotCards = Vue.computed(() => {
+      return PRESET_TIME_SLOTS.map((p) => {
+        const built = buildSlotFromMinutes(p.startMinutes, p.startMinutes + p.durationHours * 60);
+        return {
+          ...p,
+          ...built,
+          isOccupied: Boolean(findSlotConflict(built)),
+        };
+      });
+    });
+
+    const durationHourOptions = DURATION_HOUR_OPTIONS;
+
+    const startTimeOptionsWithStatus = Vue.computed(() => {
+      const dur = Number(selectedDurationHours.value) || 3;
+      return START_TIME_OPTIONS.map((opt) => {
+        const built = buildSlotFromMinutes(opt.minutes, opt.minutes + dur * 60);
+        return {
+          ...opt,
+          isOccupied: Boolean(findSlotConflict(built)),
+        };
+      });
+    });
+
+    const isPresetSelected = (preset) => {
+      return (
+        timeMode.value === 'click' &&
+        Number(selectedStartMinutes.value) === preset.startMinutes &&
+        Number(selectedDurationHours.value) === preset.durationHours
+      );
+    };
+
+    const selectPresetSlot = (preset) => {
+      if (preset.isOccupied) return;
+      timeMode.value = 'click';
+      selectedStartMinutes.value = preset.startMinutes;
+      selectedDurationHours.value = preset.durationHours;
+      form.event_time = preset.label;
+    };
+
+    const selectDurationHours = (hrs) => {
+      selectedDurationHours.value = hrs;
+      if (activeParsedTime.value) {
+        form.event_time = activeParsedTime.value.label;
+      }
+    };
+
+    const onClickStartOrDurationChange = () => {
+      if (activeParsedTime.value) {
+        form.event_time = activeParsedTime.value.label;
+      }
+    };
+
+    const setTimeMode = (mode) => {
+      if (mode === timeMode.value) return;
+      if (mode === 'type') {
+        if (activeParsedTime.value) {
+          customTimeInput.value = activeParsedTime.value.rangeLabel.replace(/\u2013/g, '-');
+        }
+        timeMode.value = 'type';
+      } else {
+        const parsed = parseBookingTime(customTimeInput.value);
+        if (parsed) {
+          const matchedStart = START_TIME_OPTIONS.find((o) => o.minutes === parsed.startMinutes);
+          const matchedDur = Math.round(parsed.durationMinutes / 60);
+          if (matchedStart) {
+            selectedStartMinutes.value = matchedStart.minutes;
+          }
+          if (DURATION_HOUR_OPTIONS.includes(matchedDur)) {
+            selectedDurationHours.value = matchedDur;
+          }
+        }
+        timeMode.value = 'click';
+      }
+    };
+
+    const fetchAvailabilityForDate = async (dateStr, notifyIfOccupied = false) => {
+      checkingAvailability.value = true;
+      try {
+        const res = await GST_API.getBookingAvailability(dateStr ? { date: dateStr } : {});
+        occupiedDatesMap.value = res.data?.occupied_dates || {};
+        if (dateStr) {
+          occupiedSlotsOnDate.value = Array.isArray(res.data?.occupied_slots) ? res.data.occupied_slots : [];
+          if (
+            notifyIfOccupied &&
+            occupiedSlotsOnDate.value.length > 0 &&
+            lastNotifiedOccupiedDate.value !== dateStr
+          ) {
+            lastNotifiedOccupiedDate.value = dateStr;
+            const slotLabels = occupiedSlotsOnDate.value
+              .map((s) => s.range_label || s.event_time)
+              .join(', ');
+            store.notify(
+              `${formattedSelectedDate.value || dateStr} is already occupied (${slotLabels}). You can still book a different non-conflicting time.`,
+              'warning'
+            );
+          }
+        } else {
+          occupiedSlotsOnDate.value = [];
+        }
+      } catch (err) {
+        console.error('Failed to check booking availability:', err);
+      } finally {
+        checkingAvailability.value = false;
+      }
+    };
+
+    Vue.watch(() => form.event_date, (newDate) => {
+      if (!newDate) {
+        occupiedSlotsOnDate.value = [];
+        lastNotifiedOccupiedDate.value = '';
+        return;
+      }
+      fetchAvailabilityForDate(newDate, true);
+    });
+
     const onPhoneInput = (e) => {
       const clean = sanitizePhone(e.target.value);
       form.client_phone = clean;
@@ -1042,6 +1448,7 @@ export default {
           form.client_email = store.user.email;
         }
         store.fetchMyBookings();
+        fetchAvailabilityForDate(form.event_date || null, false);
         await store.fetchBookingPackages(false);
         if (store.selectedBookingPackage) {
           store.bookingModalTab = 'form';
@@ -1102,6 +1509,17 @@ export default {
         store.notify('Please select a valid target date (today or later).', 'warning');
         return;
       }
+      if (!activeParsedTime.value) {
+        store.notify('Please select a target time slot or enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).', 'warning');
+        return;
+      }
+      if (conflictingOccupiedSlot.value) {
+        store.notify(
+          `Time conflict: ${activeParsedTime.value.rangeLabel} overlaps with an occupied booking (${conflictingOccupiedSlot.value.range_label || conflictingOccupiedSlot.value.event_time}) on this date.`,
+          'error'
+        );
+        return;
+      }
       const cleanLocation = form.location.trim().slice(0, 200);
       if (!cleanLocation) {
         store.notify('Please enter the event venue or location.', 'warning');
@@ -1118,7 +1536,7 @@ export default {
           user_id: store.user?.id || undefined,
           client_name: cleanName,
           guest_count: guests,
-          event_time: (form.event_time || '').trim().slice(0, 60),
+          event_time: activeParsedTime.value.label,
           location: cleanLocation,
           notes: (form.notes || '').trim().slice(0, 500),
           package_name: pkg?.name || form.event_type,
@@ -1139,11 +1557,16 @@ export default {
         store.notify('Booking submitted! Track approval status under My Bookings.', 'success');
         store.selectedBookingPackage = null;
         form.event_date = '';
+        occupiedSlotsOnDate.value = [];
+        lastNotifiedOccupiedDate.value = '';
         form.location = '';
         form.notes = '';
         justSubmitted.value = true;
         store.bookingModalTab = 'history';
       } catch (err) {
+        if (form.event_date && err.response?.status === 422) {
+          fetchAvailabilityForDate(form.event_date, false);
+        }
         store.notify(err.response?.data?.message || 'Failed to submit event booking.', 'error');
       } finally {
         loading.value = false;
@@ -1203,6 +1626,25 @@ export default {
       estimatedCost,
       packageDetailsText,
       submitBooking,
+      timeMode,
+      selectedStartMinutes,
+      selectedDurationHours,
+      customTimeInput,
+      checkingAvailability,
+      occupiedDatesMap,
+      occupiedSlotsOnDate,
+      formattedSelectedDate,
+      activeParsedTime,
+      conflictingOccupiedSlot,
+      canSubmitBooking,
+      presetSlotCards,
+      durationHourOptions,
+      startTimeOptionsWithStatus,
+      isPresetSelected,
+      selectPresetSlot,
+      selectDurationHours,
+      onClickStartOrDurationChange,
+      setTimeMode,
     };
   },
 };
