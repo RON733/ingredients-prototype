@@ -160,18 +160,18 @@
             </p>
           </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0">
           <button
             type="button"
             @click="activeTab = 'remittances'"
-            class="px-3 py-2 rounded-xl bg-surface-850 hover:bg-surface-800 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer">
+            class="px-3 py-2 rounded-xl bg-surface-850 hover:bg-surface-800 text-amber-300 text-xs font-bold border border-amber-500/30 transition-colors cursor-pointer text-center">
             View Details
           </button>
           <button
             type="button"
             :disabled="isSubmittingRemittance"
             @click="cancelPendingRemittance(pendingRemittance.id)"
-            class="px-3 py-2 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer disabled:opacity-50">
+            class="px-3 py-2 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer disabled:opacity-50 text-center">
             <i class="pi pi-times mr-1 text-[10px]"></i>Cancel
           </button>
         </div>
@@ -200,25 +200,25 @@
       <div class="grid grid-cols-3 p-1 rounded-xl bg-surface-900 border border-surface-800 gap-1">
         <button 
           @click="activeTab = 'active'"
-          class="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+          class="py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 cursor-pointer text-center min-w-0"
           :class="activeTab === 'active' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
-          <i class="pi pi-box text-xs"></i>
-          <span class="truncate">Dispatched ({{ activeDeliveries.length }})</span>
+          <i class="pi pi-box text-xs shrink-0"></i>
+          <span class="truncate max-w-full">Dispatched ({{ activeDeliveries.length }})</span>
         </button>
         <button 
           @click="activeTab = 'completed'"
-          class="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+          class="py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 cursor-pointer text-center min-w-0"
           :class="activeTab === 'completed' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
-          <i class="pi pi-check-circle text-xs"></i>
-          <span class="truncate">Delivered ({{ completedDeliveries.length }})</span>
+          <i class="pi pi-check-circle text-xs shrink-0"></i>
+          <span class="truncate max-w-full">Delivered ({{ completedDeliveries.length }})</span>
         </button>
         <button 
           @click="activeTab = 'remittances'"
-          class="py-2.5 px-2 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center relative"
+          class="py-2 sm:py-2.5 px-1.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 cursor-pointer text-center relative min-w-0"
           :class="activeTab === 'remittances' ? 'bg-brand-500 text-neutral-950 font-black shadow-md shadow-brand-500/20' : 'text-neutral-400 hover:text-white hover:bg-surface-800/60'">
-          <i class="pi pi-wallet text-xs"></i>
-          <span class="truncate">Remittances ({{ remittanceHistory.length }})</span>
-          <span v-if="pendingRemittance" class="w-2 h-2 rounded-full bg-amber-400  shrink-0"></span>
+          <i class="pi pi-wallet text-xs shrink-0"></i>
+          <span class="truncate max-w-full">Remittances ({{ remittanceHistory.length }})</span>
+          <span v-if="pendingRemittance" class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400 shrink-0 absolute top-1.5 right-1.5 sm:static"></span>
         </button>
       </div>
 
@@ -295,7 +295,7 @@
         <div 
           v-for="order in activeDeliveries" 
           :key="order.id"
-          class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-3.5 sm:p-5 space-y-4 shadow-xl relative overflow-hidden">
+          class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl relative overflow-hidden">
           
           <!-- Header: Order ID & Status Badge -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-800">
@@ -461,19 +461,19 @@
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
             
             <!-- Quick Date Filter Presets -->
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-1 flex items-center gap-1">
-                <i class="pi pi-filter text-[10px] text-amber-400"></i> Date Filter:
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x pb-0.5">
+              <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-1 flex items-center gap-1 shrink-0">
+                <i class="pi pi-filter text-[10px] text-amber-400"></i> Date:
               </span>
               
               <button
                 type="button"
                 @click="historyFilterDate = ''"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                 :class="historyFilterDate === '' 
                   ? 'bg-amber-500 text-surface-950 font-black shadow-md shadow-amber-500/20' 
                   : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
-                <span>All Deliveries</span>
+                <span>All</span>
                 <span class="text-[10px] px-1.5 py-0.2 rounded-full font-mono" :class="historyFilterDate === '' ? 'bg-black/20 text-surface-950' : 'bg-surface-950 text-gray-400'">
                   {{ completedDeliveries.length }}
                 </span>
@@ -482,7 +482,7 @@
               <button
                 type="button"
                 @click="historyFilterDate = getTodayDateKey()"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                 :class="historyFilterDate === getTodayDateKey() 
                   ? 'bg-emerald-500 text-surface-950 font-black shadow-md shadow-emerald-500/20' 
                   : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
@@ -495,7 +495,7 @@
               <button
                 type="button"
                 @click="historyFilterDate = getYesterdayDateKey()"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
                 :class="historyFilterDate === getYesterdayDateKey() 
                   ? 'bg-sky-500 text-surface-950 font-black shadow-md shadow-sky-500/20' 
                   : 'bg-surface-800 text-gray-300 hover:text-white hover:bg-surface-700 border border-surface-700/60'">
@@ -628,14 +628,14 @@
       <div v-if="activeTab === 'remittances'" class="space-y-4">
         
         <!-- Remittance Summary Card -->
-        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-5 shadow-xl space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5 sm:space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
                 <i class="pi pi-wallet text-brand-400"></i>
                 <span>COD Cash Remittance</span>
               </h3>
-              <p class="text-[11px] text-gray-400 mt-0.5">
+              <p class="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
                 Hand over collected COD cash to staff or admin. Your balance returns to ₱0.00 once accepted.
               </p>
             </div>
@@ -643,33 +643,33 @@
               v-if="readyToRemitAmount > 0 && !pendingRemittance"
               type="button"
               @click="openRemitModal"
-              class="px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-neutral-950 font-black text-xs transition-all shadow-lg shadow-brand-500/20 cursor-pointer flex items-center justify-center gap-2 active:scale-95 shrink-0">
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-neutral-950 font-black text-xs transition-all shadow-lg shadow-brand-500/20 cursor-pointer flex items-center justify-center gap-2 active:scale-95 shrink-0">
               <i class="pi pi-send text-xs"></i>
               <span>Hand Over Remittance (₱{{ Number(readyToRemitAmount).toFixed(2) }})</span>
             </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div class="p-3.5 rounded-2xl bg-surface-950/70 border border-surface-800">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 text-xs">
+            <div class="col-span-2 sm:col-span-1 p-3.5 rounded-xl sm:rounded-2xl bg-surface-950/70 border border-surface-800 min-w-0">
               <p class="text-[10px] font-bold uppercase tracking-wider text-brand-400">Current Cash to Remit</p>
-              <p class="text-xl font-black text-white mt-1 font-mono">₱{{ Number(totalCashToRemit).toFixed(2) }}</p>
-              <p class="text-[10px] text-gray-400 mt-0.5">
+              <p class="text-xl font-black text-white mt-1 font-mono tabular-nums">₱{{ Number(totalCashToRemit).toFixed(2) }}</p>
+              <p class="text-[10px] text-gray-400 mt-0.5 truncate">
                 {{ pendingRemittance ? 'Awaiting acceptance to clear' : (readyToRemitOrdersCount + ' unremitted COD order(s)') }}
               </p>
             </div>
-            <div class="p-3.5 rounded-2xl bg-surface-950/70 border border-surface-800">
-              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Pending Acceptance</p>
-              <p class="text-xl font-black text-amber-300 mt-1 font-mono">
+            <div class="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-surface-950/70 border border-surface-800 min-w-0">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-amber-400 truncate">Pending Accept</p>
+              <p class="text-lg sm:text-xl font-black text-amber-300 mt-1 font-mono tabular-nums">
                 ₱{{ Number(pendingRemittance?.amount || 0).toFixed(2) }}
               </p>
-              <p class="text-[10px] text-gray-400 mt-0.5">
+              <p class="text-[10px] text-gray-400 mt-0.5 truncate">
                 {{ pendingRemittance ? pendingRemittance.reference_number : 'No pending handover' }}
               </p>
             </div>
-            <div class="p-3.5 rounded-2xl bg-surface-950/70 border border-surface-800">
-              <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Total Remitted (All-Time)</p>
-              <p class="text-xl font-black text-emerald-400 mt-1 font-mono">₱{{ Number(totalAcceptedRemittances).toFixed(2) }}</p>
-              <p class="text-[10px] text-gray-400 mt-0.5">
+            <div class="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-surface-950/70 border border-surface-800 min-w-0">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 truncate">Total Remitted</p>
+              <p class="text-lg sm:text-xl font-black text-emerald-400 mt-1 font-mono tabular-nums">₱{{ Number(totalAcceptedRemittances).toFixed(2) }}</p>
+              <p class="text-[10px] text-gray-400 mt-0.5 truncate">
                 {{ acceptedRemittancesCount }} accepted handover(s)
               </p>
             </div>
@@ -677,64 +677,68 @@
         </div>
 
         <!-- Remittance History Filter Bar -->
-        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-4 space-y-3 text-xs shadow-lg">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-1.5">
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-4 space-y-2.5 sm:space-y-3 text-xs shadow-lg">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x pb-0.5">
               <button
                 v-for="f in [{id:'all',label:'All'},{id:'pending',label:'Pending'},{id:'accepted',label:'Accepted'},{id:'rejected',label:'Rejected / Cancelled'}]"
                 :key="f.id"
                 type="button"
                 @click="remittanceStatusFilter = f.id"
-                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
                 :class="remittanceStatusFilter === f.id ? 'bg-brand-500/20 text-brand-300 border-brand-500/40' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
                 {{ f.label }}
               </button>
             </div>
 
-            <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-1 flex items-center gap-1">
-                <i class="pi pi-calendar text-[10px] text-amber-400"></i> Date:
-              </span>
-              <button
-                type="button"
-                @click="remittanceDateFilter = ''"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
-                :class="remittanceDateFilter === '' ? 'bg-amber-500 text-surface-950 border-amber-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
-                All Dates
-              </button>
-              <button
-                type="button"
-                @click="remittanceDateFilter = getTodayDateKey()"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
-                :class="remittanceDateFilter === getTodayDateKey() ? 'bg-emerald-500 text-surface-950 border-emerald-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
-                Today
-              </button>
-              <button
-                type="button"
-                @click="remittanceDateFilter = getYesterdayDateKey()"
-                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
-                :class="remittanceDateFilter === getYesterdayDateKey() ? 'bg-sky-500 text-surface-950 border-sky-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
-                Yesterday
-              </button>
-              <div class="flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-2.5 py-1.5 transition-colors">
-                <i class="pi pi-calendar text-xs text-amber-400 shrink-0"></i>
-                <input
-                  type="date"
-                  v-model="remittanceDateFilter"
-                  style="color-scheme: dark;"
-                  class="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
-                  title="Filter remittances by date"
-                />
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
+                <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-0.5 flex items-center gap-1 shrink-0">
+                  <i class="pi pi-calendar text-[10px] text-amber-400"></i> Date:
+                </span>
+                <button
+                  type="button"
+                  @click="remittanceDateFilter = ''"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                  :class="remittanceDateFilter === '' ? 'bg-amber-500 text-surface-950 border-amber-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+                  All Dates
+                </button>
+                <button
+                  type="button"
+                  @click="remittanceDateFilter = getTodayDateKey()"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                  :class="remittanceDateFilter === getTodayDateKey() ? 'bg-emerald-500 text-surface-950 border-emerald-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+                  Today
+                </button>
+                <button
+                  type="button"
+                  @click="remittanceDateFilter = getYesterdayDateKey()"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                  :class="remittanceDateFilter === getYesterdayDateKey() ? 'bg-sky-500 text-surface-950 border-sky-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+                  Yesterday
+                </button>
               </div>
-              <button
-                v-if="remittanceDateFilter"
-                type="button"
-                @click="remittanceDateFilter = ''"
-                title="Clear date filter"
-                class="px-2.5 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-xs font-bold border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
-                <i class="pi pi-times text-[10px]"></i>
-                <span>Clear</span>
-              </button>
+              <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                <div class="flex-1 sm:flex-initial flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-2.5 py-1.5 transition-colors">
+                  <i class="pi pi-calendar text-xs text-amber-400 shrink-0"></i>
+                  <input
+                    type="date"
+                    v-model="remittanceDateFilter"
+                    style="color-scheme: dark;"
+                    class="bg-transparent text-white text-xs focus:outline-none cursor-pointer w-full sm:w-auto"
+                    title="Filter remittances by date"
+                  />
+                </div>
+                <button
+                  v-if="remittanceDateFilter"
+                  type="button"
+                  @click="remittanceDateFilter = ''"
+                  title="Clear date filter"
+                  class="px-2.5 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-xs font-bold border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer shrink-0">
+                  <i class="pi pi-times text-[10px]"></i>
+                  <span>Clear</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -780,26 +784,26 @@
           v-for="rem in filteredRemittanceHistory"
           :key="rem.id"
           class="bg-surface-900 border border-surface-700/80 rounded-2xl p-4 sm:p-5 space-y-3 text-xs shadow-lg">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
-            <div class="space-y-1">
+          <div class="flex items-start justify-between gap-3 pb-3 border-b border-surface-800">
+            <div class="min-w-0 space-y-1.5">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="font-mono font-black text-white text-sm">{{ rem.reference_number }}</span>
+                <span class="font-mono font-black text-white text-sm tracking-tight">{{ rem.reference_number }}</span>
                 <span
-                  class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border"
                   :class="rem.status === 'accepted'
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                     : (rem.status === 'pending'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 '
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                       : 'bg-rose-500/20 text-rose-300 border-rose-500/30')">
-                  {{ rem.status === 'pending' ? 'Pending Staff Acceptance' : rem.status.toUpperCase() }}
+                  {{ rem.status === 'pending' ? 'Pending Acceptance' : rem.status.toUpperCase() }}
                 </span>
               </div>
-              <p class="text-[11px] text-gray-400">
-                Submitted: {{ formatDeliveryDateTime(rem.created_at) }} • {{ rem.orders_count }} COD order{{ rem.orders_count === 1 ? '' : 's' }}
+              <p class="text-[11px] text-gray-400 leading-snug">
+                {{ formatDeliveryDateTime(rem.created_at) }} • {{ rem.orders_count }} COD order{{ rem.orders_count === 1 ? '' : 's' }}
               </p>
             </div>
-            <div class="text-left sm:text-right">
-              <span class="text-lg font-black font-mono" :class="rem.status === 'accepted' ? 'text-emerald-400' : 'text-white'">
+            <div class="text-right shrink-0">
+              <span class="text-base sm:text-lg font-black font-mono tabular-nums" :class="rem.status === 'accepted' ? 'text-emerald-400' : 'text-white'">
                 ₱{{ Number(rem.amount).toFixed(2) }}
               </span>
             </div>
@@ -807,7 +811,7 @@
 
           <!-- Order Numbers Included -->
           <div v-if="rem.order_numbers && rem.order_numbers.length" class="flex flex-wrap items-center gap-1.5">
-            <span class="text-[10px] font-bold uppercase text-gray-500 mr-1">Orders:</span>
+            <span class="text-[10px] font-bold uppercase text-gray-500 mr-0.5">Orders:</span>
             <span
               v-for="ordNum in rem.order_numbers"
               :key="ordNum"
@@ -816,35 +820,35 @@
             </span>
           </div>
 
-          <p v-if="rem.rider_notes" class="text-[11px] text-gray-300 bg-surface-950/60 p-2.5 rounded-xl border border-surface-800">
+          <p v-if="rem.rider_notes" class="text-[11px] text-gray-300 bg-surface-950/60 p-2.5 rounded-xl border border-surface-800 leading-relaxed">
             <strong class="text-gray-400">Your Note:</strong> {{ rem.rider_notes }}
           </p>
 
           <!-- Acceptance / Rejection Info -->
-          <div v-if="rem.status === 'accepted'" class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <span>
+          <div v-if="rem.status === 'accepted'" class="p-2.5 sm:p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+            <span class="leading-snug">
               <i class="pi pi-check-circle mr-1"></i>
               Accepted by <strong>{{ rem.accepted_by_name || 'Staff / Admin' }}</strong>
-              <span v-if="rem.accepted_by_role" class="uppercase text-[10px] opacity-80">({{ rem.accepted_by_role }})</span>
+              <span v-if="rem.accepted_by_role" class="uppercase text-[10px] opacity-80"> ({{ rem.accepted_by_role }})</span>
             </span>
-            <span class="font-mono text-[10px]">{{ formatDeliveryDateTime(rem.accepted_at) }}</span>
+            <span class="font-mono text-[10px] opacity-90 shrink-0">{{ formatDeliveryDateTime(rem.accepted_at) }}</span>
           </div>
 
-          <div v-else-if="rem.status === 'rejected'" class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] space-y-1">
-            <div class="flex items-center justify-between">
+          <div v-else-if="rem.status === 'rejected'" class="p-2.5 sm:p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] space-y-1">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span><i class="pi pi-times-circle mr-1"></i> Rejected by <strong>{{ rem.rejected_by_name || 'Staff / Admin' }}</strong></span>
-              <span class="font-mono text-[10px]">{{ formatDeliveryDateTime(rem.rejected_at) }}</span>
+              <span class="font-mono text-[10px] opacity-90 shrink-0">{{ formatDeliveryDateTime(rem.rejected_at) }}</span>
             </div>
-            <p v-if="rem.staff_notes" class="text-[11px] text-rose-200">Reason: {{ rem.staff_notes }}</p>
+            <p v-if="rem.staff_notes" class="text-[11px] text-rose-200 leading-relaxed">Reason: {{ rem.staff_notes }}</p>
           </div>
 
-          <div v-else-if="rem.status === 'pending'" class="flex items-center justify-between gap-2 pt-1">
-            <span class="text-[11px] text-amber-300">Waiting for staff, admin, or super admin to verify cash and accept.</span>
+          <div v-else-if="rem.status === 'pending'" class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2.5 border-t border-surface-800/80">
+            <span class="text-[11px] text-amber-300/90 leading-relaxed">Waiting for staff, admin, or super admin to verify cash and accept.</span>
             <button
               type="button"
               :disabled="isSubmittingRemittance"
               @click="cancelPendingRemittance(rem.id)"
-              class="px-3 py-1.5 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer shrink-0">
+              class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-surface-850 hover:bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer shrink-0 text-center">
               Cancel Request
             </button>
           </div>
