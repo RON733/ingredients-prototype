@@ -144,9 +144,6 @@
                     {{ pinDigits.length >= i ? '•' : '' }}
                   </div>
                 </div>
-                <p class="text-[11px] text-gray-500">
-                  Mhar: 1234 &bull; Sarah: 5678
-                </p>
               </div>
 
               <!-- Interactive Keypad -->
