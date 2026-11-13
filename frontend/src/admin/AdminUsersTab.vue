@@ -482,8 +482,13 @@
                   v-model="newUser.email" 
                   type="email" 
                   required 
+                  pattern="^[a-zA-Z0-9._%+\-]+@gshotteas\.com$"
+                  title="Email address must end with @gshotteas.com"
                   placeholder="e.g. sarah@gshotteas.com"
                   class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500" />
+                <p v-if="newUser.email && !isGShotEmail(newUser.email)" class="text-[10px] text-red-400 mt-1">
+                  Email address must end with @gshotteas.com
+                </p>
               </div>
             </div>
 
@@ -567,22 +572,40 @@
 
               <!-- Contact Phone -->
               <div>
-                <label class="block font-bold text-gray-300 mb-1">Contact Phone</label>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="font-bold text-gray-300">Contact Phone</label>
+                  <span class="text-[10px] text-gray-500 font-mono">{{ (newUser.phone || '').length }}/11</span>
+                </div>
                 <input 
-                  v-model="newUser.phone" 
-                  type="text" 
+                  :value="newUser.phone"
+                  @input="sanitizePhoneInput(newUser, $event)"
+                  type="tel"
+                  inputmode="numeric"
+                  maxlength="11"
+                  pattern="[0-9]{11}"
+                  title="Enter 11 digits (numbers only, e.g. 09171234567)"
                   placeholder="e.g. 09171234567"
-                  class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500" />
+                  class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white font-mono focus:outline-none focus:border-brand-500" />
               </div>
             </div>
 
             <div>
-              <label class="block font-bold text-gray-300 mb-1">Assigned Station / Address</label>
+              <label class="block font-bold text-gray-300 mb-1">Job / Position in G Shot Teas</label>
               <input 
                 v-model="newUser.address" 
-                type="text" 
-                placeholder="e.g. G Shot Teas Counter Station, Santa Rosa Branch"
+                type="text"
+                list="gshot-job-options"
+                maxlength="100"
+                placeholder="e.g. Barista, Cashier, Kitchen Staff, Delivery Rider"
                 class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500" />
+              <datalist id="gshot-job-options">
+                <option value="Barista" />
+                <option value="Cashier" />
+                <option value="Kitchen Staff" />
+                <option value="Delivery Rider" />
+                <option value="Shift Supervisor" />
+                <option value="Store Manager" />
+              </datalist>
             </div>
 
             <p class="text-[11px] text-gray-400 bg-surface-950/60 p-3 rounded-xl border border-surface-800 flex items-start gap-2">
@@ -686,10 +709,18 @@
             </div>
 
             <div>
-              <label class="block font-bold text-gray-300 mb-1">Contact Phone</label>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-bold text-gray-300">Contact Phone</label>
+                <span class="text-[10px] text-gray-500 font-mono">{{ (editForm.phone || '').length }}/11</span>
+              </div>
               <input 
-                v-model="editForm.phone" 
-                type="text" 
+                :value="editForm.phone"
+                @input="sanitizePhoneInput(editForm, $event)"
+                type="tel"
+                inputmode="numeric"
+                maxlength="11"
+                pattern="[0-9]{11}"
+                title="Enter 11 digits (numbers only, e.g. 09171234567)"
                 placeholder="09171234567"
                 class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500 font-mono" />
             </div>
@@ -940,14 +971,33 @@ export default {
       newUser.value.pin = random;
     };
 
+    const isGShotEmail = (email) => /^[^@\s]+@gshotteas\.com$/i.test((email || '').trim());
+
+    const sanitizePhoneInput = (target, event) => {
+      const digitsOnly = (event?.target?.value ?? target.phone ?? '').replace(/\D/g, '').slice(0, 11);
+      target.phone = digitsOnly;
+      if (event?.target) {
+        event.target.value = digitsOnly;
+      }
+    };
+
     const submitCreateUser = async () => {
+      const trimmedEmail = (newUser.value.email || '').trim().toLowerCase();
+      if (!isGShotEmail(trimmedEmail)) {
+        store.notify('Email address must end with @gshotteas.com.', 'error');
+        return;
+      }
+      if (newUser.value.phone && !/^\d{11}$/.test(newUser.value.phone)) {
+        store.notify('Contact phone must be exactly 11 digits (e.g. 09171234567).', 'error');
+        return;
+      }
       if (newUser.value.role === 'super_admin' && !newUser.value.admin_password) {
         store.notify('Please enter your own Super Admin password to authorize creating a Super Admin account.', 'error');
         return;
       }
       savingUser.value = true;
       try {
-        const payload = { ...newUser.value };
+        const payload = { ...newUser.value, email: trimmedEmail };
         if (payload.role !== 'staff') {
           delete payload.pin;
         }
@@ -986,6 +1036,16 @@ export default {
     // Super Admin: Save Edited Credentials
     const submitEditUser = async () => {
       if (!editingUser.value) return;
+      const trimmedEditEmail = (editForm.value.email || '').trim().toLowerCase();
+      const origEmail = (editingUser.value.email || '').trim().toLowerCase();
+      if (trimmedEditEmail !== origEmail && !isGShotEmail(trimmedEditEmail)) {
+        store.notify('Email address must end with @gshotteas.com.', 'error');
+        return;
+      }
+      if (editForm.value.phone && !/^\d{11}$/.test(editForm.value.phone)) {
+        store.notify('Contact phone must be exactly 11 digits (e.g. 09171234567).', 'error');
+        return;
+      }
       if (store.isSuperAdmin && !editForm.value.admin_password) {
         store.notify('Please enter your own Super Admin password to confirm modifications.', 'error');
         return;
@@ -1078,6 +1138,8 @@ export default {
       superAdminCount,
       showCreatorPasswordInCreate,
       showCreatorPasswordInEdit,
+      isGShotEmail,
+      sanitizePhoneInput,
     };
   },
 };

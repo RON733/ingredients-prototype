@@ -750,12 +750,15 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', 'regex:/^[^@\s]+@gshotteas\.com$/i'],
             'password' => 'required|string|min:6',
             'role' => 'required|string|in:staff,admin,super_admin,driver',
             'pin' => 'nullable|string|min:4|max:10',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|digits:11',
             'address' => 'nullable|string|max:255',
+        ], [
+            'email.regex' => 'Email address must end with @gshotteas.com.',
+            'phone.digits' => 'Contact phone must be exactly 11 digits.',
         ]);
 
         if ($validated['role'] === 'super_admin' && $creator->role !== 'super_admin') {
@@ -779,7 +782,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            'email' => strtolower(trim($validated['email'])),
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
             'pin' => $pin,
@@ -870,7 +873,9 @@ class AuthController extends Controller
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'sometimes|nullable|string|min:6',
-            'phone' => 'sometimes|nullable|string|max:20',
+            'phone' => 'sometimes|nullable|digits:11',
+        ], [
+            'phone.digits' => 'Contact phone must be exactly 11 digits.',
         ]);
 
         if (isset($validated['role']) && $validated['role'] === 'super_admin' && $creator->role !== 'super_admin') {
