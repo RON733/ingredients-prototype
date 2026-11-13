@@ -55,16 +55,6 @@
             class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-yellow-400 border border-surface-700 flex items-center gap-1.5 transition-all cursor-pointer">
             <i class="pi pi-calendar-plus text-xs"></i><span>Book Event</span>
           </button>
-
-          <!-- Facebook Page Link -->
-          <a 
-            href="https://www.facebook.com/share/1LuMZhZXA9/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="px-3 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 border border-surface-700 hover:border-blue-500/40 flex items-center gap-1.5 transition-all"
-            title="Visit G Shot Teas on Facebook">
-            <i class="pi pi-facebook text-xs"></i><span>Facebook</span>
-          </a>
         </nav>
 
         <!-- 3. Right: Staff Tools & Customer Actions -->
@@ -281,16 +271,6 @@
             <i class="pi pi-envelope text-sm"></i>
             <span>Contact</span>
           </button>
-
-          <a 
-            href="https://www.facebook.com/share/1LuMZhZXA9/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            @click="mobileMenuOpen = false"
-            class="col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 transition-all">
-            <i class="pi pi-facebook text-sm"></i>
-            <span>Follow G Shot Teas on Facebook</span>
-          </a>
         </nav>
 
         <!-- Customer Orders & Tracking Shortcuts (Mobile Drawer) -->
