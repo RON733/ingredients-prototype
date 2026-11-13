@@ -454,7 +454,7 @@
       </div>
 
       <!-- Tab 2: Delivered History (With Day/Date Filter) -->
-      <div v-else class="space-y-4">
+      <div v-else-if="activeTab === 'completed'" class="space-y-4">
 
         <!-- History Filter Controls Toolbar -->
         <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-lg">
@@ -677,28 +677,101 @@
         </div>
 
         <!-- Remittance History Filter Bar -->
-        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div class="flex flex-wrap items-center gap-1.5">
+        <div class="bg-surface-900 border border-surface-700/80 rounded-2xl p-3.5 sm:p-4 space-y-3 text-xs shadow-lg">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button
+                v-for="f in [{id:'all',label:'All'},{id:'pending',label:'Pending'},{id:'accepted',label:'Accepted'},{id:'rejected',label:'Rejected / Cancelled'}]"
+                :key="f.id"
+                type="button"
+                @click="remittanceStatusFilter = f.id"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+                :class="remittanceStatusFilter === f.id ? 'bg-brand-500/20 text-brand-300 border-brand-500/40' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+                {{ f.label }}
+              </button>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-1 flex items-center gap-1">
+                <i class="pi pi-calendar text-[10px] text-amber-400"></i> Date:
+              </span>
+              <button
+                type="button"
+                @click="remittanceDateFilter = ''"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+                :class="remittanceDateFilter === '' ? 'bg-amber-500 text-surface-950 border-amber-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+                All Dates
+              </button>
+              <button
+                type="button"
+                @click="remittanceDateFilter = getTodayDateKey()"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+                :class="remittanceDateFilter === getTodayDateKey() ? 'bg-emerald-500 text-surface-950 border-emerald-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+                Today
+              </button>
+              <button
+                type="button"
+                @click="remittanceDateFilter = getYesterdayDateKey()"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
+                :class="remittanceDateFilter === getYesterdayDateKey() ? 'bg-sky-500 text-surface-950 border-sky-500 font-black' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
+                Yesterday
+              </button>
+              <div class="flex items-center gap-1.5 bg-surface-950 border border-surface-700 hover:border-surface-600 focus-within:border-amber-400 rounded-xl px-2.5 py-1.5 transition-colors">
+                <i class="pi pi-calendar text-xs text-amber-400 shrink-0"></i>
+                <input
+                  type="date"
+                  v-model="remittanceDateFilter"
+                  style="color-scheme: dark;"
+                  class="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
+                  title="Filter remittances by date"
+                />
+              </div>
+              <button
+                v-if="remittanceDateFilter"
+                type="button"
+                @click="remittanceDateFilter = ''"
+                title="Clear date filter"
+                class="px-2.5 py-1.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white text-xs font-bold border border-surface-700 transition-colors flex items-center gap-1 cursor-pointer">
+                <i class="pi pi-times text-[10px]"></i>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-2.5 border-t border-surface-800 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
+            <span class="font-medium">
+              Showing <strong class="text-white">{{ filteredRemittanceHistory.length }}</strong> remittance record(s)
+              <span v-if="remittanceDateFilter"> for <strong class="text-amber-300">{{ formatFilterDisplayDate(remittanceDateFilter) }}</strong></span>
+            </span>
             <button
-              v-for="f in [{id:'all',label:'All'},{id:'pending',label:'Pending'},{id:'accepted',label:'Accepted'},{id:'rejected',label:'Rejected / Cancelled'}]"
-              :key="f.id"
+              v-if="remittanceStatusFilter !== 'all' || remittanceDateFilter"
               type="button"
-              @click="remittanceStatusFilter = f.id"
-              class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer"
-              :class="remittanceStatusFilter === f.id ? 'bg-brand-500/20 text-brand-300 border-brand-500/40' : 'bg-surface-850 text-gray-400 border-surface-800 hover:text-white'">
-              {{ f.label }}
+              @click="remittanceStatusFilter = 'all'; remittanceDateFilter = ''"
+              class="text-[11px] font-bold text-brand-400 hover:text-brand-300 cursor-pointer">
+              Reset Filters
             </button>
           </div>
-          <span class="text-[11px] text-gray-400 font-medium">
-            Showing <strong class="text-white">{{ filteredRemittanceHistory.length }}</strong> remittance record(s)
-          </span>
         </div>
 
         <!-- Empty Remittance History -->
         <div v-if="filteredRemittanceHistory.length === 0" class="text-center py-12 bg-surface-900/60 border border-surface-700 rounded-2xl p-3.5 sm:p-5 space-y-2">
           <div class="w-12 h-12 rounded-2xl bg-surface-800 border border-surface-700 text-gray-400 flex items-center justify-center text-2xl mx-auto mb-2"><i class="pi pi-receipt"></i></div>
-          <h3 class="text-base font-bold text-white">No Remittance History Yet</h3>
-          <p class="text-xs text-gray-400">When you hand over COD cash to the store, your remittance records and approvals will appear here.</p>
+          <h3 class="text-base font-bold text-white">
+            {{ (remittanceStatusFilter !== 'all' || remittanceDateFilter) ? 'No Matching Remittances' : 'No Remittance History Yet' }}
+          </h3>
+          <p class="text-xs text-gray-400">
+            {{ (remittanceStatusFilter !== 'all' || remittanceDateFilter)
+              ? 'No remittance records match your current status or date filter.'
+              : 'When you hand over COD cash to the store, your remittance records and approvals will appear here.' }}
+          </p>
+          <div v-if="remittanceStatusFilter !== 'all' || remittanceDateFilter" class="pt-1">
+            <button
+              type="button"
+              @click="remittanceStatusFilter = 'all'; remittanceDateFilter = ''"
+              class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-surface-950 font-black text-xs transition-colors shadow-md cursor-pointer">
+              Reset Filters
+            </button>
+          </div>
         </div>
 
         <!-- Remittance History List -->
@@ -1236,6 +1309,7 @@ export default {
     const backendReadyToRemitAmount = Vue.ref(null);
     const backendReadyToRemitOrders = Vue.ref([]);
     const remittanceStatusFilter = Vue.ref('all');
+    const remittanceDateFilter = Vue.ref('');
     const showRemitModal = Vue.ref(false);
     const remitNotes = Vue.ref('');
     const isSubmittingRemittance = Vue.ref(false);
@@ -1288,12 +1362,22 @@ export default {
       return readyToRemitOrdersList.value.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
     });
 
+    const getRemittanceDateKey = (rem) => {
+      const d = parseDateSafe(rem.created_at || rem.accepted_at || rem.rejected_at);
+      return d ? getDateKey(d) : '';
+    };
+
     const filteredRemittanceHistory = Vue.computed(() => {
-      if (remittanceStatusFilter.value === 'all') return remittanceHistory.value;
+      let list = remittanceHistory.value;
       if (remittanceStatusFilter.value === 'rejected') {
-        return remittanceHistory.value.filter(r => r.status === 'rejected' || r.status === 'cancelled');
+        list = list.filter(r => r.status === 'rejected' || r.status === 'cancelled');
+      } else if (remittanceStatusFilter.value !== 'all') {
+        list = list.filter(r => r.status === remittanceStatusFilter.value);
       }
-      return remittanceHistory.value.filter(r => r.status === remittanceStatusFilter.value);
+      if (remittanceDateFilter.value) {
+        list = list.filter(r => getRemittanceDateKey(r) === remittanceDateFilter.value);
+      }
+      return list;
     });
 
     const acceptedRemittancesCount = Vue.computed(() => {
@@ -1977,6 +2061,7 @@ export default {
       remittanceHistory,
       pendingRemittance,
       remittanceStatusFilter,
+      remittanceDateFilter,
       filteredRemittanceHistory,
       readyToRemitOrdersList,
       readyToRemitOrdersCount,
