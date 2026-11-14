@@ -339,10 +339,10 @@ export const detectBarangayFromCoords = (lat, lng, resolvedAddress = '', detecte
 
 export const getBarangayRejectionMessage = (detection) => {
   if (detection?.reason === 'outside_city' && detection.outsideCity) {
-    return `Delivery rejected: "${detection.outsideCity}" is outside our delivery area. Orders are only accepted within the 18 barangays of Santa Rosa, Laguna.`;
+    return `Delivery unavailable: Cannot deliver to "${detection.outsideCity}". Orders are only accepted within the 18 barangays of Santa Rosa, Laguna.`;
   }
   if (detection?.reason === 'empty') {
-    return 'Delivery address is required for Delivery orders.';
+    return 'Delivery unavailable: Please enter or detect an address in one of the 18 accepted Santa Rosa barangays.';
   }
-  return 'Address rejected: No supported Santa Rosa barangay was detected. Please include one of the 18 accepted barangays (e.g., Sinalhan, Balibago, Tagapo, Don Jose, etc.).';
+  return 'Delivery unavailable: Cannot deliver to this location. No supported Santa Rosa barangay was detected.';
 };

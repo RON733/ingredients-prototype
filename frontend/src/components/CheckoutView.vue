@@ -207,23 +207,20 @@
             <!-- Estimated Delivery Time Card (Customer View, Per Barangay) -->
             <div 
               class="mt-3 p-3.5 sm:p-4 rounded-2xl border flex items-center justify-between gap-3 transition-colors"
-              :class="addressError ? 'bg-rose-950/25 border-rose-500/40' : 'bg-surface-900/90 border-surface-700/80'">
+              :class="(detectedBarangay && !addressError) ? 'bg-surface-900/90 border-surface-700/80' : 'bg-rose-950/25 border-rose-500/40'">
               <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 <div 
                   class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center text-base sm:text-lg shrink-0"
-                  :class="addressError ? 'bg-rose-500/15 border-rose-500/30 text-rose-300' : 'bg-amber-500/15 border-amber-500/25 text-amber-300'">
-                  <i class="pi" :class="addressError ? 'pi-ban' : 'pi-clock'"></i>
+                  :class="(detectedBarangay && !addressError) ? 'bg-amber-500/15 border-amber-500/25 text-amber-300' : 'bg-rose-500/15 border-rose-500/30 text-rose-300'">
+                  <i class="pi" :class="(detectedBarangay && !addressError) ? 'pi-clock' : 'pi-ban'"></i>
                 </div>
                 <div class="min-w-0">
                   <p class="text-[11px] sm:text-xs font-black text-stone-100 uppercase tracking-wider">Est. Delivery Time</p>
                   <p v-if="detectedBarangay && !addressError" class="text-[11px] text-gray-300 mt-0.5 leading-snug">
                     From Brgy. Sinalhan &bull; To <strong class="text-amber-300">Brgy. {{ detectedBarangay.name }}</strong>
                   </p>
-                  <p v-else-if="addressError" class="text-[11px] text-rose-300 mt-0.5 leading-snug">
-                    Outside the 18 accepted Santa Rosa barangays
-                  </p>
-                  <p v-else class="text-[11px] text-gray-400 mt-0.5 leading-snug">
-                    Enter or detect your Santa Rosa barangay
+                  <p v-else class="text-[11px] text-rose-300 mt-0.5 leading-snug">
+                    Cannot deliver to this location (no supported barangay detected)
                   </p>
                 </div>
               </div>
@@ -233,14 +230,9 @@
                 {{ detectedBarangay.eta }}
               </span>
               <span 
-                v-else-if="addressError"
-                class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-black bg-rose-500/15 text-rose-300 border border-rose-500/30 font-mono shrink-0 whitespace-nowrap">
-                Rejected
-              </span>
-              <span 
                 v-else
-                class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-surface-800 text-gray-400 border border-surface-700 font-mono shrink-0 whitespace-nowrap">
-                15–55 Mins
+                class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-black bg-rose-500/15 text-rose-300 border border-rose-500/30 font-mono shrink-0 whitespace-nowrap">
+                Unavailable
               </span>
             </div>
 
@@ -361,7 +353,7 @@
                 <button 
                   type="button"
                   @click="submitOrder"
-                  :disabled="isSubmitting || store.cart.length === 0"
+                  :disabled="isSubmitting || store.cart.length === 0 || (Boolean(store.user) && isDeliveryUnavailable)"
                   class="w-full py-3.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-surface-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/15 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
                   <span v-else class="flex items-center gap-2">
@@ -493,7 +485,7 @@
           <!-- Submit Button -->
           <button 
             @click="submitOrder"
-            :disabled="isSubmitting || store.cart.length === 0"
+            :disabled="isSubmitting || store.cart.length === 0 || (Boolean(store.user) && isDeliveryUnavailable)"
             class="w-full py-3.5 rounded-xl text-sm sm:text-base font-black bg-amber-400 hover:bg-amber-300 text-surface-950 shadow-lg shadow-amber-500/15 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
             <span v-else class="flex items-center gap-2">
@@ -799,6 +791,11 @@ export default {
 
     const detectedBarangay = Vue.computed(() => {
       return detectedBarangayResult.value.matched ? detectedBarangayResult.value.barangay : null;
+    });
+
+    const isDeliveryUnavailable = Vue.computed(() => {
+      if (form.order_type !== 'Delivery') return false;
+      return !detectedBarangay.value || Boolean(addressError.value);
     });
 
     const onManualAddressInput = () => {
@@ -1462,6 +1459,7 @@ export default {
       phoneError,
       addressError,
       detectedBarangay,
+      isDeliveryUnavailable,
       onManualAddressInput,
       showSupportedBarangays,
       supportedBarangays,
