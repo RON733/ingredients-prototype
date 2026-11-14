@@ -3,11 +3,14 @@
       
       <!-- Background Image with Dark Vignette Gradient -->
       <div class="absolute inset-0 z-0">
-        <img 
+        <picture class="w-full h-full block">
+          <source media="(max-width: 639px)" srcset="/assets/hero-banner-mobile.jpg" />
+          <img 
           src="/assets/hero-banner.png" 
           alt="G Shot Teas — Milk Tea, Coffee, Pizza, Burgers, and Rice Meals in Santa Rosa, Laguna" 
           class="w-full h-full object-cover object-center filter brightness-[0.28] contrast-125 transform scale-105 transition-transform duration-1000"
         />
+        </picture>
         <div class="absolute inset-0 bg-gradient-to-t from-surface-900 via-surface-900/60 to-surface-900/80"></div>
         <div class="absolute inset-0 bg-radial-vignette opacity-70"></div>
       </div>
