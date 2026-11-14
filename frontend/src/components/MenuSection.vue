@@ -855,7 +855,7 @@ export default {
       }
 
       if (availabilityFilter.value === 'in_stock') {
-        list = list.filter(p => (Number(p.max_portions) > 0 || p.is_available));
+        list = list.filter(p => Number(p.max_portions) > 0 && p.is_available !== false);
       }
 
       // 4. Price Range Filter
