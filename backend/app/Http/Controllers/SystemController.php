@@ -206,13 +206,38 @@ class SystemController extends Controller
             ]);
         }
 
-        // Live menu context
-        $products = Product::where('is_available', true)->get();
+        // Live menu context with real-time stock/availability status
+        $products = Product::with('recipes.ingredient')->orderBy('name', 'asc')->get();
         $menuList = [];
+        $outOfStockItems = [];
+        $inStockItems = [];
+
         foreach ($products as $p) {
-            $menuList[] = "- {$p->name} ({$p->category}): ₱" . number_format($p->price, 2) . " — {$p->description}";
+            $stockStatus = $p->stock_status;
+            $maxPortions = $p->max_portions;
+
+            if ($stockStatus === 'unavailable' || $stockStatus === 'soldout') {
+                $statusTag = '[OUT OF STOCK]';
+                $outOfStockItems[] = $p->name;
+            } elseif ($stockStatus === 'low') {
+                $statusTag = "[LOW STOCK - {$maxPortions} left]";
+                $inStockItems[] = $p->name;
+            } else {
+                $statusTag = '[IN STOCK]';
+                $inStockItems[] = $p->name;
+            }
+
+            $priceStr = '₱' . number_format($p->price, 2);
+            if ($p->is_discounted && $p->original_price) {
+                $priceStr .= ' (was ₱' . number_format($p->original_price, 2) . ')';
+            }
+
+            $menuList[] = "- {$p->name} ({$p->category}) {$statusTag}: {$priceStr} — {$p->description}";
         }
-        $menuSummary = implode("\n", $menuList);
+        $menuSummary = !empty($menuList) ? implode("\n", $menuList) : "No menu items available.";
+        $outOfStockSummary = !empty($outOfStockItems)
+            ? implode(', ', $outOfStockItems)
+            : 'None (all menu items are currently in stock)';
 
         // Live announcements
         $announcements = \App\Models\Announcement::where('is_active', true)->get();
@@ -252,14 +277,18 @@ class SystemController extends Controller
             . "- Walk-In Orders: YES! Walk-in orders for dine-in and takeout are 100% welcomed directly at our physical store at {$address}. Customers can also order online through this website for delivery or pickup!\n"
             . "- Payment Methods: PayMongo Online Payment (QR Ph, E-Wallets & Online Banking) and Cash on Delivery (COD) / Cash at Counter for walk-ins.\n"
             . "- Event Catering & Mobile Bar: {$bookingPackagesSummary}. Inquiries handled directly by {$owner} ({$phone}).\n\n"
-            . "CURRENT STORE MENU & PRICES:\n{$menuSummary}\n\n"
+            . "CURRENT STORE MENU, PRICES & LIVE STOCK STATUS:\n{$menuSummary}\n\n"
+            . "CURRENTLY OUT OF STOCK ITEMS:\n{$outOfStockSummary}\n\n"
             . "LIVE PROMOTIONS & ANNOUNCEMENTS:\n{$announcementsSummary}\n\n"
             . "GUIDELINES FOR YOUR RESPONSE:\n"
             . "1. Answer the customer's specific query directly and intelligently.\n"
             . "2. If asked 'can I order walk in' or about visiting, warmly confirm that walk-ins are welcomed and provide the address: {$address}.\n"
             . "3. If asked who owns the store, state proudly that G Shot Teas is owned and operated by {$owner}.\n"
             . "4. Keep answers engaging, helpful, and concise with clean Markdown formatting when listing recommendations.\n"
-            . "5. Do not invent products not listed in the menu.";
+            . "5. ALWAYS check each menu item's stock tag ([IN STOCK], [LOW STOCK - X left], or [OUT OF STOCK]) before answering.\n"
+            . "6. If a customer asks about an item marked [OUT OF STOCK], clearly inform them that it is currently out of stock / unavailable right now, and suggest similar [IN STOCK] alternatives from the menu.\n"
+            . "7. Never recommend [OUT OF STOCK] items as available to order; when listing menu items or best sellers, clearly note if an item is [OUT OF STOCK] or [LOW STOCK].\n"
+            . "8. Do not invent products not listed in the menu.";
 
         set_time_limit(45);
 
@@ -332,6 +361,44 @@ class SystemController extends Controller
         if (str_contains($message, 'address') || str_contains($message, 'location') || str_contains($message, 'where')) {
             return response()->json([
                 'reply' => "📍 **Store Address**: {$address}\n\nWe are open Monday to Saturday from 9:00 AM to 10:00 PM. Drop by for freshly brewed milk tea, hot burgers, and stone-baked pizza!",
+                'ai_powered' => false
+            ]);
+        }
+
+        if (str_contains($message, 'out of stock') || str_contains($message, 'available') || str_contains($message, 'stock') || str_contains($message, 'menu')) {
+            $matchedProducts = $products->filter(fn($p) => str_contains($message, strtolower($p->name)));
+            if ($matchedProducts->isNotEmpty()) {
+                $lines = $matchedProducts->map(function ($p) {
+                    $isOos = in_array($p->stock_status, ['unavailable', 'soldout'], true);
+                    if ($isOos) {
+                        return "❌ **{$p->name}** is currently **Out of Stock**.";
+                    }
+                    if ($p->stock_status === 'low') {
+                        return "⚠️ **{$p->name}** is **In Stock** (Low stock: {$p->max_portions} left) — ₱" . number_format($p->price, 2) . ".";
+                    }
+                    return "✅ **{$p->name}** is **In Stock** — ₱" . number_format($p->price, 2) . ".";
+                })->implode("\n");
+
+                return response()->json([
+                    'reply' => $lines,
+                    'ai_powered' => false
+                ]);
+            }
+
+            $reply = "Here is our current menu availability at **G Shot Teas**:\n\n";
+            if (!empty($outOfStockItems)) {
+                $reply .= "❌ **Currently Out of Stock:** " . implode(', ', $outOfStockItems) . "\n\n";
+            } else {
+                $reply .= "✅ **All menu items are currently in stock!**\n\n";
+            }
+            if (!empty($inStockItems)) {
+                $reply .= "✅ **Available Now:** " . implode(', ', array_slice($inStockItems, 0, 12));
+                if (count($inStockItems) > 12) {
+                    $reply .= " (and " . (count($inStockItems) - 12) . " more on our Menu section)";
+                }
+            }
+            return response()->json([
+                'reply' => $reply,
                 'ai_powered' => false
             ]);
         }
