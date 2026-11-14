@@ -103,6 +103,7 @@ export default {
       }
 
       // On desktop / wide displays: ensure customer view and smooth-scroll to #menu
+      store.scrollLockUntil = Date.now() + 700;
       store.currentView = 'customer';
       store.activeSection = 'menu';
       const el = document.getElementById('menu');

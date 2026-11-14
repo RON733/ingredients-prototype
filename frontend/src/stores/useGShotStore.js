@@ -509,6 +509,7 @@ const useGShotStore = defineStore('gshot', {
       })()
     ), // 'customer' | 'admin' | 'driver' | 'checkout' | 'track' | 'history'
     activeSection: 'home',   // 'home' | 'menu' | 'about' | 'contact'
+    scrollLockUntil: 0,      // Timestamp to suppress scroll-spy during programmatic smooth scroll
     adminTab: 'orders',      // 'orders' | 'analytics' | 'products' | 'inventory' | 'recipes' | 'bookings' | 'users' | 'audit'
     cartOpen: false,
     authModalOpen: false,

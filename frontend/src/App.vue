@@ -269,10 +269,48 @@ export default {
       }
     };
 
+    let scrollSpyRaf = null;
+    const updateActiveSectionOnScroll = () => {
+      if (store.currentView !== 'customer' || store.isMaintenanceMode) return;
+      if (store.scrollLockUntil && Date.now() < store.scrollLockUntil) return;
+
+      const offset = 160;
+      const sections = ['contact', 'about', 'menu'];
+      let detected = 'home';
+
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 20;
+      if (atBottom && document.getElementById('contact')) {
+        detected = 'contact';
+      } else {
+        for (const id of sections) {
+          const el = document.getElementById(id);
+          if (el && el.getBoundingClientRect().top <= offset) {
+            detected = id;
+            break;
+          }
+        }
+      }
+
+      if (store.activeSection !== detected) {
+        store.activeSection = detected;
+      }
+    };
+
+    const handleWindowScroll = () => {
+      if (scrollSpyRaf !== null) return;
+      scrollSpyRaf = window.requestAnimationFrame(() => {
+        scrollSpyRaf = null;
+        updateActiveSectionOnScroll();
+      });
+    };
+
     onMounted(async () => {
+      window.addEventListener('scroll', handleWindowScroll, { passive: true });
       enforceWorkerDashboardOnly();
       await store.init();
       enforceWorkerDashboardOnly();
+      nextTick(() => updateActiveSectionOnScroll());
 
       // Handle PayMongo Hosted Checkout return redirect
       try {
@@ -310,6 +348,14 @@ export default {
         }
       } catch (e) {
         console.error('Error handling PayMongo URL params:', e);
+      }
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener('scroll', handleWindowScroll);
+      if (scrollSpyRaf !== null) {
+        window.cancelAnimationFrame(scrollSpyRaf);
+        scrollSpyRaf = null;
       }
     });
 
@@ -368,6 +414,7 @@ export default {
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return;
         }
+        store.scrollLockUntil = Date.now() + 700;
         store.currentView = 'customer';
         store.activeSection = 'menu';
         const el = document.getElementById('menu');
@@ -381,6 +428,7 @@ export default {
         }
         return;
       }
+      store.scrollLockUntil = Date.now() + 700;
       store.currentView = 'customer';
       store.activeSection = section;
       if (section === 'home') {

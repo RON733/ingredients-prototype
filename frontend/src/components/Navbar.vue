@@ -27,7 +27,7 @@
           <button 
             @click="navTo('menu')" 
             class="px-3.5 py-2 rounded-xl transition-all cursor-pointer"
-            :class="[store.activeSection === 'menu' && store.currentView === 'customer' 
+            :class="[(store.currentView === 'menu' || (store.activeSection === 'menu' && store.currentView === 'customer'))
               ? 'text-yellow-400 font-bold' 
               : 'text-gray-300 hover:text-white hover:bg-surface-800/60']">
             MENU
@@ -243,7 +243,7 @@
           <button 
             @click="navTo('home')" 
             class="flex items-center gap-2 p-3 rounded-xl transition-all"
-            :class="store.activeSection === 'home' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            :class="store.currentView === 'customer' && store.activeSection === 'home' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
             <i class="pi pi-home text-sm"></i>
             <span>Home</span>
           </button>
@@ -251,7 +251,7 @@
           <button 
             @click="navTo('menu')" 
             class="flex items-center gap-2 p-3 rounded-xl transition-all"
-            :class="store.currentView === 'menu' ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-400/20' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            :class="(store.currentView === 'menu' || (store.currentView === 'customer' && store.activeSection === 'menu')) ? 'bg-yellow-400 text-black font-black shadow-lg shadow-yellow-400/20' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
             <i class="pi pi-th-large text-sm"></i>
             <span>Menu</span>
           </button>
@@ -259,7 +259,7 @@
           <button 
             @click="navTo('about')" 
             class="flex items-center gap-2 p-3 rounded-xl transition-all"
-            :class="store.activeSection === 'about' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            :class="store.currentView === 'customer' && store.activeSection === 'about' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
             <i class="pi pi-info-circle text-sm"></i>
             <span>About Us</span>
           </button>
@@ -267,7 +267,7 @@
           <button 
             @click="navTo('contact')" 
             class="flex items-center gap-2 p-3 rounded-xl transition-all"
-            :class="store.activeSection === 'contact' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
+            :class="store.currentView === 'customer' && store.activeSection === 'contact' ? 'bg-brand-500/15 text-brand-400 border border-brand-500/30' : 'bg-surface-800/80 text-gray-300 hover:text-white'">
             <i class="pi pi-envelope text-sm"></i>
             <span>Contact</span>
           </button>
@@ -425,6 +425,7 @@ export default {
 
     const goHome = () => {
       mobileMenuOpen.value = false;
+      store.scrollLockUntil = Date.now() + 700;
       store.currentView = 'customer';
       store.activeSection = 'home';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -439,6 +440,7 @@ export default {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
+      store.scrollLockUntil = Date.now() + 700;
       store.currentView = 'customer';
       store.activeSection = section;
       if (section === 'home') {
