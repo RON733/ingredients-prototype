@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 <header class="fixed top-0 left-0 right-0 z-50 bg-surface-900/95 backdrop-blur-md border-b border-surface-700/60 shadow-xl transition-all">
       <div class="w-full px-3 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6">
         
@@ -357,13 +357,7 @@
           </div>
           <div v-if="store.user" class="flex items-center gap-3">
             <button 
-              @click="goToView('history')" 
-              class="text-brand-400 font-bold hover:underline flex items-center gap-1 cursor-pointer">
-              <i class="pi pi-history text-[11px]"></i>
-              <span>My Orders</span>
-            </button>
-            <button 
-              @click="handleLogout(); mobileMenuOpen = false"
+              @click="handleLogout"
               class="text-rose-400 font-bold hover:underline cursor-pointer">
               Log Out
             </button>
@@ -485,10 +479,20 @@ export default {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
       mobileMenuOpen.value = false;
       store.profileDropdownOpen = false;
-      store.logout();
+      const ok = await store.confirmDialog({
+        title: 'Log Out',
+        message: 'Are you sure you want to log out?',
+        confirmText: 'Log Out',
+        cancelText: 'Cancel',
+        variant: 'warning',
+        icon: 'pi-sign-out',
+      });
+      if (ok) {
+        store.logout();
+      }
     };
 
     const togglePortal = () => {
