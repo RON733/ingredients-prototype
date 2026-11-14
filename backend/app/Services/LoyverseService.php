@@ -22,6 +22,7 @@ class LoyverseService
     protected ?array $cachedCategories = null;
     protected ?array $cachedStores = null;
     protected ?array $cachedItems = null;
+    protected ?array $cachedDiscounts = null;
 
     public function __construct()
     {
@@ -209,6 +210,129 @@ class LoyverseService
 
         $created = $this->createOrUpdateSupplier($payload);
         return $created['id'] ?? null;
+    }
+
+    public function getDiscounts(bool $fresh = false): array
+    {
+        if (!$fresh && $this->cachedDiscounts !== null) {
+            return $this->cachedDiscounts;
+        }
+
+        if (empty($this->token)) {
+            return [];
+        }
+
+        $res = Http::withHeaders($this->headers())->get("{$this->apiUrl}/discounts");
+        if ($res->successful()) {
+            $this->cachedDiscounts = $res->json('discounts') ?? [];
+            return $this->cachedDiscounts;
+        }
+
+        return [];
+    }
+
+    public function findOrCreateDiscount(string $name, string $type = 'VARIABLE_AMOUNT', ?float $value = null): ?string
+    {
+        if (empty($this->token)) {
+            return null;
+        }
+
+        $cleanName = mb_substr(trim($name), 0, 40);
+        if ($cleanName === '') {
+            $cleanName = 'Website Promo Discount';
+        }
+
+        $discounts = $this->getDiscounts();
+        foreach ($discounts as $d) {
+            if (!empty($d['deleted_at'])) {
+                continue;
+            }
+            if (($d['type'] ?? '') !== $type) {
+                continue;
+            }
+
+            if ($type === 'FIXED_PERCENT' && $value !== null) {
+                if (abs((float) ($d['discount_percent'] ?? -1) - $value) < 0.01) {
+                    return $d['id'] ?? null;
+                }
+            } elseif ($type === 'FIXED_AMOUNT' && $value !== null) {
+                if (abs((float) ($d['discount_amount'] ?? -1) - $value) < 0.01) {
+                    return $d['id'] ?? null;
+                }
+            } elseif (strcasecmp(trim($d['name'] ?? ''), $cleanName) === 0) {
+                return $d['id'] ?? null;
+            }
+        }
+
+        $payload = [
+            'name' => $cleanName,
+            'type' => $type,
+            'restricted_access' => false,
+        ];
+
+        $storeId = $this->getEffectiveStoreId();
+        if (!empty($storeId)) {
+            $payload['stores'] = [$storeId];
+        }
+
+        if ($type === 'FIXED_PERCENT' && $value !== null) {
+            $payload['discount_percent'] = round($value, 2);
+        } elseif ($type === 'FIXED_AMOUNT' && $value !== null) {
+            $payload['discount_amount'] = round($value, 2);
+        }
+
+        $res = Http::withHeaders($this->headers())->post("{$this->apiUrl}/discounts", $payload);
+        if ($res->successful()) {
+            $created = $res->json();
+            if (is_array($this->cachedDiscounts)) {
+                $this->cachedDiscounts[] = $created;
+            } else {
+                $this->cachedDiscounts = [$created];
+            }
+            return $created['id'] ?? null;
+        }
+
+        Log::warning("Failed to create Loyverse discount '{$cleanName}': " . $res->body());
+        return null;
+    }
+
+    public function syncProductDiscountToLoyverse(Product $product): ?string
+    {
+        if (empty($this->token)) {
+            return null;
+        }
+
+        $isDiscounted = $product->original_price !== null
+            && (float) $product->original_price > (float) $product->price;
+
+        if (!$isDiscounted) {
+            if (!empty($product->loyverse_discount_id)) {
+                $product->loyverse_discount_id = null;
+                $product->saveQuietly();
+            }
+            return null;
+        }
+
+        if ($product->discount_type === 'fixed' && (float) $product->discount_value > 0) {
+            $val = round((float) $product->discount_value, 2);
+            $fmt = rtrim(rtrim(number_format($val, 2, '.', ''), '0'), '.');
+            $name = "Promo PHP {$fmt} Off";
+            $type = 'FIXED_AMOUNT';
+        } else {
+            $pct = (float) ($product->discount_percent ?: (($product->original_price - $product->price) / $product->original_price * 100));
+            $val = round($pct, 2);
+            $fmt = rtrim(rtrim(number_format($val, 2, '.', ''), '0'), '.');
+            $name = "Promo {$fmt}% Off";
+            $type = 'FIXED_PERCENT';
+        }
+
+        $discountId = $this->findOrCreateDiscount($name, $type, $val);
+        if ($discountId && $product->loyverse_discount_id !== $discountId) {
+            $product->loyverse_discount_id = $discountId;
+            $product->saveQuietly();
+        }
+
+        return $discountId;
     }
 
     /**
@@ -478,6 +602,7 @@ class LoyverseService
                     $prod->loyverse_item_id = $savedItem['id'] ?? $itemId;
                     $prod->loyverse_variant_id = $savedItem['variants'][0]['variant_id'] ?? $variantId;
                     $prod->saveQuietly();
+                    $this->syncProductDiscountToLoyverse($prod);
 
                     if ($itemId) {
                         $results['updated']++;
@@ -579,7 +704,7 @@ class LoyverseService
                 }
             }
 
-            $res = Http::withHeaders($this->headers())->post("{" . $this->apiUrl . "}/items", $itemPayload);
+            $res = Http::withHeaders($this->headers())->post("{$this->apiUrl}/items", $itemPayload);
 
             if ($res->successful()) {
                 $savedItem = $res->json();
@@ -587,6 +712,7 @@ class LoyverseService
                 $product->loyverse_variant_id = $savedItem['variants'][0]['variant_id'] ?? $variantId;
                 $product->saveQuietly();
                 $this->cachedItems = null;
+                $this->syncProductDiscountToLoyverse($product);
 
                 Log::info("Loyverse Auto-Push: Product '{" . $product->name . "}' successfully synced to Loyverse POS.");
                 return $savedItem;
@@ -610,7 +736,7 @@ class LoyverseService
         }
 
         try {
-            $res = Http::withHeaders($this->headers())->delete("{" . $this->apiUrl . "}/items/{" . $product->loyverse_item_id . "}");
+            $res = Http::withHeaders($this->headers())->delete("{$this->apiUrl}/items/{$product->loyverse_item_id}");
             $this->cachedItems = null;
             return $res->successful();
         } catch (\Exception $e) {
@@ -1302,7 +1428,9 @@ class LoyverseService
         }
 
         $lineItemsPayload = [];
-        $order->loadMissing('items');
+        $netLinePrices = [];
+        $order->loadMissing('items.product');
+        $totalDiscountAmount = 0.0;
 
         foreach ($order->items as $item) {
             $prodIdKey = strtolower(trim($item->product_id));
@@ -1311,11 +1439,27 @@ class LoyverseService
             $variantId = $variantMap[$prodIdKey] ?? $variantMap[$prodNameKey] ?? null;
 
             if ($variantId) {
+                $qty = (float) $item->quantity;
+                $itemDiscountTotal = (float) ($item->discount_amount ?? 0);
+                $linePrice = (float) $item->unit_price;
+
+                if ($itemDiscountTotal > 0 && $qty > 0) {
+                    $linePrice = (float) ($item->original_unit_price ?: ($item->unit_price + ($itemDiscountTotal / $qty)));
+                    $totalDiscountAmount += $itemDiscountTotal;
+                } elseif ($item->original_unit_price === null && $item->product && $item->product->original_price !== null && (float) $item->product->original_price > (float) $item->product->price) {
+                    $perUnitDisc = round((float) $item->product->original_price - (float) $item->product->price, 2);
+                    if ($perUnitDisc > 0) {
+                        $linePrice = (float) $item->unit_price + $perUnitDisc;
+                        $totalDiscountAmount += round($perUnitDisc * $qty, 2);
+                    }
+                }
+
                 $lineItemsPayload[] = [
                     'variant_id' => $variantId,
-                    'quantity' => (float) $item->quantity,
-                    'price' => (float) $item->unit_price,
+                    'quantity' => $qty,
+                    'price' => round($linePrice, 2),
                 ];
+                $netLinePrices[] = round((float) $item->unit_price, 2);
             }
         }
 
@@ -1355,6 +1499,27 @@ class LoyverseService
                 ]
             ]
         ];
+
+        $totalDiscountAmount = round($totalDiscountAmount, 2);
+        if ($totalDiscountAmount > 0) {
+            $discountId = $this->findOrCreateDiscount('Website Promo Discount', 'VARIABLE_AMOUNT');
+            if ($discountId) {
+                $receiptPayload['total_discounts'] = [
+                    [
+                        'id' => $discountId,
+                        'scope' => 'RECEIPT',
+                        'money_amount' => $totalDiscountAmount,
+                    ]
+                ];
+            } else {
+                // Fallback if Loyverse discount creation failed: keep net unit_price so totals still match
+                foreach ($receiptPayload['line_items'] as $idx => $li) {
+                    if (isset($netLinePrices[$idx])) {
+                        $receiptPayload['line_items'][$idx]['price'] = $netLinePrices[$idx];
+                    }
+                }
+            }
+        }
 
         $response = Http::withHeaders($this->headers())->post("{$this->apiUrl}/receipts", $receiptPayload);
 

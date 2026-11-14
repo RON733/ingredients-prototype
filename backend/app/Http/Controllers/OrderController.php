@@ -250,27 +250,48 @@ class OrderController extends Controller
 
             foreach ($validated['items'] as $item) {
                 $product = $products->get($item['product_id']);
-                $unitPrice = $product->price;
+                $basePrice = (float) $product->price;
+                $originalBasePrice = ($product->original_price !== null && (float) $product->original_price > $basePrice)
+                    ? (float) $product->original_price
+                    : $basePrice;
+                $perUnitDiscount = round(max(0, $originalBasePrice - $basePrice), 2);
                 $quantity = (int)$item['quantity'];
 
                 // Dynamic pricing additions for customizations (e.g. Large size +20, extra toppings)
                 $customization = $item['customization'] ?? [];
+                $customizationExtra = 0.0;
                 if (!empty($customization['size']) && strtolower($customization['size']) === 'large') {
-                    $unitPrice += 20;
+                    $customizationExtra += 20;
                 }
                 if (!empty($customization['toppings']) && is_array($customization['toppings'])) {
-                    $unitPrice += count($customization['toppings']) * 15;
+                    $customizationExtra += count($customization['toppings']) * 15;
                 }
 
+                $unitPrice = $basePrice + $customizationExtra;
+                $originalUnitPrice = $originalBasePrice + $customizationExtra;
                 $itemSubtotal = $unitPrice * $quantity;
+                $itemDiscountTotal = round($perUnitDiscount * $quantity, 2);
                 $subtotal += $itemSubtotal;
+
+                $discountLabel = null;
+                if ($perUnitDiscount > 0) {
+                    if ($product->discount_type === 'fixed' && (float) $product->discount_value > 0) {
+                        $discountLabel = 'Promo PHP ' . rtrim(rtrim(number_format((float) $product->discount_value, 2, '.', ''), '0'), '.') . ' Off';
+                    } else {
+                        $pct = (float) ($product->discount_percent ?: round(($perUnitDiscount / $originalBasePrice) * 100, 1));
+                        $discountLabel = 'Promo ' . rtrim(rtrim(number_format($pct, 2, '.', ''), '0'), '.') . '% Off';
+                    }
+                }
 
                 $itemsData[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'unit_price' => $unitPrice,
+                    'original_unit_price' => $originalUnitPrice,
                     'quantity' => $quantity,
                     'subtotal' => $itemSubtotal,
+                    'discount_amount' => $itemDiscountTotal,
+                    'discount_label' => $discountLabel,
                     'customization' => $customization,
                 ];
             }

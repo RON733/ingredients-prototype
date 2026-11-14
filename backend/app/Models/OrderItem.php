@@ -14,15 +14,20 @@ class OrderItem extends Model
         'product_id',
         'product_name',
         'unit_price',
+        'original_unit_price',
         'quantity',
         'subtotal',
+        'discount_amount',
+        'discount_label',
         'customization',
     ];
 
     protected $casts = [
         'unit_price' => 'float',
+        'original_unit_price' => 'float',
         'quantity' => 'integer',
         'subtotal' => 'float',
+        'discount_amount' => 'float',
         'customization' => 'array',
     ];
 
