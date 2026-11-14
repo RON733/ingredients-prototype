@@ -223,7 +223,7 @@
     <!-- MODE A: 2-COLUMN GRID (Default: 2 items per row side-by-side, multiple rows visible) -->
     <div v-if="mobileViewMode === 'grid'" class="grid grid-cols-2 gap-2.5 sm:gap-3.5">
       <div 
-        v-for="product in filteredProducts" 
+        v-for="product in visibleProducts" 
         :key="'grid-' + product.id"
         class="rounded-2xl bg-surface-800/90 border overflow-hidden flex flex-col justify-between shadow-lg hover:border-yellow-400/50 transition-all"
         :class="isBestseller(product) ? 'border-amber-400/60 ring-1 ring-amber-400/20' : 'border-surface-700/70'">
@@ -420,7 +420,7 @@
         class="grid grid-rows-2 grid-flow-col auto-cols-[165px] gap-2.5 overflow-x-auto pb-3 pt-1 px-0.5 no-scrollbar scroll-smooth">
         
         <div 
-          v-for="product in filteredProducts" 
+          v-for="product in visibleProducts" 
           :key="'slide-' + product.id"
           class="rounded-2xl bg-surface-800/90 border overflow-hidden flex flex-col justify-between shadow-lg hover:border-yellow-400/50 transition-all"
           :class="isBestseller(product) ? 'border-amber-400/60 ring-1 ring-amber-400/20' : 'border-surface-700/70'">
@@ -537,7 +537,7 @@
   <!-- 5. DESKTOP / TABLET GRID VIEW (Hidden on Mobile Phone, Visible on Desktop/Tablet) -->
   <div v-if="filteredProducts.length > 0" class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
     <div 
-      v-for="product in filteredProducts" 
+      v-for="product in visibleProducts" 
       :key="'desk-' + product.id"
       class="group rounded-2xl bg-surface-800/80 border overflow-hidden flex flex-col justify-between hover:border-yellow-400/50 hover:shadow-2xl hover:shadow-yellow-400/10 transition-all duration-300 transform hover:-translate-y-1"
       :class="isBestseller(product) ? 'border-amber-400/60 ring-1 ring-amber-400/20' : 'border-surface-700/60'">
@@ -729,6 +729,33 @@
     </div>
   </div>
 
+  <!-- 5.5 LOAD MORE / SEE LESS BUTTONS (Only shown when menu items exceed visible limit) -->
+  <div v-if="hasMoreProducts || canShowLess" class="mt-8 flex flex-col items-center gap-2.5">
+    <p class="text-xs text-gray-400">
+      Showing <span class="text-yellow-400 font-bold">{{ visibleProducts.length }}</span> of
+      <span class="text-white font-bold">{{ filteredProducts.length }}</span> items
+    </p>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <button
+        v-if="hasMoreProducts"
+        @click="loadMore"
+        type="button"
+        class="px-6 py-2.5 rounded-2xl bg-surface-800 hover:bg-yellow-400 text-yellow-400 hover:text-black border border-yellow-400/50 hover:border-yellow-400 text-xs sm:text-sm font-black flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-lg">
+        <span>Load More</span>
+        <span class="text-[11px] font-bold opacity-80">({{ remainingCount }} more)</span>
+        <i class="pi pi-chevron-down text-xs"></i>
+      </button>
+      <button
+        v-if="canShowLess"
+        @click="showLess"
+        type="button"
+        class="px-6 py-2.5 rounded-2xl bg-surface-800 hover:bg-surface-700 text-gray-200 hover:text-white border border-surface-600/80 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-lg">
+        <span>See Less</span>
+        <i class="pi pi-chevron-up text-xs"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- 6. EMPTY STATE -->
   <div v-if="filteredProducts.length === 0" class="text-center py-16 bg-surface-800/40 rounded-3xl border border-surface-700/50 p-6">
     <i class="pi pi-search text-4xl text-gray-600 mb-3 block"></i>
@@ -902,6 +929,35 @@ export default {
       return list;
     });
 
+    const INITIAL_VISIBLE_COUNT = 12;
+    const LOAD_MORE_STEP = 12;
+    const visibleCount = ref(INITIAL_VISIBLE_COUNT);
+
+    const visibleProducts = computed(() => {
+      return filteredProducts.value.slice(0, visibleCount.value);
+    });
+
+    const hasMoreProducts = computed(() => {
+      return filteredProducts.value.length > visibleCount.value;
+    });
+
+    const remainingCount = computed(() => {
+      return Math.max(0, filteredProducts.value.length - visibleCount.value);
+    });
+
+    const canShowLess = computed(() => {
+      return filteredProducts.value.length > INITIAL_VISIBLE_COUNT && visibleCount.value > INITIAL_VISIBLE_COUNT;
+    });
+
+    const loadMore = () => {
+      visibleCount.value += LOAD_MORE_STEP;
+    };
+
+    const showLess = () => {
+      visibleCount.value = INITIAL_VISIBLE_COUNT;
+      document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     const hasActiveFilters = computed(() => {
       return selectedCategory.value !== 'All' ||
         searchQuery.value.trim() !== '' ||
@@ -941,6 +997,7 @@ export default {
     };
 
     watch([selectedCategory, searchQuery, bestsellersOnly, availabilityFilter, priceRangeFilter, sortOrder], () => {
+      visibleCount.value = INITIAL_VISIBLE_COUNT;
       if (slideTrackRef.value) {
         slideTrackRef.value.scrollTo({ left: 0, behavior: 'smooth' });
       }
@@ -1008,6 +1065,12 @@ export default {
       slideTrackRef,
       categoryCounts,
       filteredProducts,
+      visibleProducts,
+      hasMoreProducts,
+      remainingCount,
+      canShowLess,
+      loadMore,
+      showLess,
       hasActiveFilters,
       selectCat,
       toggleAvailability,
