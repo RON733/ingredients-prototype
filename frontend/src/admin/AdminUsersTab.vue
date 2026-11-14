@@ -944,12 +944,30 @@ export default {
 
     const toggleStatus = async (user) => {
       const nextStatus = user.status === 'active' ? 'deactivated' : 'active';
+      let adminPassword = null;
+      if (store.isSuperAdmin && user.role === 'super_admin') {
+        const actionVerb = nextStatus === 'deactivated' ? 'deactivate' : 'activate';
+        adminPassword = await store.promptDialog({
+          title: 'Verify Super Admin Password',
+          message: `Enter your own Super Admin password to confirm ${actionVerb} Super Admin account "${user.name}":`,
+          confirmText: nextStatus === 'deactivated' ? 'Authorize Deactivation' : 'Authorize Activation',
+          inputType: 'password',
+          placeholder: 'Your Super Admin Password',
+          icon: 'pi-shield',
+        });
+        if (!adminPassword) {
+          return;
+        }
+      }
       try {
-        await GST_API.updateUser(user.id, { status: nextStatus });
-        store.notify(`Account ${nextStatus}: ${user.name}`);
+        const payload = { status: nextStatus };
+        if (adminPassword) payload.admin_password = adminPassword;
+        await GST_API.updateUser(user.id, payload);
+        store.notify(`Account ${nextStatus}: ${user.name}`, 'success');
         refresh();
       } catch (err) {
-        store.notify('Error toggling status', 'error');
+        const msg = err.response?.data?.message || 'Error toggling status';
+        store.notify(msg, 'error');
       }
     };
 
