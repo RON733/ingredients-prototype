@@ -66,7 +66,7 @@ class Product extends Model
             if (!$recipe->ingredient || $recipe->qty <= 0) {
                 continue;
             }
-            $possible = floor($recipe->ingredient->stock / $recipe->qty);
+            $possible = floor(($recipe->ingredient->stock + 1e-9) / $recipe->qty);
             if ($possible < $max) {
                 $max = $possible;
             }

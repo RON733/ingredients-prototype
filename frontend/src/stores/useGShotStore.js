@@ -1166,6 +1166,42 @@ const useGShotStore = defineStore('gshot', {
     },
 
     // Stock & Cart Limit Helpers
+    getIngredientStockMap() {
+      const map = {};
+      for (const product of this.products || []) {
+        if (!Array.isArray(product.recipes)) continue;
+        for (const recipe of product.recipes) {
+          if (recipe.ingredient_id && recipe.ingredient && recipe.ingredient.stock !== undefined) {
+            map[recipe.ingredient_id] = Number(recipe.ingredient.stock) || 0;
+          }
+        }
+      }
+      for (const ing of this.ingredients || []) {
+        if (ing && ing.id && ing.stock !== undefined) {
+          map[ing.id] = Number(ing.stock) || 0;
+        }
+      }
+      return map;
+    },
+
+    getCartIngredientUsage(excludeProductId = null) {
+      const usage = {};
+      for (const item of this.cart) {
+        if (excludeProductId && item.product_id === excludeProductId) continue;
+        const prod = this.products.find(p => p.id === item.product_id);
+        if (!prod || !Array.isArray(prod.recipes)) continue;
+        const itemQty = Number(item.quantity) || 0;
+        if (itemQty <= 0) continue;
+        for (const recipe of prod.recipes) {
+          const reqQty = Number(recipe.qty) || 0;
+          if (reqQty > 0 && recipe.ingredient_id) {
+            usage[recipe.ingredient_id] = (usage[recipe.ingredient_id] || 0) + reqQty * itemQty;
+          }
+        }
+      }
+      return usage;
+    },
+
     getProductMaxStock(productOrId) {
       const id = typeof productOrId === 'string' ? productOrId : productOrId?.id;
       const liveProduct = (id ? this.products.find(p => p.id === id) : null)
@@ -1174,6 +1210,30 @@ const useGShotStore = defineStore('gshot', {
       if (!liveProduct || liveProduct.is_available === false) {
         return 0;
       }
+
+      if (Array.isArray(liveProduct.recipes) && liveProduct.recipes.length > 0) {
+        const stockMap = this.getIngredientStockMap();
+        const usedByOthers = this.getCartIngredientUsage(liveProduct.id);
+        let max = Infinity;
+
+        for (const recipe of liveProduct.recipes) {
+          const reqQty = Number(recipe.qty) || 0;
+          if (reqQty <= 0) continue;
+          const ingId = recipe.ingredient_id;
+          const totalStock = Object.prototype.hasOwnProperty.call(stockMap, ingId)
+            ? stockMap[ingId]
+            : (Number(recipe.ingredient?.stock) || 0);
+          const used = usedByOthers[ingId] || 0;
+          const available = Math.max(0, totalStock - used);
+          const possible = Math.floor((available + 1e-9) / reqQty);
+          if (possible < max) {
+            max = possible;
+          }
+        }
+
+        return max === Infinity ? 0 : Math.max(0, max);
+      }
+
       if (liveProduct.max_portions !== undefined && liveProduct.max_portions !== null) {
         return Math.max(0, Math.floor(Number(liveProduct.max_portions) || 0));
       }
@@ -1229,16 +1289,20 @@ const useGShotStore = defineStore('gshot', {
       const addQty = Math.max(1, Math.floor(Number(qty) || 1));
 
       if (maxStock <= 0) {
-        this.notify(`${liveProduct.name} is currently sold out.`, 'error');
+        if (liveProduct.is_available !== false && Number(liveProduct.max_portions) > 0) {
+          this.notify(`Cannot add ${liveProduct.name}. Insufficient remaining ingredients (shared ingredients already reserved in your cart).`, 'warning');
+        } else {
+          this.notify(`${liveProduct.name} is currently sold out.`, 'error');
+        }
         return false;
       }
 
       if (currentInCart + addQty > maxStock) {
         const remaining = Math.max(0, maxStock - currentInCart);
         if (remaining <= 0) {
-          this.notify(`Cannot add more ${liveProduct.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available and you already have ${currentInCart} in your cart.`, 'warning');
+          this.notify(`Cannot add more ${liveProduct.name}. Only ${maxStock} stock${maxStock === 1 ? '' : 's'} available with your current cart and you already have ${currentInCart} in your cart.`, 'warning');
         } else {
-          this.notify(`Only ${remaining} more ${liveProduct.name} available (${maxStock} total in stock).`, 'warning');
+          this.notify(`Only ${remaining} more ${liveProduct.name} available (${maxStock} total possible with current cart).`, 'warning');
         }
         return false;
       }

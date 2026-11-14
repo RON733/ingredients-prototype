@@ -267,14 +267,19 @@
 
           <!-- Stock Pill -->
           <span 
-            v-if="Number(product.max_portions) > 8"
+            v-if="store.getProductMaxStock(product) > 8"
             class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50 backdrop-blur-sm pointer-events-none">
-            {{ product.max_portions }} avail
+            {{ store.getProductMaxStock(product) }} avail
           </span>
           <span 
-            v-else-if="Number(product.max_portions) > 0"
+            v-else-if="store.getProductMaxStock(product) > 0"
             class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 backdrop-blur-sm animate-pulse pointer-events-none">
-            Almost Out ({{ product.max_portions }} left)
+            Almost Out ({{ store.getProductMaxStock(product) }} left)
+          </span>
+          <span 
+            v-else-if="Number(product.max_portions) > 0 && product.is_available !== false"
+            class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 backdrop-blur-sm pointer-events-none">
+            0 left (In Cart)
           </span>
           <span 
             v-else
@@ -370,7 +375,7 @@
               type="button"
               class="w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1">
               <i class="pi pi-check text-[9px]"></i>
-              <span>Max in Cart</span>
+              <span>{{ store.getProductCartQty(product.id) > 0 ? 'Max in Cart' : 'Insufficient Ing.' }}</span>
             </button>
             <button 
               v-else
@@ -443,14 +448,19 @@
             </span>
 
             <span 
-              v-if="Number(product.max_portions) > 8"
+              v-if="store.getProductMaxStock(product) > 8"
               class="absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.2 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50">
-              {{ product.max_portions }} avail
+              {{ store.getProductMaxStock(product) }} avail
             </span>
             <span 
-              v-else-if="Number(product.max_portions) > 0"
+              v-else-if="store.getProductMaxStock(product) > 0"
               class="absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.2 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 animate-pulse">
-              Low: {{ product.max_portions }} left
+              Low: {{ store.getProductMaxStock(product) }} left
+            </span>
+            <span 
+              v-else-if="Number(product.max_portions) > 0 && product.is_available !== false"
+              class="absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.2 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60">
+              0 left
             </span>
             <span 
               v-else
@@ -505,7 +515,7 @@
               disabled
               type="button"
               class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1">
-              <span>Max in Cart</span>
+              <span>{{ store.getProductCartQty(product.id) > 0 ? 'Max in Cart' : 'Insufficient' }}</span>
             </button>
             <button 
               v-else
@@ -578,16 +588,22 @@
 
         <div class="absolute bottom-3 left-3 pointer-events-none">
           <span 
-            v-if="Number(product.max_portions) > 8"
+            v-if="store.getProductMaxStock(product) > 8"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/50 backdrop-blur-md">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            In Stock ({{ product.max_portions }} avail)
+            In Stock ({{ store.getProductMaxStock(product) }} avail)
           </span>
           <span 
-            v-else-if="Number(product.max_portions) > 0"
+            v-else-if="store.getProductMaxStock(product) > 0"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-950/85 text-amber-300 border border-amber-600/60 backdrop-blur-md">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-            Almost Out ({{ product.max_portions }} left)
+            Almost Out ({{ store.getProductMaxStock(product) }} left)
+          </span>
+          <span 
+            v-else-if="Number(product.max_portions) > 0 && product.is_available !== false"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-950/85 text-amber-300 border border-amber-600/60 backdrop-blur-md">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            0 left (Ingredients in Cart)
           </span>
           <span 
             v-else
@@ -697,7 +713,7 @@
             type="button"
             class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-2">
             <i class="pi pi-check text-xs"></i>
-            <span>Max Stock in Cart ({{ product.max_portions }}/{{ product.max_portions }})</span>
+            <span>{{ store.getProductCartQty(product.id) > 0 ? `Max Stock in Cart (${store.getProductMaxStock(product)}/${store.getProductMaxStock(product)})` : 'Insufficient Ingredients' }}</span>
           </button>
           <button 
             v-else

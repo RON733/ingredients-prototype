@@ -205,7 +205,7 @@ class OrderController extends Controller
             $depletedAlerts = [];
             foreach ($ingredientDeductions as $ingId => $totalNeeded) {
                 $ingredient = $ingredients->get($ingId);
-                if (!$ingredient || $ingredient->stock < $totalNeeded) {
+                if (!$ingredient || round((float)$ingredient->stock, 6) < round((float)$totalNeeded, 6)) {
                     $available = $ingredient ? $ingredient->stock : 0;
                     $unit = $ingredient ? $ingredient->unit : 'units';
                     $name = $ingredient ? $ingredient->name : $ingId;

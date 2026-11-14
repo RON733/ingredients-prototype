@@ -130,7 +130,7 @@
                   type="button"
                   class="px-4 py-2 rounded-xl text-xs font-bold bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center gap-1.5">
                   <i class="pi pi-check text-[10px]"></i>
-                  <span>Max in Cart</span>
+                  <span>{{ store.getProductCartQty(item.id) > 0 ? 'Max in Cart' : 'Insufficient Ing.' }}</span>
                 </button>
                 <button 
                   v-else
