@@ -1156,7 +1156,17 @@ export default {
       modalOpen.value = true;
     };
 
-    const openEditModal = (product) => {
+    const openEditModal = async (product) => {
+      const ok = await store.confirmDialog({
+        title: 'Edit Menu Item',
+        message: `Are you sure you want to edit ${product.name}?`,
+        confirmText: 'Edit',
+        cancelText: 'Cancel',
+        variant: 'warning',
+        icon: 'pi-pencil',
+      });
+      if (!ok) return;
+
       isEditing.value = true;
       editingId.value = product.id;
       form.name = product.name;
