@@ -38,13 +38,12 @@
               <LandingHero />
               <AnnouncementSection />
               <FeaturedSection />
-              <MenuSection :isStandalonePage="false" />
               <AboutSection />
               <ContactSection />
               <ActiveOrderWidget />
             </div>
 
-            <!-- 2. Dedicated Standalone Menu Page (Accessible on mobile & direct desktop menu view) -->
+            <!-- 2. Dedicated Standalone Menu Page -->
             <div v-else-if="store.currentView === 'menu'" class="animate-fade-in">
               <MenuSection :isStandalonePage="true" />
               <ActiveOrderWidget />
@@ -75,7 +74,6 @@
               <LandingHero />
               <AnnouncementSection />
               <FeaturedSection />
-              <MenuSection :isStandalonePage="false" />
               <AboutSection />
               <ContactSection />
               <ActiveOrderWidget />
@@ -406,26 +404,10 @@ export default {
     };
 
     const navToSection = (section) => {
-      const isMobile = window.innerWidth < 1024;
       if (section === 'menu') {
-        if (isMobile) {
-          store.currentView = 'menu';
-          store.activeSection = 'menu';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          return;
-        }
-        store.scrollLockUntil = Date.now() + 700;
-        store.currentView = 'customer';
+        store.currentView = 'menu';
         store.activeSection = 'menu';
-        const el = document.getElementById('menu');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          Vue.nextTick(() => {
-            const retryEl = document.getElementById('menu');
-            if (retryEl) retryEl.scrollIntoView({ behavior: 'smooth' });
-          });
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       store.scrollLockUntil = Date.now() + 700;

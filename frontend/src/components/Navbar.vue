@@ -427,8 +427,7 @@ export default {
 
     const navTo = (section) => {
       mobileMenuOpen.value = false;
-      const isMobile = window.innerWidth < 1024;
-      if (section === 'menu' && isMobile) {
+      if (section === 'menu') {
         store.currentView = 'menu';
         store.activeSection = 'menu';
         window.scrollTo({ top: 0, behavior: 'smooth' });

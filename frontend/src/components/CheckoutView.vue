@@ -1325,10 +1325,9 @@ export default {
     });
 
     const backToMenu = () => {
-      store.currentView = 'customer';
+      store.currentView = 'menu';
       store.activeSection = 'menu';
-      const el = document.getElementById('menu');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const promptSignIn = () => {

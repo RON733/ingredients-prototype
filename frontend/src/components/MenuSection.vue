@@ -1,8 +1,8 @@
 <template>
 <section id="menu" :class="isStandalonePage ? 'py-4 sm:py-8 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-28 sm:pb-20' : 'scroll-mt-20 lg:scroll-mt-24 py-10 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'">
       
-  <!-- 1. Dedicated Standalone Menu Page Header (Cellphones Only) -->
-  <div v-if="isStandalonePage" class="mb-4 border-b border-surface-800 pb-3">
+  <!-- 1. Dedicated Standalone Menu Page Header (Mobile & Tablet) -->
+  <div v-if="isStandalonePage" class="lg:hidden mb-4 border-b border-surface-800 pb-3">
     <div class="flex items-center justify-between gap-3">
       <button 
         @click="goBackHome"
@@ -32,8 +32,8 @@
     </div>
   </div>
 
-  <!-- 2. Home Page Section Header (when embedded on customer landing page) -->
-  <div v-else class="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+  <!-- 2. Desktop / Embedded Section Header -->
+  <div :class="isStandalonePage ? 'hidden lg:block text-center max-w-3xl mx-auto mb-8 sm:mb-10 pt-4' : 'text-center max-w-3xl mx-auto mb-8 sm:mb-10'">
     <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
       Our <span class="text-yellow-400">Menu</span>
     </h2>
