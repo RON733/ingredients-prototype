@@ -152,6 +152,7 @@
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'" 
                 required
+                :minlength="store.authMode === 'register' ? 8 : undefined"
                 placeholder="••••••••"
                 class="w-full px-4 py-3 pr-10 rounded-xl bg-surface-800 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
               />
@@ -162,6 +163,16 @@
                 tabindex="-1">
                 <i class="pi" :class="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
               </button>
+            </div>
+            <div v-if="store.authMode === 'register'" class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+              <div
+                v-for="rule in passwordRequirementItems"
+                :key="rule.key"
+                class="flex items-center gap-1.5 transition-colors"
+                :class="rule.met ? 'text-emerald-400' : 'text-gray-500'">
+                <i class="pi text-[10px]" :class="rule.met ? 'pi-check-circle' : 'pi-circle'"></i>
+                <span>{{ rule.label }}</span>
+              </div>
             </div>
           </div>
 
@@ -275,8 +286,8 @@
                 v-model="form.newPassword"
                 :type="showNewPassword ? 'text' : 'password'" 
                 required
-                minlength="6"
-                placeholder="At least 6 characters"
+                minlength="8"
+                placeholder="At least 8 characters"
                 class="w-full px-4 py-3 pr-10 rounded-xl bg-surface-800 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
               />
               <button 
@@ -286,6 +297,16 @@
                 tabindex="-1">
                 <i class="pi" :class="showNewPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
               </button>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+              <div
+                v-for="rule in passwordRequirementItems"
+                :key="rule.key"
+                class="flex items-center gap-1.5 transition-colors"
+                :class="rule.met ? 'text-emerald-400' : 'text-gray-500'">
+                <i class="pi text-[10px]" :class="rule.met ? 'pi-check-circle' : 'pi-circle'"></i>
+                <span>{{ rule.label }}</span>
+              </div>
             </div>
           </div>
 
@@ -449,6 +470,31 @@ export default {
       confirmPassword: '',
     });
 
+    const activePasswordInput = Vue.computed(() =>
+      store.authMode === 'reset' ? (form.newPassword || '') : (form.password || '')
+    );
+
+    const passwordRequirementItems = Vue.computed(() => {
+      const pwd = activePasswordInput.value;
+      return [
+        { key: 'length', label: '8+ characters', met: pwd.length >= 8 },
+        { key: 'case', label: 'Upper & lowercase', met: /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) },
+        { key: 'number', label: 'At least 1 number', met: /[0-9]/.test(pwd) },
+        { key: 'symbol', label: 'Special character', met: /[^A-Za-z0-9]/.test(pwd) },
+      ];
+    });
+
+    const isPasswordStrong = (pwd) =>
+      typeof pwd === 'string' &&
+      pwd.length >= 8 &&
+      /[A-Z]/.test(pwd) &&
+      /[a-z]/.test(pwd) &&
+      /[0-9]/.test(pwd) &&
+      /[^A-Za-z0-9]/.test(pwd);
+
+    const PASSWORD_POLICY_ERROR =
+      'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.';
+
     const isGoogleClientConfigured = Vue.computed(() => {
       const id = store.googleConfig?.client_id || store.settings?.google_client_id;
       return Boolean(id && id.trim().length > 10);
@@ -492,6 +538,10 @@ export default {
       authSuccess.value = '';
       try {
         const res = await store.forgotPassword(form.email);
+        if (res?.mail_sent === false && !res?.dev_code) {
+          authError.value = res?.message || 'Failed to send reset code email. Please try again later.';
+          return;
+        }
         authSuccess.value = res.message || 'Verification code sent to your email!';
         if (res.dev_code) {
           devCode.value = res.dev_code;
@@ -512,7 +562,11 @@ export default {
       authSuccess.value = '';
       try {
         const res = await store.forgotPassword(form.email);
-        authSuccess.value = 'A new 6-digit verification code has been sent!';
+        if (res?.mail_sent === false && !res?.dev_code) {
+          authError.value = res?.message || 'Failed to resend reset code email. Please try again later.';
+          return;
+        }
+        authSuccess.value = res.message || 'A new 6-digit verification code has been sent!';
         if (res.dev_code) {
           devCode.value = res.dev_code;
         }
@@ -533,8 +587,8 @@ export default {
         return;
       }
 
-      if (!form.newPassword || form.newPassword.length < 6) {
-        authError.value = 'New password must be at least 6 characters.';
+      if (!isPasswordStrong(form.newPassword)) {
+        authError.value = PASSWORD_POLICY_ERROR;
         return;
       }
 
@@ -652,6 +706,10 @@ export default {
       authSuccess.value = '';
       try {
         const res = await store.resendRegisterOtp(form.email);
+        if (res?.mail_sent === false && !res?.dev_code) {
+          authError.value = res?.message || 'Unable to resend the verification email right now. Please try again later.';
+          return;
+        }
         authSuccess.value = res.message || 'A new verification code has been sent!';
         if (res.dev_code) {
           devCode.value = res.dev_code;
@@ -665,9 +723,15 @@ export default {
     };
 
     const handleSubmit = async () => {
-      loading.value = true;
       authError.value = '';
       authSuccess.value = '';
+
+      if (store.authMode === 'register' && !isPasswordStrong(form.password)) {
+        authError.value = PASSWORD_POLICY_ERROR;
+        return;
+      }
+
+      loading.value = true;
       try {
         if (store.authMode === 'login') {
           await store.login(form.email, form.password, 'customer');
@@ -678,6 +742,10 @@ export default {
             password: form.password,
           });
           if (res?.requires_verification) {
+            if (res.mail_sent === false && !res.dev_code) {
+              authError.value = res.message || 'Unable to send the verification email right now. Please try again later.';
+              return;
+            }
             authSuccess.value = res.message || 'Verification code sent to your email!';
             if (res.dev_code) {
               devCode.value = res.dev_code;
@@ -737,6 +805,7 @@ export default {
       showPassword,
       showNewPassword,
       showConfirmPassword,
+      passwordRequirementItems,
       isGoogleClientConfigured,
       hasGoogleRendered,
       setAuthMode,

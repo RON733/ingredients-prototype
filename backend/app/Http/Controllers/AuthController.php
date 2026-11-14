@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\AuditLog;
@@ -72,12 +73,85 @@ class AuthController extends Controller
         return null;
     }
 
+    /**
+     * Password complexity rules for customer registration and password resets.
+     */
+    private function registrationPasswordRules(): array
+    {
+        return [
+            'required',
+            'string',
+            Password::min(8)
+                ->mixedCase()
+                ->numbers()
+                ->symbols(),
+        ];
+    }
+
+    /**
+     * Send a styled 6-digit OTP email and return delivery status metadata.
+     */
+    private function sendOtpEmail(
+        string $email,
+        string $userName,
+        string $code,
+        string $subject,
+        string $subtitle,
+        string $introHtml,
+        string $logLabel
+    ): array {
+        $safeName = htmlspecialchars($userName, ENT_QUOTES, 'UTF-8');
+        $mailSent = false;
+        $mailError = null;
+
+        try {
+            Mail::send([], [], function ($message) use ($email, $code, $safeName, $subject, $subtitle, $introHtml) {
+                $message->to($email)
+                    ->subject($subject)
+                    ->html("
+                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
+                            <div style='text-align: center; margin-bottom: 24px;'>
+                                <div style='display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 12px; background: #1f242d; color: #FACC15; font-size: 22px; font-weight: 900; margin-bottom: 12px;'>G'</div>
+                                <h2 style='color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;'>G Shot Teas</h2>
+                                <p style='color: #9CA3AF; font-size: 13px; margin-top: 4px;'>" . $subtitle . "</p>
+                            </div>
+                            <p style='color: #E5E7EB; font-size: 14px;'>Hello <strong>" . $safeName . "</strong>,</p>
+                            <p style='color: #9CA3AF; font-size: 13px; line-height: 1.6;'>" . $introHtml . "</p>
+                            <div style='background: #181c22; border: 2px dashed #FACC15; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;'>
+                                <span style='font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #FACC15; font-family: monospace;'>" . $code . "</span>
+                            </div>
+                            <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not request this code at G Shot Teas, you can safely ignore this email.</p>
+                            <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
+                                G Shot Teas • STI College Santa Rosa Capstone Project
+                            </div>
+                        </div>
+                    ");
+            });
+            $mailSent = true;
+        } catch (\Throwable $e) {
+            $mailError = $e->getMessage();
+            Log::warning("{$logLabel} failed for {$email}: {$mailError}");
+        }
+
+        $isDevOrLog = config('app.debug') || config('mail.default') === 'log' || app()->environment('local');
+
+        if ($isDevOrLog) {
+            Log::info("{$logLabel} generated for {$email}: {$code}");
+        }
+
+        return [
+            'mail_sent' => $mailSent,
+            'is_dev_or_log' => $isDevOrLog,
+            'error' => $mailError,
+        ];
+    }
+
     public function register(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'password' => $this->registrationPasswordRules(),
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
         ]);
@@ -107,46 +181,34 @@ class AuthController extends Controller
             'created_at' => now()->toIso8601String(),
         ], now()->addMinutes(15));
 
-        $mailSent = false;
-        $userName = htmlspecialchars($validated['name']);
-        try {
-            Mail::send([], [], function ($message) use ($email, $code, $userName) {
-                $message->to($email)
-                    ->subject("G Shot Teas — Account Verification Code: " . $code)
-                    ->html("
-                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
-                            <div style='text-align: center; margin-bottom: 24px;'>
-                                <div style='display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 12px; background: #1f242d; color: #FACC15; font-size: 22px; font-weight: 900; margin-bottom: 12px;'>G'</div>
-                                <h2 style='color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;'>G Shot Teas</h2>
-                                <p style='color: #9CA3AF; font-size: 13px; margin-top: 4px;'>Verify Your Email Address</p>
-                            </div>
-                            <p style='color: #E5E7EB; font-size: 14px;'>Hello <strong>" . $userName . "</strong>,</p>
-                            <p style='color: #9CA3AF; font-size: 13px; line-height: 1.6;'>Thank you for creating an account with G Shot Teas! Enter the 6-digit verification code below to complete your registration and activate your account. This code expires in <strong>15 minutes</strong>.</p>
-                            <div style='background: #181c22; border: 2px dashed #FACC15; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;'>
-                                <span style='font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #FACC15; font-family: monospace;'>" . $code . "</span>
-                            </div>
-                            <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not attempt to register at G Shot Teas, please ignore this email.</p>
-                            <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
-                                G Shot Teas • STI College Santa Rosa Capstone Project
-                            </div>
-                        </div>
-                    ");
-            });
-            $mailSent = true;
-        } catch (\Throwable $e) {
-            Log::warning("Registration OTP email sending failed for " . $email . ": " . $e->getMessage());
+        $mailResult = $this->sendOtpEmail(
+            $email,
+            $validated['name'],
+            $code,
+            'G Shot Teas — Account Verification Code: ' . $code,
+            'Verify Your Email Address',
+            'Thank you for creating an account with G Shot Teas! Enter the 6-digit verification code below to complete your registration and activate your account. This code expires in <strong>15 minutes</strong>.',
+            'Registration OTP email sending'
+        );
+
+        if (!$mailResult['mail_sent'] && !$mailResult['is_dev_or_log']) {
+            Cache::forget($cacheKey);
+            return response()->json([
+                'message' => 'Unable to send the verification code email right now. Please try again later or contact support.',
+                'mail_sent' => false,
+            ], 503);
         }
 
-        Log::info("Registration OTP generated for " . $email . ": " . $code);
-
-        $isDevOrLog = config('app.debug') || env('MAIL_MAILER') === 'log' || app()->environment('local');
+        $message = $mailResult['mail_sent']
+            ? 'A 6-digit verification code has been sent to ' . $email . '. Please check your email to complete registration.'
+            : 'Email delivery failed in dev mode. Use the Testing OTP shown below to complete registration.';
 
         return response()->json([
-            'message' => 'A 6-digit verification code has been sent to ' . $email . '. Please check your email to complete registration.',
+            'message' => $message,
             'email' => $email,
             'requires_verification' => true,
-            'dev_code' => $isDevOrLog ? $code : null,
-            'mail_sent' => $mailSent,
+            'dev_code' => $mailResult['is_dev_or_log'] ? $code : null,
+            'mail_sent' => $mailResult['mail_sent'],
         ]);
     }
 
@@ -248,43 +310,32 @@ class AuthController extends Controller
         $pending['attempts'] = 0;
         Cache::put($cacheKey, $pending, now()->addMinutes(15));
 
-        $mailSent = false;
-        $userName = htmlspecialchars($pending['name']);
-        try {
-            Mail::send([], [], function ($message) use ($email, $code, $userName) {
-                $message->to($email)
-                    ->subject("G Shot Teas — Account Verification Code: " . $code)
-                    ->html("
-                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
-                            <div style='text-align: center; margin-bottom: 24px;'>
-                                <div style='display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 12px; background: #1f242d; color: #FACC15; font-size: 22px; font-weight: 900; margin-bottom: 12px;'>G'</div>
-                                <h2 style='color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;'>G Shot Teas</h2>
-                                <p style='color: #9CA3AF; font-size: 13px; margin-top: 4px;'>Verify Your Email Address</p>
-                            </div>
-                            <p style='color: #E5E7EB; font-size: 14px;'>Hello <strong>" . $userName . "</strong>,</p>
-                            <p style='color: #9CA3AF; font-size: 13px; line-height: 1.6;'>Here is your new 6-digit verification code to complete your registration. This code expires in <strong>15 minutes</strong>.</p>
-                            <div style='background: #181c22; border: 2px dashed #FACC15; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;'>
-                                <span style='font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #FACC15; font-family: monospace;'>" . $code . "</span>
-                            </div>
-                            <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not attempt to register at G Shot Teas, please ignore this email.</p>
-                            <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
-                                G Shot Teas • STI College Santa Rosa Capstone Project
-                            </div>
-                        </div>
-                    ");
-            });
-            $mailSent = true;
-        } catch (\Throwable $e) {
-            Log::warning("Resend registration OTP failed for " . $email . ": " . $e->getMessage());
+        $mailResult = $this->sendOtpEmail(
+            $email,
+            $pending['name'],
+            $code,
+            'G Shot Teas — Account Verification Code: ' . $code,
+            'Verify Your Email Address',
+            'Here is your new 6-digit verification code to complete your registration. This code expires in <strong>15 minutes</strong>.',
+            'Resend registration OTP'
+        );
+
+        if (!$mailResult['mail_sent'] && !$mailResult['is_dev_or_log']) {
+            return response()->json([
+                'message' => 'Unable to resend the verification code email right now. Please try again later or contact support.',
+                'mail_sent' => false,
+            ], 503);
         }
 
-        $isDevOrLog = config('app.debug') || env('MAIL_MAILER') === 'log' || app()->environment('local');
+        $message = $mailResult['mail_sent']
+            ? 'A new 6-digit verification code has been sent to ' . $email . '.'
+            : 'Email delivery failed in dev mode. Use the Testing OTP shown below.';
 
         return response()->json([
-            'message' => 'A new 6-digit verification code has been sent to ' . $email . '.',
+            'message' => $message,
             'email' => $email,
-            'dev_code' => $isDevOrLog ? $code : null,
-            'mail_sent' => $mailSent,
+            'dev_code' => $mailResult['is_dev_or_log'] ? $code : null,
+            'mail_sent' => $mailResult['mail_sent'],
         ]);
     }
 
@@ -387,37 +438,23 @@ class AuthController extends Controller
             ]
         );
 
-        $mailSent = false;
-        try {
-            Mail::send([], [], function ($message) use ($email, $code, $user) {
-                $userName = htmlspecialchars($user->name);
-                $message->to($email)
-                    ->subject("G Shot Teas — Password Reset Code: {$code}")
-                    ->html("
-                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background: #0f1217; color: #ffffff; border-radius: 16px; border: 1px solid #272c36;'>
-                            <div style='text-align: center; margin-bottom: 24px;'>
-                                <div style='display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 12px; background: #1f242d; color: #FACC15; font-size: 22px; font-weight: 900; margin-bottom: 12px;'>G'</div>
-                                <h2 style='color: #ffffff; margin: 0; font-size: 20px; font-weight: 800;'>G Shot Teas</h2>
-                                <p style='color: #9CA3AF; font-size: 13px; margin-top: 4px;'>Password Reset Request</p>
-                            </div>
-                            <p style='color: #E5E7EB; font-size: 14px;'>Hello <strong>{$userName}</strong>,</p>
-                            <p style='color: #9CA3AF; font-size: 13px; line-height: 1.6;'>We received a request to reset the password for your customer account. Use the 6-digit verification code below. This code will expire in <strong>15 minutes</strong>.</p>
-                            <div style='background: #181c22; border: 2px dashed #FACC15; border-radius: 12px; padding: 18px; text-align: center; margin: 24px 0;'>
-                                <span style='font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #FACC15; font-family: monospace;'>{$code}</span>
-                            </div>
-                            <p style='color: #9CA3AF; font-size: 12px; line-height: 1.5;'>If you did not make this request, you can safely ignore this email. Your account remains secure.</p>
-                            <div style='margin-top: 24px; padding-top: 16px; border-top: 1px solid #272c36; text-align: center; color: #6B7280; font-size: 11px;'>
-                                G Shot Teas • STI College Santa Rosa Capstone Project
-                            </div>
-                        </div>
-                    ");
-            });
-            $mailSent = true;
-        } catch (\Throwable $e) {
-            Log::warning("Password reset email sending failed for {$email}: " . $e->getMessage());
-        }
+        $mailResult = $this->sendOtpEmail(
+            $email,
+            $user->name,
+            $code,
+            "G Shot Teas — Password Reset Code: {$code}",
+            'Password Reset Request',
+            'We received a request to reset the password for your customer account. Use the 6-digit verification code below. This code will expire in <strong>15 minutes</strong>.',
+            'Password reset email sending'
+        );
 
-        Log::info("Password reset OTP generated for {$email}: {$code}");
+        if (!$mailResult['mail_sent'] && !$mailResult['is_dev_or_log']) {
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+            return response()->json([
+                'message' => 'Unable to send the password reset email right now. Please try again later or contact support.',
+                'mail_sent' => false,
+            ], 503);
+        }
 
         AuditLog::create([
             'user_id' => $user->id,
@@ -428,13 +465,15 @@ class AuthController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        $isDevOrLog = config('app.debug') || env('MAIL_MAILER') === 'log' || app()->environment('local');
+        $message = $mailResult['mail_sent']
+            ? 'A 6-digit verification code has been sent to your email.'
+            : 'Email delivery failed in dev mode. Use the Testing OTP shown below to reset your password.';
 
         return response()->json([
-            'message' => 'A 6-digit verification code has been sent to your email.',
+            'message' => $message,
             'email' => $email,
-            'dev_code' => $isDevOrLog ? $code : null,
-            'mail_sent' => $mailSent,
+            'dev_code' => $mailResult['is_dev_or_log'] ? $code : null,
+            'mail_sent' => $mailResult['mail_sent'],
         ]);
     }
 
@@ -443,7 +482,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => 'required|email',
             'code' => 'required|string|size:6',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => [...$this->registrationPasswordRules(), 'confirmed'],
         ]);
 
         $email = strtolower(trim($validated['email']));

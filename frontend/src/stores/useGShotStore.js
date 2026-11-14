@@ -1519,7 +1519,9 @@ const useGShotStore = defineStore('gshot', {
         const res = await GST_API.register(data);
         return res.data;
       } catch (err) {
-        const msg = err.response?.data?.message || err.message || 'Registration failed.';
+        const fieldErrors = err.response?.data?.errors;
+        const firstFieldErr = fieldErrors ? Object.values(fieldErrors).flat()[0] : null;
+        const msg = firstFieldErr || err.response?.data?.message || err.message || 'Registration failed.';
         this.notify(msg, 'error');
         throw new Error(msg);
       }
@@ -1593,7 +1595,9 @@ const useGShotStore = defineStore('gshot', {
         }
         return res.data;
       } catch (err) {
-        const msg = err.response?.data?.message || err.message || 'Failed to reset password.';
+        const fieldErrors = err.response?.data?.errors;
+        const firstFieldErr = fieldErrors ? Object.values(fieldErrors).flat()[0] : null;
+        const msg = firstFieldErr || err.response?.data?.message || err.message || 'Failed to reset password.';
         throw new Error(msg);
       }
     },
