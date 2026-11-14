@@ -121,7 +121,7 @@
                     </span>
                   </div>
                   <p class="text-xs text-amber-200/90 mt-0.5">
-                    <strong>{{ order.driver_name || 'Your rider' }}</strong> departed for your address at 
+                    <strong>{{ riderName || 'Your rider' }}</strong> departed for your address at 
                     <span class="font-bold underline">{{ formatTime(order.on_the_way_notified_at) }}</span>.
                   </p>
                 </div>
@@ -150,21 +150,46 @@
             </div>
 
             <!-- Rider / Dispatch Hub -->
-            <div class="p-4 rounded-2xl bg-surface-800/60 border border-surface-700/70 space-y-1.5">
-              <div class="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
-                <i class="pi pi-user text-xs"></i>
-                <span>{{ order.driver_name ? 'Assigned Courier' : 'Dispatch Hub' }}</span>
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-800/60 border border-surface-700/70 flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 text-sky-400 text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+                  <i class="pi pi-user text-xs"></i>
+                  <span>{{ riderName ? 'Assigned Rider' : 'Dispatch Hub' }}</span>
+                </div>
+                <span v-if="riderName" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/15 text-sky-300 border border-sky-500/25">
+                  Courier
+                </span>
               </div>
-              <p class="text-xs sm:text-sm font-bold text-white">
-                {{ order.driver_name || 'G Shot Delivery Partner' }}
-              </p>
-              <p class="text-[11px] text-gray-400">
-                Dispatched from: <span class="text-gray-300 font-medium">Santa Rosa Hub, Laguna</span>
-              </p>
-              <div v-if="order.driver_phone" class="pt-1">
-                <a :href="'tel:' + order.driver_phone" class="inline-flex items-center gap-1.5 text-xs text-brand-400 font-bold hover:underline">
-                  <i class="pi pi-phone text-[10px]"></i> {{ order.driver_phone }}
+
+              <div v-if="riderName" class="flex flex-wrap items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="text-xs sm:text-sm font-bold text-white truncate">
+                    {{ riderName }}
+                  </p>
+                  <p class="text-[11px] text-gray-400 truncate">
+                    Santa Rosa Hub, Laguna
+                  </p>
+                </div>
+                <a
+                  v-if="riderPhone"
+                  :href="'tel:' + riderPhone"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-brand-400/15 border border-brand-400/30 text-brand-300 hover:bg-brand-400/25 text-[11px] font-bold transition-colors shrink-0">
+                  <i class="pi pi-phone text-[10px]"></i>
+                  <span>{{ riderPhone }}</span>
                 </a>
+                <span v-else class="text-[11px] text-gray-500 italic">No contact number</span>
+              </div>
+
+              <div v-else class="space-y-0.5">
+                <p class="text-xs sm:text-sm font-bold text-white">
+                  G Shot Delivery Partner
+                </p>
+                <p class="text-[11px] text-gray-400">
+                  Dispatched from: <span class="text-gray-300 font-medium">Santa Rosa Hub, Laguna</span>
+                </p>
+                <p class="text-[11px] text-amber-300/80">
+                  Awaiting rider assignment
+                </p>
               </div>
             </div>
           </div>
@@ -545,6 +570,9 @@ export default {
       }
     });
 
+    const riderName = Vue.computed(() => order.value?.driver?.name || order.value?.driver_name || '');
+    const riderPhone = Vue.computed(() => order.value?.driver?.phone || order.value?.driver_phone || '');
+
     const currentDeliveryStateTitle = Vue.computed(() => {
       if (!order.value) return 'Delivery in progress';
       switch (order.value.status) {
@@ -569,7 +597,7 @@ export default {
         case 'Preparing':
           return 'Our baristas are preparing your tea drinks with exact sweetness and ice levels.';
         case 'Out for Delivery':
-          return order.value.on_the_way_notified_at ? ('Rider ' + (order.value.driver_name || 'courier') + ' is on the way to your doorstep (' + formatTime(order.value.on_the_way_notified_at) + '). Please keep your phone reachable.') : 'Your drinks have been safely packed and handed to our rider. Rider is prepping to depart.';
+          return order.value.on_the_way_notified_at ? ('Rider ' + (riderName.value || 'courier') + ' is on the way to your doorstep (' + formatTime(order.value.on_the_way_notified_at) + '). Please keep your phone reachable.') : 'Your drinks have been safely packed and handed to our rider. Rider is prepping to depart.';
         case 'Completed':
           return 'Delivered to your address! Thank you for ordering at G Shot Teas!';
         default:
@@ -1226,6 +1254,8 @@ export default {
       currentDeliveryStateTitle,
       currentDeliveryStateDesc,
       order,
+      riderName,
+      riderPhone,
       currentStepIndex,
       progressPercentage,
       statusBadgeClass,
