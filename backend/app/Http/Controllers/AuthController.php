@@ -363,18 +363,8 @@ class AuthController extends Controller
 
         $portal = $request->input('portal', 'customer');
 
-        // Bawal mag-login ang operational accounts (staff, admin, super_admin, driver) sa customer storefront
-        if ($portal === 'customer' && in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
-            return response()->json([
-                'message' => 'Staff, Admin, Super Admin, and Delivery Rider accounts cannot log in to the customer storefront. Please access the Operations Portal at /admin.'
-            ], 403);
-        }
-
-        // Bawal mag-login ang customer accounts sa Operations Portal
-        if ($portal === 'operations' && $user->role === 'customer') {
-            return response()->json([
-                'message' => 'Access denied. The Operations Portal is exclusively reserved for Staff, Admin, Super Admin, and Delivery Riders.'
-            ], 403);
+        if ($portalError = $this->validatePortalAccess($user, $portal)) {
+            return $portalError;
         }
 
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -678,17 +668,8 @@ class AuthController extends Controller
 
         $portal = $request->input('portal', 'customer');
 
-        // Bawal mag-login ang operational accounts sa customer storefront via Google
-        if ($portal === 'customer' && in_array($user->role, ['staff', 'admin', 'super_admin', 'driver'])) {
-            return response()->json([
-                'message' => 'Staff, Admin, Super Admin, and Delivery Rider accounts cannot log in to the customer storefront. Please access the Operations Portal at /admin.'
-            ], 403);
-        }
-
-        if ($portal === 'operations' && $user->role === 'customer') {
-            return response()->json([
-                'message' => 'Access denied. The Operations Portal is exclusively reserved for Staff, Admin, Super Admin, and Delivery Riders.'
-            ], 403);
+        if ($portalError = $this->validatePortalAccess($user, $portal)) {
+            return $portalError;
         }
 
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -1071,5 +1052,66 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token,
         ]);
+    }
+
+    private function validatePortalAccess(User $user, ?string $portal)
+    {
+        $normalizedPortal = strtolower(trim((string) ($portal ?: 'customer')));
+        if ($normalizedPortal === 'rider') {
+            $normalizedPortal = 'driver';
+        } elseif ($normalizedPortal === 'superadmin' || $normalizedPortal === 'super-admin') {
+            $normalizedPortal = 'super_admin';
+        }
+
+        $opsRoles = ['staff', 'admin', 'super_admin', 'driver'];
+        $roleLabels = [
+            'customer' => 'Customer',
+            'staff' => 'Staff',
+            'driver' => 'Rider',
+            'admin' => 'Admin',
+            'super_admin' => 'Super Admin',
+        ];
+        $portalPaths = [
+            'customer' => '/',
+            'staff' => '/staff',
+            'driver' => '/driver',
+            'admin' => '/admin',
+            'super_admin' => '/superadmin',
+        ];
+
+        // Customer storefront strictly rejects operational accounts
+        if ($normalizedPortal === 'customer' && in_array($user->role, $opsRoles, true)) {
+            $correctPath = $portalPaths[$user->role] ?? '/admin';
+            $roleLabel = $roleLabels[$user->role] ?? ucfirst($user->role);
+            return response()->json([
+                'message' => "{$roleLabel} accounts cannot log in to the customer storefront. Please log in at {$correctPath}."
+            ], 403);
+        }
+
+        // Generic operations portal rejects customer accounts
+        if ($normalizedPortal === 'operations' && !in_array($user->role, $opsRoles, true)) {
+            return response()->json([
+                'message' => 'Access denied. The Operations Portal is exclusively reserved for Staff, Admin, Super Admin, and Delivery Riders.'
+            ], 403);
+        }
+
+        // Specific operational portal (staff, driver, admin, super_admin) strictly requires matching role
+        if (in_array($normalizedPortal, $opsRoles, true) && $user->role !== $normalizedPortal) {
+            $portalLabel = $roleLabels[$normalizedPortal] ?? ucfirst($normalizedPortal);
+            $roleLabel = $roleLabels[$user->role] ?? ucfirst($user->role);
+
+            if (!in_array($user->role, $opsRoles, true)) {
+                return response()->json([
+                    'message' => "Access denied. Customer accounts cannot log in to the {$portalLabel} Portal."
+                ], 403);
+            }
+
+            $correctPath = $portalPaths[$user->role] ?? '/admin';
+            return response()->json([
+                'message' => "Access denied. {$roleLabel} accounts cannot log in to the {$portalLabel} Portal. Please use the {$roleLabel} Portal ({$correctPath})."
+            ], 403);
+        }
+
+        return null;
     }
 }

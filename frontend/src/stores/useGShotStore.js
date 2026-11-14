@@ -1528,17 +1528,30 @@ const useGShotStore = defineStore('gshot', {
         const res = await GST_API.login(email, password, portal);
         const loggedUser = res.data.user;
 
+        const opsRoles = ['staff', 'admin', 'super_admin', 'driver'];
+        const normalizedPortal = portal === 'rider'
+          ? 'driver'
+          : (portal === 'superadmin' || portal === 'super-admin' ? 'super_admin' : portal);
+
         // Strict Enforcement: Operational accounts are forbidden on the customer storefront
-        if (portal === 'customer' && ['staff', 'admin', 'super_admin', 'driver'].includes(loggedUser.role)) {
+        if (normalizedPortal === 'customer' && opsRoles.includes(loggedUser.role)) {
           this.logout();
           throw new Error('Staff, Admin, Super Admin, and Delivery Rider accounts cannot log in to the customer storefront. Please log in through the Operations Portal (/admin).');
+        }
+        if (normalizedPortal === 'operations' && !opsRoles.includes(loggedUser.role)) {
+          this.logout();
+          throw new Error('Access denied. The Operations Portal is exclusively reserved for Staff, Admin, Super Admin, and Delivery Riders.');
+        }
+        if (opsRoles.includes(normalizedPortal) && loggedUser.role !== normalizedPortal) {
+          this.logout();
+          throw new Error(`Access denied. Your account role (${loggedUser.role}) cannot log in to the ${normalizedPortal} portal.`);
         }
 
         this.user = loggedUser;
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
-        if (['staff', 'admin', 'super_admin', 'driver'].includes(this.user.role)) {
+        if (opsRoles.includes(this.user.role)) {
           document.cookie = `gst_role=${this.user.role}; path=/; max-age=${30 * 86400}; SameSite=Lax`;
         } else {
           document.cookie = `gst_role=customer; path=/; max-age=${30 * 86400}; SameSite=Lax`;
@@ -1550,14 +1563,15 @@ const useGShotStore = defineStore('gshot', {
         // Role-based redirection from Capstone document:
         if (['staff', 'admin', 'super_admin'].includes(this.user.role)) {
           this.currentView = 'admin';
+          const rolePath = this.user.role === 'super_admin' ? '/superadmin' : (this.user.role === 'staff' ? '/staff' : '/admin');
           if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard') && !window.location.pathname.includes('driver') && !window.location.pathname.includes('rider')) {
-            window.location.replace('/admin');
+            window.location.replace(rolePath);
             return;
           }
         } else if (this.user.role === 'driver') {
           this.currentView = 'driver';
-          if (!window.location.pathname.includes('admin') && !window.location.pathname.includes('staff') && !window.location.pathname.includes('superadmin') && !window.location.pathname.includes('super-admin') && !window.location.pathname.includes('dashboard') && !window.location.pathname.includes('driver') && !window.location.pathname.includes('rider')) {
-            window.location.replace('/admin');
+          if (!window.location.pathname.includes('driver') && !window.location.pathname.includes('rider')) {
+            window.location.replace('/driver');
             return;
           }
         } else {

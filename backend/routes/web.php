@@ -72,7 +72,13 @@ XML;
 Route::get('/', function (\Illuminate\Http\Request $request) use ($serveSpaHtml) {
     $role = $request->cookie('gst_role') ?? ($_COOKIE['gst_role'] ?? null);
     if ($role && in_array($role, ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'])) {
-        return redirect(($role === 'driver' || $role === 'rider') ? '/driver' : '/admin');
+        $target = match ($role) {
+            'driver', 'rider' => '/driver',
+            'staff' => '/staff',
+            'super_admin', 'superadmin' => '/superadmin',
+            default => '/admin',
+        };
+        return redirect($target);
     }
 
     return $serveSpaHtml('index.html');
@@ -121,7 +127,13 @@ Route::fallback(function (\Illuminate\Http\Request $request) use ($serveSpaHtml)
 
     $role = $request->cookie('gst_role') ?? ($_COOKIE['gst_role'] ?? null);
     if ($role && in_array($role, ['staff', 'admin', 'super_admin', 'superadmin', 'driver', 'rider'])) {
-        return redirect(($role === 'driver' || $role === 'rider') ? '/driver' : '/admin');
+        $target = match ($role) {
+            'driver', 'rider' => '/driver',
+            'staff' => '/staff',
+            'super_admin', 'superadmin' => '/superadmin',
+            default => '/admin',
+        };
+        return redirect($target);
     }
 
     return $serveSpaHtml('index.html');

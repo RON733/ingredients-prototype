@@ -372,14 +372,14 @@ export default {
         if (currentUser.role === 'driver') {
           store.currentView = 'driver';
         } else {
-          store.currentView = store.user?.role === 'driver' ? 'driver' : 'admin';
+          store.currentView = 'admin';
         }
+        setPortalRole(currentUser.role);
       } else {
         isLoggedIn.value = false;
         sessionStorage.removeItem('gst_admin_unlocked');
+        detectRoleFromPath();
       }
-
-      detectRoleFromPath();
 
       // Fetch dynamic staff list if available
       try {
@@ -470,10 +470,9 @@ export default {
       credentialsLoading.value = true;
       authError.value = '';
       try {
-        await store.login(email.value, password.value, 'operations');
-        const allowedRoles = ['staff', 'admin', 'super_admin', 'driver'];
-        if (!store.user || !allowedRoles.includes(store.user.role)) {
-          authError.value = 'Access denied. The Operations Portal is strictly reserved for Staff, Admin, Super Admin, and Delivery Riders.';
+        await store.login(email.value, password.value, activeRole.value);
+        if (!store.user || store.user.role !== activeRole.value) {
+          authError.value = `Access denied. Only ${portalBadgeText.value} accounts can sign in to the ${portalBadgeText.value} Portal.`;
           store.logout();
           sessionStorage.removeItem('gst_admin_unlocked');
           isLoggedIn.value = false;
