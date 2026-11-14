@@ -49,20 +49,6 @@
         <span class="flex-1 leading-snug">{{ authSuccess }}</span>
       </div>
 
-      <!-- Dev/Demo Mode Code Auto-Fill Helper -->
-      <div v-if="devCode && (store.authMode === 'reset' || store.authMode === 'register_verify')" class="mb-4 p-3 rounded-2xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-300 text-xs flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 min-w-0">
-          <i class="pi pi-info-circle text-yellow-400 shrink-0"></i>
-          <span class="truncate">Testing OTP: <strong class="font-mono text-white text-sm tracking-widest">{{ devCode }}</strong></span>
-        </div>
-        <button 
-          type="button" 
-          @click="store.authMode === 'register_verify' ? (form.registerCode = devCode) : (form.code = devCode)" 
-          class="shrink-0 px-2.5 py-1 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-[11px] transition-all cursor-pointer">
-          Auto Fill
-        </button>
-      </div>
-
       <!-- MODE 1 & 2: LOGIN / REGISTER -->
       <div v-if="store.authMode === 'login' || store.authMode === 'register'">
         <!-- Google Sign-In Section -->
@@ -452,7 +438,6 @@ export default {
     const googleLoading = Vue.ref(false);
     const authError = Vue.ref('');
     const authSuccess = Vue.ref('');
-    const devCode = Vue.ref('');
     const resendCountdown = Vue.ref(0);
     let timer = null;
 
@@ -538,14 +523,11 @@ export default {
       authSuccess.value = '';
       try {
         const res = await store.forgotPassword(form.email);
-        if (res?.mail_sent === false && !res?.dev_code) {
+        if (res?.mail_sent === false) {
           authError.value = res?.message || 'Failed to send reset code email. Please try again later.';
           return;
         }
         authSuccess.value = res.message || 'Verification code sent to your email!';
-        if (res.dev_code) {
-          devCode.value = res.dev_code;
-        }
         startCountdown(30);
         store.authMode = 'reset';
       } catch (err) {
@@ -562,14 +544,11 @@ export default {
       authSuccess.value = '';
       try {
         const res = await store.forgotPassword(form.email);
-        if (res?.mail_sent === false && !res?.dev_code) {
+        if (res?.mail_sent === false) {
           authError.value = res?.message || 'Failed to resend reset code email. Please try again later.';
           return;
         }
         authSuccess.value = res.message || 'A new 6-digit verification code has been sent!';
-        if (res.dev_code) {
-          devCode.value = res.dev_code;
-        }
         startCountdown(30);
       } catch (err) {
         authError.value = err.message || 'Failed to resend code.';
@@ -706,14 +685,11 @@ export default {
       authSuccess.value = '';
       try {
         const res = await store.resendRegisterOtp(form.email);
-        if (res?.mail_sent === false && !res?.dev_code) {
+        if (res?.mail_sent === false) {
           authError.value = res?.message || 'Unable to resend the verification email right now. Please try again later.';
           return;
         }
         authSuccess.value = res.message || 'A new verification code has been sent!';
-        if (res.dev_code) {
-          devCode.value = res.dev_code;
-        }
         startCountdown(30);
       } catch (err) {
         authError.value = err.message || 'Failed to resend code.';
@@ -747,9 +723,6 @@ export default {
               return;
             }
             authSuccess.value = res.message || 'Verification code sent to your email!';
-            if (res.dev_code) {
-              devCode.value = res.dev_code;
-            }
             form.registerCode = '';
             startCountdown(30);
             store.authMode = 'register_verify';
@@ -800,7 +773,6 @@ export default {
       googleLoading,
       authError,
       authSuccess,
-      devCode,
       resendCountdown,
       showPassword,
       showNewPassword,

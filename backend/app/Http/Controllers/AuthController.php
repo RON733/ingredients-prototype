@@ -133,15 +133,8 @@ class AuthController extends Controller
             Log::warning("{$logLabel} failed for {$email}: {$mailError}");
         }
 
-        $isDevOrLog = config('app.debug') || config('mail.default') === 'log' || app()->environment('local');
-
-        if ($isDevOrLog) {
-            Log::info("{$logLabel} generated for {$email}: {$code}");
-        }
-
         return [
             'mail_sent' => $mailSent,
-            'is_dev_or_log' => $isDevOrLog,
             'error' => $mailError,
         ];
     }
@@ -191,7 +184,7 @@ class AuthController extends Controller
             'Registration OTP email sending'
         );
 
-        if (!$mailResult['mail_sent'] && !$mailResult['is_dev_or_log']) {
+        if (!$mailResult['mail_sent']) {
             Cache::forget($cacheKey);
             return response()->json([
                 'message' => 'Unable to send the verification code email right now. Please try again later or contact support.',
@@ -199,16 +192,11 @@ class AuthController extends Controller
             ], 503);
         }
 
-        $message = $mailResult['mail_sent']
-            ? 'A 6-digit verification code has been sent to ' . $email . '. Please check your email to complete registration.'
-            : 'Email delivery failed in dev mode. Use the Testing OTP shown below to complete registration.';
-
         return response()->json([
-            'message' => $message,
+            'message' => 'A 6-digit verification code has been sent to ' . $email . '. Please check your email to complete registration.',
             'email' => $email,
             'requires_verification' => true,
-            'dev_code' => $mailResult['is_dev_or_log'] ? $code : null,
-            'mail_sent' => $mailResult['mail_sent'],
+            'mail_sent' => true,
         ]);
     }
 
@@ -320,22 +308,17 @@ class AuthController extends Controller
             'Resend registration OTP'
         );
 
-        if (!$mailResult['mail_sent'] && !$mailResult['is_dev_or_log']) {
+        if (!$mailResult['mail_sent']) {
             return response()->json([
                 'message' => 'Unable to resend the verification code email right now. Please try again later or contact support.',
                 'mail_sent' => false,
             ], 503);
         }
 
-        $message = $mailResult['mail_sent']
-            ? 'A new 6-digit verification code has been sent to ' . $email . '.'
-            : 'Email delivery failed in dev mode. Use the Testing OTP shown below.';
-
         return response()->json([
-            'message' => $message,
+            'message' => 'A new 6-digit verification code has been sent to ' . $email . '.',
             'email' => $email,
-            'dev_code' => $mailResult['is_dev_or_log'] ? $code : null,
-            'mail_sent' => $mailResult['mail_sent'],
+            'mail_sent' => true,
         ]);
     }
 
@@ -438,7 +421,7 @@ class AuthController extends Controller
             'Password reset email sending'
         );
 
-        if (!$mailResult['mail_sent'] && !$mailResult['is_dev_or_log']) {
+        if (!$mailResult['mail_sent']) {
             DB::table('password_reset_tokens')->where('email', $email)->delete();
             return response()->json([
                 'message' => 'Unable to send the password reset email right now. Please try again later or contact support.',
@@ -455,15 +438,10 @@ class AuthController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        $message = $mailResult['mail_sent']
-            ? 'A 6-digit verification code has been sent to your email.'
-            : 'Email delivery failed in dev mode. Use the Testing OTP shown below to reset your password.';
-
         return response()->json([
-            'message' => $message,
+            'message' => 'A 6-digit verification code has been sent to your email.',
             'email' => $email,
-            'dev_code' => $mailResult['is_dev_or_log'] ? $code : null,
-            'mail_sent' => $mailResult['mail_sent'],
+            'mail_sent' => true,
         ]);
     }
 
