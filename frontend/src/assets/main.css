@@ -284,3 +284,223 @@ select option { background: #121215; color: #ffffff; }
     min-height: calc(100svh - 5rem);
   }
 }
+
+
+/* ============================================================================
+   OPERATIONS PORTAL LIGHT MODE (Staff, Rider, Admin, Super Admin)
+   ============================================================================ */
+html.ops-light {
+  color-scheme: light;
+  --color-surface-950: #f3f5f8;
+  --color-surface-900: #ffffff;
+  --color-surface-850: #f8fafc;
+  --color-surface-800: #eef1f6;
+  --color-surface-750: #e2e6ef;
+  --color-surface-700: #cbd3e1;
+  --color-surface-600: #94a3b8;
+  --color-surface-500: #64748b;
+  --color-surface-400: #475569;
+}
+
+html.ops-light,
+html.ops-light body {
+  background: #f3f5f8;
+  color: #111827;
+}
+
+html.ops-light ::-webkit-scrollbar-track { background: #f3f5f8; }
+html.ops-light ::-webkit-scrollbar-thumb { background: #cbd3e1; }
+html.ops-light ::-webkit-scrollbar-thumb:hover { background: #d97706; }
+
+html.ops-light .glass {
+  background: #ffffff;
+  border-color: #e2e6ef;
+}
+html.ops-light .glass-card {
+  background: #f8fafc;
+  border-color: #e2e6ef;
+}
+
+html.ops-light select option {
+  background: #ffffff;
+  color: #111827;
+}
+
+html.ops-light input::placeholder,
+html.ops-light textarea::placeholder {
+  color: #64748b;
+}
+
+/* Crisp subtle card elevation in light mode */
+html.ops-light .bg-surface-900 {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* Neutral / Dark Surface fallbacks used in some tabs */
+html.ops-light .bg-neutral-950,
+html.ops-light .bg-zinc-950,
+html.ops-light .bg-slate-950 {
+  background-color: #f3f5f8;
+}
+html.ops-light .bg-neutral-900,
+html.ops-light .bg-zinc-900,
+html.ops-light .bg-slate-900 {
+  background-color: #ffffff;
+}
+html.ops-light .bg-neutral-800,
+html.ops-light .bg-zinc-800,
+html.ops-light .bg-slate-800 {
+  background-color: #eef1f6;
+}
+html.ops-light .border-neutral-800,
+html.ops-light .border-zinc-800,
+html.ops-light .border-slate-800,
+html.ops-light .border-white\/10,
+html.ops-light .border-white\/5 {
+  border-color: #e2e6ef;
+}
+
+/* Alert & Notice Banners (950/xx dark tints -> soft light tints) */
+html.ops-light [class*="bg-amber-950"] {
+  background-color: #fffbeb !important;
+  border-color: #fcd34d !important;
+}
+html.ops-light [class*="bg-rose-950"] {
+  background-color: #fff1f2 !important;
+  border-color: #fda4af !important;
+}
+html.ops-light [class*="bg-emerald-950"] {
+  background-color: #ecfdf5 !important;
+  border-color: #6ee7b7 !important;
+}
+
+/* Primary & Muted Text Contrast */
+html.ops-light .text-white:not(.bg-rose-500):not(.bg-rose-600):not(.bg-emerald-500):not(.bg-emerald-600):not(.bg-amber-600):not(.bg-blue-500):not(.bg-blue-600):not(.bg-indigo-500):not(.bg-indigo-600):not(.bg-sky-600):not(.bg-orange-600):not(.bg-purple-600):not(.bg-red-600):not(.bg-green-600):not(.bg-black):not([class*="bg-rose-600"]):not([class*="bg-emerald-600"]):not([class*="bg-blue-600"]):not([class*="bg-indigo-600"]),
+html.ops-light .text-gray-100,
+html.ops-light .text-neutral-100,
+html.ops-light .text-zinc-100 {
+  color: #111827;
+}
+
+html.ops-light .text-gray-200,
+html.ops-light .text-neutral-200,
+html.ops-light .text-zinc-200 {
+  color: #1f2937;
+}
+
+html.ops-light .text-gray-300,
+html.ops-light .text-neutral-300,
+html.ops-light .text-zinc-300 {
+  color: #374151;
+}
+
+html.ops-light .text-gray-400,
+html.ops-light .text-neutral-400,
+html.ops-light .text-zinc-400 {
+  color: #4b5563;
+}
+
+html.ops-light .text-gray-500,
+html.ops-light .text-neutral-500,
+html.ops-light .text-zinc-500 {
+  color: #6b7280;
+}
+
+/* Accent Colors Tuned for High Contrast on Light Surfaces */
+html.ops-light .text-amber-50,
+html.ops-light .text-amber-100 {
+  color: #78350f;
+}
+html.ops-light .text-amber-200,
+html.ops-light .text-amber-300,
+html.ops-light .text-amber-400 {
+  color: #b45309;
+}
+html.ops-light .text-yellow-300,
+html.ops-light .text-yellow-400 {
+  color: #a16207;
+}
+html.ops-light .text-emerald-200,
+html.ops-light .text-emerald-300,
+html.ops-light .text-emerald-400 {
+  color: #047857;
+}
+html.ops-light .text-rose-200,
+html.ops-light .text-rose-300,
+html.ops-light .text-rose-400 {
+  color: #be123c;
+}
+html.ops-light .text-orange-200,
+html.ops-light .text-orange-300,
+html.ops-light .text-orange-400 {
+  color: #c2410c;
+}
+html.ops-light .text-sky-200,
+html.ops-light .text-sky-300,
+html.ops-light .text-sky-400 {
+  color: #0369a1;
+}
+html.ops-light .text-indigo-200,
+html.ops-light .text-indigo-300,
+html.ops-light .text-indigo-400 {
+  color: #4338ca;
+}
+html.ops-light .text-cyan-200,
+html.ops-light .text-cyan-300,
+html.ops-light .text-cyan-400 {
+  color: #0e7490;
+}
+html.ops-light .text-purple-200,
+html.ops-light .text-purple-300,
+html.ops-light .text-purple-400 {
+  color: #7e22ce;
+}
+
+/* Preserve white text inside solid-colored buttons & badges */
+html.ops-light .bg-rose-500 .text-white,
+html.ops-light .bg-rose-600 .text-white,
+html.ops-light .bg-emerald-500 .text-white,
+html.ops-light .bg-emerald-600 .text-white,
+html.ops-light .bg-amber-600 .text-white,
+html.ops-light .bg-blue-500 .text-white,
+html.ops-light .bg-blue-600 .text-white,
+html.ops-light .bg-indigo-500 .text-white,
+html.ops-light .bg-indigo-600 .text-white,
+html.ops-light .bg-sky-600 .text-white,
+html.ops-light .bg-orange-600 .text-white,
+html.ops-light .bg-purple-600 .text-white,
+html.ops-light .bg-red-600 .text-white,
+html.ops-light .bg-green-600 .text-white {
+  color: #ffffff;
+}
+
+/* Hover text-white inside light buttons should stay dark */
+html.ops-light .hover\:text-white:hover {
+  color: #111827;
+}
+
+/* Leaflet Map Light Mode */
+html.ops-light .dark-osm-tiles {
+  filter: none !important;
+}
+html.ops-light .leaflet-container {
+  background-color: #e5e7eb !important;
+}
+html.ops-light .leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #cbd3e1 !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15) !important;
+}
+html.ops-light .leaflet-popup-tip {
+  background: #ffffff !important;
+}
+html.ops-light .leaflet-control-zoom a {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #cbd3e1 !important;
+}
+html.ops-light .leaflet-control-zoom a:hover {
+  background-color: #f3f5f8 !important;
+  color: #b45309 !important;
+}

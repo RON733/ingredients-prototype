@@ -19,6 +19,16 @@
       </div>
 
       <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          @click="store.toggleOpsTheme()"
+          class="px-2.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-200 text-xs font-semibold border border-surface-700 transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+          :title="store.isOpsLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+          aria-label="Toggle Light Mode">
+          <i class="pi text-xs" :class="store.isOpsLight ? 'pi-moon text-indigo-400' : 'pi-sun text-amber-400'"></i>
+          <span class="hidden sm:inline">{{ store.isOpsLight ? 'Dark' : 'Light' }}</span>
+        </button>
+
         <button 
           type="button"
           @click="refreshAll"

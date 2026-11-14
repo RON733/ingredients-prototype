@@ -411,6 +411,7 @@ import * as Vue from 'vue';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
+import { detectSantaRosaBarangay } from '@/utils/santaRosaBarangays';
 
 // G Shot Teas — Order Tracker Component with Free Leaflet GPS Tracking
 export default {
@@ -536,21 +537,27 @@ export default {
       return Math.round(meters) + ' m away';
     };
 
+    const orderBarangayEta = Vue.computed(() => {
+      const addr = order.value?.delivery_address || '';
+      const match = detectSantaRosaBarangay(addr);
+      return match.matched && match.barangay ? match.barangay.eta : '30–45 Mins';
+    });
+
     const estimatedDeliveryRange = Vue.computed(() => {
-      if (!order.value) return '30–45 mins';
+      if (!order.value) return '30–45 Mins';
       switch (order.value.status) {
         case 'Pending':
-          return '35–45 mins';
+          return orderBarangayEta.value;
         case 'Preparing':
-          return '25–35 mins';
+          return orderBarangayEta.value;
         case 'Out for Delivery':
-          return riderEtaText.value ? `${riderEtaText.value}` : '10–15 mins';
+          return riderEtaText.value ? `${riderEtaText.value}` : orderBarangayEta.value;
         case 'Completed':
           return 'Delivered';
         case 'Cancelled':
           return 'Cancelled';
         default:
-          return '30–45 mins';
+          return orderBarangayEta.value;
       }
     });
 

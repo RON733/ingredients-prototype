@@ -180,30 +180,92 @@
 
             <textarea 
               v-model="form.delivery_address" 
+              @input="onManualAddressInput"
               rows="2" 
               placeholder="Unit/House No., Street Name, Barangay, Landmark, Santa Rosa, Laguna"
               class="w-full px-4 py-3 rounded-xl bg-surface-900 border text-sm text-white placeholder-gray-500 focus:outline-none transition-all resize-none"
-              :class="addressError ? 'border-rose-500 focus:border-rose-400' : 'border-surface-700 focus:border-brand-500'"
+              :class="addressError ? 'border-rose-500 focus:border-rose-400' : detectedBarangay ? 'border-emerald-500/60 focus:border-emerald-400' : 'border-surface-700 focus:border-brand-500'"
             ></textarea>
-            <p v-if="addressError" class="text-rose-400 text-[11px] mt-1 font-semibold flex items-center gap-1">
-              <i class="pi pi-exclamation-circle text-[10px]"></i>
+
+            <!-- Detected Barangay Accepted Pill -->
+            <div 
+              v-if="detectedBarangay && !addressError" 
+              class="mt-2 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold flex items-center justify-between gap-2">
+              <span class="flex items-center gap-1.5 min-w-0">
+                <i class="pi pi-check-circle text-emerald-400 shrink-0"></i>
+                <span class="truncate">Detected Barangay: <strong class="text-emerald-200">{{ detectedBarangay.name }}</strong></span>
+              </span>
+              <span class="text-[10px] font-mono text-emerald-200/90 shrink-0">Serviceable</span>
+            </div>
+
+            <!-- Address / Barangay Rejection Error -->
+            <p v-if="addressError" class="text-rose-400 text-[11px] mt-1.5 font-semibold flex items-start gap-1.5 leading-relaxed">
+              <i class="pi pi-exclamation-circle text-[11px] shrink-0 mt-0.5"></i>
               <span>{{ addressError }}</span>
             </p>
 
-            <!-- Estimated Delivery Time Card (Customer View) -->
-            <div class="mt-3 p-3.5 sm:p-4 rounded-2xl bg-surface-900/90 border border-surface-700/80 flex items-center justify-between gap-3">
+            <!-- Estimated Delivery Time Card (Customer View, Per Barangay) -->
+            <div 
+              class="mt-3 p-3.5 sm:p-4 rounded-2xl border flex items-center justify-between gap-3 transition-colors"
+              :class="addressError ? 'bg-rose-950/25 border-rose-500/40' : 'bg-surface-900/90 border-surface-700/80'">
               <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/15 border border-amber-500/25 text-amber-300 flex items-center justify-center text-base sm:text-lg shrink-0">
-                  <i class="pi pi-clock"></i>
+                <div 
+                  class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center text-base sm:text-lg shrink-0"
+                  :class="addressError ? 'bg-rose-500/15 border-rose-500/30 text-rose-300' : 'bg-amber-500/15 border-amber-500/25 text-amber-300'">
+                  <i class="pi" :class="addressError ? 'pi-ban' : 'pi-clock'"></i>
                 </div>
                 <div class="min-w-0">
                   <p class="text-[11px] sm:text-xs font-black text-stone-100 uppercase tracking-wider">Est. Delivery Time</p>
-                  <p class="text-[11px] text-gray-400 mt-0.5 leading-snug">Freshly brewed • Santa Rosa, Laguna</p>
+                  <p v-if="detectedBarangay && !addressError" class="text-[11px] text-gray-300 mt-0.5 leading-snug">
+                    From Brgy. Sinalhan &bull; To <strong class="text-amber-300">Brgy. {{ detectedBarangay.name }}</strong>
+                  </p>
+                  <p v-else-if="addressError" class="text-[11px] text-rose-300 mt-0.5 leading-snug">
+                    Outside the 18 accepted Santa Rosa barangays
+                  </p>
+                  <p v-else class="text-[11px] text-gray-400 mt-0.5 leading-snug">
+                    Enter or detect your Santa Rosa barangay
+                  </p>
                 </div>
               </div>
-              <span class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-black bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono shrink-0 whitespace-nowrap">
-                30–45 Mins
+              <span 
+                v-if="detectedBarangay && !addressError"
+                class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-black bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono shrink-0 whitespace-nowrap">
+                {{ detectedBarangay.eta }}
               </span>
+              <span 
+                v-else-if="addressError"
+                class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-black bg-rose-500/15 text-rose-300 border border-rose-500/30 font-mono shrink-0 whitespace-nowrap">
+                Rejected
+              </span>
+              <span 
+                v-else
+                class="px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-surface-800 text-gray-400 border border-surface-700 font-mono shrink-0 whitespace-nowrap">
+                15–55 Mins
+              </span>
+            </div>
+
+            <!-- Collapsible 18 Supported Barangays & ETA Guide -->
+            <div class="mt-2.5">
+              <button
+                type="button"
+                @click="showSupportedBarangays = !showSupportedBarangays"
+                class="text-[11px] font-bold text-amber-300/90 hover:text-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer">
+                <i class="pi" :class="showSupportedBarangays ? 'pi-chevron-up text-[10px]' : 'pi-map-marker text-[10px]'"></i>
+                <span>{{ showSupportedBarangays ? 'Hide' : 'View' }} 18 Accepted Santa Rosa Barangays &amp; Est. Delivery Times</span>
+              </button>
+
+              <div 
+                v-if="showSupportedBarangays"
+                class="mt-2 p-3 rounded-2xl bg-surface-950/80 border border-surface-800 grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-60 overflow-y-auto">
+                <div 
+                  v-for="b in supportedBarangays"
+                  :key="b.id"
+                  class="px-2.5 py-1.5 rounded-lg border text-[11px] flex items-center justify-between gap-2"
+                  :class="detectedBarangay?.id === b.id ? 'bg-amber-500/15 border-amber-400/50 text-amber-200' : 'bg-surface-900/70 border-surface-800 text-gray-300'">
+                  <span class="font-semibold truncate">{{ b.name }}</span>
+                  <span class="font-mono text-[10px] text-amber-300 shrink-0">{{ b.eta }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -648,6 +710,7 @@ import * as Vue from 'vue';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
+import { SANTA_ROSA_BARANGAYS, detectSantaRosaBarangay, detectBarangayFromCoords, getBarangayRejectionMessage } from '@/utils/santaRosaBarangays';
 
 // G Shot Teas — Customer Checkout Page (Matches Figure 10)
 export default {
@@ -670,6 +733,9 @@ export default {
     const gpsPromptModalOpen = Vue.ref(false);
     const gpsErrorMessage = Vue.ref('');
     const pinnedAddressPreview = Vue.ref('');
+    const gpsRejectionError = Vue.ref('');
+    const showSupportedBarangays = Vue.ref(false);
+    const supportedBarangays = SANTA_ROSA_BARANGAYS;
     let checkoutMap = null;
     let pinMarker = null;
 
@@ -727,10 +793,36 @@ export default {
       return '';
     });
 
+    const detectedBarangayResult = Vue.computed(() => {
+      return detectSantaRosaBarangay(form.delivery_address);
+    });
+
+    const detectedBarangay = Vue.computed(() => {
+      return detectedBarangayResult.value.matched ? detectedBarangayResult.value.barangay : null;
+    });
+
+    const onManualAddressInput = () => {
+      gpsRejectionError.value = '';
+      if (form.customer_lat || form.customer_lng) {
+        const res = detectSantaRosaBarangay(form.delivery_address);
+        if (!res.matched) {
+          form.customer_lat = null;
+          form.customer_lng = null;
+        }
+      }
+    };
+
     const addressError = Vue.computed(() => {
       if (form.order_type !== 'Delivery') return '';
-      if (!isValidationTriggered.value && !form.delivery_address) return '';
-      if (!form.delivery_address.trim()) return 'Delivery address is required for Delivery orders.';
+      if (gpsRejectionError.value) return gpsRejectionError.value;
+      const addr = form.delivery_address.trim();
+      if (isLocatingGPS.value && addr.includes('Detecting device location...')) return '';
+      if (!addr) {
+        return isValidationTriggered.value ? 'Delivery address is required for Delivery orders.' : '';
+      }
+      if (!detectedBarangayResult.value.matched) {
+        return getBarangayRejectionMessage(detectedBarangayResult.value);
+      }
       return '';
     });
 
@@ -753,8 +845,12 @@ export default {
       } else if (!form.customer_phone.startsWith('09')) {
         reasons.push('Phone Number must start with "09" (e.g. 09123456789).');
       }
-      if (form.order_type === 'Delivery' && !form.delivery_address.trim()) {
-        reasons.push('Delivery Address is required for Delivery orders.');
+      if (form.order_type === 'Delivery') {
+        if (!form.delivery_address.trim()) {
+          reasons.push('Delivery Address is required for Delivery orders.');
+        } else if (!detectedBarangayResult.value.matched) {
+          reasons.push(getBarangayRejectionMessage(detectedBarangayResult.value));
+        }
       }
 
       // Stock Limit Verification
@@ -875,42 +971,11 @@ export default {
     };
 
     const getQuickLocationHint = (lat, lng) => {
-      const barangays = [
-        { name: 'Sinalhan', lat: 14.3167, lng: 121.1111 },
-        { name: 'Balibago / Complex', lat: 14.2934, lng: 121.1082 },
-        { name: 'Tagapo / SM City', lat: 14.3101, lng: 121.1035 },
-        { name: 'Nuvali / Don Jose', lat: 14.2415, lng: 121.0583 },
-        { name: 'Caingin', lat: 14.3262, lng: 121.1172 },
-        { name: 'Dila', lat: 14.3005, lng: 121.1070 },
-        { name: 'Macabling', lat: 14.3023, lng: 121.0965 },
-        { name: 'Poblacion', lat: 14.3140, lng: 121.1130 },
-        { name: 'Market Area', lat: 14.3150, lng: 121.1120 },
-        { name: 'Malitlit', lat: 14.2750, lng: 121.0880 },
-        { name: 'Pulong Santa Cruz', lat: 14.2880, lng: 121.0850 },
-        { name: 'Aplaya', lat: 14.3292, lng: 121.1273 },
-        { name: 'Labas', lat: 14.3045, lng: 121.1167 },
-        { name: 'Pooc', lat: 14.3083, lng: 121.1189 },
-        { name: 'Malusak', lat: 14.3160, lng: 121.1145 },
-        { name: 'Kanluran', lat: 14.3175, lng: 121.1105 },
-        { name: 'Ibaba', lat: 14.3190, lng: 121.1120 },
-        { name: 'Santo Domingo', lat: 14.2541, lng: 121.0620 },
-        { name: 'Dita', lat: 14.2885, lng: 121.1020 },
-      ];
-
-      let closest = null;
-      let minDist = Infinity;
-      for (const b of barangays) {
-        const d = Math.hypot(lat - b.lat, lng - b.lng);
-        if (d < minDist) {
-          minDist = d;
-          closest = b;
-        }
+      const match = detectBarangayFromCoords(lat, lng);
+      if (match.matched && match.barangay) {
+        return `Brgy. ${match.barangay.name}, Santa Rosa, Laguna`;
       }
-
-      if (closest && minDist < 0.15) {
-        return `Near Brgy. ${closest.name}, Santa Rosa, Laguna`;
-      }
-      return `Pinned Delivery Location (${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)})`;
+      return '';
     };
 
         const updatePinLocation = (lat, lng, doReverseGeocode = true) => {
@@ -931,8 +996,11 @@ export default {
     const reverseGeocode = async (lat, lng) => {
       let resolvedAddress = '';
       let shortAddr = '';
+      let detectedCity = '';
+      let backendServiceable = null;
+      let backendRejectionReason = '';
 
-      // 1. Primary: Backend endpoint (uses OpenStreetMap Nominatim with valid User-Agent, zero CORS issues)
+      // 1. Primary: Backend endpoint (uses OpenStreetMap Nominatim with valid User-Agent + 18-barangay validation)
       try {
         const res = await fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`);
         if (res.ok) {
@@ -940,6 +1008,11 @@ export default {
           if (data && data.address) {
             resolvedAddress = data.address;
             shortAddr = data.short_address || data.address.split(',')[0];
+            detectedCity = data.city || '';
+            if (typeof data.is_serviceable === 'boolean') {
+              backendServiceable = data.is_serviceable;
+              backendRejectionReason = data.rejection_reason || '';
+            }
           }
         }
       } catch (err) {
@@ -953,8 +1026,9 @@ export default {
           if (bdcRes.ok) {
             const bdc = await bdcRes.json();
             const locality = bdc.locality || bdc.city || '';
-            const city = bdc.city || 'Santa Rosa';
+            const city = bdc.city || '';
             const state = bdc.principalSubdivision || 'Laguna';
+            detectedCity = city;
             const parts = [locality, city, state].filter(Boolean);
             resolvedAddress = [...new Set(parts)].join(', ');
             shortAddr = locality || city;
@@ -964,15 +1038,30 @@ export default {
         }
       }
 
-      // 3. Geometric Santa Rosa Barangay matcher fallback
-      if (!resolvedAddress) {
-        resolvedAddress = getQuickLocationHint(lat, lng);
-        shortAddr = resolvedAddress.split(',')[0];
+      // 3. Validate resolved address & coordinates against the hardcoded 18 barangays
+      const coordCheck = detectBarangayFromCoords(lat, lng, resolvedAddress, detectedCity);
+
+      if (backendServiceable === false || !coordCheck.matched) {
+        gpsRejectionError.value = backendRejectionReason || getBarangayRejectionMessage(coordCheck);
+        form.customer_lat = null;
+        form.customer_lng = null;
+        form.delivery_address = resolvedAddress || `Outside Coverage (${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)})`;
+        pinnedAddressPreview.value = '';
+        store.notify(gpsRejectionError.value, 'error');
+        return false;
       }
 
+      if (!resolvedAddress && coordCheck.barangay) {
+        resolvedAddress = `Brgy. ${coordCheck.barangay.name}, Santa Rosa, Laguna`;
+        shortAddr = `Brgy. ${coordCheck.barangay.name}`;
+      } else if (coordCheck.barangay && !detectSantaRosaBarangay(resolvedAddress).matched) {
+        resolvedAddress = `${resolvedAddress.replace(/,\s*$/, '')}, Brgy. ${coordCheck.barangay.name}`;
+      }
+
+      gpsRejectionError.value = '';
       pinnedAddressPreview.value = shortAddr || resolvedAddress;
-      // Automatically place the resolved address into the delivery address text box!
       form.delivery_address = resolvedAddress;
+      return true;
     };
 
     const initCheckoutMap = () => {
@@ -1052,6 +1141,7 @@ export default {
 
       isLocatingGPS.value = true;
       gpsErrorMessage.value = '';
+      gpsRejectionError.value = '';
 
       // Provide immediate feedback in delivery address text box
       if (!form.delivery_address || form.delivery_address.trim() === '') {
@@ -1062,20 +1152,21 @@ export default {
 
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          isLocatingGPS.value = false;
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           const accuracy = Math.round(pos.coords.accuracy || 0);
           gpsAccuracyMeters.value = accuracy;
 
-          // 1. Immediately store coordinates
+          // 1. Temporarily store coordinates while verifying against the 18 barangays
           form.customer_lat = Number(lat).toFixed(7);
           form.customer_lng = Number(lng).toFixed(7);
 
-          // 2. Immediately put the initial detected location in the text box!
+          // 2. If inside Santa Rosa bounds, show quick hint immediately while reverse-geocoding refines it
           const quickHint = getQuickLocationHint(lat, lng);
-          form.delivery_address = quickHint;
-          pinnedAddressPreview.value = quickHint.split(',')[0];
+          if (quickHint) {
+            form.delivery_address = quickHint;
+            pinnedAddressPreview.value = quickHint.split(',')[0];
+          }
 
           // 3. Center and display Leaflet map
           initCheckoutMap();
@@ -1098,10 +1189,13 @@ export default {
             setTimeout(() => { if (checkoutMap) checkoutMap.invalidateSize(); }, 200);
           }
 
-          store.notify(`Location Detected! Accurate within ±${accuracy}m. Your address has been updated.`, 'success');
+          // 4. Verify city & barangay via reverse geocoding + hardcoded 18-barangay whitelist
+          const isAccepted = await reverseGeocode(lat, lng);
+          isLocatingGPS.value = false;
 
-          // 4. Refine to full street/subdivision address in the text box
-          await reverseGeocode(lat, lng);
+          if (isAccepted && detectedBarangay.value) {
+            store.notify(`Detected Brgy. ${detectedBarangay.value.name} (±${accuracy}m). Est. delivery: ${detectedBarangay.value.eta}.`, 'success');
+          }
         },
         (err) => {
           isLocatingGPS.value = false;
@@ -1367,6 +1461,10 @@ export default {
       nameError,
       phoneError,
       addressError,
+      detectedBarangay,
+      onManualAddressInput,
+      showSupportedBarangays,
+      supportedBarangays,
       checkoutBlockReasons,
       useCurrentLocation,
       backToMenu,

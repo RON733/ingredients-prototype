@@ -24,6 +24,19 @@
 
         <div class="w-full max-w-md space-y-4 relative z-10">
           
+          <!-- Portal Theme Toggle (Top Right) -->
+          <div class="flex justify-end">
+            <button
+              type="button"
+              @click="store.toggleOpsTheme()"
+              class="px-2.5 py-1.5 rounded-lg bg-surface-900 hover:bg-surface-800 border border-surface-800 text-gray-300 text-[11px] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              :title="store.isOpsLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+              aria-label="Toggle Light Mode">
+              <i class="pi text-xs" :class="store.isOpsLight ? 'pi-moon text-indigo-400' : 'pi-sun text-amber-400'"></i>
+              <span>{{ store.isOpsLight ? 'Dark' : 'Light' }}</span>
+            </button>
+          </div>
+
           <!-- Portal Branding Header -->
           <div class="text-center space-y-1.5">
             <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-300 font-black text-xl shadow-sm">
@@ -362,6 +375,7 @@ export default {
     };
 
     onMounted(async () => {
+      store.applyOpsTheme();
       await store.init();
 
       // Check session: keep unlocked if user is authenticated with an operational role

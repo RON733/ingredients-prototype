@@ -11,6 +11,7 @@ use App\Models\Ingredient;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Models\RiderNotice;
+use App\Services\SantaRosaDeliveryService;
 
 class OrderController extends Controller
 {
@@ -143,11 +144,24 @@ class OrderController extends Controller
         }
         $validated['customer_phone'] = $cleanPhone;
 
-        // 2. Delivery address check
-        if ($validated['order_type'] === 'Delivery' && empty(trim($validated['delivery_address'] ?? ''))) {
-            return response()->json([
-                'message' => 'Delivery address is required for Delivery orders.'
-            ], 422);
+        // 2. Delivery address & Santa Rosa 18-barangay coverage check
+        $detectedBarangay = null;
+        if ($validated['order_type'] === 'Delivery') {
+            $addressText = trim($validated['delivery_address'] ?? '');
+            if ($addressText === '') {
+                return response()->json([
+                    'message' => 'Delivery address is required for Delivery orders.'
+                ], 422);
+            }
+
+            $barangayMatch = SantaRosaDeliveryService::detectFromText($addressText);
+            if (!$barangayMatch['matched']) {
+                return response()->json([
+                    'message' => SantaRosaDeliveryService::rejectionMessage($barangayMatch),
+                    'outside_delivery_area' => true,
+                ], 422);
+            }
+            $detectedBarangay = $barangayMatch['barangay'];
         }
 
         // 2.5 PayMongo Availability check
@@ -162,7 +176,7 @@ class OrderController extends Controller
 
 
 
-        return DB::transaction(function () use ($validated, $request) {
+        return DB::transaction(function () use ($validated, $request, $detectedBarangay) {
             // 1. Gather all product IDs and batch-fetch products with recipes
             $productIds = array_unique(array_column($validated['items'], 'product_id'));
             $products = Product::with('recipes.ingredient')->whereIn('id', $productIds)->get()->keyBy('id');
@@ -385,6 +399,8 @@ class OrderController extends Controller
             return response()->json([
                 'message' => 'Order placed successfully!',
                 'order' => $order->load('items'),
+                'detected_barangay' => $detectedBarangay ? $detectedBarangay['name'] : null,
+                'estimated_delivery_time' => $detectedBarangay ? $detectedBarangay['eta'] : null,
                 'checkout_url' => $checkoutUrl,
                 'qr_image' => $qrImage ?? $order->paymongo_qr_image,
             ], 201);

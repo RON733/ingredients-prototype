@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\SystemSetting;
 use App\Models\AuditLog;
 use App\Models\Product;
+use App\Services\SantaRosaDeliveryService;
 
 class SystemController extends Controller
 {
@@ -418,7 +419,7 @@ class SystemController extends Controller
             return response()->json(['error' => 'Invalid coordinates provided.'], 422);
         }
 
-        $cacheKey = 'rev_geo_' . round($lat, 4) . '_' . round($lng, 4);
+        $cacheKey = 'rev_geo_v2_' . round($lat, 4) . '_' . round($lng, 4);
         $cached = Cache::get($cacheKey);
         if ($cached) {
             return response()->json($cached);
@@ -426,6 +427,7 @@ class SystemController extends Controller
 
         $resolvedAddress = null;
         $shortAddress = null;
+        $detectedCity = null;
 
         // 1. OpenStreetMap Nominatim with valid User-Agent
         try {
@@ -447,8 +449,9 @@ class SystemController extends Controller
                     $road = $addr['road'] ?? $addr['pedestrian'] ?? $addr['street'] ?? $addr['suburb'] ?? '';
                     $subdivision = $addr['neighbourhood'] ?? $addr['residential'] ?? '';
                     $brgy = $addr['quarter'] ?? $addr['village'] ?? $addr['hamlet'] ?? '';
-                    $city = $addr['city'] ?? $addr['town'] ?? $addr['municipality'] ?? 'Santa Rosa';
+                    $city = $addr['city'] ?? $addr['town'] ?? $addr['municipality'] ?? '';
                     $state = $addr['state'] ?? $addr['province'] ?? 'Laguna';
+                    $detectedCity = $city ?: null;
 
                     $parts = array_unique(array_filter([$road, $subdivision, $brgy, $city, $state]));
                     if (!empty($parts)) {
@@ -479,8 +482,9 @@ class SystemController extends Controller
                         $name = $props['name'] ?? '';
                         $street = $props['street'] ?? '';
                         $locality = $props['locality'] ?? $props['district'] ?? '';
-                        $city = $props['city'] ?? 'Santa Rosa';
+                        $city = $props['city'] ?? '';
                         $state = $props['state'] ?? 'Laguna';
+                        $detectedCity = $city ?: $detectedCity;
                         $parts = array_unique(array_filter([$name, $street, $locality, $city, $state]));
                         if (!empty($parts)) {
                             $resolvedAddress = implode(', ', $parts);
@@ -504,8 +508,9 @@ class SystemController extends Controller
                 if ($bdcRes->successful()) {
                     $bdc = $bdcRes->json();
                     $locality = $bdc['locality'] ?? $bdc['city'] ?? '';
-                    $city = $bdc['city'] ?? 'Santa Rosa';
+                    $city = $bdc['city'] ?? '';
                     $state = $bdc['principalSubdivision'] ?? 'Laguna';
+                    $detectedCity = $city ?: $detectedCity;
                     $parts = array_unique(array_filter([$locality, $city, $state]));
                     if (!empty($parts)) {
                         $resolvedAddress = implode(', ', $parts);
@@ -517,52 +522,31 @@ class SystemController extends Controller
             }
         }
 
-        // 4. Local Santa Rosa Nearest Barangay Geometric Fallback
+        // 4. Validate against hardcoded 18 Santa Rosa Barangays
+        $detection = SantaRosaDeliveryService::detectFromCoordinates($lat, $lng, $resolvedAddress, $detectedCity);
+        $matchedBarangay = $detection['matched'] ? $detection['barangay'] : null;
+
         if (!$resolvedAddress) {
-            $barangays = [
-                ['name' => 'Sinalhan', 'lat' => 14.3167, 'lng' => 121.1111],
-                ['name' => 'Balibago', 'lat' => 14.2934, 'lng' => 121.1082],
-                ['name' => 'Tagapo', 'lat' => 14.3101, 'lng' => 121.1035],
-                ['name' => 'Nuvali / Don Jose', 'lat' => 14.2415, 'lng' => 121.0583],
-                ['name' => 'Caingin', 'lat' => 14.3262, 'lng' => 121.1172],
-                ['name' => 'Dila', 'lat' => 14.3005, 'lng' => 121.1070],
-                ['name' => 'Macabling', 'lat' => 14.3023, 'lng' => 121.0965],
-                ['name' => 'Poblacion', 'lat' => 14.3140, 'lng' => 121.1130],
-                ['name' => 'Market Area', 'lat' => 14.3150, 'lng' => 121.1120],
-                ['name' => 'Malitlit', 'lat' => 14.2750, 'lng' => 121.0880],
-                ['name' => 'Pulong Santa Cruz', 'lat' => 14.2880, 'lng' => 121.0850],
-                ['name' => 'Aplaya', 'lat' => 14.3292, 'lng' => 121.1273],
-                ['name' => 'Labas', 'lat' => 14.3045, 'lng' => 121.1167],
-                ['name' => 'Pooc', 'lat' => 14.3083, 'lng' => 121.1189],
-                ['name' => 'Malusak', 'lat' => 14.3160, 'lng' => 121.1145],
-                ['name' => 'Kanluran', 'lat' => 14.3175, 'lng' => 121.1105],
-                ['name' => 'Ibaba', 'lat' => 14.3190, 'lng' => 121.1120],
-                ['name' => 'Santo Domingo', 'lat' => 14.2541, 'lng' => 121.0620],
-                ['name' => 'Dita', 'lat' => 14.2885, 'lng' => 121.1020],
-            ];
-
-            $closest = null;
-            $minDist = PHP_FLOAT_MAX;
-            foreach ($barangays as $b) {
-                $d = hypot($lat - $b['lat'], $lng - $b['lng']);
-                if ($d < $minDist) {
-                    $minDist = $d;
-                    $closest = $b;
-                }
-            }
-
-            if ($closest && $minDist < 0.15) {
-                $resolvedAddress = "Near Brgy. {$closest['name']}, Santa Rosa, Laguna";
-                $shortAddress = "Brgy. {$closest['name']}";
+            if ($matchedBarangay) {
+                $resolvedAddress = "Brgy. {$matchedBarangay['name']}, Santa Rosa, Laguna";
+                $shortAddress = "Brgy. {$matchedBarangay['name']}";
             } else {
-                $resolvedAddress = sprintf('Pinned Delivery Location (%.5f, %.5f), Laguna', $lat, $lng);
-                $shortAddress = sprintf('%.4f, %.4f', $lat, $lng);
+                $resolvedAddress = sprintf('Outside Delivery Area (%.5f, %.5f)', $lat, $lng);
+                $shortAddress = 'Outside Delivery Area';
             }
+        } elseif ($matchedBarangay && !SantaRosaDeliveryService::detectFromText($resolvedAddress)['matched']) {
+            // Ensure the detected Santa Rosa barangay is explicitly included in the resolved address
+            $resolvedAddress = rtrim($resolvedAddress, ', ') . ", Brgy. {$matchedBarangay['name']}";
         }
 
         $result = [
             'address' => $resolvedAddress,
             'short_address' => $shortAddress ?: $resolvedAddress,
+            'city' => $detectedCity,
+            'is_serviceable' => $matchedBarangay !== null,
+            'detected_barangay' => $matchedBarangay['name'] ?? null,
+            'estimated_delivery_time' => $matchedBarangay['eta'] ?? null,
+            'rejection_reason' => $matchedBarangay ? null : SantaRosaDeliveryService::rejectionMessage($detection),
             'lat' => $lat,
             'lng' => $lng,
         ];
