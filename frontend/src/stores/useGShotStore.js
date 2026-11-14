@@ -460,6 +460,22 @@ async function runSerializedOrderMutation(store, order, optimisticFields, apiCal
   return task;
 }
 
+function getCartStorageKey(userId) {
+  return userId ? `gst_cart_user_${userId}` : 'gst_cart_guest';
+}
+
+function readCartFromStorage(userId) {
+  try {
+    const raw = JSON.parse(localStorage.getItem(getCartStorageKey(userId)) || '[]');
+    return Array.isArray(raw) ? raw.map(item => ({
+      ...item,
+      emoji: (typeof item.emoji === 'string' && !item.emoji.includes('?')) ? item.emoji : ''
+    })) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
 const useGShotStore = defineStore('gshot', {
   state: () => ({
     // User & Session
@@ -521,14 +537,11 @@ const useGShotStore = defineStore('gshot', {
     analytics: null,
     googleConfig: { client_id: '373451248580-gkci5qsn9j0euan2hafq5v01bhborvlo.apps.googleusercontent.com', configured: true },
 
-    // Shopping Cart (sanitizing corrupted '??' emojis from previous sessions)
+    // Shopping Cart (scoped per user so customers never inherit another user's cart)
     cart: (() => {
       try {
-        const raw = JSON.parse(localStorage.getItem('gst_cart') || '[]');
-        return Array.isArray(raw) ? raw.map(item => ({
-          ...item,
-          emoji: (typeof item.emoji === 'string' && !item.emoji.includes('?')) ? item.emoji : ''
-        })) : [];
+        const u = JSON.parse(localStorage.getItem('gst_user') || 'null');
+        return readCartFromStorage(u?.id);
       } catch (e) {
         return [];
       }
@@ -1076,8 +1089,17 @@ const useGShotStore = defineStore('gshot', {
     },
 
     async fetchUserActiveOrder() {
+      if (!this.user?.id) {
+        const cachedId = localStorage.getItem('gst_active_order_id');
+        if (cachedId) {
+          await this.refreshActiveOrder(cachedId);
+        } else {
+          this.activeOrder = null;
+        }
+        return;
+      }
       try {
-        const res = await GST_API.getActiveOrder(this.user?.id);
+        const res = await GST_API.getActiveOrder(this.user.id);
         const orderData = (res.data && res.data.data && Array.isArray(res.data.data)) ? null : (res.data?.order || res.data);
         if (orderData && (orderData.id || orderData.order_number)) {
           this.activeOrder = orderData;
@@ -1092,12 +1114,10 @@ const useGShotStore = defineStore('gshot', {
           } catch (e) {}
           return;
         }
+        this.activeOrder = null;
+        localStorage.removeItem('gst_active_order_id');
       } catch (err) {
         // quiet
-      }
-      const cachedId = localStorage.getItem('gst_active_order_id');
-      if (cachedId) {
-        await this.refreshActiveOrder(cachedId);
       }
     },
 
@@ -1109,6 +1129,11 @@ const useGShotStore = defineStore('gshot', {
         const res = await GST_API.getOrder(cleanId);
         const orderData = (res.data && res.data.data && Array.isArray(res.data.data)) ? null : (res.data?.order || res.data);
         if (orderData && (orderData.id || orderData.order_number)) {
+          if (this.user?.id && orderData.user_id && Number(orderData.user_id) !== Number(this.user.id) && !this.isStaffOrAdmin && !this.isDriver) {
+            this.activeOrder = null;
+            localStorage.removeItem('gst_active_order_id');
+            return;
+          }
           this.activeOrder = orderData;
           localStorage.setItem('gst_active_order_id', orderData.id);
         }
@@ -1385,7 +1410,25 @@ const useGShotStore = defineStore('gshot', {
     },
 
     saveCart() {
-      localStorage.setItem('gst_cart', JSON.stringify(this.cart));
+      localStorage.setItem(getCartStorageKey(this.user?.id), JSON.stringify(this.cart));
+      localStorage.removeItem('gst_cart');
+    },
+
+    syncSessionForUser(loggedUser) {
+      this.activeOrder = null;
+      this.orders = [];
+      this.bookingsList = [];
+      localStorage.removeItem('gst_active_order_id');
+      localStorage.removeItem('gst_local_order_history');
+      localStorage.removeItem('gst_local_booking_history');
+      localStorage.removeItem('gst_cart');
+
+      if (this.pendingCheckout && this.cart.length > 0 && loggedUser?.id) {
+        localStorage.setItem(getCartStorageKey(loggedUser.id), JSON.stringify(this.cart));
+      } else {
+        this.cart = readCartFromStorage(loggedUser?.id);
+      }
+      localStorage.removeItem('gst_cart_guest');
     },
 
     
@@ -1551,6 +1594,7 @@ const useGShotStore = defineStore('gshot', {
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
+        this.syncSessionForUser(this.user);
         if (opsRoles.includes(this.user.role)) {
           document.cookie = `gst_role=${this.user.role}; path=/; max-age=${30 * 86400}; SameSite=Lax`;
         } else {
@@ -1612,6 +1656,7 @@ const useGShotStore = defineStore('gshot', {
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
+        this.syncSessionForUser(this.user);
         this.authModalOpen = false;
 
         this.notify(res.data.message || 'Account verified! Welcome to G Shot Teas.');
@@ -1659,6 +1704,7 @@ const useGShotStore = defineStore('gshot', {
           this.token = res.data.token;
           localStorage.setItem('gst_user', JSON.stringify(this.user));
           localStorage.setItem('gst_auth_token', this.token);
+          this.syncSessionForUser(this.user);
           this.authModalOpen = false;
           this.notify(res.data.message || 'Password reset successfully! Welcome back.');
           if (this.pendingCheckout && this.cart.length > 0) {
@@ -1697,6 +1743,7 @@ const useGShotStore = defineStore('gshot', {
         this.token = res.data.token;
         localStorage.setItem('gst_user', JSON.stringify(this.user));
         localStorage.setItem('gst_auth_token', this.token);
+        this.syncSessionForUser(this.user);
         if (['staff', 'admin', 'super_admin', 'driver'].includes(this.user.role)) {
           document.cookie = `gst_role=${this.user.role}; path=/; max-age=${30 * 86400}; SameSite=Lax`;
         } else {
@@ -1742,11 +1789,19 @@ const useGShotStore = defineStore('gshot', {
       this.user = null;
       this.token = '';
       this.activeOrder = null;
+      this.orders = [];
       this.bookingsList = [];
+      this.cart = [];
+      this.pendingCheckout = false;
+      this.cartOpen = false;
       localStorage.removeItem('gst_user');
       localStorage.removeItem('gst_auth_token');
       document.cookie = 'gst_role=; path=/; max-age=0; SameSite=Lax';
       localStorage.removeItem('gst_active_order_id');
+      localStorage.removeItem('gst_local_order_history');
+      localStorage.removeItem('gst_local_booking_history');
+      localStorage.removeItem('gst_cart');
+      localStorage.removeItem('gst_cart_guest');
       sessionStorage.removeItem('gst_admin_unlocked');
       const isAdminRoute = typeof window !== 'undefined' && (window.location.pathname.includes('admin') || window.location.pathname.includes('staff') || window.location.pathname.includes('superadmin') || window.location.pathname.includes('super-admin') || window.location.pathname.includes('dashboard'));
       this.currentView = isAdminRoute ? 'admin' : 'customer';

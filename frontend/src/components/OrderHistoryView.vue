@@ -372,8 +372,11 @@ export default {
     const loadOrders = async (silent = false) => {
       if (!silent) isLoading.value = true;
       try {
-        const params = store.user?.id ? { user_id: store.user.id } : {};
-        await store.fetchOrders(params);
+        if (!store.user?.id) {
+          store.orders = [];
+          return;
+        }
+        await store.fetchOrders({ user_id: store.user.id });
       } catch (err) {
         console.error('Error fetching order history:', err);
       } finally {
@@ -403,14 +406,7 @@ export default {
 
       let matched = [];
       if (user) {
-        matched = allPool.filter(o => {
-          const matchesUserId = o.user_id && Number(o.user_id) === Number(user.id);
-          const matchesName = o.customer_name && user.name && o.customer_name.trim().toLowerCase() === user.name.trim().toLowerCase();
-          const matchesPhone = o.customer_phone && user.phone && o.customer_phone.trim() === user.phone.trim();
-          const matchesEmail = o.customer_email && user.email && o.customer_email.trim().toLowerCase() === user.email.trim().toLowerCase();
-          const matchesLocal = localIds.includes(String(o.id)) || localIds.includes(String(o.order_number));
-          return matchesUserId || matchesName || matchesPhone || matchesEmail || matchesLocal;
-        });
+        matched = allPool.filter(o => o.user_id && Number(o.user_id) === Number(user.id));
       } else {
         // Guest mode: only orders placed from this device or explicitly searched
         if (localIds.length > 0 || guestSearchedOrders.value.length > 0) {

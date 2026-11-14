@@ -71,29 +71,15 @@ class OrderController extends Controller
         $user = auth('sanctum')->user() ?? $request->user();
         $userId = $user?->id ?? $request->query('user_id');
 
-        $query = Order::with(['items', 'driver:id,name,phone,avatar'])
-            ->whereIn('status', ['Pending', 'Preparing', 'Ready for Pickup', 'Out for Delivery'])
-            ->latest();
-
-        if ($userId) {
-            $targetUser = User::find($userId);
-            $query->where(function ($q) use ($userId, $targetUser) {
-                $q->where('user_id', $userId);
-                if ($targetUser) {
-                    $q->orWhere(function ($sub) use ($targetUser) {
-                        $sub->whereNull('user_id')
-                            ->where(function ($match) use ($targetUser) {
-                                $match->where('customer_name', $targetUser->name);
-                                if (!empty($targetUser->phone)) {
-                                    $match->orWhere('customer_phone', $targetUser->phone);
-                                }
-                            });
-                    });
-                }
-            });
+        if (!$userId) {
+            return response()->json(null);
         }
 
-        $order = $query->first();
+        $order = Order::with(['items', 'driver:id,name,phone,avatar'])
+            ->where('user_id', $userId)
+            ->whereIn('status', ['Pending', 'Preparing', 'Ready for Pickup', 'Out for Delivery'])
+            ->latest()
+            ->first();
 
         return response()->json($order);
     }
