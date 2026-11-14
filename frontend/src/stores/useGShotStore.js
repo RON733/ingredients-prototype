@@ -373,6 +373,93 @@ const DEFAULT_BOOKING_PACKAGES = [
   },
 ];
 
+// Order sync tracking prevents stale background polls from reverting optimistic updates
+let latestOrderFetchSeq = 0;
+let orderMutationEpoch = 0;
+const pendingOrderMutations = new Map();
+const orderMutationQueues = new Map();
+
+function applyOrderFieldsToTargets(store, order, orderIdKey, fields) {
+  if (order) {
+    Object.assign(order, fields);
+  }
+  const storeItem = store.orders.find(o => String(o.id) === orderIdKey);
+  if (storeItem && storeItem !== order) {
+    Object.assign(storeItem, fields);
+  }
+}
+
+async function runSerializedOrderMutation(store, order, optimisticFields, apiCall, rollbackFields) {
+  const key = String(order.id);
+  const mySeq = ++orderMutationEpoch;
+
+  const existing = pendingOrderMutations.get(key) || { inFlight: 0, lastSeq: 0, fields: {} };
+  existing.inFlight += 1;
+  existing.lastSeq = mySeq;
+  existing.fields = { ...existing.fields, ...optimisticFields };
+  pendingOrderMutations.set(key, existing);
+
+  if (optimisticFields && Object.keys(optimisticFields).length > 0) {
+    applyOrderFieldsToTargets(store, order, key, optimisticFields);
+  }
+
+  const prevChain = orderMutationQueues.get(key) || Promise.resolve();
+  const task = prevChain
+    .catch(() => {})
+    .then(async () => {
+      try {
+        const res = await apiCall();
+        const serverOrder = res?.data?.order;
+        const doneSeq = ++orderMutationEpoch;
+        const entry = pendingOrderMutations.get(key);
+
+        if (entry) {
+          entry.inFlight = Math.max(0, entry.inFlight - 1);
+          if (entry.lastSeq === mySeq) {
+            entry.lastSeq = doneSeq;
+            if (serverOrder) {
+              entry.fields = {
+                ...entry.fields,
+                status: serverOrder.status,
+                driver_id: serverOrder.driver_id,
+                driver: serverOrder.driver,
+                payment_status: serverOrder.payment_status,
+                delivered_at: serverOrder.delivered_at,
+              };
+            }
+          }
+        }
+
+        if (serverOrder && (!entry || entry.lastSeq === doneSeq)) {
+          applyOrderFieldsToTargets(store, order, key, serverOrder);
+        }
+
+        return res;
+      } catch (err) {
+        const errSeq = ++orderMutationEpoch;
+        const entry = pendingOrderMutations.get(key);
+
+        if (entry) {
+          entry.inFlight = Math.max(0, entry.inFlight - 1);
+          if (entry.lastSeq === mySeq) {
+            entry.lastSeq = errSeq;
+            if (rollbackFields) {
+              entry.fields = { ...entry.fields, ...rollbackFields };
+              applyOrderFieldsToTargets(store, order, key, rollbackFields);
+            }
+          }
+        } else if (rollbackFields) {
+          applyOrderFieldsToTargets(store, order, key, rollbackFields);
+        }
+
+        throw err;
+      }
+    });
+
+  orderMutationQueues.set(key, task);
+  return task;
+}
+
 const useGShotStore = defineStore('gshot', {
   state: () => ({
     // User & Session
@@ -919,12 +1006,73 @@ const useGShotStore = defineStore('gshot', {
     },
 
     async fetchOrders(params = {}) {
+      const myFetchSeq = ++latestOrderFetchSeq;
+      const fetchStartEpoch = orderMutationEpoch;
       try {
         const res = await GST_API.getOrders(params);
-        this.orders = res.data.data || res.data;
+        if (myFetchSeq < latestOrderFetchSeq) {
+          return;
+        }
+        const incoming = res.data.data || res.data;
+        if (!Array.isArray(incoming)) {
+          this.orders = incoming;
+          return;
+        }
+        this.orders = incoming.map((serverOrder) => {
+          const key = String(serverOrder.id);
+          const pending = pendingOrderMutations.get(key);
+          if (!pending) {
+            return serverOrder;
+          }
+          if (pending.inFlight > 0 || pending.lastSeq > fetchStartEpoch) {
+            return {
+              ...serverOrder,
+              ...pending.fields,
+            };
+          }
+          pendingOrderMutations.delete(key);
+          return serverOrder;
+        });
       } catch (err) {
         console.error('Error fetching orders:', err);
       }
+    },
+
+    async updateOrderStatus(order, newStatus, notes = '') {
+      const prevStatus = order.status;
+      return runSerializedOrderMutation(
+        this,
+        order,
+        { status: newStatus },
+        () => GST_API.updateOrderStatus(order.id, newStatus, notes),
+        { status: prevStatus }
+      );
+    },
+
+    async assignOrderDriver(order, driverId) {
+      const prevFields = {
+        status: order.status,
+        driver_id: order.driver_id,
+        driver: order.driver,
+      };
+      return runSerializedOrderMutation(
+        this,
+        order,
+        {},
+        () => GST_API.assignDriver(order.id, driverId),
+        prevFields
+      );
+    },
+
+    markOrderFieldsSynced(order, fields) {
+      if (!order || !order.id || !fields) return;
+      const key = String(order.id);
+      const seq = ++orderMutationEpoch;
+      const existing = pendingOrderMutations.get(key) || { inFlight: 0, lastSeq: 0, fields: {} };
+      existing.lastSeq = Math.max(existing.lastSeq, seq);
+      existing.fields = { ...existing.fields, ...fields };
+      pendingOrderMutations.set(key, existing);
+      applyOrderFieldsToTargets(this, order, key, fields);
     },
 
     async fetchUserActiveOrder() {

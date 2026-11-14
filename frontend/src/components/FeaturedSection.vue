@@ -392,19 +392,6 @@
 
           </div>
 
-          <!-- Custom Setup Banner -->
-          <div class="p-6 sm:p-8 rounded-3xl bg-surface-900 border border-surface-800 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="space-y-1 text-center md:text-left">
-              <h4 class="text-lg font-black text-white">Need a Custom Event Package or Milktea Booth?</h4>
-              <p class="text-xs text-gray-400">We also cater 100 to 500+ cups, custom milk tea bars, and party food packs across Laguna.</p>
-            </div>
-            <button 
-              @click="bookPackage('Custom Event & Mobile Bar Booth')"
-              class="px-6 py-3 rounded-xl bg-surface-800 hover:bg-surface-700 text-amber-400 border border-amber-500/30 font-bold text-xs transition-colors shrink-0 flex items-center gap-2 cursor-pointer">
-              <i class="pi pi-send text-xs"></i>
-              <span>Inquire Custom Setup</span>
-            </button>
-          </div>
 
         </div>
 

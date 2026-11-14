@@ -503,9 +503,15 @@ export default {
       }
     };
 
+    const pollOrders = () => {
+      if (!loading.value) {
+        refresh();
+      }
+    };
+
     Vue.onMounted(() => {
       refresh();
-      const interval = setInterval(refresh, 6000);
+      const interval = setInterval(pollOrders, 6000);
       Vue.onUnmounted(() => clearInterval(interval));
     });
 
@@ -562,23 +568,14 @@ export default {
 
     // Instant 0ms Optimistic UI Updates: UI responds instantaneously, syncs in background!
     const updateStatus = async (order, newStatus) => {
-      const prevStatus = order.status;
-
-      // 1. Instant 0ms Optimistic Update
-      order.status = newStatus;
-      const storeItem = store.orders.find(o => o.id === order.id);
-      if (storeItem) storeItem.status = newStatus;
+      if (order.status === newStatus) return;
 
       store.notify(`Order ${order.order_number} moved to ${newStatus}`);
 
-      // 2. Background sync to cloud database
       try {
-        await GST_API.updateOrderStatus(order.id, newStatus);
+        await store.updateOrderStatus(order, newStatus);
       } catch (err) {
-        // Rollback on network failure
-        order.status = prevStatus;
-        if (storeItem) storeItem.status = prevStatus;
-        store.notify('Failed to update order status on server. Rolled back.', 'error');
+        store.notify(err.response?.data?.message || 'Failed to update order status on server. Rolled back.', 'error');
       }
     };
 
@@ -588,9 +585,7 @@ export default {
       try {
         const res = await GST_API.verifyPayMongoPayment(order.id);
         if (res.data?.paid) {
-          order.payment_status = 'Paid';
-          const storeItem = store.orders.find(o => o.id === order.id);
-          if (storeItem) storeItem.payment_status = 'Paid';
+          store.markOrderFieldsSynced(order, { payment_status: 'Paid' });
           store.notify(`PayMongo Payment confirmed for ${order.order_number}! Kitchen preparation unlocked.`, 'success');
         } else {
           store.notify(`Payment for ${order.order_number} is still pending on PayMongo.`, 'info');
@@ -703,18 +698,7 @@ export default {
       }
       isDispatching.value = true;
       try {
-        await GST_API.assignDriver(dispatchModalOrder.value.id, selectedDriverId.value);
-        
-        dispatchModalOrder.value.status = 'Out for Delivery';
-        dispatchModalOrder.value.driver_id = selectedDriverId.value;
-        dispatchModalOrder.value.driver = assignedDriver;
-
-        const storeItem = store.orders.find(o => o.id === dispatchModalOrder.value.id);
-        if (storeItem) {
-          storeItem.status = 'Out for Delivery';
-          storeItem.driver_id = selectedDriverId.value;
-          storeItem.driver = assignedDriver;
-        }
+        await store.assignOrderDriver(dispatchModalOrder.value, selectedDriverId.value);
 
         store.notify(`Order ${dispatchModalOrder.value.order_number} dispatched to ${assignedDriver?.name}!`, 'success');
         dispatchModalOrder.value = null;
