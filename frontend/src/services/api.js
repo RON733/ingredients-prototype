@@ -41,9 +41,11 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const isAuthCheck = error.config.url.includes('/auth/me');
-      const isVerifyPassword = error.config.url.includes('/verify-password');
-      if (!isAuthCheck && !isVerifyPassword) {
+      const url = error.config?.url || '';
+      const isAuthCheck = url.includes('/auth/me');
+      const isVerifyPassword = url.includes('/verify-password');
+      const isUserAdminPasswordCheck = url.includes('/users') && error.response?.data?.message !== 'Unauthenticated.';
+      if (!isAuthCheck && !isVerifyPassword && !isUserAdminPasswordCheck) {
         localStorage.removeItem('gst_auth_token');
         localStorage.removeItem('gst_user');
       }
@@ -164,7 +166,7 @@ export const GST_API = {
   createUser: (data) => apiClient.post('/users', data),
   updateUser: (id, data) => apiClient.patch(`/users/${id}`, typeof data === 'object' ? data : { role: data }),
   updateUserRole: (id, data) => apiClient.patch(`/users/${id}`, typeof data === 'object' ? data : { role: data }),
-  deleteUser: (id) => apiClient.delete(`/users/${id}`),
+  deleteUser: (id, data = {}) => apiClient.delete(`/users/${id}`, { data }),
 
   // Announcements & Event Bookings
   getAnnouncements: (params) => apiClient.get('/announcements', { params }),

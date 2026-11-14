@@ -530,7 +530,7 @@
             </div>
 
             <!-- Super Admin Security Verification: Requires Creator's Own Password -->
-            <div v-if="newUser.role === 'super_admin'" class="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-2 animate-fade-in">
+            <div v-if="store.isSuperAdmin" class="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/40 space-y-2 animate-fade-in">
               <div class="flex items-center justify-between">
                 <label class="font-bold text-purple-200 flex items-center gap-1.5">
                   <i class="pi pi-shield text-purple-400"></i>
@@ -539,7 +539,7 @@
                 <span class="text-[10px] text-purple-300 font-mono">Security Check</span>
               </div>
               <p class="text-[11px] text-purple-300/80">
-                To create a new Super Admin account, enter <strong>your own password</strong> (the one you used to log into this session) to authorize this high-privilege action.
+                To create a personnel account as Super Admin, enter <strong>your own password</strong> (the one you used to log into this session) to authorize this action.
               </p>
               <div class="relative">
                 <input 
@@ -945,11 +945,11 @@ export default {
     const toggleStatus = async (user) => {
       const nextStatus = user.status === 'active' ? 'deactivated' : 'active';
       let adminPassword = null;
-      if (store.isSuperAdmin && user.role === 'super_admin') {
+      if (store.isSuperAdmin) {
         const actionVerb = nextStatus === 'deactivated' ? 'deactivate' : 'activate';
         adminPassword = await store.promptDialog({
           title: 'Verify Super Admin Password',
-          message: `Enter your own Super Admin password to confirm ${actionVerb} Super Admin account "${user.name}":`,
+          message: `Enter your own Super Admin password to confirm ${actionVerb} account "${user.name}" (${formatRoleName(user.role)}):`,
           confirmText: nextStatus === 'deactivated' ? 'Authorize Deactivation' : 'Authorize Activation',
           inputType: 'password',
           placeholder: 'Your Super Admin Password',
@@ -1009,8 +1009,8 @@ export default {
         store.notify('Contact phone must be exactly 11 digits (e.g. 09171234567).', 'error');
         return;
       }
-      if (newUser.value.role === 'super_admin' && !newUser.value.admin_password) {
-        store.notify('Please enter your own Super Admin password to authorize creating a Super Admin account.', 'error');
+      if (store.isSuperAdmin && !newUser.value.admin_password) {
+        store.notify('Please enter your own Super Admin password to authorize creating this account.', 'error');
         return;
       }
       savingUser.value = true;
@@ -1019,7 +1019,7 @@ export default {
         if (payload.role !== 'staff') {
           delete payload.pin;
         }
-        if (payload.role !== 'super_admin' && !payload.admin_password) {
+        if (!store.isSuperAdmin && payload.role !== 'super_admin' && !payload.admin_password) {
           delete payload.admin_password;
         }
         await GST_API.createUser(payload);
@@ -1100,19 +1100,21 @@ export default {
         return;
       }
 
-      const confirmed = await store.confirmDialog({
+      const adminPassword = await store.promptDialog({
         title: 'Delete Account Permanently',
-        message: `Are you sure you want to permanently delete account "${user.name}" (${user.email})? This action cannot be undone.`,
+        message: `Are you sure you want to permanently delete account "${user.name}" (${user.email})? This action cannot be undone. Enter your Super Admin password to confirm:`,
         confirmText: 'Delete Permanently',
         cancelText: 'Cancel',
         variant: 'danger',
+        inputType: 'password',
+        placeholder: 'Your Super Admin Password',
         icon: 'pi-trash',
       });
 
-      if (!confirmed) return;
+      if (!adminPassword) return;
 
       try {
-        await GST_API.deleteUser(user.id);
+        await GST_API.deleteUser(user.id, { admin_password: adminPassword });
         store.notify(`Account for "${user.name}" deleted permanently.`, 'success');
         refresh();
       } catch (err) {

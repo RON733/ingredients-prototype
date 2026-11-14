@@ -763,8 +763,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Only Super Admins can create another Super Admin account.'], 403);
         }
 
-        // Security requirement: Must verify the creator's own password before creating a Super Admin account
-        if ($validated['role'] === 'super_admin' || !empty($request->input('admin_password'))) {
+        // Security requirement: Must verify the creator's own password when Super Admin creates any account (or when creating a Super Admin)
+        if ($creator->role === 'super_admin' || $validated['role'] === 'super_admin' || !empty($request->input('admin_password'))) {
             $adminPassword = $request->input('admin_password');
             if (empty($adminPassword)) {
                 return response()->json(['message' => 'Password confirmation required. Please enter your own Super Admin password to create this account.'], 422);
@@ -884,11 +884,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'Only Super Admins can modify another Super Admin account.'], 403);
         }
 
-        // Security requirement: When editing an account as Super Admin, verify the active Super Admin's own password
+        // Security requirement: When editing, activating, or deactivating an account as Super Admin, verify the active Super Admin's own password
         $adminPassword = $request->input('admin_password');
         $isSuperAdminAction = ($creator->role === 'super_admin') && (
             $user->role === 'super_admin' || 
             (isset($validated['role']) && $validated['role'] === 'super_admin') ||
+            isset($validated['status']) ||
             isset($validated['email']) || 
             !empty($validated['password']) ||
             !empty($adminPassword)
@@ -961,6 +962,15 @@ class AuthController extends Controller
 
         if ((int)$user->id === (int)$creator->id) {
             return response()->json(['message' => 'Action forbidden. You cannot delete your own Super Admin account.'], 422);
+        }
+
+        // Security requirement: Must verify the Super Admin's own password before deleting an account
+        $adminPassword = $request->input('admin_password');
+        if (empty($adminPassword)) {
+            return response()->json(['message' => 'Security confirmation required. Please enter your own Super Admin password to delete this account.'], 422);
+        }
+        if (!Hash::check($adminPassword, $creator->password)) {
+            return response()->json(['message' => 'Incorrect password. Verification of your Super Admin credentials failed.'], 401);
         }
 
         $deletedDetails = "#{$user->id} {$user->name} ({$user->email}, role: {$user->role})";
