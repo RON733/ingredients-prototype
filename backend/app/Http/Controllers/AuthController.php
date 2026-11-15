@@ -749,14 +749,14 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', 'regex:/^[^@\s]+@gshotteas\.com$/i'],
-            'password' => 'required|string|min:6',
+            'password' => $this->registrationPasswordRules(),
             'role' => 'required|string|in:staff,admin,super_admin,driver',
             'pin' => 'nullable|string|min:4|max:10',
-            'phone' => 'nullable|digits:11',
+            'phone' => ['nullable', 'regex:/^09\d{9}$/'],
             'address' => 'nullable|string|max:255',
         ], [
             'email.regex' => 'Email address must end with @gshotteas.com.',
-            'phone.digits' => 'Contact phone must be exactly 11 digits.',
+            'phone.regex' => 'Contact phone must be 11 digits and start with 09 (e.g. 09171234567).',
         ]);
 
         if ($validated['role'] === 'super_admin' && $creator->role !== 'super_admin') {
@@ -870,10 +870,10 @@ class AuthController extends Controller
             'pin' => 'sometimes|nullable|string|min:4|max:10',
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'sometimes|nullable|string|min:6',
-            'phone' => 'sometimes|nullable|digits:11',
+            'password' => ['sometimes', 'nullable', 'string', Password::min(8)->mixedCase()->numbers()->symbols()],
+            'phone' => ['sometimes', 'nullable', 'regex:/^09\d{9}$/'],
         ], [
-            'phone.digits' => 'Contact phone must be exactly 11 digits.',
+            'phone.regex' => 'Contact phone must be 11 digits and start with 09 (e.g. 09171234567).',
         ]);
 
         if (isset($validated['role']) && $validated['role'] === 'super_admin' && $creator->role !== 'super_admin') {

@@ -601,12 +601,9 @@ const useGShotStore = defineStore('gshot', {
     lockedUser: JSON.parse(localStorage.getItem("gst_locked_user") || "null"),
     lockedStaffIds: JSON.parse(localStorage.getItem("gst_locked_staff_ids") || "[]"),
 
-    // Operations Portal Theme ('dark' | 'light')
-    opsTheme: localStorage.getItem("gshot_ops_theme") === "light" ? "light" : "dark",
   }),
 
   getters: {
-    isOpsLight: (state) => state.opsTheme === "light",
     activeAnnouncements: (state) => state.announcements.filter(a => a.is_active),
     activeBookingPackages: (state) => (state.bookingPackages || []).filter(p => p.is_active !== false),
     cartCount: (state) => state.cart.reduce((sum, item) => sum + item.quantity, 0),
@@ -670,22 +667,6 @@ const useGShotStore = defineStore('gshot', {
   },
 
   actions: {
-    // Operations Portal Theme Toggle (Staff, Rider, Admin, Super Admin)
-    applyOpsTheme() {
-      if (typeof document === 'undefined') return;
-      const isLight = this.opsTheme === 'light';
-      document.documentElement.classList.toggle('ops-light', isLight);
-      document.documentElement.classList.toggle('dark', !isLight);
-    },
-
-    toggleOpsTheme() {
-      this.opsTheme = this.opsTheme === 'light' ? 'dark' : 'light';
-      try {
-        localStorage.setItem('gshot_ops_theme', this.opsTheme);
-      } catch (_) {}
-      this.applyOpsTheme();
-    },
-
     // Notifications
     notify(msg, type = 'success') {
       const id = Date.now() + Math.random();

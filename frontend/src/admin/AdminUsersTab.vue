@@ -564,10 +564,20 @@
                 <input 
                   v-model="newUser.password" 
                   type="text" 
-                  minlength="6" 
+                  minlength="8" 
                   required 
-                  placeholder="password123"
+                  placeholder="Min 8 chars (Aa1!)"
                   class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white font-mono focus:outline-none focus:border-brand-500" />
+                <div class="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
+                  <div
+                    v-for="rule in getPasswordRequirements(newUser.password)"
+                    :key="rule.key"
+                    class="flex items-center gap-1 transition-colors"
+                    :class="rule.met ? 'text-emerald-400' : 'text-gray-500'">
+                    <i class="pi text-[9px]" :class="rule.met ? 'pi-check-circle' : 'pi-circle'"></i>
+                    <span>{{ rule.label }}</span>
+                  </div>
+                </div>
               </div>
 
               <!-- Contact Phone -->
@@ -582,10 +592,13 @@
                   type="tel"
                   inputmode="numeric"
                   maxlength="11"
-                  pattern="[0-9]{11}"
-                  title="Enter 11 digits (numbers only, e.g. 09171234567)"
+                  pattern="09[0-9]{9}"
+                  title="Enter 11 digits starting with 09 (e.g. 09171234567)"
                   placeholder="e.g. 09171234567"
                   class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white font-mono focus:outline-none focus:border-brand-500" />
+                <p v-if="newUser.phone && !isValidPhPhone(newUser.phone)" class="text-[10px] text-red-400 mt-1">
+                  Phone number must be 11 digits and start with 09 (e.g. 09171234567).
+                </p>
               </div>
             </div>
 
@@ -696,8 +709,8 @@
                 <input 
                   v-model="editForm.password" 
                   :type="showPasswordInEdit ? 'text' : 'password'" 
-                  minlength="6"
-                  placeholder="Enter new strong password (min 6 chars)"
+                  minlength="8"
+                  placeholder="Enter new strong password (min 8 chars, Aa1!)"
                   class="w-full pl-3 pr-10 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white font-mono focus:outline-none focus:border-brand-500" />
                 <button 
                   type="button" 
@@ -705,6 +718,16 @@
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer">
                   <i class="pi" :class="showPasswordInEdit ? 'pi-eye-slash' : 'pi-eye'"></i>
                 </button>
+              </div>
+              <div v-if="editForm.password" class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]">
+                <div
+                  v-for="rule in getPasswordRequirements(editForm.password)"
+                  :key="rule.key"
+                  class="flex items-center gap-1.5 transition-colors"
+                  :class="rule.met ? 'text-emerald-400' : 'text-gray-500'">
+                  <i class="pi text-[9px]" :class="rule.met ? 'pi-check-circle' : 'pi-circle'"></i>
+                  <span>{{ rule.label }}</span>
+                </div>
               </div>
             </div>
 
@@ -719,10 +742,13 @@
                 type="tel"
                 inputmode="numeric"
                 maxlength="11"
-                pattern="[0-9]{11}"
-                title="Enter 11 digits (numbers only, e.g. 09171234567)"
+                pattern="09[0-9]{9}"
+                title="Enter 11 digits starting with 09 (e.g. 09171234567)"
                 placeholder="09171234567"
                 class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white focus:outline-none focus:border-brand-500 font-mono" />
+              <p v-if="editForm.phone && !isValidPhPhone(editForm.phone)" class="text-[10px] text-red-400 mt-1">
+                Phone number must be 11 digits and start with 09 (e.g. 09171234567).
+              </p>
             </div>
 
             <!-- Super Admin Security Verification: Confirm changes with active admin password -->
@@ -807,7 +833,7 @@ export default {
     const newUser = Vue.ref({
       name: '',
       email: '',
-      password: 'password123',
+      password: '',
       role: 'staff',
       pin: '1234',
       phone: '',
@@ -975,7 +1001,7 @@ export default {
       generateRandomPin();
       newUser.value.name = '';
       newUser.value.email = '';
-      newUser.value.password = 'password123';
+      newUser.value.password = '';
       newUser.value.role = store.isSuperAdmin ? 'super_admin' : 'staff';
       newUser.value.phone = '';
       newUser.value.address = '';
@@ -991,6 +1017,29 @@ export default {
 
     const isGShotEmail = (email) => /^[^@\s]+@gshotteas\.com$/i.test((email || '').trim());
 
+    const isValidPhPhone = (phone) => /^09\d{9}$/.test(phone || '');
+
+    const getPasswordRequirements = (pwd = '') => {
+      const val = pwd || '';
+      return [
+        { key: 'length', label: '8+ characters', met: val.length >= 8 },
+        { key: 'case', label: 'Upper & lowercase', met: /[A-Z]/.test(val) && /[a-z]/.test(val) },
+        { key: 'number', label: 'At least 1 number', met: /[0-9]/.test(val) },
+        { key: 'symbol', label: 'Special character', met: /[^A-Za-z0-9]/.test(val) },
+      ];
+    };
+
+    const isPasswordStrong = (pwd) =>
+      typeof pwd === 'string' &&
+      pwd.length >= 8 &&
+      /[A-Z]/.test(pwd) &&
+      /[a-z]/.test(pwd) &&
+      /[0-9]/.test(pwd) &&
+      /[^A-Za-z0-9]/.test(pwd);
+
+    const PASSWORD_POLICY_ERROR =
+      'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.';
+
     const sanitizePhoneInput = (target, event) => {
       const digitsOnly = (event?.target?.value ?? target.phone ?? '').replace(/\D/g, '').slice(0, 11);
       target.phone = digitsOnly;
@@ -1005,8 +1054,12 @@ export default {
         store.notify('Email address must end with @gshotteas.com.', 'error');
         return;
       }
-      if (newUser.value.phone && !/^\d{11}$/.test(newUser.value.phone)) {
-        store.notify('Contact phone must be exactly 11 digits (e.g. 09171234567).', 'error');
+      if (!isPasswordStrong(newUser.value.password)) {
+        store.notify(PASSWORD_POLICY_ERROR, 'error');
+        return;
+      }
+      if (newUser.value.phone && !isValidPhPhone(newUser.value.phone)) {
+        store.notify('Contact phone must be 11 digits and start with 09 (e.g. 09171234567).', 'error');
         return;
       }
       if (store.isSuperAdmin && !newUser.value.admin_password) {
@@ -1060,8 +1113,12 @@ export default {
         store.notify('Email address must end with @gshotteas.com.', 'error');
         return;
       }
-      if (editForm.value.phone && !/^\d{11}$/.test(editForm.value.phone)) {
-        store.notify('Contact phone must be exactly 11 digits (e.g. 09171234567).', 'error');
+      if (editForm.value.password && editForm.value.password.trim().length > 0 && !isPasswordStrong(editForm.value.password.trim())) {
+        store.notify(PASSWORD_POLICY_ERROR, 'error');
+        return;
+      }
+      if (editForm.value.phone && !isValidPhPhone(editForm.value.phone)) {
+        store.notify('Contact phone must be 11 digits and start with 09 (e.g. 09171234567).', 'error');
         return;
       }
       if (store.isSuperAdmin && !editForm.value.admin_password) {
@@ -1159,6 +1216,8 @@ export default {
       showCreatorPasswordInCreate,
       showCreatorPasswordInEdit,
       isGShotEmail,
+      isValidPhPhone,
+      getPasswordRequirements,
       sanitizePhoneInput,
     };
   },

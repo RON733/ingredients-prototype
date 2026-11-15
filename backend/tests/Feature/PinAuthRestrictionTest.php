@@ -85,19 +85,30 @@ class PinAuthRestrictionTest extends TestCase
 
         $this->actingAs($admin, 'sanctum');
 
-        $staffRes = $this->postJson('/api/users', [
-            'name' => 'New Barista',
-            'email' => 'barista@test.com',
+        // Weak password and non-09 phone number are rejected
+        $this->postJson('/api/users', [
+            'name' => 'Weak User',
+            'email' => 'weak@gshotteas.com',
             'password' => 'password123',
             'role' => 'staff',
+            'phone' => '08171234567',
+        ])->assertStatus(422)
+          ->assertJsonValidationErrors(['password', 'phone']);
+
+        $staffRes = $this->postJson('/api/users', [
+            'name' => 'New Barista',
+            'email' => 'barista@gshotteas.com',
+            'password' => 'StrongPass!1',
+            'role' => 'staff',
             'pin' => '5678',
+            'phone' => '09171234567',
         ])->assertStatus(201);
         $this->assertSame('5678', $staffRes->json('user.pin'));
 
         $driverRes = $this->postJson('/api/users', [
             'name' => 'New Rider',
-            'email' => 'rider@test.com',
-            'password' => 'password123',
+            'email' => 'rider@gshotteas.com',
+            'password' => 'StrongPass!1',
             'role' => 'driver',
             'pin' => '9999',
         ])->assertStatus(201);
@@ -105,8 +116,8 @@ class PinAuthRestrictionTest extends TestCase
 
         $adminRes = $this->postJson('/api/users', [
             'name' => 'New Admin',
-            'email' => 'newadmin@test.com',
-            'password' => 'password123',
+            'email' => 'newadmin@gshotteas.com',
+            'password' => 'StrongPass!1',
             'role' => 'admin',
             'pin' => '8888',
         ])->assertStatus(201);
@@ -118,5 +129,12 @@ class PinAuthRestrictionTest extends TestCase
             'role' => 'admin',
         ])->assertStatus(200);
         $this->assertNull($promoteRes->json('user.pin'));
+
+        // Updating with weak password or non-09 phone is rejected
+        $this->patchJson("/api/users/{$staffId}", [
+            'password' => 'weak',
+            'phone' => '12345678901',
+        ])->assertStatus(422)
+          ->assertJsonValidationErrors(['password', 'phone']);
     }
 }
