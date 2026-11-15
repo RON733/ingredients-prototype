@@ -98,7 +98,7 @@ class PinAuthRestrictionTest extends TestCase
         $staffRes = $this->postJson('/api/users', [
             'name' => 'New Barista',
             'email' => 'barista@gshotteas.com',
-            'password' => 'StrongPass!1',
+            'password' => 'StrongPass!123',
             'role' => 'staff',
             'pin' => '5678',
             'phone' => '09171234567',
@@ -108,7 +108,7 @@ class PinAuthRestrictionTest extends TestCase
         $driverRes = $this->postJson('/api/users', [
             'name' => 'New Rider',
             'email' => 'rider@gshotteas.com',
-            'password' => 'StrongPass!1',
+            'password' => 'StrongPass!123',
             'role' => 'driver',
             'pin' => '9999',
         ])->assertStatus(201);
@@ -117,7 +117,7 @@ class PinAuthRestrictionTest extends TestCase
         $adminRes = $this->postJson('/api/users', [
             'name' => 'New Admin',
             'email' => 'newadmin@gshotteas.com',
-            'password' => 'StrongPass!1',
+            'password' => 'StrongPass!123',
             'role' => 'admin',
             'pin' => '8888',
         ])->assertStatus(201);
@@ -129,6 +129,25 @@ class PinAuthRestrictionTest extends TestCase
             'role' => 'admin',
         ])->assertStatus(200);
         $this->assertNull($promoteRes->json('user.pin'));
+
+        // Password under 12 chars or containing spaces is rejected
+        $this->postJson('/api/users', [
+            'name' => 'Short Pass User',
+            'email' => 'shortpass@gshotteas.com',
+            'password' => 'Str0ng!Pass',
+            'role' => 'staff',
+            'phone' => '09171234567',
+        ])->assertStatus(422)
+          ->assertJsonValidationErrors(['password']);
+
+        $this->postJson('/api/users', [
+            'name' => 'Space Pass User',
+            'email' => 'spacepass@gshotteas.com',
+            'password' => 'Strong Pass!123',
+            'role' => 'staff',
+            'phone' => '09171234567',
+        ])->assertStatus(422)
+          ->assertJsonValidationErrors(['password']);
 
         // Updating with weak password or non-09 phone is rejected
         $this->patchJson("/api/users/{$staffId}", [

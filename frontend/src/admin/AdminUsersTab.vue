@@ -564,9 +564,9 @@
                 <input 
                   v-model="newUser.password" 
                   type="text" 
-                  minlength="8" 
+                  minlength="12" 
                   required 
-                  placeholder="Min 8 chars (Aa1!)"
+                  placeholder="Min 12 chars (e.g. GShot@2026!)"
                   class="w-full px-3 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white font-mono focus:outline-none focus:border-brand-500" />
                 <div class="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
                   <div
@@ -709,8 +709,8 @@
                 <input 
                   v-model="editForm.password" 
                   :type="showPasswordInEdit ? 'text' : 'password'" 
-                  minlength="8"
-                  placeholder="Enter new strong password (min 8 chars, Aa1!)"
+                  minlength="12"
+                  placeholder="Enter new strong password (min 12 chars, Aa1!)"
                   class="w-full pl-3 pr-10 py-2 rounded-xl bg-surface-950 border border-surface-700 text-white font-mono focus:outline-none focus:border-brand-500" />
                 <button 
                   type="button" 
@@ -1022,26 +1022,39 @@ export default {
     const getPasswordRequirements = (pwd = '') => {
       const val = pwd || '';
       return [
-        { key: 'length', label: '8+ characters', met: val.length >= 8 },
+        { key: 'length', label: '12+ characters', met: val.length >= 12 },
         { key: 'case', label: 'Upper & lowercase', met: /[A-Z]/.test(val) && /[a-z]/.test(val) },
         { key: 'number', label: 'At least 1 number', met: /[0-9]/.test(val) },
-        { key: 'symbol', label: 'Special character', met: /[^A-Za-z0-9]/.test(val) },
+        { key: 'symbol', label: 'Special character', met: /[^A-Za-z0-9\s]/.test(val) },
+        { key: 'nospace', label: 'No spaces', met: val.length > 0 && !/\s/.test(val) },
       ];
     };
 
     const isPasswordStrong = (pwd) =>
       typeof pwd === 'string' &&
-      pwd.length >= 8 &&
+      pwd.length >= 12 &&
+      !/\s/.test(pwd) &&
       /[A-Z]/.test(pwd) &&
       /[a-z]/.test(pwd) &&
       /[0-9]/.test(pwd) &&
-      /[^A-Za-z0-9]/.test(pwd);
+      /[^A-Za-z0-9\s]/.test(pwd);
 
     const PASSWORD_POLICY_ERROR =
-      'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.';
+      'Password must be at least 12 characters with no spaces and include uppercase, lowercase, a number, and a special character.';
 
     const sanitizePhoneInput = (target, event) => {
-      const digitsOnly = (event?.target?.value ?? target.phone ?? '').replace(/\D/g, '').slice(0, 11);
+      let digitsOnly = (event?.target?.value ?? target.phone ?? '').replace(/\D/g, '');
+      if (digitsOnly.startsWith('639')) {
+        digitsOnly = '0' + digitsOnly.slice(2);
+      } else if (digitsOnly.startsWith('9')) {
+        digitsOnly = '0' + digitsOnly;
+      }
+      if (digitsOnly.length >= 1 && digitsOnly[0] !== '0') {
+        digitsOnly = '';
+      } else if (digitsOnly.length >= 2 && !digitsOnly.startsWith('09')) {
+        digitsOnly = '0';
+      }
+      digitsOnly = digitsOnly.slice(0, 11);
       target.phone = digitsOnly;
       if (event?.target) {
         event.target.value = digitsOnly;

@@ -138,7 +138,7 @@
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'" 
                 required
-                :minlength="store.authMode === 'register' ? 8 : undefined"
+                :minlength="store.authMode === 'register' ? 12 : undefined"
                 placeholder="••••••••"
                 class="w-full px-4 py-3 pr-10 rounded-xl bg-surface-800 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
               />
@@ -272,8 +272,8 @@
                 v-model="form.newPassword"
                 :type="showNewPassword ? 'text' : 'password'" 
                 required
-                minlength="8"
-                placeholder="At least 8 characters"
+                minlength="12"
+                placeholder="At least 12 characters"
                 class="w-full px-4 py-3 pr-10 rounded-xl bg-surface-800 border border-surface-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-500"
               />
               <button 
@@ -462,23 +462,25 @@ export default {
     const passwordRequirementItems = Vue.computed(() => {
       const pwd = activePasswordInput.value;
       return [
-        { key: 'length', label: '8+ characters', met: pwd.length >= 8 },
+        { key: 'length', label: '12+ characters', met: pwd.length >= 12 },
         { key: 'case', label: 'Upper & lowercase', met: /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) },
         { key: 'number', label: 'At least 1 number', met: /[0-9]/.test(pwd) },
-        { key: 'symbol', label: 'Special character', met: /[^A-Za-z0-9]/.test(pwd) },
+        { key: 'symbol', label: 'Special character', met: /[^A-Za-z0-9\s]/.test(pwd) },
+        { key: 'nospace', label: 'No spaces', met: pwd.length > 0 && !/\s/.test(pwd) },
       ];
     });
 
     const isPasswordStrong = (pwd) =>
       typeof pwd === 'string' &&
-      pwd.length >= 8 &&
+      pwd.length >= 12 &&
+      !/\s/.test(pwd) &&
       /[A-Z]/.test(pwd) &&
       /[a-z]/.test(pwd) &&
       /[0-9]/.test(pwd) &&
-      /[^A-Za-z0-9]/.test(pwd);
+      /[^A-Za-z0-9\s]/.test(pwd);
 
     const PASSWORD_POLICY_ERROR =
-      'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.';
+      'Password must be at least 12 characters with no spaces and include uppercase, lowercase, a number, and a special character.';
 
     const isGoogleClientConfigured = Vue.computed(() => {
       const id = store.googleConfig?.client_id || store.settings?.google_client_id;

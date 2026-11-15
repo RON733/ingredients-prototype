@@ -74,17 +74,19 @@ class AuthController extends Controller
     }
 
     /**
-     * Password complexity rules for customer registration and password resets.
+     * Strict password complexity rules for account creation, registration, and password resets.
      */
-    private function registrationPasswordRules(): array
+    private function registrationPasswordRules(bool $required = true): array
     {
         return [
-            'required',
+            $required ? 'required' : 'sometimes',
+            ...($required ? [] : ['nullable']),
             'string',
-            Password::min(8)
+            Password::min(12)
                 ->mixedCase()
                 ->numbers()
                 ->symbols(),
+            'regex:/^\S+$/',
         ];
     }
 
@@ -145,8 +147,11 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => $this->registrationPasswordRules(),
-            'phone' => 'nullable|string',
+            'phone' => ['nullable', 'regex:/^09\d{9}$/'],
             'address' => 'nullable|string',
+        ], [
+            'password.regex' => 'Password must not contain spaces.',
+            'phone.regex' => 'Contact phone must be 11 digits and start with 09 (e.g. 09171234567).',
         ]);
 
         $email = strtolower(trim($validated['email']));
@@ -451,6 +456,8 @@ class AuthController extends Controller
             'email' => 'required|email',
             'code' => 'required|string|size:6',
             'password' => [...$this->registrationPasswordRules(), 'confirmed'],
+        ], [
+            'password.regex' => 'Password must not contain spaces.',
         ]);
 
         $email = strtolower(trim($validated['email']));
@@ -685,9 +692,12 @@ class AuthController extends Controller
         $user = $request->user();
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'phone' => 'nullable|string',
+            'phone' => ['nullable', 'regex:/^09\d{9}$/'],
             'address' => 'nullable|string',
-            'password' => 'nullable|string|min:6',
+            'password' => $this->registrationPasswordRules(false),
+        ], [
+            'password.regex' => 'Password must not contain spaces.',
+            'phone.regex' => 'Contact phone must be 11 digits and start with 09 (e.g. 09171234567).',
         ]);
 
         if (!empty($validated['name'])) $user->name = $validated['name'];
@@ -756,6 +766,7 @@ class AuthController extends Controller
             'address' => 'nullable|string|max:255',
         ], [
             'email.regex' => 'Email address must end with @gshotteas.com.',
+            'password.regex' => 'Password must not contain spaces.',
             'phone.regex' => 'Contact phone must be 11 digits and start with 09 (e.g. 09171234567).',
         ]);
 
@@ -870,9 +881,10 @@ class AuthController extends Controller
             'pin' => 'sometimes|nullable|string|min:4|max:10',
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => ['sometimes', 'nullable', 'string', Password::min(8)->mixedCase()->numbers()->symbols()],
+            'password' => $this->registrationPasswordRules(false),
             'phone' => ['sometimes', 'nullable', 'regex:/^09\d{9}$/'],
         ], [
+            'password.regex' => 'Password must not contain spaces.',
             'phone.regex' => 'Contact phone must be 11 digits and start with 09 (e.g. 09171234567).',
         ]);
 
