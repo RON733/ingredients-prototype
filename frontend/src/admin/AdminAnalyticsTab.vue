@@ -91,6 +91,16 @@
             <span class="sm:hidden">POS Live</span>
           </div>
 
+          <!-- Export to Excel Button -->
+          <button 
+            @click="exportToExcel"
+            :disabled="loading || !analyticsData"
+            class="px-2.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/25 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Export Analytics to Excel (.xlsx)">
+            <i class="pi pi-file-excel text-xs"></i>
+            <span class="hidden sm:inline">Export Excel</span>
+          </button>
+
           <!-- Refresh Button -->
           <button 
             @click="loadAnalytics"
@@ -605,6 +615,7 @@
 
 <script>
 import * as Vue from 'vue';
+import * as XLSX from 'xlsx';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
 
@@ -1077,6 +1088,76 @@ export default {
       store.adminTab = 'inventory';
     };
 
+    const exportToExcel = () => {
+      const data = analyticsData.value;
+      if (!data) return;
+
+      const wb = XLSX.utils.book_new();
+
+      const summaryRows = [
+        { Metric: 'Report Period', Value: data.period_label || timeRange.value },
+        { Metric: 'Start Date', Value: data.start_date ? data.start_date.slice(0, 10) : '' },
+        { Metric: 'End Date', Value: data.end_date ? data.end_date.slice(0, 10) : '' },
+        { Metric: 'Total Sales (PHP)', Value: Number(data.total_sales || 0) },
+        { Metric: 'Highest Period Sales (PHP)', Value: Number(data.highest_day || 0) },
+        { Metric: 'Average Ticket (PHP)', Value: Number(data.average_sales || 0) },
+        { Metric: 'Total Fulfilled Orders', Value: Number(data.orders_count || 0) },
+        { Metric: 'POS Orders', Value: Number(data.loyverse_orders_count || 0) },
+        { Metric: 'Website Orders', Value: Number(data.website_orders_count || 0) },
+      ];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'Summary');
+
+      const trendRows = (data.trend_data || []).map((pt) => ({
+        Date: pt.date,
+        Period: pt.label,
+        'Sales (PHP)': Number(pt.sales || 0),
+        Orders: Number(pt.orders || 0),
+      }));
+      if (trendRows.length > 0) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(trendRows), 'Sales Trend');
+      }
+
+      const topProductRows = (data.top_products || []).map((p, i) => ({
+        Rank: i + 1,
+        'Product Name': p.product_name,
+        'Quantity Sold': Number(p.total_qty || 0),
+        'Revenue (PHP)': Number(p.total_revenue || 0),
+      }));
+      if (topProductRows.length > 0) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(topProductRows), 'Top Products');
+      }
+
+      const monthlyRows = (data.monthly_comparison || []).map((m) => ({
+        Month: m.label,
+        'Total Sales (PHP)': Number(m.sales || 0),
+        Orders: Number(m.orders || 0),
+        'Avg Ticket (PHP)': Number(m.avg_ticket || 0),
+        'POS Sales (PHP)': Number(m.pos_sales || 0),
+        'Website Sales (PHP)': Number(m.website_sales || 0),
+        'MoM Change (%)': m.change_pct ?? '',
+      }));
+      if (monthlyRows.length > 0) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(monthlyRows), 'Monthly Comparison');
+      }
+
+      const yearlyRows = (data.yearly_comparison || []).map((y) => ({
+        Year: y.label,
+        'Total Sales (PHP)': Number(y.sales || 0),
+        Orders: Number(y.orders || 0),
+        'Avg Ticket (PHP)': Number(y.avg_ticket || 0),
+        'POS Sales (PHP)': Number(y.pos_sales || 0),
+        'Website Sales (PHP)': Number(y.website_sales || 0),
+        'YoY Change (%)': y.change_pct ?? '',
+      }));
+      if (yearlyRows.length > 0) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(yearlyRows), 'Yearly Comparison');
+      }
+
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const safeRange = String(timeRange.value || 'report').replace(/[^a-z0-9_-]/gi, '_');
+      XLSX.writeFile(wb, 'GShot_Sales_Analytics_' + safeRange + '_' + todayStr + '.xlsx');
+    };
+
     return {
       store,
       loading,
@@ -1130,6 +1211,7 @@ export default {
       syncLoyverseAndReload,
       formatCurrency,
       goToInventory,
+      exportToExcel,
     };
   },
 };
