@@ -733,9 +733,12 @@ export default {
 
     const quickAdjust = async (ing, amt) => {
       try {
-        await GST_API.adjustIngredientStock(ing.id, amt);
+        const res = await GST_API.adjustIngredientStock(ing.id, amt);
+        if (res?.data && res.data.stock !== undefined) {
+          ing.stock = Math.max(0, Number(res.data.stock));
+        }
         store.notify(`Added +${amt} ${ing.unit} to ${ing.name} (synced to Loyverse)`);
-        refresh();
+        await refresh();
       } catch (err) {
         store.notify('Error updating stock', 'error');
       }

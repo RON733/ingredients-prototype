@@ -959,12 +959,23 @@ class LoyverseService
      */
     public function pullInventoryFromLoyverse(): array
     {
-        $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/inventory");
-        if (!$response->successful()) {
-            throw new \Exception("Loyverse Inventory Fetch Error: " . $response->body());
-        }
+        $storeId = $this->getEffectiveStoreId();
+        $levels = [];
+        $cursor = null;
 
-        $levels = $response->json('inventory_levels') ?? [];
+        do {
+            $query = ['store_ids' => $storeId, 'limit' => 250];
+            if ($cursor) {
+                $query['cursor'] = $cursor;
+            }
+            $response = Http::withHeaders($this->headers())->get("{$this->apiUrl}/inventory", $query);
+            if (!$response->successful()) {
+                throw new \Exception("Loyverse Inventory Fetch Error: " . $response->body());
+            }
+            $levels = array_merge($levels, $response->json('inventory_levels') ?? []);
+            $cursor = $response->json('cursor');
+        } while (!empty($cursor));
+
         $ingredients = Ingredient::all();
 
         // Map variant_id to ingredient
@@ -1001,13 +1012,16 @@ class LoyverseService
         $changes = [];
 
         foreach ($levels as $lvl) {
+            if (!empty($lvl['store_id']) && $lvl['store_id'] !== $storeId) {
+                continue;
+            }
             $varId = $lvl['variant_id'] ?? null;
             if (!$varId || !isset($varToIng[$varId])) {
                 continue;
             }
 
             $ing = $varToIng[$varId];
-            $newStock = (float) ($lvl['in_stock'] ?? 0);
+            $newStock = max(0, (float) ($lvl['in_stock'] ?? 0));
             $oldStock = (float) $ing->stock;
 
             if (abs($newStock - $oldStock) > 0.001) {
@@ -1679,10 +1693,19 @@ class LoyverseService
         if ($type === 'inventory_levels.update' || isset($payload['inventory_levels'])) {
             $levels = $payload['inventory_levels'] ?? [];
             $updated = [];
+            $storeId = null;
+            try {
+                $storeId = $this->getEffectiveStoreId();
+            } catch (\Exception $e) {
+                // Ignore if store cannot be resolved
+            }
 
             foreach ($levels as $lvl) {
+                if ($storeId && !empty($lvl['store_id']) && $lvl['store_id'] !== $storeId) {
+                    continue;
+                }
                 $varId = $lvl['variant_id'] ?? null;
-                $newStock = (float) ($lvl['in_stock'] ?? 0);
+                $newStock = max(0, (float) ($lvl['in_stock'] ?? 0));
 
                 if (!$varId) continue;
 
@@ -1706,7 +1729,7 @@ class LoyverseService
                     }
                 }
 
-                if ($ing) {
+                if ($ing && abs($newStock - (float) $ing->stock) > 0.001) {
                     $oldStock = (float) $ing->stock;
                     $ing->stock = $newStock;
                     $ing->saveQuietly();
