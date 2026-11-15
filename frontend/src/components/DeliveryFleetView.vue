@@ -19,6 +19,16 @@
       </div>
 
       <div class="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          @click="store.toggleOpsTheme()"
+          class="px-2.5 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-xs font-semibold border border-surface-700 transition-colors cursor-pointer flex items-center justify-center"
+          :class="store.opsTheme === 'light' ? 'text-sky-600' : 'text-amber-300'"
+          :title="store.opsTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+          :aria-label="store.opsTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+          <i class="pi text-xs" :class="store.opsTheme === 'light' ? 'pi-moon' : 'pi-sun'"></i>
+        </button>
+
         <button 
           type="button"
           @click="refreshAll"

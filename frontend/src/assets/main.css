@@ -284,3 +284,156 @@ select option { background: #121215; color: #ffffff; }
     min-height: calc(100svh - 5rem);
   }
 }
+
+
+/* ============================================================================
+   Operations Portal Soft Light Mode (Admin, Super Admin, Staff, Rider)
+   Muted stone-slate palette — comfortable, balanced, and not too bright.
+   Never applied to the login screen or customer storefront.
+   ============================================================================ */
+html.ops-light {
+  color-scheme: light;
+  --color-surface-950: #e8ecf1;
+  --color-surface-900: #f2f4f7;
+  --color-surface-850: #e6eaf0;
+  --color-surface-800: #dce1e9;
+  --color-surface-750: #d0d7e2;
+  --color-surface-700: #c1cad8;
+  --color-surface-600: #8d99ab;
+  --color-surface-500: #5f6b7d;
+  --color-surface-400: #475569;
+}
+
+html.ops-light,
+html.ops-light body {
+  background: #e8ecf1;
+  color: #1e293b;
+}
+
+html.ops-light ::-webkit-scrollbar-track { background: #e8ecf1; }
+html.ops-light ::-webkit-scrollbar-thumb { background: #c1cad8; }
+html.ops-light ::-webkit-scrollbar-thumb:hover { background: #d97706; }
+
+html.ops-light select option {
+  background: #f2f4f7;
+  color: #1e293b;
+}
+
+html.ops-light .glass {
+  background: #f2f4f7;
+  border-color: #cbd5e1;
+}
+
+html.ops-light .glass-card {
+  background: #e6eaf0;
+  border-color: #cbd5e1;
+}
+
+/* Text hierarchy on light surfaces */
+html.ops-light .text-white:not(.bg-emerald-500):not(.bg-emerald-600):not(.bg-rose-500):not(.bg-rose-600):not(.bg-red-500):not(.bg-red-600):not(.bg-sky-500):not(.bg-sky-600):not(.bg-blue-600):not(.bg-indigo-600):not(.bg-amber-600):not(.bg-green-600):not(.bg-orange-600):not(.bg-teal-600) {
+  color: #18202c;
+}
+
+/* Keep white text inside solid colored buttons/badges/toasts */
+html.ops-light :is(.bg-emerald-500, .bg-emerald-600, .bg-rose-500, .bg-rose-600, .bg-red-500, .bg-red-600, .bg-sky-500, .bg-sky-600, .bg-blue-600, .bg-indigo-600, .bg-amber-600, .bg-green-600, .bg-orange-600, .bg-teal-600, .bg-rose-950\/95, .bg-amber-950\/95, .bg-sky-950\/95, .bg-emerald-950\/95) .text-white,
+html.ops-light :is(.bg-emerald-500, .bg-emerald-600, .bg-rose-500, .bg-rose-600, .bg-red-500, .bg-red-600, .bg-sky-500, .bg-sky-600, .bg-blue-600, .bg-indigo-600, .bg-amber-600, .bg-green-600, .bg-orange-600, .bg-teal-600).text-white {
+  color: #ffffff;
+}
+
+/* Keep dark text on bright amber/emerald/sky pill buttons */
+html.ops-light .text-surface-950 {
+  color: #0d0f12 !important;
+}
+
+html.ops-light .text-gray-100,
+html.ops-light .text-neutral-100,
+html.ops-light .text-slate-100,
+html.ops-light .text-amber-50 {
+  color: #1e293b;
+}
+
+html.ops-light .text-gray-200,
+html.ops-light .text-neutral-200,
+html.ops-light .text-slate-200 {
+  color: #293548;
+}
+
+html.ops-light .text-gray-300,
+html.ops-light .text-neutral-300,
+html.ops-light .text-slate-300 {
+  color: #374151;
+}
+
+html.ops-light .text-gray-400,
+html.ops-light .text-neutral-400,
+html.ops-light .text-slate-400 {
+  color: #526075;
+}
+
+html.ops-light .text-gray-500,
+html.ops-light .text-neutral-500,
+html.ops-light .text-slate-500 {
+  color: #64748b;
+}
+
+/* Readable accent tones on soft light surfaces */
+html.ops-light .text-amber-300,
+html.ops-light .text-amber-400 {
+  color: #b45309;
+}
+html.ops-light .text-amber-200 {
+  color: #92400e;
+}
+
+html.ops-light .text-emerald-300,
+html.ops-light .text-emerald-400 {
+  color: #047857;
+}
+html.ops-light .text-emerald-100,
+html.ops-light .text-emerald-200 {
+  color: #065f46;
+}
+
+html.ops-light .text-rose-300,
+html.ops-light .text-rose-400 {
+  color: #be123c;
+}
+html.ops-light .text-rose-200 {
+  color: #9f1239;
+}
+
+html.ops-light .text-sky-300,
+html.ops-light .text-sky-400 {
+  color: #0369a1;
+}
+
+html.ops-light .text-orange-300,
+html.ops-light .text-orange-400 {
+  color: #c2410c;
+}
+
+html.ops-light .text-teal-400 {
+  color: #0f766e;
+}
+
+/* Soft tinted alert banners in light mode */
+html.ops-light .bg-amber-950\/40 {
+  background-color: rgba(245, 158, 11, 0.12);
+}
+html.ops-light .bg-rose-950\/40 {
+  background-color: rgba(244, 63, 94, 0.10);
+}
+html.ops-light .bg-emerald-950\/35 {
+  background-color: rgba(16, 185, 129, 0.10);
+}
+html.ops-light .bg-neutral-800 {
+  background-color: #dce1e9;
+}
+html.ops-light .border-neutral-700 {
+  border-color: #c1cad8;
+}
+
+html.ops-light input::placeholder,
+html.ops-light textarea::placeholder {
+  color: #64748b;
+}

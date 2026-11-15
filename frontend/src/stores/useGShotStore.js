@@ -601,6 +601,9 @@ const useGShotStore = defineStore('gshot', {
     lockedUser: JSON.parse(localStorage.getItem("gst_locked_user") || "null"),
     lockedStaffIds: JSON.parse(localStorage.getItem("gst_locked_staff_ids") || "[]"),
 
+    // Operations Portal Theme ('dark' | 'light') — only applied when authenticated
+    opsTheme: localStorage.getItem('gst_ops_theme') === 'light' ? 'light' : 'dark',
+
   }),
 
   getters: {
@@ -667,6 +670,15 @@ const useGShotStore = defineStore('gshot', {
   },
 
   actions: {
+    setOpsTheme(mode) {
+      this.opsTheme = mode === 'light' ? 'light' : 'dark';
+      localStorage.setItem('gst_ops_theme', this.opsTheme);
+    },
+
+    toggleOpsTheme() {
+      this.setOpsTheme(this.opsTheme === 'light' ? 'dark' : 'light');
+    },
+
     // Notifications
     notify(msg, type = 'success') {
       const id = Date.now() + Math.random();

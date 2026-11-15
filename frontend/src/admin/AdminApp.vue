@@ -406,6 +406,17 @@ export default {
       }
     });
 
+    const syncOpsThemeClass = () => {
+      const shouldLight = Boolean(isLoggedIn.value && store.user && isOpsUser(store.user) && store.opsTheme === 'light');
+      document.documentElement.classList.toggle('ops-light', shouldLight);
+    };
+
+    watch([isLoggedIn, () => store.user, () => store.opsTheme], syncOpsThemeClass, { immediate: true });
+
+    onBeforeUnmount(() => {
+      document.documentElement.classList.remove('ops-light');
+    });
+
     const portalBadgeClass = computed(() => {
       return 'bg-surface-800 text-amber-400 border-amber-500/30';
     });

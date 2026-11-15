@@ -19,6 +19,16 @@
               <span>{{ store.isStoreOpen ? 'Open' : 'Closed' }}</span>
             </div>
 
+            <button
+              @click="store.toggleOpsTheme()"
+              type="button"
+              class="w-8 h-8 rounded-lg bg-surface-800 hover:bg-surface-700 border border-surface-700 text-xs flex items-center justify-center cursor-pointer transition-colors"
+              :class="store.opsTheme === 'light' ? 'text-sky-600' : 'text-amber-300'"
+              :title="store.opsTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+              :aria-label="store.opsTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+              <i class="pi text-xs" :class="store.opsTheme === 'light' ? 'pi-moon' : 'pi-sun'"></i>
+            </button>
+
             <button 
               @click="showRiderNoticesModal = true"
               type="button"
@@ -502,6 +512,15 @@
             </button>
 
             <div class="hidden sm:flex items-center gap-1 pl-1 border-l border-surface-800">
+              <button
+                @click="store.toggleOpsTheme()"
+                type="button"
+                class="p-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 border border-surface-700 cursor-pointer transition-colors"
+                :class="store.opsTheme === 'light' ? 'text-sky-600' : 'text-amber-300'"
+                :title="store.opsTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'"
+                :aria-label="store.opsTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'">
+                <i class="pi text-xs" :class="store.opsTheme === 'light' ? 'pi-moon' : 'pi-sun'"></i>
+              </button>
               <button 
                 @click="handleLockTerminal"
                 type="button"
