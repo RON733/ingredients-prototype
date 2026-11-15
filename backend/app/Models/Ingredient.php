@@ -33,6 +33,15 @@ class Ingredient extends Model
         'expiration_date' => 'date:Y-m-d',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Ingredient $ingredient) {
+            if ($ingredient->stock !== null && (float) $ingredient->stock < 0) {
+                $ingredient->stock = 0;
+            }
+        });
+    }
+
     public function recipes()
     {
         return $this->hasMany(Recipe::class, 'ingredient_id', 'id');

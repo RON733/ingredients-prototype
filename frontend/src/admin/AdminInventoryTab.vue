@@ -209,7 +209,7 @@
                 <!-- Stock Level & Cost -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-base font-black text-white">
-                    {{ ing.stock }}
+                    {{ Math.max(0, Number(ing.stock || 0)) }}
                   </span>
                   <span class="text-gray-400 ml-1 font-medium">{{ ing.unit }}</span>
                   <span class="block text-[10px] text-amber-300 font-semibold mt-0.5">
@@ -348,7 +348,7 @@
             <div class="grid grid-cols-2 gap-2 p-2.5 rounded-2xl bg-surface-900/80 border border-surface-700/60 text-xs">
               <div>
                 <span class="text-[10px] uppercase font-bold text-gray-400 block">Current Stock</span>
-                <span class="text-base font-black text-white">{{ ing.stock }}</span>
+                <span class="text-base font-black text-white">{{ Math.max(0, Number(ing.stock || 0)) }}</span>
                 <span class="text-gray-400 text-xs ml-1">{{ ing.unit }}</span>
                 <span class="block text-[10px] text-amber-300 font-semibold">₱{{ Number(ing.cost || 0).toFixed(2) }} / {{ ing.unit }}</span>
               </div>
@@ -764,7 +764,7 @@ export default {
       form.name = ing.name;
       form.category = ing.category;
       form.unit = ing.unit;
-      form.stock = ing.stock;
+      form.stock = Math.max(0, Number(ing.stock || 0));
       form.cost = ing.cost || 0;
       form.supplier_name = ing.supplier_name || 'Ferabby Mercantile Inc.';
       form.expiration_date = ing.expiration_date ? String(ing.expiration_date).split('T')[0] : '';

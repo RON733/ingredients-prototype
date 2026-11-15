@@ -874,7 +874,10 @@ const useGShotStore = defineStore('gshot', {
         const payload = res.data;
         const list = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : null);
         if (list) {
-          this.ingredients = list;
+          this.ingredients = list.map(i => ({
+            ...i,
+            stock: Math.max(0, Number(i?.stock || 0)),
+          }));
         }
       } catch (err) {
         console.error('Error fetching ingredients:', err);

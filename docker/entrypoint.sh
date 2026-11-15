@@ -59,6 +59,7 @@ fi
 if [ -n "$DB_HOST" ]; then
     echo "==> Running database migrations on ${DB_HOST}..."
     php artisan migrate --force --graceful || echo "Migration step completed."
+    php artisan cache:clear || true
 fi
 
 echo "==> Starting Nginx, PHP-FPM, and Laravel Reverb on port ${PORT}..."
