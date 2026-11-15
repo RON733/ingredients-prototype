@@ -493,7 +493,9 @@ export default {
     const isCustomizable = Vue.computed(() => {
       if (!store.previewProduct) return false;
       const cat = store.previewProduct.category;
-      return cat === 'Drinks' || cat === 'Coffee';
+      const c = store.previewProduct.customizations;
+      const hasCust = (Array.isArray(c?.flavours) && c.flavours.length > 0) || (Array.isArray(c?.options) && c.options.length > 0);
+      return cat === 'Drinks' || cat === 'Coffee' || hasCust;
     });
 
     const decreaseQty = () => {

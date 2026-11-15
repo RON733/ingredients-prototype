@@ -1023,9 +1023,15 @@ export default {
       store.customizeModalOpen = true;
     };
 
+    const hasCustomizations = (product) => {
+      const c = product?.customizations;
+      if (!c) return false;
+      return (Array.isArray(c.flavours) && c.flavours.length > 0) || (Array.isArray(c.options) && c.options.length > 0);
+    };
+
     const isCustomizableProduct = (product) => {
       if (!product) return false;
-      return product.category === 'Drinks' || product.category === 'Coffee';
+      return product.category === 'Drinks' || product.category === 'Coffee' || hasCustomizations(product);
     };
 
     const quickAdd = (product) => {
