@@ -44,18 +44,21 @@ class SantaRosaBarangayValidationTest extends TestCase
         return [$customer, $product];
     }
 
-    public function test_all_6_supported_barangays_and_aliases_are_detected_with_etas(): void
+    public function test_all_9_supported_barangays_and_aliases_are_detected_with_etas(): void
     {
         $samples = [
             'Block 1 Lot 2, Brgy. Aplaya, Santa Rosa, Laguna' => ['Aplaya', '20–30 Mins'],
             'Purok 3, Caingin, Santa Rosa, Laguna' => ['Caingin', '20–30 Mins'],
+            'Brgy. Ibaba, Santa Rosa, Laguna' => ['Ibaba', '15–25 Mins'],
             'Rizal Blvd, Poblacion Uno, Santa Rosa' => ['Kanluran (Poblacion Uno)', '15–25 Mins'],
+            'Brgy. Labas, Santa Rosa, Laguna' => ['Labas', '20–30 Mins'],
             'Malusak, Santa Rosa, Laguna' => ['Malusak (Poblacion Dos)', '15–25 Mins'],
             'Market Area, Santa Rosa, Laguna' => ['Market Area (Poblacion Tres)', '15–25 Mins'],
+            'Amira Townhomes, Brgy. Sinalhan, Santa Rosa' => ['Sinalhan', '15–20 Mins'],
             'Near SM City, Tagapo, Santa Rosa, Laguna' => ['Tagapo', '20–30 Mins'],
         ];
 
-        $this->assertCount(6, SantaRosaDeliveryService::BARANGAYS);
+        $this->assertCount(9, SantaRosaDeliveryService::BARANGAYS);
 
         foreach ($samples as $address => [$expectedName, $expectedEta]) {
             $res = SantaRosaDeliveryService::detectFromText($address);
@@ -78,8 +81,8 @@ class SantaRosaBarangayValidationTest extends TestCase
             'Manila South Road, Balibago Complex, Santa Rosa, Laguna',
             'Paseo de Santa Rosa, Don Jose, Laguna',
             'Golden City, Dila, Santa Rosa, Laguna',
-            'Brgy. Ibaba, Santa Rosa, Laguna',
-            'Amira Townhomes, Brgy. Sinalhan, Santa Rosa',
+            'Macabling, Santa Rosa, Laguna',
+            'Brgy. Malitlit, Santa Rosa, Laguna',
         ];
 
         foreach ($rejected as $address) {

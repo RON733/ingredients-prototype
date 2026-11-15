@@ -1,5 +1,5 @@
 /**
- * Hardcoded 6 supported delivery Barangays of Santa Rosa, Laguna with aliases,
+ * Hardcoded 9 supported delivery Barangays of Santa Rosa, Laguna with aliases,
  * approximate centroid coordinates, and estimated delivery times from
  * the store in Brgy. Sinalhan, Santa Rosa, Laguna.
  */
@@ -21,6 +21,14 @@ export const SANTA_ROSA_BARANGAYS = [
     eta: '20–30 Mins',
   },
   {
+    id: 'ibaba',
+    name: 'Ibaba',
+    aliases: ['ibaba'],
+    lat: 14.3190,
+    lng: 121.1120,
+    eta: '15–25 Mins',
+  },
+  {
     id: 'kanluran',
     name: 'Kanluran (Poblacion Uno)',
     aliases: [
@@ -35,6 +43,14 @@ export const SANTA_ROSA_BARANGAYS = [
     lat: 14.3175,
     lng: 121.1105,
     eta: '15–25 Mins',
+  },
+  {
+    id: 'labas',
+    name: 'Labas',
+    aliases: ['labas'],
+    lat: 14.3045,
+    lng: 121.1167,
+    eta: '20–30 Mins',
   },
   {
     id: 'malusak',
@@ -69,6 +85,14 @@ export const SANTA_ROSA_BARANGAYS = [
     eta: '15–25 Mins',
   },
   {
+    id: 'sinalhan',
+    name: 'Sinalhan',
+    aliases: ['sinalhan'],
+    lat: 14.3167,
+    lng: 121.1111,
+    eta: '15–20 Mins',
+  },
+  {
     id: 'tagapo',
     name: 'Tagapo',
     aliases: ['tagapo'],
@@ -85,8 +109,6 @@ const UNSUPPORTED_SANTA_ROSA_BARANGAYS = [
   'dita',
   'don jose',
   'nuvali',
-  'ibaba',
-  'labas',
   'macabling',
   'malitlit',
   'pooc',
@@ -97,7 +119,6 @@ const UNSUPPORTED_SANTA_ROSA_BARANGAYS = [
   'santo domingo',
   'sto. domingo',
   'sto domingo',
-  'sinalhan',
 ];
 
 const OUTSIDE_CITIES = [
@@ -274,10 +295,10 @@ export const detectBarangayFromCoords = (lat, lng, resolvedAddress = '', detecte
 
 export const getBarangayRejectionMessage = (detection) => {
   if (detection?.reason === 'outside_city' && detection.outsideCity) {
-    return `Delivery unavailable: Cannot deliver to "${detection.outsideCity}". Orders are only accepted in Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), and Tagapo (Santa Rosa, Laguna).`;
+    return `Delivery unavailable: Cannot deliver to "${detection.outsideCity}". Orders are only accepted in Aplaya, Caingin, Ibaba, Kanluran (Poblacion Uno), Labas, Malusak (Poblacion Dos), Market Area (Poblacion Tres), Sinalhan, and Tagapo (Santa Rosa, Laguna).`;
   }
   if (detection?.reason === 'empty') {
-    return 'Delivery unavailable: Please enter or detect an address in one of the 6 accepted Santa Rosa barangays.';
+    return 'Delivery unavailable: Please enter or detect an address in one of the 9 accepted Santa Rosa barangays.';
   }
-  return 'Delivery unavailable: Cannot deliver to this location. We only deliver to Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), and Tagapo.';
+  return 'Delivery unavailable: Cannot deliver to this location. We only deliver to Aplaya, Caingin, Ibaba, Kanluran (Poblacion Uno), Labas, Malusak (Poblacion Dos), Market Area (Poblacion Tres), Sinalhan, and Tagapo.';
 };

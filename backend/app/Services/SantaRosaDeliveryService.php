@@ -8,7 +8,7 @@ class SantaRosaDeliveryService
     public const STORE_LNG = 121.1167;
 
     /**
-     * Hardcoded 6 supported delivery Barangays of Santa Rosa, Laguna with aliases,
+     * Hardcoded 9 supported delivery Barangays of Santa Rosa, Laguna with aliases,
      * approximate centroid coordinates, and estimated delivery times from
      * the store in Brgy. Sinalhan, Santa Rosa, Laguna.
      */
@@ -30,6 +30,14 @@ class SantaRosaDeliveryService
             'eta' => '20–30 Mins',
         ],
         [
+            'id' => 'ibaba',
+            'name' => 'Ibaba',
+            'aliases' => ['ibaba'],
+            'lat' => 14.3190,
+            'lng' => 121.1120,
+            'eta' => '15–25 Mins',
+        ],
+        [
             'id' => 'kanluran',
             'name' => 'Kanluran (Poblacion Uno)',
             'aliases' => [
@@ -44,6 +52,14 @@ class SantaRosaDeliveryService
             'lat' => 14.3175,
             'lng' => 121.1105,
             'eta' => '15–25 Mins',
+        ],
+        [
+            'id' => 'labas',
+            'name' => 'Labas',
+            'aliases' => ['labas'],
+            'lat' => 14.3045,
+            'lng' => 121.1167,
+            'eta' => '20–30 Mins',
         ],
         [
             'id' => 'malusak',
@@ -78,6 +94,14 @@ class SantaRosaDeliveryService
             'eta' => '15–25 Mins',
         ],
         [
+            'id' => 'sinalhan',
+            'name' => 'Sinalhan',
+            'aliases' => ['sinalhan'],
+            'lat' => 14.3167,
+            'lng' => 121.1111,
+            'eta' => '15–20 Mins',
+        ],
+        [
             'id' => 'tagapo',
             'name' => 'Tagapo',
             'aliases' => ['tagapo'],
@@ -98,8 +122,6 @@ class SantaRosaDeliveryService
         'dita',
         'don jose',
         'nuvali',
-        'ibaba',
-        'labas',
         'macabling',
         'malitlit',
         'pooc',
@@ -110,7 +132,6 @@ class SantaRosaDeliveryService
         'santo domingo',
         'sto. domingo',
         'sto domingo',
-        'sinalhan',
     ];
 
     /**
@@ -354,13 +375,13 @@ class SantaRosaDeliveryService
     public static function rejectionMessage(array $detection): string
     {
         if (($detection['reason'] ?? null) === 'outside_city' && !empty($detection['outside_city'])) {
-            return "Delivery rejected: {$detection['outside_city']} is outside our delivery area. We only deliver to Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), and Tagapo in Santa Rosa, Laguna.";
+            return "Delivery rejected: {$detection['outside_city']} is outside our delivery area. We only deliver to Aplaya, Caingin, Ibaba, Kanluran (Poblacion Uno), Labas, Malusak (Poblacion Dos), Market Area (Poblacion Tres), Sinalhan, and Tagapo in Santa Rosa, Laguna.";
         }
 
         if (($detection['reason'] ?? null) === 'empty') {
             return 'Delivery address is required for Delivery orders.';
         }
 
-        return 'Delivery rejected: Please enter or pin an address within our 6 supported Santa Rosa barangays (Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), or Tagapo).';
+        return 'Delivery rejected: Please enter or pin an address within our 9 supported Santa Rosa barangays (Aplaya, Caingin, Ibaba, Kanluran (Poblacion Uno), Labas, Malusak (Poblacion Dos), Market Area (Poblacion Tres), Sinalhan, or Tagapo).';
     }
 }
