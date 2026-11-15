@@ -22,6 +22,7 @@ class Product extends Model
         'discount_type',
         'discount_value',
         'description',
+        'customizations',
         'emoji',
         'image',
         'is_available',
@@ -36,6 +37,7 @@ class Product extends Model
         'discount_percent' => 'float',
         'discount_value' => 'float',
         'is_available' => 'boolean',
+        'customizations' => 'array',
     ];
 
     protected $appends = ['max_portions', 'stock_status', 'is_discounted'];

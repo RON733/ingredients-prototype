@@ -106,6 +106,7 @@ class ProductController extends Controller
             'category' => 'required|string',
             'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
+            'customizations' => 'nullable|array',
             'emoji' => 'nullable|string',
             'image' => 'nullable|string',
             'is_available' => 'boolean',
@@ -135,6 +136,7 @@ class ProductController extends Controller
         if (array_key_exists('discount_percent', $validated)) $productData['discount_percent'] = $validated['discount_percent'];
         if (array_key_exists('discount_type', $validated)) $productData['discount_type'] = $validated['discount_type'];
         if (array_key_exists('discount_value', $validated)) $productData['discount_value'] = $validated['discount_value'];
+        if (array_key_exists('customizations', $validated)) $productData['customizations'] = $validated['customizations'];
 
         $product = Product::create($productData);
         Cache::forget('products_catalog_default');
@@ -175,6 +177,7 @@ class ProductController extends Controller
             'category' => 'sometimes|string',
             'price' => 'sometimes|numeric|min:0',
             'description' => 'nullable|string',
+            'customizations' => 'nullable|array',
             'emoji' => 'nullable|string',
             'image' => 'nullable|string',
             'is_available' => 'sometimes|boolean',

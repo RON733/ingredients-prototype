@@ -1363,13 +1363,21 @@ const useGShotStore = defineStore('gshot', {
       let unitPrice = Number(liveProduct.price ?? product.price ?? 0);
       if (customization) {
         if (customization.size === 'Large') unitPrice += 20;
+        if (customization.flavour_price) {
+          unitPrice += Number(customization.flavour_price) || 0;
+        }
+        if (customization.options && customization.options.length) {
+          for (const opt of customization.options) {
+            unitPrice += Number(opt?.price || 0);
+          }
+        }
         if (customization.toppings && customization.toppings.length) {
           unitPrice += customization.toppings.length * 15;
         }
       }
 
       const cartItemId = customization
-        ? `${liveProduct.id}-${customization.size}-${customization.sugar}-${customization.ice}-${(customization.toppings || []).join(',')}`
+        ? `${liveProduct.id}-${customization.size}-${customization.flavour || ''}-${customization.sugar}-${customization.ice}-${(customization.toppings || []).join(',')}-${(customization.options || []).map(o => o?.name || o).join(',')}`
         : liveProduct.id;
 
       const existingIndex = this.cart.findIndex(i => i.cartItemId === cartItemId);

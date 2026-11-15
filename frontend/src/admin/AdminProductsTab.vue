@@ -562,6 +562,101 @@
                 <textarea v-model="form.description" rows="2" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 focus:border-amber-500 focus:outline-none text-white" placeholder="Describe the ingredients, flavor, or serving..."></textarea>
               </div>
 
+              <!-- Flavours & Customizations -->
+              <div class="p-3.5 rounded-2xl bg-surface-800/80 border border-surface-700 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-gray-200 flex items-center gap-1.5">
+                    <i class="pi pi-sliders-h text-amber-400"></i>
+                    <span>Flavours &amp; Customizations</span>
+                  </span>
+                  <span class="text-[10px] text-gray-400">Optional choices for customers</span>
+                </div>
+
+                <!-- Flavours -->
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-semibold text-gray-300">Flavours</label>
+                    <button
+                      type="button"
+                      @click="form.flavours.push({ name: '', price: 0 })"
+                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors">
+                      <i class="pi pi-plus text-[10px]"></i> Add Flavour
+                    </button>
+                  </div>
+                  <div v-if="form.flavours.length === 0" class="text-[11px] text-gray-500 italic">
+                    No flavours added.
+                  </div>
+                  <div v-for="(flav, idx) in form.flavours" :key="'flav-' + idx" class="flex items-center gap-2">
+                    <input
+                      v-model="flav.name"
+                      type="text"
+                      placeholder="Flavour name (e.g. Classic, Matcha)"
+                      class="flex-1 p-2 rounded-xl bg-surface-900 border border-surface-700 focus:border-amber-500 focus:outline-none text-white text-xs"
+                    />
+                    <div class="relative w-24">
+                      <span class="absolute left-2.5 top-2 text-gray-400 text-xs">+₱</span>
+                      <input
+                        v-model.number="flav.price"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        class="w-full pl-7 pr-2 py-2 rounded-xl bg-surface-900 border border-surface-700 focus:border-amber-500 focus:outline-none text-white text-xs"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      @click="form.flavours.splice(idx, 1)"
+                      class="p-2 rounded-xl bg-red-500/15 hover:bg-red-500/30 text-red-400 cursor-pointer"
+                      aria-label="Remove flavour">
+                      <i class="pi pi-times text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Customizations / Add-ons -->
+                <div class="space-y-1.5 pt-2 border-t border-surface-700/70">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-semibold text-gray-300">Customizations / Add-ons</label>
+                    <button
+                      type="button"
+                      @click="form.custom_options.push({ name: '', price: 0 })"
+                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors">
+                      <i class="pi pi-plus text-[10px]"></i> Add Customization
+                    </button>
+                  </div>
+                  <div v-if="form.custom_options.length === 0" class="text-[11px] text-gray-500 italic">
+                    No extra customizations added.
+                  </div>
+                  <div v-for="(opt, idx) in form.custom_options" :key="'opt-' + idx" class="flex items-center gap-2">
+                    <input
+                      v-model="opt.name"
+                      type="text"
+                      placeholder="Option (e.g. Extra Cheese, Spicy, Pearls)"
+                      class="flex-1 p-2 rounded-xl bg-surface-900 border border-surface-700 focus:border-amber-500 focus:outline-none text-white text-xs"
+                    />
+                    <div class="relative w-24">
+                      <span class="absolute left-2.5 top-2 text-gray-400 text-xs">+₱</span>
+                      <input
+                        v-model.number="opt.price"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        class="w-full pl-7 pr-2 py-2 rounded-xl bg-surface-900 border border-surface-700 focus:border-amber-500 focus:outline-none text-white text-xs"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      @click="form.custom_options.splice(idx, 1)"
+                      class="p-2 rounded-xl bg-red-500/15 hover:bg-red-500/30 text-red-400 cursor-pointer"
+                      aria-label="Remove customization">
+                      <i class="pi pi-times text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Product Picture Upload / URL / Presets -->
               <div 
                 @dragover.prevent="isDraggingImage = true"
@@ -785,6 +880,8 @@ export default {
       base_price: 99,
       discount_percent: 0,
       description: '',
+      flavours: [],
+      custom_options: [],
       emoji: '🧋',
       image: '',
     });
@@ -1147,6 +1244,8 @@ export default {
       form.base_price = 79;
       form.discount_percent = 0;
       form.description = '';
+      form.flavours = [];
+      form.custom_options = [];
       form.emoji = '🧋';
       form.image = '';
       imageError.value = '';
@@ -1176,6 +1275,8 @@ export default {
         : Number(product.price);
       form.discount_percent = Number(product.discount_percent || 0);
       form.description = product.description || '';
+      form.flavours = Array.isArray(product.customizations?.flavours) ? product.customizations.flavours.map(f => ({ name: f.name || f, price: Number(f.price || 0) })) : [];
+      form.custom_options = Array.isArray(product.customizations?.options) ? product.customizations.options.map(o => ({ name: o.name || o, price: Number(o.price || 0) })) : [];
       form.emoji = product.emoji || '🍽️';
       form.image = product.image || '';
       imageError.value = '';
@@ -1214,6 +1315,10 @@ export default {
           discount_type: discountPct > 0 ? 'percentage' : null,
           discount_value: discountPct > 0 ? discountPct : 0,
           description: form.description,
+          customizations: {
+            flavours: form.flavours.filter(f => f.name && f.name.trim()).map(f => ({ name: f.name.trim(), price: Math.max(0, Number(f.price) || 0) })),
+            options: form.custom_options.filter(o => o.name && o.name.trim()).map(o => ({ name: o.name.trim(), price: Math.max(0, Number(o.price) || 0) })),
+          },
           emoji: form.emoji,
           image: imageValue,
         };

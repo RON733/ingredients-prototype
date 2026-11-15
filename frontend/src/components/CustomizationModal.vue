@@ -95,6 +95,49 @@
             </div>
           </div>
 
+          <!-- Flavour Selector (Configured per product) -->
+          <div v-if="productFlavours.length > 0">
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Select Flavour
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                v-for="flav in productFlavours"
+                :key="flav.name"
+                type="button"
+                @click="customization.flavour = flav.name"
+                class="p-2.5 rounded-xl border text-left flex items-center justify-between transition-all"
+                :class="customization.flavour === flav.name ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
+                <span class="text-xs">{{ flav.name }}</span>
+                <span v-if="Number(flav.price) > 0" class="text-xs font-bold text-brand-400">+₱{{ Number(flav.price).toFixed(2) }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom Options / Add-ons (Configured per product) -->
+          <div v-if="productOptions.length > 0">
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Customizations &amp; Add-ons
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <label
+                v-for="opt in productOptions"
+                :key="opt.name"
+                class="p-2.5 rounded-xl border border-surface-700 bg-surface-900/50 flex items-center justify-between cursor-pointer hover:border-surface-600 transition-colors">
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-300">{{ opt.name }}</span>
+                  <span v-if="Number(opt.price) > 0" class="text-[10px] font-bold text-brand-400">+₱{{ Number(opt.price).toFixed(2) }}</span>
+                </div>
+                <input
+                  type="checkbox"
+                  :value="opt.name"
+                  v-model="customization.options"
+                  class="rounded bg-surface-800 border-surface-600 text-brand-500 focus:ring-brand-500 w-4 h-4 cursor-pointer"
+                />
+              </label>
+            </div>
+          </div>
+
           <!-- Sugar Level (For Drinks) -->
           <div v-if="product.category === 'Drinks' || product.category === 'Coffee'">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
@@ -265,6 +308,16 @@ export default {
     const store = useGShotStore();
     const product = Vue.computed(() => store.selectedProductForCustomize);
 
+    const productFlavours = Vue.computed(() => {
+      const list = product.value?.customizations?.flavours;
+      return Array.isArray(list) ? list.map(f => ({ name: f.name || f, price: Number(f.price || 0) })) : [];
+    });
+
+    const productOptions = Vue.computed(() => {
+      const list = product.value?.customizations?.options;
+      return Array.isArray(list) ? list.map(o => ({ name: o.name || o, price: Number(o.price || 0) })) : [];
+    });
+
     const isDrink = Vue.computed(() => {
       const cat = product.value?.category;
       return cat === 'Drinks' || cat === 'Coffee';
@@ -300,6 +353,8 @@ export default {
       sugar: '75%',
       ice: 'Regular Ice',
       toppings: [],
+      flavour: '',
+      options: [],
       notes: '',
     });
 
@@ -311,6 +366,8 @@ export default {
         customization.sugar = '75%';
         customization.ice = 'Regular Ice';
         customization.toppings = [];
+        customization.flavour = productFlavours.value.length ? productFlavours.value[0].name : '';
+        customization.options = [];
         customization.notes = '';
         const initQty = Number(store.customizeInitialQty) || 1;
         orderQty.value = remainingStock.value > 0 ? Math.min(Math.max(1, initQty), remainingStock.value) : 1;
@@ -342,6 +399,16 @@ export default {
       if (!product.value) return 0;
       let total = Number(product.value.price);
       if (customization.size === 'Large') total += 20;
+      if (customization.flavour) {
+        const flav = productFlavours.value.find(f => f.name === customization.flavour);
+        if (flav && Number(flav.price) > 0) total += Number(flav.price);
+      }
+      if (customization.options && customization.options.length) {
+        for (const optName of customization.options) {
+          const opt = productOptions.value.find(o => o.name === optName);
+          if (opt && Number(opt.price) > 0) total += Number(opt.price);
+        }
+      }
       if (customization.toppings && customization.toppings.length) {
         total += customization.toppings.length * 15;
       }
@@ -365,6 +432,17 @@ export default {
           cleanCustomization.toppings = [...customization.toppings];
         }
       }
+      if (customization.flavour) {
+        const flav = productFlavours.value.find(f => f.name === customization.flavour);
+        cleanCustomization.flavour = customization.flavour;
+        cleanCustomization.flavour_price = flav ? Number(flav.price || 0) : 0;
+      }
+      if (customization.options && customization.options.length) {
+        cleanCustomization.options = customization.options.map(name => {
+          const opt = productOptions.value.find(o => o.name === name);
+          return { name, price: opt ? Number(opt.price || 0) : 0 };
+        });
+      }
       if (customization.notes && customization.notes.trim()) {
         cleanCustomization.notes = customization.notes.trim();
       }
@@ -380,6 +458,8 @@ export default {
       store,
       product,
       isDrink,
+      productFlavours,
+      productOptions,
       orderQty,
       maxStock,
       inCartQty,
