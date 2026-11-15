@@ -8,7 +8,7 @@ class SantaRosaDeliveryService
     public const STORE_LNG = 121.1167;
 
     /**
-     * Hardcoded 18 Barangays of Santa Rosa, Laguna with aliases,
+     * Hardcoded 6 supported delivery Barangays of Santa Rosa, Laguna with aliases,
      * approximate centroid coordinates, and estimated delivery times from
      * the store in Brgy. Sinalhan, Santa Rosa, Laguna.
      */
@@ -22,52 +22,12 @@ class SantaRosaDeliveryService
             'eta' => '20–30 Mins',
         ],
         [
-            'id' => 'balibago',
-            'name' => 'Balibago',
-            'aliases' => ['balibago', 'balibago complex'],
-            'lat' => 14.2934,
-            'lng' => 121.1082,
-            'eta' => '25–35 Mins',
-        ],
-        [
             'id' => 'caingin',
             'name' => 'Caingin',
             'aliases' => ['caingin'],
             'lat' => 14.3262,
             'lng' => 121.1172,
             'eta' => '20–30 Mins',
-        ],
-        [
-            'id' => 'dila',
-            'name' => 'Dila',
-            'aliases' => ['dila'],
-            'lat' => 14.3005,
-            'lng' => 121.1070,
-            'eta' => '25–35 Mins',
-        ],
-        [
-            'id' => 'dita',
-            'name' => 'Dita',
-            'aliases' => ['dita'],
-            'lat' => 14.2885,
-            'lng' => 121.1020,
-            'eta' => '30–40 Mins',
-        ],
-        [
-            'id' => 'don-jose',
-            'name' => 'Don Jose',
-            'aliases' => ['don jose', 'nuvali'],
-            'lat' => 14.2415,
-            'lng' => 121.0583,
-            'eta' => '40–55 Mins',
-        ],
-        [
-            'id' => 'ibaba',
-            'name' => 'Ibaba',
-            'aliases' => ['ibaba'],
-            'lat' => 14.3190,
-            'lng' => 121.1120,
-            'eta' => '15–25 Mins',
         ],
         [
             'id' => 'kanluran',
@@ -84,30 +44,6 @@ class SantaRosaDeliveryService
             'lat' => 14.3175,
             'lng' => 121.1105,
             'eta' => '15–25 Mins',
-        ],
-        [
-            'id' => 'labas',
-            'name' => 'Labas',
-            'aliases' => ['labas'],
-            'lat' => 14.3045,
-            'lng' => 121.1167,
-            'eta' => '20–30 Mins',
-        ],
-        [
-            'id' => 'macabling',
-            'name' => 'Macabling',
-            'aliases' => ['macabling'],
-            'lat' => 14.3023,
-            'lng' => 121.0965,
-            'eta' => '25–35 Mins',
-        ],
-        [
-            'id' => 'malitlit',
-            'name' => 'Malitlit',
-            'aliases' => ['malitlit'],
-            'lat' => 14.2750,
-            'lng' => 121.0880,
-            'eta' => '35–45 Mins',
         ],
         [
             'id' => 'malusak',
@@ -142,38 +78,6 @@ class SantaRosaDeliveryService
             'eta' => '15–25 Mins',
         ],
         [
-            'id' => 'pooc',
-            'name' => 'Pooc (Pook)',
-            'aliases' => ['pooc (pook)', 'pooc', 'pook'],
-            'lat' => 14.3083,
-            'lng' => 121.1189,
-            'eta' => '20–30 Mins',
-        ],
-        [
-            'id' => 'pulong-santa-cruz',
-            'name' => 'Pulong Santa Cruz',
-            'aliases' => ['pulong santa cruz', 'pulong sta. cruz', 'pulong sta cruz'],
-            'lat' => 14.2880,
-            'lng' => 121.0850,
-            'eta' => '30–45 Mins',
-        ],
-        [
-            'id' => 'santo-domingo',
-            'name' => 'Santo Domingo',
-            'aliases' => ['santo domingo', 'sto. domingo', 'sto domingo'],
-            'lat' => 14.2541,
-            'lng' => 121.0620,
-            'eta' => '40–55 Mins',
-        ],
-        [
-            'id' => 'sinalhan',
-            'name' => 'Sinalhan',
-            'aliases' => ['sinalhan'],
-            'lat' => 14.3167,
-            'lng' => 121.1111,
-            'eta' => '15–20 Mins',
-        ],
-        [
             'id' => 'tagapo',
             'name' => 'Tagapo',
             'aliases' => ['tagapo'],
@@ -181,6 +85,32 @@ class SantaRosaDeliveryService
             'lng' => 121.1035,
             'eta' => '20–30 Mins',
         ],
+    ];
+
+    /**
+     * Other Santa Rosa barangays outside our delivery coverage so GPS reverse-geocoding
+     * does not snap them to a neighboring supported barangay.
+     */
+    private const UNSUPPORTED_SANTA_ROSA_BARANGAYS = [
+        'balibago complex',
+        'balibago',
+        'dila',
+        'dita',
+        'don jose',
+        'nuvali',
+        'ibaba',
+        'labas',
+        'macabling',
+        'malitlit',
+        'pooc',
+        'pook',
+        'pulong santa cruz',
+        'pulong sta. cruz',
+        'pulong sta cruz',
+        'santo domingo',
+        'sto. domingo',
+        'sto domingo',
+        'sinalhan',
     ];
 
     /**
@@ -251,14 +181,31 @@ class SantaRosaDeliveryService
         return null;
     }
 
+    public static function hasUnsupportedSantaRosaBarangay(?string $text): bool
+    {
+        $normalized = preg_replace('/\s+/u', ' ', mb_strtolower(trim((string) $text)));
+        if ($normalized === '') {
+            return false;
+        }
+
+        foreach (self::UNSUPPORTED_SANTA_ROSA_BARANGAYS as $term) {
+            $regex = '/(?<![\p{L}\p{N}])' . preg_quote($term, '/') . '(?![\p{L}\p{N}])/iu';
+            if (preg_match($regex, $normalized)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function isWithinSantaRosaBounds(float $lat, float $lng): bool
     {
-        if ($lat < 14.215 || $lat > 14.342 || $lng < 121.032 || $lng > 121.142) {
+        if ($lat < 14.300 || $lat > 14.338 || $lng < 121.095 || $lng > 121.136) {
             return false;
         }
 
         $nearest = self::nearestBarangay($lat, $lng);
-        return $nearest !== null && $nearest['distance_km'] <= 3.8;
+        return $nearest !== null && $nearest['distance_km'] <= 1.8;
     }
 
     public static function nearestBarangay(float $lat, float $lng): ?array
@@ -360,6 +307,14 @@ class SantaRosaDeliveryService
             if ($textMatch['matched']) {
                 return $textMatch;
             }
+            if (self::hasUnsupportedSantaRosaBarangay($resolvedAddress)) {
+                return [
+                    'matched' => false,
+                    'reason' => 'not_in_list',
+                    'barangay' => null,
+                    'outside_city' => null,
+                ];
+            }
         }
 
         $cityNormalized = mb_strtolower(trim((string) $detectedCity));
@@ -378,7 +333,7 @@ class SantaRosaDeliveryService
         }
 
         $nearest = self::nearestBarangay($lat, $lng);
-        if ($nearest !== null && $nearest['distance_km'] <= 3.8) {
+        if ($nearest !== null && $nearest['distance_km'] <= 1.8) {
             return [
                 'matched' => true,
                 'reason' => null,
@@ -399,13 +354,13 @@ class SantaRosaDeliveryService
     public static function rejectionMessage(array $detection): string
     {
         if (($detection['reason'] ?? null) === 'outside_city' && !empty($detection['outside_city'])) {
-            return "Delivery rejected: {$detection['outside_city']} is outside our delivery area. We only deliver to the 18 barangays of Santa Rosa, Laguna.";
+            return "Delivery rejected: {$detection['outside_city']} is outside our delivery area. We only deliver to Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), and Tagapo in Santa Rosa, Laguna.";
         }
 
         if (($detection['reason'] ?? null) === 'empty') {
             return 'Delivery address is required for Delivery orders.';
         }
 
-        return 'Delivery rejected: Please enter or pin an address within the 18 supported barangays of Santa Rosa, Laguna (Aplaya, Balibago, Caingin, Dila, Dita, Don Jose, Ibaba, Kanluran, Labas, Macabling, Malitlit, Malusak, Market Area, Pooc, Pulong Santa Cruz, Santo Domingo, Sinalhan, or Tagapo).';
+        return 'Delivery rejected: Please enter or pin an address within our 6 supported Santa Rosa barangays (Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), or Tagapo).';
     }
 }

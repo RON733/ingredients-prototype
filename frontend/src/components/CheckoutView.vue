@@ -243,7 +243,7 @@
                 @click="showSupportedBarangays = !showSupportedBarangays"
                 class="text-[11px] font-bold text-amber-300/90 hover:text-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer">
                 <i class="pi" :class="showSupportedBarangays ? 'pi-chevron-up text-[10px]' : 'pi-map-marker text-[10px]'"></i>
-                <span>{{ showSupportedBarangays ? 'Hide' : 'View' }} 18 Accepted Santa Rosa Barangays &amp; Est. Delivery Times</span>
+                <span>{{ showSupportedBarangays ? 'Hide' : 'View' }} 6 Accepted Santa Rosa Barangays &amp; Est. Delivery Times</span>
               </button>
 
               <div 
@@ -889,14 +889,12 @@ export default {
     let accuracyCircle = null;
 
     const santaRosaChips = [
-      { name: 'Sinalhan (Store)', lat: 14.3167, lng: 121.1111 },
-      { name: 'Balibago / Complex', lat: 14.2934, lng: 121.1082 },
-      { name: 'Tagapo / SM City', lat: 14.3101, lng: 121.1035 },
-      { name: 'Nuvali / Don Jose', lat: 14.2415, lng: 121.0583 },
+      { name: 'Aplaya', lat: 14.3292, lng: 121.1273 },
       { name: 'Caingin', lat: 14.3262, lng: 121.1172 },
-      { name: 'Dila', lat: 14.3005, lng: 121.1070 },
-      { name: 'Macabling', lat: 14.3023, lng: 121.0965 },
-      { name: 'Poblacion', lat: 14.3140, lng: 121.1130 },
+      { name: 'Kanluran (Pob. Uno)', lat: 14.3175, lng: 121.1105 },
+      { name: 'Malusak (Pob. Dos)', lat: 14.3160, lng: 121.1145 },
+      { name: 'Market Area (Pob. Tres)', lat: 14.3150, lng: 121.1120 },
+      { name: 'Tagapo / SM City', lat: 14.3101, lng: 121.1035 },
     ];
 
     const jumpToChip = (chip) => {

@@ -1,5 +1,5 @@
 /**
- * Hardcoded 18 Barangays of Santa Rosa, Laguna with aliases,
+ * Hardcoded 6 supported delivery Barangays of Santa Rosa, Laguna with aliases,
  * approximate centroid coordinates, and estimated delivery times from
  * the store in Brgy. Sinalhan, Santa Rosa, Laguna.
  */
@@ -13,52 +13,12 @@ export const SANTA_ROSA_BARANGAYS = [
     eta: '20–30 Mins',
   },
   {
-    id: 'balibago',
-    name: 'Balibago',
-    aliases: ['balibago', 'balibago complex'],
-    lat: 14.2934,
-    lng: 121.1082,
-    eta: '25–35 Mins',
-  },
-  {
     id: 'caingin',
     name: 'Caingin',
     aliases: ['caingin'],
     lat: 14.3262,
     lng: 121.1172,
     eta: '20–30 Mins',
-  },
-  {
-    id: 'dila',
-    name: 'Dila',
-    aliases: ['dila'],
-    lat: 14.3005,
-    lng: 121.1070,
-    eta: '25–35 Mins',
-  },
-  {
-    id: 'dita',
-    name: 'Dita',
-    aliases: ['dita'],
-    lat: 14.2885,
-    lng: 121.1020,
-    eta: '30–40 Mins',
-  },
-  {
-    id: 'don-jose',
-    name: 'Don Jose',
-    aliases: ['don jose', 'nuvali'],
-    lat: 14.2415,
-    lng: 121.0583,
-    eta: '40–55 Mins',
-  },
-  {
-    id: 'ibaba',
-    name: 'Ibaba',
-    aliases: ['ibaba'],
-    lat: 14.3190,
-    lng: 121.1120,
-    eta: '15–25 Mins',
   },
   {
     id: 'kanluran',
@@ -75,30 +35,6 @@ export const SANTA_ROSA_BARANGAYS = [
     lat: 14.3175,
     lng: 121.1105,
     eta: '15–25 Mins',
-  },
-  {
-    id: 'labas',
-    name: 'Labas',
-    aliases: ['labas'],
-    lat: 14.3045,
-    lng: 121.1167,
-    eta: '20–30 Mins',
-  },
-  {
-    id: 'macabling',
-    name: 'Macabling',
-    aliases: ['macabling'],
-    lat: 14.3023,
-    lng: 121.0965,
-    eta: '25–35 Mins',
-  },
-  {
-    id: 'malitlit',
-    name: 'Malitlit',
-    aliases: ['malitlit'],
-    lat: 14.2750,
-    lng: 121.0880,
-    eta: '35–45 Mins',
   },
   {
     id: 'malusak',
@@ -133,38 +69,6 @@ export const SANTA_ROSA_BARANGAYS = [
     eta: '15–25 Mins',
   },
   {
-    id: 'pooc',
-    name: 'Pooc (Pook)',
-    aliases: ['pooc (pook)', 'pooc', 'pook'],
-    lat: 14.3083,
-    lng: 121.1189,
-    eta: '20–30 Mins',
-  },
-  {
-    id: 'pulong-santa-cruz',
-    name: 'Pulong Santa Cruz',
-    aliases: ['pulong santa cruz', 'pulong sta. cruz', 'pulong sta cruz'],
-    lat: 14.2880,
-    lng: 121.0850,
-    eta: '30–45 Mins',
-  },
-  {
-    id: 'santo-domingo',
-    name: 'Santo Domingo',
-    aliases: ['santo domingo', 'sto. domingo', 'sto domingo'],
-    lat: 14.2541,
-    lng: 121.0620,
-    eta: '40–55 Mins',
-  },
-  {
-    id: 'sinalhan',
-    name: 'Sinalhan',
-    aliases: ['sinalhan'],
-    lat: 14.3167,
-    lng: 121.1111,
-    eta: '15–20 Mins',
-  },
-  {
     id: 'tagapo',
     name: 'Tagapo',
     aliases: ['tagapo'],
@@ -172,6 +76,28 @@ export const SANTA_ROSA_BARANGAYS = [
     lng: 121.1035,
     eta: '20–30 Mins',
   },
+];
+
+const UNSUPPORTED_SANTA_ROSA_BARANGAYS = [
+  'balibago complex',
+  'balibago',
+  'dila',
+  'dita',
+  'don jose',
+  'nuvali',
+  'ibaba',
+  'labas',
+  'macabling',
+  'malitlit',
+  'pooc',
+  'pook',
+  'pulong santa cruz',
+  'pulong sta. cruz',
+  'pulong sta cruz',
+  'santo domingo',
+  'sto. domingo',
+  'sto domingo',
+  'sinalhan',
 ];
 
 const OUTSIDE_CITIES = [
@@ -259,12 +185,18 @@ export const nearestBarangay = (lat, lng) => {
   return closest ? { ...closest, distanceKm: Number(minKm.toFixed(2)) } : null;
 };
 
+export const hasUnsupportedSantaRosaBarangay = (text) => {
+  const normalized = String(text || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!normalized) return false;
+  return UNSUPPORTED_SANTA_ROSA_BARANGAYS.some((term) => hasWholeTerm(normalized, term));
+};
+
 export const isWithinSantaRosaBounds = (lat, lng) => {
-  if (lat < 14.215 || lat > 14.342 || lng < 121.032 || lng > 121.142) {
+  if (lat < 14.300 || lat > 14.338 || lng < 121.095 || lng > 121.136) {
     return false;
   }
   const nearest = nearestBarangay(lat, lng);
-  return Boolean(nearest && nearest.distanceKm <= 3.8);
+  return Boolean(nearest && nearest.distanceKm <= 1.8);
 };
 
 export const detectSantaRosaBarangay = (addressText) => {
@@ -305,6 +237,9 @@ export const detectBarangayFromCoords = (lat, lng, resolvedAddress = '', detecte
     if (textMatch.matched) {
       return textMatch;
     }
+    if (hasUnsupportedSantaRosaBarangay(resolvedAddress)) {
+      return { matched: false, reason: 'not_in_list', barangay: null, outsideCity: null };
+    }
   }
 
   const cityNorm = String(detectedCity || '').trim().toLowerCase();
@@ -324,7 +259,7 @@ export const detectBarangayFromCoords = (lat, lng, resolvedAddress = '', detecte
   }
 
   const nearest = nearestBarangay(lat, lng);
-  if (nearest && nearest.distanceKm <= 3.8) {
+  if (nearest && nearest.distanceKm <= 1.8) {
     return {
       matched: true,
       reason: null,
@@ -339,10 +274,10 @@ export const detectBarangayFromCoords = (lat, lng, resolvedAddress = '', detecte
 
 export const getBarangayRejectionMessage = (detection) => {
   if (detection?.reason === 'outside_city' && detection.outsideCity) {
-    return `Delivery unavailable: Cannot deliver to "${detection.outsideCity}". Orders are only accepted within the 18 barangays of Santa Rosa, Laguna.`;
+    return `Delivery unavailable: Cannot deliver to "${detection.outsideCity}". Orders are only accepted in Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), and Tagapo (Santa Rosa, Laguna).`;
   }
   if (detection?.reason === 'empty') {
-    return 'Delivery unavailable: Please enter or detect an address in one of the 18 accepted Santa Rosa barangays.';
+    return 'Delivery unavailable: Please enter or detect an address in one of the 6 accepted Santa Rosa barangays.';
   }
-  return 'Delivery unavailable: Cannot deliver to this location. No supported Santa Rosa barangay was detected.';
+  return 'Delivery unavailable: Cannot deliver to this location. We only deliver to Aplaya, Caingin, Kanluran (Poblacion Uno), Malusak (Poblacion Dos), Market Area (Poblacion Tres), and Tagapo.';
 };
