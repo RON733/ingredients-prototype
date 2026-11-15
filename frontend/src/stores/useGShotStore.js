@@ -1053,14 +1053,19 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    async updateOrderStatus(order, newStatus, notes = '') {
+    async updateOrderStatus(order, newStatus, notes = '', cancellationReason = '') {
       const prevStatus = order.status;
+      const prevReason = order.cancellation_reason;
+      const optimisticFields = { status: newStatus };
+      if (newStatus === 'Cancelled' && cancellationReason) {
+        optimisticFields.cancellation_reason = cancellationReason;
+      }
       return runSerializedOrderMutation(
         this,
         order,
-        { status: newStatus },
-        () => GST_API.updateOrderStatus(order.id, newStatus, notes),
-        { status: prevStatus }
+        optimisticFields,
+        () => GST_API.updateOrderStatus(order.id, newStatus, notes, cancellationReason),
+        { status: prevStatus, cancellation_reason: prevReason }
       );
     },
 

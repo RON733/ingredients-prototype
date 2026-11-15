@@ -201,6 +201,11 @@
               <p v-if="order.notes" class="text-gray-400 italic pt-1">
                 Note: "{{ order.notes }}"
               </p>
+
+              <p v-if="order.status === 'Cancelled' && order.cancellation_reason" class="text-rose-300 bg-rose-500/10 border border-rose-500/25 rounded-lg px-2.5 py-1.5 mt-1.5 leading-relaxed">
+                <span class="font-bold uppercase tracking-wider text-[10px] text-rose-400 block">Cancellation Reason</span>
+                "{{ order.cancellation_reason }}"
+              </p>
             </div>
 
             <!-- Items Ordered -->
@@ -290,7 +295,7 @@
 
             <button 
               v-if="order.status !== 'Completed' && order.status !== 'Cancelled'"
-              @click="updateStatus(order, 'Cancelled')"
+              @click="openCancelModal(order)"
               class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors text-center cursor-pointer">
               Cancel Order
             </button>
@@ -468,6 +473,91 @@
 
         </div>
       </div>
+
+      <!-- Cancel Order Confirmation Modal -->
+      <div
+        v-if="cancelModalOrder"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+        @click.self="closeCancelModal">
+        <div class="relative max-w-md w-full bg-surface-900 border border-rose-500/30 rounded-2xl p-4 sm:p-5 space-y-4 animate-scale-up shadow-2xl">
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-3 pb-3 border-b border-surface-800">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center text-lg shrink-0">
+                <i class="pi pi-exclamation-triangle"></i>
+              </div>
+              <div>
+                <h3 class="text-sm font-black text-white">Cancel Order {{ cancelModalOrder.order_number }}</h3>
+                <p class="text-[11px] text-gray-400">
+                  {{ cancelModalOrder.customer_name }} &bull; ₱{{ Number(cancelModalOrder.total_amount).toFixed(2) }}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              @click="closeCancelModal"
+              :disabled="isCancelling"
+              class="w-8 h-8 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50">
+              <i class="pi pi-times text-xs"></i>
+            </button>
+          </div>
+
+          <!-- Confirmation Notice -->
+          <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-200 leading-relaxed">
+            Are you sure you want to cancel this order? This action cannot be undone and will return the order's ingredients to inventory.
+          </div>
+
+          <!-- Reason Input -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-gray-200">
+              Reason for Cancellation <span class="text-rose-400">*</span>
+            </label>
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                v-for="preset in cancelReasonPresets"
+                :key="preset"
+                type="button"
+                @click="cancelReason = preset; cancelReasonError = ''"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors cursor-pointer"
+                :class="cancelReason === preset ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : 'bg-surface-800 text-gray-400 border-surface-700 hover:text-gray-200 hover:border-surface-600'">
+                {{ preset }}
+              </button>
+            </div>
+            <textarea
+              v-model="cancelReason"
+              @input="cancelReasonError = ''"
+              rows="3"
+              maxlength="500"
+              placeholder="Type the reason why this order is cancelled..."
+              class="w-full rounded-xl bg-surface-950/80 border px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all resize-none"
+              :class="cancelReasonError ? 'border-rose-500 focus:ring-rose-500/30' : 'border-surface-700 focus:border-rose-500/60 focus:ring-rose-500/20'"></textarea>
+            <div class="flex items-center justify-between text-[11px]">
+              <span v-if="cancelReasonError" class="text-rose-400 font-medium">{{ cancelReasonError }}</span>
+              <span v-else class="text-gray-500">Required before confirming cancellation.</span>
+              <span class="text-gray-500 font-mono">{{ cancelReason.length }}/500</span>
+            </div>
+          </div>
+
+          <!-- Modal Action Buttons -->
+          <div class="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 border-t border-surface-800">
+            <button
+              type="button"
+              @click="closeCancelModal"
+              :disabled="isCancelling"
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 text-xs font-semibold transition-colors text-center cursor-pointer disabled:opacity-50">
+              Keep Order
+            </button>
+            <button
+              type="button"
+              @click="confirmCancelOrder"
+              :disabled="!cancelReason.trim() || isCancelling"
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-black shadow-lg shadow-rose-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+              <i class="pi" :class="isCancelling ? 'pi-spin pi-spinner' : 'pi-times-circle'"></i>
+              <span>{{ isCancelling ? 'Cancelling...' : 'Confirm Cancellation' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 </template>
 
@@ -576,6 +666,54 @@ export default {
         await store.updateOrderStatus(order, newStatus);
       } catch (err) {
         store.notify(err.response?.data?.message || 'Failed to update order status on server. Rolled back.', 'error');
+      }
+    };
+
+    // Cancel Order Confirmation & Reason Modal State
+    const cancelModalOrder = Vue.ref(null);
+    const cancelReason = Vue.ref('');
+    const cancelReasonError = Vue.ref('');
+    const isCancelling = Vue.ref(false);
+    const cancelReasonPresets = [
+      'Out of stock / ingredients unavailable',
+      'Customer requested cancellation',
+      'Unable to contact customer',
+      'Duplicate order',
+    ];
+
+    const openCancelModal = (order) => {
+      cancelModalOrder.value = order;
+      cancelReason.value = '';
+      cancelReasonError.value = '';
+    };
+
+    const closeCancelModal = () => {
+      if (isCancelling.value) return;
+      cancelModalOrder.value = null;
+      cancelReason.value = '';
+      cancelReasonError.value = '';
+    };
+
+    const confirmCancelOrder = async () => {
+      if (!cancelModalOrder.value) return;
+      const reason = cancelReason.value.trim();
+      if (!reason) {
+        cancelReasonError.value = 'Please type a reason why this order is cancelled.';
+        return;
+      }
+
+      const targetOrder = cancelModalOrder.value;
+      isCancelling.value = true;
+      try {
+        await store.updateOrderStatus(targetOrder, 'Cancelled', '', reason);
+        store.notify(`Order ${targetOrder.order_number} cancelled.`, 'info');
+        cancelModalOrder.value = null;
+        cancelReason.value = '';
+        cancelReasonError.value = '';
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to cancel order on server. Rolled back.', 'error');
+      } finally {
+        isCancelling.value = false;
       }
     };
 
@@ -731,6 +869,14 @@ export default {
       getStatusBadge,
       formatTime,
       updateStatus,
+      cancelModalOrder,
+      cancelReason,
+      cancelReasonError,
+      isCancelling,
+      cancelReasonPresets,
+      openCancelModal,
+      closeCancelModal,
+      confirmCancelOrder,
       checkPayMongoStatus,
       isCheckingPaymongoId,
       refresh,

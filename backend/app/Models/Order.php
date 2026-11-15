@@ -39,6 +39,7 @@ class Order extends Model
         'delivery_fee',
         'total_amount',
         'notes',
+        'cancellation_reason',
     ];
 
     protected $casts = [

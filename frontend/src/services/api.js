@@ -81,7 +81,7 @@ export const GST_API = {
   getActiveOrder: (userId) => apiClient.get('/orders/active', typeof userId === 'object' ? { params: userId } : { params: { user_id: userId } }),
   createOrder: (data) => apiClient.post('/orders', data),
   placeOrder: (data) => apiClient.post('/orders', data),
-  updateOrderStatus: (id, status, notes = '') => apiClient.patch(`/orders/${id}/status`, { status, notes }),
+  updateOrderStatus: (id, status, notes = '', cancellation_reason = '') => apiClient.patch(`/orders/${id}/status`, { status, notes, cancellation_reason }),
 
   // PayMongo Online Payment Gateway
   getPayMongoConfig: () => apiClient.get('/paymongo/config'),

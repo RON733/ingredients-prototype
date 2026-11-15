@@ -413,10 +413,18 @@ class OrderController extends Controller
         $order = Order::with(['items', 'driver:id,name,phone,avatar'])->findOrFail($id);
         $validated = $request->validate([
             'status' => 'required|in:Pending,Preparing,Ready for Pickup,Out for Delivery,Completed,Cancelled',
+            'cancellation_reason' => 'nullable|string|max:500',
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $validated['status'];
+        $cancellationReason = trim((string) ($validated['cancellation_reason'] ?? ''));
+
+        if ($newStatus === 'Cancelled' && $user && in_array($user->role, ['admin', 'super_admin', 'staff']) && $cancellationReason === '') {
+            return response()->json([
+                'message' => 'Please provide a reason for cancelling this order.'
+            ], 422);
+        }
 
         // Payment Pre-condition constraint:
         // Online orders (PayMongo) MUST be Paid/Verified before kitchen preparation can begin!
@@ -476,6 +484,10 @@ class OrderController extends Controller
             }
         }
 
+        if ($newStatus === 'Cancelled' && $cancellationReason !== '') {
+            $order->cancellation_reason = $cancellationReason;
+        }
+
         $order->status = $newStatus;
         $order->save();
 
@@ -522,7 +534,7 @@ class OrderController extends Controller
         $actionName = ($user?->role === 'driver') ? 'Delivery Completed' : 'Order Status Changed';
         $actionDetails = ($user?->role === 'driver')
             ? "Order {$order->order_number} successfully delivered to {$order->customer_name} and marked Completed by driver {$user->name}." . ($order->payment_method === 'Cash' ? " Collected ₱" . number_format($order->total_amount, 2) . " COD cash." : "")
-            : "Order {$order->order_number} transitioned from {$oldStatus} to {$newStatus}";
+            : "Order {$order->order_number} transitioned from {$oldStatus} to {$newStatus}" . ($newStatus === 'Cancelled' && $order->cancellation_reason ? " (Reason: {$order->cancellation_reason})" : "");
 
         AuditLog::create([
             'user_id' => $user?->id,
