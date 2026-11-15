@@ -800,7 +800,10 @@ const useGShotStore = defineStore('gshot', {
       setInterval(async () => {
         if (this.currentView === 'admin' || this.isStaffOrAdmin) {
           try {
-            await GST_API.syncLoyverse();
+            const res = await GST_API.syncLoyverse();
+            if (res?.data?.results?.synced > 0) {
+              this.fetchIngredients();
+            }
           } catch (e) {
             // silent background sync
           }
@@ -829,7 +832,10 @@ const useGShotStore = defineStore('gshot', {
           const ingPayload = ingRes.value.data;
           const ingList = Array.isArray(ingPayload) ? ingPayload : (Array.isArray(ingPayload?.data) ? ingPayload.data : null);
           if (ingList) {
-            this.ingredients = ingList;
+            this.ingredients = ingList.map(i => ({
+              ...i,
+              stock: Math.max(0, Number(i?.stock || 0)),
+            }));
           }
         }
         if (setRes.status === 'fulfilled' && setRes.value.data) {

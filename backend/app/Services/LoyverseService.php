@@ -472,6 +472,7 @@ class LoyverseService
         // Batch update inventory levels for all raw ingredients
         if (!empty($stockLevelsToPush)) {
             try {
+                $this->markLocalStockPush($ingredients->pluck('id')->all());
                 $invRes = Http::withHeaders($this->headers())->post("{$this->apiUrl}/inventory", [
                     'inventory_levels' => $stockLevelsToPush
                 ]);
@@ -1062,6 +1063,22 @@ class LoyverseService
         ];
     }
 
+    protected function markLocalStockPush(array|string $ingredientIds, int $ttlSeconds = 25): void
+    {
+        $ids = is_array($ingredientIds) ? $ingredientIds : [$ingredientIds];
+        $ts = now()->timestamp;
+        foreach ($ids as $id) {
+            if (!empty($id)) {
+                Cache::put("loyverse_push_guard_{$id}", $ts, $ttlSeconds);
+            }
+        }
+    }
+
+    protected function isWithinLocalPushWindow(string $ingredientId): bool
+    {
+        return Cache::has("loyverse_push_guard_{$ingredientId}");
+    }
+
     /**
      * ==============================================================
      * INVENTORY LEVELS: PUSH TO LOYVERSE (Website -> Loyverse)
@@ -1078,21 +1095,28 @@ class LoyverseService
         $ingredients = $query->get();
 
         $levels = [];
+        $pushedIds = [];
         foreach ($ingredients as $ing) {
             if (!empty($ing->loyverse_variant_id)) {
                 $levels[] = [
                     'variant_id' => $ing->loyverse_variant_id,
                     'store_id' => $storeId,
-                    'stock_after' => (float) $ing->stock
+                    'stock_after' => max(0, (float) $ing->stock)
                 ];
+                $pushedIds[] = $ing->id;
             }
         }
 
         if (empty($levels)) {
+            if ($ingredientIds !== null) {
+                return ['success' => false, 'pushed_count' => 0];
+            }
             // Need to export ingredients first so variant IDs exist
             $this->exportIngredientsToLoyverse();
             return $this->pushInventoryToLoyverse($ingredientIds);
         }
+
+        $this->markLocalStockPush($pushedIds);
 
         $res = Http::withHeaders($this->headers())->post("{$this->apiUrl}/inventory", [
             'inventory_levels' => $levels
@@ -1117,6 +1141,7 @@ class LoyverseService
         if (empty($this->token)) return false;
 
         try {
+            $this->markLocalStockPush($ingredient->id);
             $storeId = $this->getEffectiveStoreId();
             $variantId = $ingredient->loyverse_variant_id;
 
@@ -1145,7 +1170,7 @@ class LoyverseService
                     [
                         'variant_id' => $variantId,
                         'store_id' => $storeId,
-                        'stock_after' => (float) $ingredient->stock
+                        'stock_after' => max(0, (float) $ingredient->stock)
                     ]
                 ]
             ]);
@@ -1423,6 +1448,16 @@ class LoyverseService
             return null;
         }
 
+        // Atomic claim prevents concurrent sync polls / status updates from pushing duplicate receipts
+        $claimed = Order::where('id', $order->id)
+            ->whereNull('loyverse_receipt_id')
+            ->update(['loyverse_receipt_id' => 'SYNCING']);
+        if ($claimed === 0) {
+            return null;
+        }
+
+        $receiptSaved = false;
+        try {
         $storeId = $this->getEffectiveStoreId();
 
         $loyverseItems = $this->getItems();
@@ -1548,25 +1583,61 @@ class LoyverseService
         if ($receiptNumber) {
             $order->loyverse_receipt_id = (string) $receiptNumber;
             $order->saveQuietly();
+            $receiptSaved = true;
 
             AuditLog::create([
                 'user_name' => 'Website POS Sync',
                 'user_role' => 'system',
                 'action' => 'Pushed to Loyverse POS',
-                'details' => "Website order {$order->order_number} synchronized to Loyverse POS as Receipt #{$receiptNumber} for â‚±{$order->total_amount}.",
+                'details' => "Website order {$order->order_number} synchronized to Loyverse POS as Receipt #{$receiptNumber} for ₱{$order->total_amount}.",
                 'ip_address' => request()->ip() ?? '127.0.0.1',
             ]);
+
+            // Keep Loyverse inventory aligned with website's already-deducted stock so
+            // Loyverse composite deduction webhooks do not overwrite or deplete website stocks.
+            $order->loadMissing('items.product.recipes');
+            $affectedIngredientIds = [];
+            foreach ($order->items as $item) {
+                if ($item->product && $item->product->recipes) {
+                    foreach ($item->product->recipes as $recipe) {
+                        if (!empty($recipe->ingredient_id)) {
+                            $affectedIngredientIds[] = $recipe->ingredient_id;
+                        }
+                    }
+                }
+            }
+            $affectedIngredientIds = array_values(array_unique($affectedIngredientIds));
+            if (!empty($affectedIngredientIds)) {
+                $this->markLocalStockPush($affectedIngredientIds);
+                try {
+                    $this->pushInventoryToLoyverse($affectedIngredientIds);
+                } catch (\Throwable $e) {
+                    Log::warning("Post-receipt inventory re-align warning: " . $e->getMessage());
+                }
+            }
         }
 
         return $receiptData;
+        } finally {
+            if (!$receiptSaved) {
+                Order::where('id', $order->id)
+                    ->where('loyverse_receipt_id', 'SYNCING')
+                    ->update(['loyverse_receipt_id' => null]);
+            }
+        }
     }
 
     public function pushAllPendingWebsiteOrders(): array
     {
+        // Only sync recent live website orders; never backfill thousands of seeded #GS-* analytics orders
         $orders = Order::where('source', 'web')
             ->whereNull('loyverse_receipt_id')
+            ->where('order_number', 'not like', '#GS-%')
+            ->where('created_at', '>=', now()->subHours(24))
             ->where('status', 'Completed')
             ->whereIn('payment_status', ['Paid', 'Verified'])
+            ->orderByDesc('id')
+            ->limit(15)
             ->get();
 
         $results = [
@@ -1594,40 +1665,56 @@ class LoyverseService
 
     public function syncRecentReceipts(?string $since = null): array
     {
-        if (!$since) {
-            $lastOrder = Order::where('source', 'loyverse_pos')->latest('created_at')->first();
-            if ($lastOrder && $lastOrder->created_at) {
-                $since = $lastOrder->created_at->subHours(2)->toIso8601String();
-            } else {
-                $since = now()->subDays(7)->toIso8601String();
-            }
+        $lock = Cache::lock('loyverse_sync_recent_receipts', 25);
+        if (!$lock->get()) {
+            return [
+                'total_found' => 0,
+                'synced' => 0,
+                'already_synced' => 0,
+                'skipped' => 0,
+                'details' => [],
+                'locked' => true,
+            ];
         }
 
-        $receipts = $this->getReceipts($since);
-        $results = [
-            'total_found' => count($receipts),
-            'synced' => 0,
-            'already_synced' => 0,
-            'skipped' => 0,
-            'details' => []
-        ];
-
-        foreach ($receipts as $r) {
-            $res = $this->processReceipt($r);
-            if (($res['status'] ?? '') === 'success') {
-                $results['synced']++;
-            } elseif (($res['status'] ?? '') === 'already_synced') {
-                $results['already_synced']++;
-            } else {
-                $results['skipped']++;
+        try {
+            if (!$since) {
+                $lastOrder = Order::where('source', 'loyverse_pos')->latest('created_at')->first();
+                if ($lastOrder && $lastOrder->created_at) {
+                    $since = $lastOrder->created_at->subHours(2)->toIso8601String();
+                } else {
+                    $since = now()->subDays(7)->toIso8601String();
+                }
             }
-            $results['details'][] = $res;
+
+            $receipts = $this->getReceipts($since);
+            $results = [
+                'total_found' => count($receipts),
+                'synced' => 0,
+                'already_synced' => 0,
+                'skipped' => 0,
+                'details' => []
+            ];
+
+            foreach ($receipts as $r) {
+                $res = $this->processReceipt($r);
+                if (($res['status'] ?? '') === 'success') {
+                    $results['synced']++;
+                } elseif (($res['status'] ?? '') === 'already_synced') {
+                    $results['already_synced']++;
+                } else {
+                    $results['skipped']++;
+                }
+                $results['details'][] = $res;
+            }
+
+            $pushRes = $this->pushAllPendingWebsiteOrders();
+            $results['pushed_to_loyverse'] = $pushRes;
+
+            return $results;
+        } finally {
+            $lock->release();
         }
-
-        $pushRes = $this->pushAllPendingWebsiteOrders();
-        $results['pushed_to_loyverse'] = $pushRes;
-
-        return $results;
     }
 
     /**
@@ -1726,6 +1813,18 @@ class LoyverseService
                                 }
                             }
                         }
+                    }
+                }
+
+                if ($ing && $this->isWithinLocalPushWindow($ing->id)) {
+                    // Ignore delayed Loyverse echo webhooks right after website pushed stock for this ingredient
+                    continue;
+                }
+
+                if ($ing && !empty($lvl['updated_at']) && $ing->updated_at) {
+                    $lvlTs = strtotime((string) $lvl['updated_at']);
+                    if ($lvlTs !== false && $lvlTs < $ing->updated_at->timestamp) {
+                        continue;
                     }
                 }
 

@@ -260,17 +260,20 @@
                   <div class="inline-flex items-center gap-1.5 bg-surface-900 px-2 py-1 rounded-xl border border-surface-700">
                     <button 
                       @click="quickAdjust(ing, 10)"
-                      class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all">
+                      :disabled="Boolean(adjustingIds[ing.id])"
+                      class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all disabled:opacity-50 disabled:cursor-wait">
                       +10
                     </button>
                     <button 
                       @click="quickAdjust(ing, 25)"
-                      class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all">
+                      :disabled="Boolean(adjustingIds[ing.id])"
+                      class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all disabled:opacity-50 disabled:cursor-wait">
                       +25
                     </button>
                     <button 
                       @click="quickAdjust(ing, 50)"
-                      class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all">
+                      :disabled="Boolean(adjustingIds[ing.id])"
+                      class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all disabled:opacity-50 disabled:cursor-wait">
                       +50
                     </button>
                   </div>
@@ -375,17 +378,20 @@
                 <span class="text-[9px] font-bold text-gray-500 uppercase px-1">Restock:</span>
                 <button 
                   @click="quickAdjust(ing, 10)"
-                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer">
+                  :disabled="Boolean(adjustingIds[ing.id])"
+                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-wait">
                   +10
                 </button>
                 <button 
                   @click="quickAdjust(ing, 25)"
-                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer">
+                  :disabled="Boolean(adjustingIds[ing.id])"
+                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-wait">
                   +25
                 </button>
                 <button 
                   @click="quickAdjust(ing, 50)"
-                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer">
+                  :disabled="Boolean(adjustingIds[ing.id])"
+                  class="px-2 py-1 rounded-lg bg-surface-800 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-wait">
                   +50
                 </button>
               </div>
@@ -532,9 +538,9 @@
           </div>
 
           <div class="flex justify-end gap-3 pt-3 border-t border-surface-700">
-            <button @click="modalOpen = false" class="px-4 py-2 text-xs text-gray-400 hover:text-white">Cancel</button>
-            <button @click="saveIngredient" class="px-5 py-2 text-xs font-black bg-amber-500 hover:bg-amber-400 text-surface-950 rounded-xl">
-              {{ isEditing ? 'Save Stock' : 'Add Ingredient' }}
+            <button @click="modalOpen = false" :disabled="saving" class="px-4 py-2 text-xs text-gray-400 hover:text-white disabled:opacity-50">Cancel</button>
+            <button @click="saveIngredient" :disabled="saving" class="px-5 py-2 text-xs font-black bg-amber-500 hover:bg-amber-400 text-surface-950 rounded-xl disabled:opacity-60 disabled:cursor-wait">
+              {{ saving ? 'Saving...' : (isEditing ? 'Save Stock' : 'Add Ingredient') }}
             </button>
           </div>
         </div>
@@ -592,6 +598,8 @@ export default {
     const modalOpen = Vue.ref(false);
     const isEditing = Vue.ref(false);
     const editingId = Vue.ref(null);
+    const saving = Vue.ref(false);
+    const adjustingIds = Vue.reactive({});
 
     const form = Vue.reactive({
       name: '',
@@ -732,15 +740,24 @@ export default {
     };
 
     const quickAdjust = async (ing, amt) => {
+      if (adjustingIds[ing.id]) return;
+      adjustingIds[ing.id] = true;
       try {
         const res = await GST_API.adjustIngredientStock(ing.id, amt);
         if (res?.data && res.data.stock !== undefined) {
-          ing.stock = Math.max(0, Number(res.data.stock));
+          const updatedStock = Math.max(0, Number(res.data.stock));
+          ing.stock = updatedStock;
+          const idx = store.ingredients.findIndex(item => item.id === ing.id);
+          if (idx !== -1) {
+            store.ingredients[idx] = { ...store.ingredients[idx], ...res.data, stock: updatedStock };
+          }
         }
         store.notify(`Added +${amt} ${ing.unit} to ${ing.name} (synced to Loyverse)`);
         await refresh();
       } catch (err) {
         store.notify('Error updating stock', 'error');
+      } finally {
+        adjustingIds[ing.id] = false;
       }
     };
 
@@ -815,24 +832,56 @@ export default {
     };
 
     const saveIngredient = async () => {
-      if (!form.name.trim()) return;
+      if (!form.name.trim() || saving.value) return;
 
+      if (form.stock === '' || form.stock === null || form.stock === undefined) {
+        store.notify('Please enter a valid stock quantity.', 'warning');
+        return;
+      }
+
+      const parsedStock = Number(form.stock);
+      if (!Number.isFinite(parsedStock) || parsedStock < 0) {
+        store.notify('Stock quantity must be 0 or greater.', 'warning');
+        return;
+      }
+
+      const payload = {
+        ...form,
+        name: form.name.trim(),
+        stock: parsedStock,
+        low_threshold: Math.max(0, Number(form.low_threshold) || 0),
+        cost: Math.max(0, Number(form.cost) || 0),
+      };
+
+      saving.value = true;
       try {
         if (isEditing.value) {
-          await GST_API.updateIngredient(editingId.value, { ...form });
+          const res = await GST_API.updateIngredient(editingId.value, payload);
+          const updated = res?.data;
+          const exactStock = Math.max(0, Number(updated?.stock ?? parsedStock));
+          const idx = store.ingredients.findIndex(item => item.id === editingId.value);
+          if (idx !== -1) {
+            store.ingredients[idx] = {
+              ...store.ingredients[idx],
+              ...(updated || {}),
+              stock: exactStock,
+            };
+          }
           store.notify('Ingredient stock updated & synced with Loyverse!');
         } else {
           const slug = form.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
           await GST_API.createIngredient({
             id: slug,
-            ...form,
+            ...payload,
           });
           store.notify('New raw ingredient added & synced to Loyverse!');
         }
         modalOpen.value = false;
-        refresh();
+        await refresh();
       } catch (err) {
-        store.notify('Failed to save ingredient', 'error');
+        store.notify(err?.response?.data?.message || 'Failed to save ingredient', 'error');
+      } finally {
+        saving.value = false;
       }
     };
 
@@ -871,6 +920,8 @@ export default {
       searchQuery,
       modalOpen,
       isEditing,
+      saving,
+      adjustingIds,
       form,
       healthyCount,
       lowCount,

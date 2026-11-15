@@ -461,16 +461,27 @@ class OrderController extends Controller
 
         // Restore ingredients on cancellation (any status except already Cancelled/Completed)
         if ($newStatus === 'Cancelled' && !in_array($oldStatus, ['Cancelled', 'Completed'])) {
+            $restoredIngredientIds = [];
             foreach ($order->items as $item) {
                 $product = Product::with('recipes')->find($item->product_id);
                 if ($product) {
                     foreach ($product->recipes as $recipe) {
                         $ing = Ingredient::find($recipe->ingredient_id);
                         if ($ing) {
-                            $ing->stock += ($recipe->qty * $item->quantity);
+                            $ing->stock = max(0, (float) $ing->stock) + ($recipe->qty * $item->quantity);
                             $ing->save();
+                            $restoredIngredientIds[] = $ing->id;
                         }
                     }
+                }
+            }
+            if (!empty($restoredIngredientIds)) {
+                \Illuminate\Support\Facades\Cache::forget('ingredients_all');
+                \Illuminate\Support\Facades\Cache::forget('products_catalog_default');
+                try {
+                    app(\App\Services\LoyverseService::class)->pushInventoryToLoyverse(array_values(array_unique($restoredIngredientIds)));
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Loyverse restore push warning: ' . $e->getMessage());
                 }
             }
         }

@@ -84,7 +84,6 @@ class IngredientController extends Controller
 
     public function update(Request $request, $id)
     {
-        $ingredient = Ingredient::findOrFail($id);
         $validated = $request->validate([
             'name' => 'sometimes|string',
             'category' => 'sometimes|string',
@@ -96,26 +95,38 @@ class IngredientController extends Controller
             'low_threshold' => 'sometimes|numeric|min:0',
         ]);
 
-        $oldStock = $ingredient->stock;
-        $ingredient->update($validated);
+        if (array_key_exists('stock', $validated)) {
+            $validated['stock'] = max(0, (float) $validated['stock']);
+        }
+
+        [$ingredient, $oldStock] = DB::transaction(function () use ($id, $validated) {
+            $ing = Ingredient::where('id', $id)->lockForUpdate()->firstOrFail();
+            $prevStock = (float) $ing->stock;
+            $ing->update($validated);
+            $ing->refresh();
+            return [$ing, $prevStock];
+        });
+
         Cache::forget('ingredients_all');
         Cache::forget('products_catalog_default');
 
-        if (isset($validated['stock']) && $validated['stock'] != $oldStock) {
-            // Push updated stock to Loyverse
+        if (array_key_exists('stock', $validated)) {
+            // Push updated stock to Loyverse even if unchanged locally so POS stays aligned
             try {
                 $this->loyverse->pushSingleIngredientStock($ingredient);
             } catch (\Exception $e) {
                 // Non-blocking
             }
 
-            AuditLog::create([
-                'user_name' => $request->user()?->name ?? 'Staff',
-                'user_role' => $request->user()?->role ?? 'staff',
-                'action' => 'Stock Level Changed',
-                'details' => "Adjusted {$ingredient->name} stock from {$oldStock} to {$ingredient->stock} {$ingredient->unit}",
-                'ip_address' => $request->ip(),
-            ]);
+            if (abs((float) $ingredient->stock - $oldStock) > 0.0001) {
+                AuditLog::create([
+                    'user_name' => $request->user()?->name ?? 'Staff',
+                    'user_role' => $request->user()?->role ?? 'staff',
+                    'action' => 'Stock Level Changed',
+                    'details' => "Adjusted {$ingredient->name} stock from {$oldStock} to {$ingredient->stock} {$ingredient->unit}",
+                    'ip_address' => $request->ip(),
+                ]);
+            }
         }
 
         return response()->json($ingredient);
@@ -133,6 +144,7 @@ class IngredientController extends Controller
             return $ing;
         });
 
+        $ingredient->refresh();
         $newStock = (float) $ingredient->stock;
         Cache::forget('ingredients_all');
         Cache::forget('products_catalog_default');
