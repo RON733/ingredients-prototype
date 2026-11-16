@@ -287,7 +287,12 @@
                     Target Time
                   </label>
                   <span
-                    v-if="form.event_date && activeParsedTime"
+                    v-if="form.event_date && pastSlotStatus.isPast"
+                    class="text-[10px] font-bold text-rose-400">
+                    {{ pastSlotStatus.reason === 'past_date' ? 'Past Date' : 'Time Passed' }}
+                  </span>
+                  <span
+                    v-else-if="form.event_date && activeParsedTime"
                     class="text-[10px] font-bold"
                     :class="conflictingOccupiedSlot ? 'text-rose-400' : 'text-emerald-400'">
                     {{ conflictingOccupiedSlot ? 'Conflicts' : 'Time Open' }}
@@ -300,7 +305,7 @@
                   type="button"
                   @click="openTimePicker"
                   class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer focus:outline-none"
-                  :class="conflictingOccupiedSlot
+                  :class="(pastSlotStatus.isPast || conflictingOccupiedSlot)
                     ? 'border-rose-500/70 hover:border-rose-400 text-rose-100'
                     : 'border-surface-700 hover:border-amber-400/60 focus:border-brand-500 text-white'">
                   <span class="truncate font-medium">
@@ -308,15 +313,38 @@
                   </span>
                   <i
                     class="pi pi-clock text-xs shrink-0"
-                    :class="conflictingOccupiedSlot ? 'text-rose-400' : 'text-amber-400'">
+                    :class="(pastSlotStatus.isPast || conflictingOccupiedSlot) ? 'text-rose-400' : 'text-amber-400'">
                   </i>
                 </button>
               </div>
             </div>
 
+            <!-- Past Time / Past Date Notice -->
+            <div
+              v-if="form.event_date && pastSlotStatus.isPast"
+              class="p-2.5 sm:p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fade-in">
+              <div class="flex items-start gap-2 min-w-0">
+                <i class="pi pi-clock text-rose-400 text-sm mt-0.5 shrink-0"></i>
+                <p class="leading-relaxed">
+                  <template v-if="pastSlotStatus.reason === 'past_date'">
+                    <strong class="text-rose-300">{{ formattedSelectedDate }}</strong> has already passed (today is {{ pastSlotStatus.nowDate }}). Please select today or a future date.
+                  </template>
+                  <template v-else>
+                    You can't book <strong class="text-rose-300">{{ activeParsedTime?.rangeLabel }}</strong> for today anymore — it is already <strong>{{ pastSlotStatus.nowLabel }}</strong>. Please pick a later time or another date.
+                  </template>
+                </p>
+              </div>
+              <button
+                type="button"
+                @click="openTimePicker"
+                class="px-2.5 py-1.5 rounded-lg bg-rose-500/25 hover:bg-rose-500/35 text-rose-100 font-bold text-[10px] shrink-0 self-start sm:self-center cursor-pointer transition-colors">
+                Change Time
+              </button>
+            </div>
+
             <!-- Compact Occupied Date / Conflict Status Notice -->
             <div
-              v-if="form.event_date && conflictingOccupiedSlot"
+              v-else-if="form.event_date && conflictingOccupiedSlot"
               class="p-2.5 sm:p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fade-in">
               <div class="flex items-start gap-2 min-w-0">
                 <i class="pi pi-times-circle text-rose-400 text-sm mt-0.5 shrink-0"></i>
@@ -418,6 +446,7 @@
                 ? 'bg-surface-700 text-gray-400 cursor-not-allowed opacity-70'
                 : 'bg-yellow-400 hover:bg-yellow-300 text-black cursor-pointer'">
               <i v-if="loading" class="pi pi-spin pi-spinner"></i>
+              <span v-else-if="pastSlotStatus.isPast">{{ pastSlotStatus.reason === 'past_date' ? 'Past Date — Pick Today or Later' : 'Time Passed — Pick Later Slot' }}</span>
               <span v-else-if="conflictingOccupiedSlot">Time Conflict — Pick Another Slot</span>
               <span v-else-if="!activeParsedTime">Enter a Valid Time</span>
               <span v-else>Submit Booking Request</span>
@@ -841,6 +870,15 @@
             </div>
 
             <div
+              v-else-if="form.event_date && draftPastSlotStatus.isPast"
+              class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex items-start gap-2">
+              <i class="pi pi-clock text-rose-400 text-xs mt-0.5 shrink-0"></i>
+              <span>
+                You can't book <strong>{{ draftParsedSlot?.rangeLabel }}</strong> for today anymore (it is already <strong>{{ draftPastSlotStatus.nowLabel }}</strong>). Pick a later time or change the date.
+              </span>
+            </div>
+
+            <div
               v-else-if="form.event_date && draftConflictingSlot"
               class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex items-start gap-2">
               <i class="pi pi-ban text-rose-400 text-xs mt-0.5 shrink-0"></i>
@@ -892,6 +930,8 @@ import {
   formatTimeLabel,
   parseBookingTime,
   slotsOverlap,
+  getStoreDateTimeParts,
+  isSlotPastForDate,
   MIN_DURATION_MINUTES,
   MAX_DURATION_MINUTES,
 } from '@/utils/bookingTime';
@@ -1110,9 +1150,16 @@ export default {
       isDesktopBanner.value = window.innerWidth >= 640;
     };
 
+    const nowTick = Vue.ref(Date.now());
+    const serverClockOffsetMs = Vue.ref(0);
+    let clockIntervalId = null;
+
     Vue.onMounted(() => {
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('resize', updateBannerViewport);
+      clockIntervalId = window.setInterval(() => {
+        nowTick.value = Date.now();
+      }, 15000);
     });
 
     Vue.onBeforeUnmount(() => {
@@ -1120,6 +1167,10 @@ export default {
       window.removeEventListener('resize', updateBannerViewport);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      if (clockIntervalId) {
+        window.clearInterval(clockIntervalId);
+        clockIntervalId = null;
+      }
     });
 
     const MIN_GUESTS = 10;
@@ -1133,13 +1184,11 @@ export default {
       return digits.slice(0, 11);
     };
 
-    const minEventDate = Vue.computed(() => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    });
+    const storeNow = Vue.computed(() =>
+      getStoreDateTimeParts(new Date(nowTick.value), serverClockOffsetMs.value)
+    );
+
+    const minEventDate = Vue.computed(() => storeNow.value.dateString);
 
     const availablePackages = Vue.computed(() => {
       const list = store.activeBookingPackages || [];
@@ -1345,15 +1394,25 @@ export default {
         return null;
       }
       return occupiedSlotsOnDate.value.find((occupied) => {
-        if (occupied.start_minutes === null || occupied.end_minutes === null) return false;
+        if (occupied.blocks_whole_day || occupied.start_minutes === null || occupied.end_minutes === null) {
+          return true;
+        }
         return slotsOverlap(candidateSlot, occupied);
       }) || null;
     };
 
     const conflictingOccupiedSlot = Vue.computed(() => findSlotConflict(activeParsedTime.value));
 
+    const pastSlotStatus = Vue.computed(() => {
+      if (!form.event_date) {
+        return { isPast: false, reason: null, nowDate: storeNow.value.dateString, nowMinutes: storeNow.value.minutes, nowLabel: storeNow.value.timeLabel };
+      }
+      return isSlotPastForDate(form.event_date, activeParsedTime.value, storeNow.value);
+    });
+
     const canSubmitBooking = Vue.computed(() => {
       if (!activeParsedTime.value) return false;
+      if (form.event_date && pastSlotStatus.value.isPast) return false;
       if (form.event_date && conflictingOccupiedSlot.value) return false;
       return true;
     });
@@ -1371,8 +1430,16 @@ export default {
 
     const draftConflictingSlot = Vue.computed(() => findSlotConflict(draftParsedSlot.value));
 
+    const draftPastSlotStatus = Vue.computed(() => {
+      if (!form.event_date || !draftParsedSlot.value) {
+        return { isPast: false, reason: null, nowDate: storeNow.value.dateString, nowMinutes: storeNow.value.minutes, nowLabel: storeNow.value.timeLabel };
+      }
+      return isSlotPastForDate(form.event_date, draftParsedSlot.value, storeNow.value);
+    });
+
     const canConfirmTimePicker = Vue.computed(() => {
       if (!draftParsedSlot.value) return false;
+      if (form.event_date && draftPastSlotStatus.value.isPast) return false;
       if (form.event_date && draftConflictingSlot.value) return false;
       return true;
     });
@@ -1528,7 +1595,21 @@ export default {
 
     const confirmTimePicker = () => {
       const slot = draftParsedSlot.value;
-      if (!slot || (form.event_date && draftConflictingSlot.value)) return;
+      if (!slot) return;
+      if (form.event_date && draftPastSlotStatus.value.isPast) {
+        store.notify(
+          `You can't book ${slot.rangeLabel} for today anymore (it is already ${draftPastSlotStatus.value.nowLabel}). Please pick a later time or another date.`,
+          'warning'
+        );
+        return;
+      }
+      if (form.event_date && draftConflictingSlot.value) {
+        store.notify(
+          `Time conflict: ${slot.rangeLabel} overlaps with an occupied booking (${draftConflictingSlot.value.range_label || draftConflictingSlot.value.event_time}) on this date.`,
+          'warning'
+        );
+        return;
+      }
 
       if (pickerMode.value === 'type') {
         timeMode.value = 'type';
@@ -1546,6 +1627,16 @@ export default {
       checkingAvailability.value = true;
       try {
         const res = await GST_API.getBookingAvailability(dateStr ? { date: dateStr } : {});
+        if (res.data?.server_date && Number.isFinite(res.data?.server_minutes)) {
+          const baseMidnight = Date.parse(`${res.data.server_date}T00:00:00+08:00`);
+          if (Number.isFinite(baseMidnight)) {
+            const serverMs = baseMidnight + res.data.server_minutes * 60000;
+            const diff = serverMs - Date.now();
+            if (Math.abs(diff) > 90000) {
+              serverClockOffsetMs.value = diff;
+            }
+          }
+        }
         occupiedDatesMap.value = res.data?.occupied_dates || {};
         if (dateStr) {
           occupiedSlotsOnDate.value = Array.isArray(res.data?.occupied_slots) ? res.data.occupied_slots : [];
@@ -1573,14 +1664,60 @@ export default {
       }
     };
 
+    const lastNotifiedPastKey = Vue.ref('');
+    const lastNotifiedConflictKey = Vue.ref('');
+
     Vue.watch(() => form.event_date, (newDate) => {
       if (!newDate) {
         occupiedSlotsOnDate.value = [];
         lastNotifiedOccupiedDate.value = '';
+        lastNotifiedPastKey.value = '';
+        lastNotifiedConflictKey.value = '';
         return;
       }
       fetchAvailabilityForDate(newDate, true);
     });
+
+    Vue.watch(
+      [() => store.bookingModalOpen, () => form.event_date, activeParsedTime, pastSlotStatus, conflictingOccupiedSlot],
+      ([isOpen, dateVal, slot, pastState, conflict]) => {
+        if (!isOpen || !dateVal) return;
+
+        if (pastState?.isPast) {
+          const pastKey = `${dateVal}|${slot?.rangeLabel || 'past'}`;
+          if (lastNotifiedPastKey.value !== pastKey) {
+            lastNotifiedPastKey.value = pastKey;
+            if (pastState.reason === 'past_date') {
+              store.notify(
+                `${formattedSelectedDate.value || dateVal} has already passed. Please choose today or a future date.`,
+                'warning'
+              );
+            } else {
+              store.notify(
+                `You can't book ${slot?.rangeLabel || 'that time'} for today anymore because it is already ${pastState.nowLabel}. Please pick a later time or another date.`,
+                'warning'
+              );
+            }
+          }
+          return;
+        }
+        lastNotifiedPastKey.value = '';
+
+        if (conflict && slot) {
+          const conflictLabel = conflict.range_label || conflict.event_time || 'another booking';
+          const cKey = `${dateVal}|${slot.rangeLabel}|${conflictLabel}`;
+          if (lastNotifiedConflictKey.value !== cKey) {
+            lastNotifiedConflictKey.value = cKey;
+            store.notify(
+              `Time conflict: ${slot.rangeLabel} overlaps with an existing booking (${conflictLabel}) on ${formattedSelectedDate.value || dateVal}.`,
+              'warning'
+            );
+          }
+        } else {
+          lastNotifiedConflictKey.value = '';
+        }
+      }
+    );
 
     const onPhoneInput = (e) => {
       const clean = sanitizePhone(e.target.value);
@@ -1699,6 +1836,7 @@ export default {
         if (!form.client_email && store.user?.email) {
           form.client_email = store.user.email;
         }
+        nowTick.value = Date.now();
         store.fetchMyBookings();
         fetchAvailabilityForDate(form.event_date || null, false);
         await store.fetchBookingPackages(false);
@@ -1763,6 +1901,13 @@ export default {
       }
       if (!activeParsedTime.value) {
         store.notify('Please select a target time slot or enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).', 'warning');
+        return;
+      }
+      if (pastSlotStatus.value.isPast) {
+        store.notify(
+          `You can't book ${activeParsedTime.value.rangeLabel} for today anymore (it is already ${pastSlotStatus.value.nowLabel}). Please choose a later time or another date.`,
+          'error'
+        );
         return;
       }
       if (conflictingOccupiedSlot.value) {
@@ -1891,10 +2036,12 @@ export default {
       formattedSelectedDate,
       activeParsedTime,
       conflictingOccupiedSlot,
+      pastSlotStatus,
       canSubmitBooking,
       durationHourOptions,
       draftParsedSlot,
       draftConflictingSlot,
+      draftPastSlotStatus,
       canConfirmTimePicker,
       draftDurationExactHours,
       meridiemWheelRows,

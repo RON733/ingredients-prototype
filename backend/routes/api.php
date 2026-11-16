@@ -66,6 +66,7 @@ Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
 Route::get('/bookings/availability', [EventBookingController::class, 'availability']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
+Route::post('/bookings/{id}/cancel', [EventBookingController::class, 'cancel']);
 Route::get('/booking-packages', [BookingPackageController::class, 'index']);
 
 // PayMongo Online Payment Gateway
@@ -175,6 +176,7 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::get('/bookings', [EventBookingController::class, 'index']);
     Route::match(['put', 'patch'], '/bookings/{id}', [EventBookingController::class, 'update']);
     Route::match(['put', 'patch'], '/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);
+    Route::post('/bookings/{id}/cancel', [EventBookingController::class, 'cancel']);
     Route::get('/booking-packages', [BookingPackageController::class, 'index']);
     Route::post('/booking-packages', [BookingPackageController::class, 'store']);
     Route::match(['put', 'patch'], '/booking-packages/{id}', [BookingPackageController::class, 'update']);

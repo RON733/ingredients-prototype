@@ -218,7 +218,7 @@ class BookingPackage extends Model
             return null;
         }
 
-        $packages = static::orderBy('sort_order')->orderBy('id')->get();
+        $packages = static::orderByDesc('is_active')->orderBy('sort_order')->orderBy('id')->get();
 
         foreach ($candidates as $candidate) {
             $lower = mb_strtolower($candidate);

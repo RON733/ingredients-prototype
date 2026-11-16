@@ -626,6 +626,7 @@
                   <option value="Approved">Approved</option>
                   <option value="Completed">Completed</option>
                   <option value="Declined">Declined</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
             </div>
@@ -796,6 +797,7 @@ export default {
       if (s === 'Approved') return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
       if (s === 'Completed') return 'bg-sky-500/20 text-sky-400 border border-sky-500/30';
       if (s === 'Declined') return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+      if (s === 'Cancelled') return 'bg-surface-700/80 text-gray-300 border border-surface-600';
       return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
     };
 
@@ -834,7 +836,7 @@ export default {
         store.notify(`Booking #${b.id} is now ${status}`);
         refresh();
       } catch (err) {
-        store.notify('Error updating booking.', 'error');
+        store.notify(err.response?.data?.message || 'Error updating booking.', 'error');
       }
     };
 
@@ -1089,7 +1091,7 @@ export default {
           guest_count: Number(bookingForm.guest_count),
           estimated_cost: Number(bookingForm.estimated_cost),
           event_date: bookingForm.event_date,
-          event_time: bookingForm.event_time.trim() || 'TBD',
+          event_time: bookingForm.event_time.trim(),
           location: bookingForm.location.trim(),
           status: bookingForm.status,
           notes: bookingForm.notes.trim() || null,

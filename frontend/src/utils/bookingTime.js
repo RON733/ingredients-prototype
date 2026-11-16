@@ -1,5 +1,6 @@
 // G Shot Teas — Booking Time Slot Parsing, Formatting & Conflict Detection
 
+export const STORE_TIMEZONE = 'Asia/Manila';
 export const DEFAULT_DURATION_MINUTES = 180;
 export const MIN_DURATION_MINUTES = 30;
 export const MAX_DURATION_MINUTES = 840; // 14 hours
@@ -170,6 +171,65 @@ export const parseBookingTime = (raw, defaultDurationMinutes = DEFAULT_DURATION_
     : defaultDurationMinutes;
 
   return buildSlotFromMinutes(single.minutes, single.minutes + durationMinutes);
+};
+
+export const getStoreDateTimeParts = (nowInput = new Date(), serverClockOffsetMs = 0) => {
+  const adjusted = new Date(nowInput.getTime() + (Number.isFinite(serverClockOffsetMs) ? serverClockOffsetMs : 0));
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: STORE_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(adjusted);
+
+    const map = {};
+    for (const part of parts) {
+      if (part.type !== 'literal') map[part.type] = part.value;
+    }
+    const hour = parseInt(map.hour || '0', 10) % 24;
+    const minute = parseInt(map.minute || '0', 10);
+    const minutes = hour * 60 + minute;
+    return {
+      dateString: `${map.year}-${map.month}-${map.day}`,
+      minutes,
+      timeLabel: formatTimeLabel(minutes),
+    };
+  } catch (e) {
+    const manilaFallback = new Date(adjusted.getTime() + (8 * 60 + adjusted.getTimezoneOffset()) * 60000);
+    const y = manilaFallback.getFullYear();
+    const m = String(manilaFallback.getMonth() + 1).padStart(2, '0');
+    const d = String(manilaFallback.getDate()).padStart(2, '0');
+    const minutes = manilaFallback.getHours() * 60 + manilaFallback.getMinutes();
+    return {
+      dateString: `${y}-${m}-${d}`,
+      minutes,
+      timeLabel: formatTimeLabel(minutes),
+    };
+  }
+};
+
+export const isSlotPastForDate = (targetDate, slot, storeNow = getStoreDateTimeParts()) => {
+  if (!targetDate) {
+    return { isPast: false, reason: null, nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
+  }
+  if (targetDate < storeNow.dateString) {
+    return { isPast: true, reason: 'past_date', nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
+  }
+  if (targetDate === storeNow.dateString && slot) {
+    const startMin = slot.startMinutes ?? slot.start_minutes;
+    const endMin = slot.endMinutes ?? slot.end_minutes;
+    if (Number.isFinite(endMin) && endMin <= storeNow.minutes) {
+      return { isPast: true, reason: 'ended', nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
+    }
+    if (Number.isFinite(startMin) && startMin <= storeNow.minutes) {
+      return { isPast: true, reason: 'started', nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
+    }
+  }
+  return { isPast: false, reason: null, nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
 };
 
 export const slotsOverlap = (slotA, slotB) => {

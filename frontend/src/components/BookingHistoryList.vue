@@ -114,9 +114,19 @@
             <span><i class="pi pi-user text-[10px] mr-1 text-gray-500"></i>{{ b.client_name }}</span>
             <span><i class="pi pi-phone text-[10px] mr-1 text-gray-500"></i>{{ b.client_phone }}</span>
           </div>
-          <span v-if="b.notes" class="italic text-gray-400 break-words">
-            "{{ b.notes }}"
-          </span>
+          <div class="flex items-center gap-2 ml-auto">
+            <span v-if="b.notes" class="italic text-gray-400 break-words">
+              "{{ b.notes }}"
+            </span>
+            <button
+              v-if="b.status === 'Pending'"
+              type="button"
+              @click="cancelPendingBooking(b)"
+              :disabled="cancellingId === b.id"
+              class="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-[10px] font-bold transition-colors cursor-pointer disabled:opacity-50 shrink-0">
+              {{ cancellingId === b.id ? 'Cancelling...' : 'Cancel Request' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -203,6 +213,7 @@ export default {
     const statusFilter = ref('all');
     const lookupQuery = ref('');
     const isSearching = ref(false);
+    const cancellingId = ref(null);
 
     const refreshBookings = async () => {
       isLoading.value = true;
@@ -231,6 +242,7 @@ export default {
       { key: 'Approved', label: 'Approved', count: countByStatus('Approved') },
       { key: 'Completed', label: 'Completed', count: countByStatus('Completed') },
       { key: 'Declined', label: 'Declined', count: countByStatus('Declined') },
+      { key: 'Cancelled', label: 'Cancelled', count: countByStatus('Cancelled') },
     ]);
 
     const filteredBookings = computed(() => {
@@ -244,6 +256,11 @@ export default {
 
     const formatEventDate = (dateStr) => {
       if (!dateStr) return 'TBD';
+      const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const dt = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
       const parsed = new Date(dateStr);
       if (Number.isNaN(parsed.getTime())) return String(dateStr).slice(0, 10);
       return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -288,6 +305,8 @@ export default {
           return 'bg-sky-500/20 text-sky-300 border-sky-500/40';
         case 'Declined':
           return 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+        case 'Cancelled':
+          return 'bg-surface-700/70 text-gray-300 border-surface-600';
         default:
           return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
       }
@@ -301,6 +320,8 @@ export default {
           return 'pi pi-verified';
         case 'Declined':
           return 'pi pi-times-circle';
+        case 'Cancelled':
+          return 'pi pi-ban';
         default:
           return 'pi pi-clock';
       }
@@ -314,6 +335,8 @@ export default {
           return 'bg-sky-500/10 border-sky-500/30 text-sky-200';
         case 'Declined':
           return 'bg-rose-500/10 border-rose-500/30 text-rose-200';
+        case 'Cancelled':
+          return 'bg-surface-800/70 border-surface-700 text-gray-300';
         default:
           return 'bg-amber-500/10 border-amber-500/30 text-amber-200';
       }
@@ -327,6 +350,8 @@ export default {
           return 'pi pi-star-fill text-sky-400';
         case 'Declined':
           return 'pi pi-exclamation-circle text-rose-400';
+        case 'Cancelled':
+          return 'pi pi-ban text-gray-400';
         default:
           return 'pi pi-hourglass text-amber-400';
       }
@@ -341,6 +366,10 @@ export default {
         const when = b.reviewed_at ? ` • ${formatSubmittedAt(b.reviewed_at)}` : '';
         return `Declined by ${formatReviewer(b)}${when}`;
       }
+      if (b.status === 'Cancelled') {
+        const when = b.reviewed_at ? ` • ${formatSubmittedAt(b.reviewed_at)}` : '';
+        return `Booking Cancelled${when}`;
+      }
       if (b.status === 'Completed') {
         return 'Event Completed';
       }
@@ -354,10 +383,31 @@ export default {
       if (b.status === 'Declined') {
         return 'Unfortunately this slot could not be accommodated. Contact Jefferson Alulod (0994 612 1933) or submit a new request.';
       }
+      if (b.status === 'Cancelled') {
+        return 'This booking request was cancelled and its time slot has been released.';
+      }
       if (b.status === 'Completed') {
         return 'Thank you for celebrating your event with G Shot Teas!';
       }
       return 'Your request has been received. Once an Admin or Staff member reviews and approves it, the status above will turn green.';
+    };
+
+    const cancelPendingBooking = async (b) => {
+      const confirmed = await store.confirmDialog({
+        title: 'Cancel Booking Request',
+        message: `Cancel booking #${b.id} for ${formatEventDate(b.event_date)} (${b.event_time || 'scheduled time'})? This will release the time slot.`,
+        confirmText: 'Yes, Cancel Booking',
+        cancelText: 'Keep Booking',
+        variant: 'danger',
+        icon: 'pi-ban',
+      });
+      if (!confirmed) return;
+      cancellingId.value = b.id;
+      try {
+        await store.cancelBooking(b.id, { client_phone: b.client_phone });
+      } finally {
+        cancellingId.value = null;
+      }
     };
 
     const lookupBookings = async () => {
@@ -388,6 +438,7 @@ export default {
       statusFilter,
       lookupQuery,
       isSearching,
+      cancellingId,
       bookings,
       filterTabs,
       filteredBookings,
@@ -402,6 +453,7 @@ export default {
       getApprovalBannerIcon,
       getApprovalHeadline,
       getApprovalSubtext,
+      cancelPendingBooking,
       lookupBookings,
     };
   },

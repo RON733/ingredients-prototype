@@ -2070,6 +2070,19 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
+    async cancelBooking(id, data = {}) {
+      try {
+        const res = await GST_API.cancelBooking(id, data);
+        await this.fetchMyBookings();
+        this.notify(res.data?.message || 'Booking cancelled.', 'success');
+        return res.data?.booking;
+      } catch (err) {
+        const msg = err.response?.data?.message || 'Failed to cancel booking.';
+        this.notify(msg, 'error');
+        throw err;
+      }
+    },
+
     openProductPreview(item) {
       if (!item) return;
       if (typeof item === 'string') {

@@ -4,6 +4,7 @@ namespace App\Support;
 
 class BookingTimeSlot
 {
+    public const STORE_TIMEZONE = 'Asia/Manila';
     public const DEFAULT_DURATION_MINUTES = 180;
     public const MIN_DURATION_MINUTES = 30;
     public const MAX_DURATION_MINUTES = 840; // 14 hours
@@ -117,12 +118,87 @@ class BookingTimeSlot
     }
 
     /**
+     * Current store date & time in Asia/Manila (honoring Carbon::setTestNow in tests).
+     */
+    public static function storeNow(): \Carbon\Carbon
+    {
+        return now(self::STORE_TIMEZONE);
+    }
+
+    /**
      * Check whether two parsed time slots overlap.
      */
     public static function overlaps(array $slotA, array $slotB): bool
     {
         return $slotA['start_minutes'] < $slotB['end_minutes']
             && $slotB['start_minutes'] < $slotA['end_minutes'];
+    }
+
+    /**
+     * Shift a parsed slot's minute bounds by an offset (e.g. -1440 for overnight spillover).
+     */
+    public static function shiftSlot(array $slot, int $offsetMinutes): array
+    {
+        return [
+            ...$slot,
+            'start_minutes' => $slot['start_minutes'] + $offsetMinutes,
+            'end_minutes' => $slot['end_minutes'] + $offsetMinutes,
+        ];
+    }
+
+    /**
+     * Check if a target date + time slot has already passed in the store timezone.
+     *
+     * @return array{is_past: bool, reason: ?string, now_date: string, now_minutes: int, now_label: string}
+     */
+    public static function isPastSlotForDate(string $targetDate, array $parsedSlot, ?\Carbon\CarbonInterface $now = null): array
+    {
+        $manilaNow = ($now ? \Carbon\Carbon::instance($now) : self::storeNow())
+            ->copy()
+            ->setTimezone(self::STORE_TIMEZONE);
+
+        $today = $manilaNow->toDateString();
+        $nowMinutes = ((int) $manilaNow->hour * 60) + (int) $manilaNow->minute;
+        $nowLabel = $manilaNow->format('g:i A');
+
+        if ($targetDate < $today) {
+            return [
+                'is_past' => true,
+                'reason' => 'past_date',
+                'now_date' => $today,
+                'now_minutes' => $nowMinutes,
+                'now_label' => $nowLabel,
+            ];
+        }
+
+        if ($targetDate === $today) {
+            if ($parsedSlot['end_minutes'] <= $nowMinutes) {
+                return [
+                    'is_past' => true,
+                    'reason' => 'ended',
+                    'now_date' => $today,
+                    'now_minutes' => $nowMinutes,
+                    'now_label' => $nowLabel,
+                ];
+            }
+            if ($parsedSlot['start_minutes'] <= $nowMinutes) {
+                return [
+                    'is_past' => true,
+                    'reason' => 'started',
+                    'now_date' => $today,
+                    'now_minutes' => $nowMinutes,
+                    'now_label' => $nowLabel,
+                ];
+            }
+        }
+
+        return [
+            'is_past' => false,
+            'reason' => null,
+            'now_date' => $today,
+            'now_minutes' => $nowMinutes,
+            'now_label' => $nowLabel,
+        ];
     }
 
     public static function formatTime(int $minutes): string
