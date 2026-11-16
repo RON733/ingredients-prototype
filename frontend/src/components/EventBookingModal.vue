@@ -229,7 +229,7 @@
                   Estimated Guest Count
                 </label>
                 <span class="text-[10px] font-mono text-gray-500">
-                  10–500 pax
+                  50–500 pax
                 </span>
               </div>
               <input 
@@ -239,7 +239,7 @@
                 @blur="onGuestCountBlur"
                 type="number" 
                 inputmode="numeric"
-                min="10" 
+                min="50" 
                 max="500" 
                 step="1"
                 required
@@ -1183,7 +1183,7 @@ export default {
       }
     });
 
-    const MIN_GUESTS = 10;
+    const MIN_GUESTS = 50;
     const MAX_GUESTS = 500;
 
     const sanitizePhone = (raw) => {
@@ -1905,8 +1905,8 @@ export default {
         return Math.round(guests * price);
       }
       const packSize = Math.max(1, Number(pkg.base_pax || 50));
-      const units = Math.max(1, Math.ceil(guests / packSize));
-      return Math.round(units * price);
+      const scale = Math.max(1, guests / packSize);
+      return Math.round(scale * price);
     });
 
     const packageDetailsText = Vue.computed(() => {

@@ -812,8 +812,8 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block font-bold text-gray-300 mb-1">Guest Count (10–500)</label>
-                <input v-model.number="bookingForm.guest_count" type="number" min="10" max="500" required class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
+                <label class="block font-bold text-gray-300 mb-1">Guest Count (50–500)</label>
+                <input v-model.number="bookingForm.guest_count" type="number" min="50" max="500" required class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white" />
               </div>
               <div>
                 <div class="flex items-center justify-between mb-1">
@@ -1629,7 +1629,7 @@ export default {
       if (pkg.pricing_type === 'flat') return Math.round(price);
       if (pkg.pricing_type === 'per_guest') return Math.round(guests * price);
       const packSize = Math.max(1, Number(pkg.base_pax || 50));
-      return Math.round(Math.max(1, Math.ceil(guests / packSize)) * price);
+      return Math.round(Math.max(1, guests / packSize) * price);
     };
 
     const onBookingEditPkgPresetChange = () => {
@@ -1637,13 +1637,13 @@ export default {
       if (!pkg) return;
       bookingForm.event_type = `${pkg.name} (${formatPackagePrice(pkg)})`;
       bookingForm.package_name = pkg.name;
-      bookingForm.estimated_cost = computePackageCost(pkg, Math.max(10, Number(bookingForm.guest_count || 50)));
+      bookingForm.estimated_cost = computePackageCost(pkg, Math.max(50, Number(bookingForm.guest_count || 50)));
     };
 
     const recalculateBookingEditCost = () => {
       const pkg = (store.bookingPackages || []).find(p => p.id === bookingForm.selected_pkg_id);
       if (!pkg) return;
-      bookingForm.estimated_cost = computePackageCost(pkg, Math.max(10, Number(bookingForm.guest_count || 50)));
+      bookingForm.estimated_cost = computePackageCost(pkg, Math.max(50, Number(bookingForm.guest_count || 50)));
     };
 
     const saveBookingEdit = async () => {

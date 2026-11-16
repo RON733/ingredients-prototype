@@ -651,7 +651,7 @@ class EventBookingController extends Controller
             'event_type' => 'required|string|max:180',
             'event_date' => 'required|date',
             'event_time' => 'nullable|string|max:60',
-            'guest_count' => 'required|integer|min:10|max:500',
+            'guest_count' => 'required|integer|min:50|max:500',
             'location' => 'required|string|max:200',
             'package_name' => 'nullable|string|max:180',
             'booking_package_id' => 'nullable|integer',
@@ -735,7 +735,7 @@ class EventBookingController extends Controller
         } else {
             $isFixedPackage = str_contains($validated['event_type'], 'Coffee') || str_contains($validated['event_type'], 'Fruity Float');
             $serverEstimatedCost = $isFixedPackage
-                ? max(1, (int) ceil($validated['guest_count'] / 50)) * 3500
+                ? round(max(1.0, $validated['guest_count'] / 50) * 3500, 2)
                 : $validated['guest_count'] * 95;
         }
 
@@ -840,7 +840,7 @@ class EventBookingController extends Controller
             'booking_package_id' => 'nullable|integer',
             'event_date' => 'sometimes|required|date',
             'event_time' => 'nullable|string|max:60',
-            'guest_count' => 'sometimes|required|integer|min:10|max:500',
+            'guest_count' => 'sometimes|required|integer|min:50|max:500',
             'location' => 'sometimes|required|string|max:200',
             'estimated_cost' => 'sometimes|required|numeric|min:0|max:1000000',
             'final_cost' => 'sometimes|required|numeric|min:0|max:1000000',

@@ -195,9 +195,9 @@ class BookingPackage extends Model
         }
 
         $packSize = max(1, (int) ($this->base_pax ?: 50));
-        $units = max(1, (int) ceil($guests / $packSize));
+        $scale = max(1.0, $guests / $packSize);
 
-        return round($units * $price, 2);
+        return round($scale * $price, 2);
     }
 
     public static function findMatchingPackage(?int $packageId = null, ?string $eventType = null, ?string $packageName = null): ?self

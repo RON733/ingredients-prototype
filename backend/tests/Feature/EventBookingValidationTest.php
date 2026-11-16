@@ -93,7 +93,7 @@ class EventBookingValidationTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('booking.guest_count', 120);
 
-        $this->assertEquals(10500, (float) $response->json('booking.estimated_cost'));
+        $this->assertEquals(8400, (float) $response->json('booking.estimated_cost'));
     }
 
     public function test_occupied_date_enforces_2_hour_prep_buffer_and_blocks_conflicts(): void
