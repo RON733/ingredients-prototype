@@ -70,16 +70,29 @@
         <!-- Customization Options Body -->
         <div class="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-gray-200">
           
-          <!-- Size Selector (Drinks & Burgers) -->
-          <div>
+          <!-- Size / Variant Selector -->
+          <div v-if="showSizeSelector">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Select Size
             </label>
-            <div class="grid grid-cols-2 gap-3">
+            <div v-if="hasCustomSizes" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <button
+                v-for="sz in productSizes"
+                :key="sz.name"
+                type="button"
+                @click="customization.size = sz.name"
+                class="p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer"
+                :class="customization.size === sz.name ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
+                <span class="text-xs">{{ sz.name }}</span>
+                <span v-if="Number(sz.price) > 0" class="text-xs font-bold text-brand-400">+₱{{ Number(sz.price).toFixed(2) }}</span>
+                <span v-else class="text-[11px] text-gray-400">Base</span>
+              </button>
+            </div>
+            <div v-else class="grid grid-cols-2 gap-3">
               <button 
                 type="button"
                 @click="customization.size = 'Regular'"
-                class="p-3 rounded-xl border text-left flex items-center justify-between transition-all"
+                class="p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer"
                 :class="customization.size === 'Regular' ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
                 <span>Regular <span v-if="isDrink" class="text-xs text-gray-400 font-normal">(16 oz)</span></span>
                 <span class="text-xs text-gray-400">Base</span>
@@ -87,7 +100,7 @@
               <button 
                 type="button"
                 @click="customization.size = 'Large'"
-                class="p-3 rounded-xl border text-left flex items-center justify-between transition-all"
+                class="p-3 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer"
                 :class="customization.size === 'Large' ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
                 <span>Large <span v-if="isDrink" class="text-xs text-gray-400 font-normal">(22 oz)</span></span>
                 <span class="text-xs font-bold text-brand-400">+₱20.00</span>
@@ -98,7 +111,7 @@
           <!-- Flavour Selector (Configured per product) -->
           <div v-if="productFlavours.length > 0">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Select Flavour
+              {{ productSecondFlavours.length > 0 ? 'Select 1st Flavour' : 'Select Flavour' }}
             </label>
             <div class="grid grid-cols-2 gap-2">
               <button
@@ -106,10 +119,29 @@
                 :key="flav.name"
                 type="button"
                 @click="customization.flavour = flav.name"
-                class="p-2.5 rounded-xl border text-left flex items-center justify-between transition-all"
+                class="p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer"
                 :class="customization.flavour === flav.name ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
                 <span class="text-xs">{{ flav.name }}</span>
                 <span v-if="Number(flav.price) > 0" class="text-xs font-bold text-brand-400">+₱{{ Number(flav.price).toFixed(2) }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2nd Flavour Selector (e.g. 6pcs Chicken Wings 2 Flavors) -->
+          <div v-if="productSecondFlavours.length > 0">
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Select 2nd Flavour
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                v-for="flav2 in productSecondFlavours"
+                :key="'f2-' + flav2.name"
+                type="button"
+                @click="customization.flavour2 = flav2.name"
+                class="p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer"
+                :class="customization.flavour2 === flav2.name ? 'border-brand-500 bg-brand-500/10 text-white font-bold' : 'border-surface-700 bg-surface-900/50 text-gray-300 hover:border-surface-600'">
+                <span class="text-xs">{{ flav2.name }}</span>
+                <span v-if="Number(flav2.price) > 0" class="text-xs font-bold text-brand-400">+₱{{ Number(flav2.price).toFixed(2) }}</span>
               </button>
             </div>
           </div>
@@ -138,8 +170,8 @@
             </div>
           </div>
 
-          <!-- Sugar Level (For Drinks) -->
-          <div v-if="product.category === 'Drinks' || product.category === 'Coffee'">
+          <!-- Sugar Level (For Drinks & Coffee) -->
+          <div v-if="showSugarIce">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Sugar Level
             </label>
@@ -149,15 +181,15 @@
                 :key="sugar"
                 type="button"
                 @click="customization.sugar = sugar"
-                class="py-2 rounded-lg text-xs font-semibold border text-center transition-all"
+                class="py-2 rounded-lg text-xs font-semibold border text-center transition-all cursor-pointer"
                 :class="customization.sugar === sugar ? 'border-brand-500 bg-brand-500 text-white shadow-md' : 'border-surface-700 bg-surface-900/50 text-gray-400 hover:text-white'">
                 {{ sugar }}
               </button>
             </div>
           </div>
 
-          <!-- Ice Level (For Drinks) -->
-          <div v-if="product.category === 'Drinks' || product.category === 'Coffee'">
+          <!-- Ice Level (For Iced Drinks & Coffee) -->
+          <div v-if="showSugarIce && !isHotSelection">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Ice Level
             </label>
@@ -167,15 +199,15 @@
                 :key="ice"
                 type="button"
                 @click="customization.ice = ice"
-                class="py-2.5 rounded-xl text-xs font-semibold border text-center transition-all"
+                class="py-2.5 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer"
                 :class="customization.ice === ice ? 'border-brand-500 bg-brand-500 text-white shadow-md' : 'border-surface-700 bg-surface-900/50 text-gray-400 hover:text-white'">
                 {{ ice }}
               </button>
             </div>
           </div>
 
-          <!-- Toppings / Add-ons -->
-          <div v-if="product.category === 'Drinks'">
+          <!-- Legacy Toppings / Add-ons (when product has no custom add-on list) -->
+          <div v-if="showLegacyToppings">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
               Add-on Toppings (+₱15.00 each)
             </label>
@@ -308,8 +340,20 @@ export default {
     const store = useGShotStore();
     const product = Vue.computed(() => store.selectedProductForCustomize);
 
+    const hasCustomSizes = Vue.computed(() => Array.isArray(product.value?.customizations?.sizes));
+
+    const productSizes = Vue.computed(() => {
+      const list = product.value?.customizations?.sizes;
+      return Array.isArray(list) ? list.map(s => ({ name: s.name || s, price: Number(s.price || 0) })) : [];
+    });
+
     const productFlavours = Vue.computed(() => {
       const list = product.value?.customizations?.flavours;
+      return Array.isArray(list) ? list.map(f => ({ name: f.name || f, price: Number(f.price || 0) })) : [];
+    });
+
+    const productSecondFlavours = Vue.computed(() => {
+      const list = product.value?.customizations?.second_flavours;
       return Array.isArray(list) ? list.map(f => ({ name: f.name || f, price: Number(f.price || 0) })) : [];
     });
 
@@ -321,6 +365,23 @@ export default {
     const isDrink = Vue.computed(() => {
       const cat = product.value?.category;
       return cat === 'Drinks' || cat === 'Coffee';
+    });
+
+    const showSizeSelector = Vue.computed(() => {
+      if (hasCustomSizes.value) return productSizes.value.length > 0;
+      if (product.value?.customizations?.hide_size) return false;
+      return isDrink.value || product.value?.category === 'Burgers';
+    });
+
+    const showSugarIce = Vue.computed(() => {
+      if (!isDrink.value) return false;
+      return !product.value?.customizations?.hide_sugar_ice;
+    });
+
+    const isHotSelection = Vue.computed(() => (customization.size || '').toLowerCase() === 'hot');
+
+    const showLegacyToppings = Vue.computed(() => {
+      return product.value?.category === 'Drinks' && productOptions.value.length === 0 && !product.value?.customizations?.hide_default_toppings;
     });
 
     const maxStock = Vue.computed(() => {
@@ -354,6 +415,7 @@ export default {
       ice: 'Regular Ice',
       toppings: [],
       flavour: '',
+      flavour2: '',
       options: [],
       notes: '',
     });
@@ -362,11 +424,18 @@ export default {
 
     Vue.watch(product, (newVal) => {
       if (newVal) {
-        customization.size = 'Regular';
+        if (hasCustomSizes.value) {
+          customization.size = productSizes.value.length ? productSizes.value[0].name : '';
+        } else {
+          customization.size = showSizeSelector.value ? 'Regular' : '';
+        }
         customization.sugar = '75%';
         customization.ice = 'Regular Ice';
         customization.toppings = [];
         customization.flavour = productFlavours.value.length ? productFlavours.value[0].name : '';
+        customization.flavour2 = productSecondFlavours.value.length > 1
+          ? productSecondFlavours.value[1].name
+          : (productSecondFlavours.value[0]?.name || '');
         customization.options = [];
         customization.notes = '';
         const initQty = Number(store.customizeInitialQty) || 1;
@@ -398,10 +467,19 @@ export default {
     const computedTotal = Vue.computed(() => {
       if (!product.value) return 0;
       let total = Number(product.value.price);
-      if (customization.size === 'Large') total += 20;
+      if (hasCustomSizes.value) {
+        const sz = productSizes.value.find(s => s.name === customization.size);
+        if (sz && Number(sz.price) > 0) total += Number(sz.price);
+      } else if (showSizeSelector.value && customization.size === 'Large') {
+        total += 20;
+      }
       if (customization.flavour) {
         const flav = productFlavours.value.find(f => f.name === customization.flavour);
         if (flav && Number(flav.price) > 0) total += Number(flav.price);
+      }
+      if (customization.flavour2) {
+        const flav2 = productSecondFlavours.value.find(f => f.name === customization.flavour2);
+        if (flav2 && Number(flav2.price) > 0) total += Number(flav2.price);
       }
       if (customization.options && customization.options.length) {
         for (const optName of customization.options) {
@@ -422,20 +500,34 @@ export default {
 
     const confirmAdd = () => {
       if (!product.value) return;
-      const cleanCustomization = {
-        size: customization.size || 'Regular',
-      };
-      if (isDrink.value) {
-        cleanCustomization.sugar = customization.sugar || '75%';
-        cleanCustomization.ice = customization.ice || 'Regular Ice';
-        if (customization.toppings && customization.toppings.length) {
-          cleanCustomization.toppings = [...customization.toppings];
+      const cleanCustomization = {};
+      if (showSizeSelector.value && customization.size) {
+        cleanCustomization.size = customization.size;
+        if (hasCustomSizes.value) {
+          const sz = productSizes.value.find(s => s.name === customization.size);
+          cleanCustomization.size_price = sz ? Number(sz.price || 0) : 0;
         }
+      }
+      if (showSugarIce.value) {
+        cleanCustomization.sugar = customization.sugar || '75%';
+        if (!isHotSelection.value) {
+          cleanCustomization.ice = customization.ice || 'Regular Ice';
+        } else {
+          cleanCustomization.ice = 'Hot';
+        }
+      }
+      if (isDrink.value && customization.toppings && customization.toppings.length) {
+        cleanCustomization.toppings = [...customization.toppings];
       }
       if (customization.flavour) {
         const flav = productFlavours.value.find(f => f.name === customization.flavour);
         cleanCustomization.flavour = customization.flavour;
         cleanCustomization.flavour_price = flav ? Number(flav.price || 0) : 0;
+      }
+      if (customization.flavour2) {
+        const flav2 = productSecondFlavours.value.find(f => f.name === customization.flavour2);
+        cleanCustomization.flavour2 = customization.flavour2;
+        cleanCustomization.flavour2_price = flav2 ? Number(flav2.price || 0) : 0;
       }
       if (customization.options && customization.options.length) {
         cleanCustomization.options = customization.options.map(name => {
@@ -458,7 +550,14 @@ export default {
       store,
       product,
       isDrink,
+      hasCustomSizes,
+      productSizes,
+      showSizeSelector,
+      showSugarIce,
+      isHotSelection,
+      showLegacyToppings,
       productFlavours,
+      productSecondFlavours,
       productOptions,
       orderQty,
       maxStock,

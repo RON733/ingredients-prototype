@@ -257,12 +257,69 @@ class OrderController extends Controller
                 $perUnitDiscount = round(max(0, $originalBasePrice - $basePrice), 2);
                 $quantity = (int)$item['quantity'];
 
-                // Dynamic pricing additions for customizations (e.g. Large size +20, extra toppings)
-                $customization = $item['customization'] ?? [];
+                // Dynamic pricing additions for customizations (sizes, flavours, options, legacy toppings)
+                $customization = is_array($item['customization'] ?? null) ? $item['customization'] : [];
+                $productCust = is_array($product->customizations ?? null) ? $product->customizations : [];
                 $customizationExtra = 0.0;
-                if (!empty($customization['size']) && strtolower($customization['size']) === 'large') {
+
+                // 1. Size pricing (authoritative lookup from product customizations.sizes if configured)
+                if (isset($productCust['sizes']) && is_array($productCust['sizes'])) {
+                    if (!empty($customization['size']) && count($productCust['sizes']) > 0) {
+                        $chosenSize = strtolower(trim((string) $customization['size']));
+                        foreach ($productCust['sizes'] as $sizeCfg) {
+                            $sizeName = strtolower(trim((string) (is_array($sizeCfg) ? ($sizeCfg['name'] ?? '') : $sizeCfg)));
+                            if ($sizeName !== '' && $sizeName === $chosenSize) {
+                                $customizationExtra += max(0.0, (float) (is_array($sizeCfg) ? ($sizeCfg['price'] ?? 0) : 0));
+                                break;
+                            }
+                        }
+                    }
+                } elseif (!empty($customization['size']) && strtolower((string) $customization['size']) === 'large') {
                     $customizationExtra += 20;
                 }
+
+                // 2. Primary flavour pricing
+                if (!empty($customization['flavour']) && isset($productCust['flavours']) && is_array($productCust['flavours'])) {
+                    $chosenFlavour = strtolower(trim((string) $customization['flavour']));
+                    foreach ($productCust['flavours'] as $flavCfg) {
+                        $flavName = strtolower(trim((string) (is_array($flavCfg) ? ($flavCfg['name'] ?? '') : $flavCfg)));
+                        if ($flavName !== '' && $flavName === $chosenFlavour) {
+                            $customizationExtra += max(0.0, (float) (is_array($flavCfg) ? ($flavCfg['price'] ?? 0) : 0));
+                            break;
+                        }
+                    }
+                }
+
+                // 3. Secondary flavour pricing (e.g. 2-flavor wings)
+                if (!empty($customization['flavour2']) && isset($productCust['second_flavours']) && is_array($productCust['second_flavours'])) {
+                    $chosenFlavour2 = strtolower(trim((string) $customization['flavour2']));
+                    foreach ($productCust['second_flavours'] as $flav2Cfg) {
+                        $flav2Name = strtolower(trim((string) (is_array($flav2Cfg) ? ($flav2Cfg['name'] ?? '') : $flav2Cfg)));
+                        if ($flav2Name !== '' && $flav2Name === $chosenFlavour2) {
+                            $customizationExtra += max(0.0, (float) (is_array($flav2Cfg) ? ($flav2Cfg['price'] ?? 0) : 0));
+                            break;
+                        }
+                    }
+                }
+
+                // 4. Custom options / add-ons pricing
+                if (!empty($customization['options']) && is_array($customization['options']) && isset($productCust['options']) && is_array($productCust['options'])) {
+                    $optionPriceMap = [];
+                    foreach ($productCust['options'] as $optCfg) {
+                        $optName = strtolower(trim((string) (is_array($optCfg) ? ($optCfg['name'] ?? '') : $optCfg)));
+                        if ($optName !== '') {
+                            $optionPriceMap[$optName] = max(0.0, (float) (is_array($optCfg) ? ($optCfg['price'] ?? 0) : 0));
+                        }
+                    }
+                    foreach ($customization['options'] as $chosenOpt) {
+                        $chosenOptName = strtolower(trim((string) (is_array($chosenOpt) ? ($chosenOpt['name'] ?? '') : $chosenOpt)));
+                        if ($chosenOptName !== '' && isset($optionPriceMap[$chosenOptName])) {
+                            $customizationExtra += $optionPriceMap[$chosenOptName];
+                        }
+                    }
+                }
+
+                // 5. Legacy drink toppings
                 if (!empty($customization['toppings']) && is_array($customization['toppings'])) {
                     $customizationExtra += count($customization['toppings']) * 15;
                 }

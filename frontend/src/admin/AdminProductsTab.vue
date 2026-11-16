@@ -520,6 +520,7 @@
                     <option value="RiceMeals">RiceMeals</option>
                     <option value="Sides">Sides</option>
                     <option value="Coffee">Coffee</option>
+                    <option value="Bundles">Bundles</option>
                   </select>
                 </div>
                 <div>
@@ -864,8 +865,8 @@ export default {
   name: 'AdminProductsTab',
   setup() {
     const store = useGShotStore();
-    const categories = ['All', 'Drinks', 'Burgers', 'Pizzas', 'RiceMeals', 'Sides', 'Coffee'];
-    const productCategories = ['Burgers', 'Drinks', 'Pizzas', 'RiceMeals', 'Sides', 'Coffee'];
+    const categories = ['All', 'Drinks', 'Coffee', 'Pizzas', 'Burgers', 'RiceMeals', 'Sides', 'Bundles'];
+    const productCategories = ['Drinks', 'Coffee', 'Pizzas', 'Burgers', 'RiceMeals', 'Sides', 'Bundles'];
     const selectedCategory = ref('All');
     const searchQuery = ref('');
     const sortOrder = ref('default');
@@ -882,6 +883,7 @@ export default {
       description: '',
       flavours: [],
       custom_options: [],
+      extra_customizations: {},
       emoji: '🧋',
       image: '',
     });
@@ -1246,6 +1248,7 @@ export default {
       form.description = '';
       form.flavours = [];
       form.custom_options = [];
+      form.extra_customizations = {};
       form.emoji = '🧋';
       form.image = '';
       imageError.value = '';
@@ -1277,6 +1280,10 @@ export default {
       form.description = product.description || '';
       form.flavours = Array.isArray(product.customizations?.flavours) ? product.customizations.flavours.map(f => ({ name: f.name || f, price: Number(f.price || 0) })) : [];
       form.custom_options = Array.isArray(product.customizations?.options) ? product.customizations.options.map(o => ({ name: o.name || o, price: Number(o.price || 0) })) : [];
+      const extraCust = { ...(product.customizations || {}) };
+      delete extraCust.flavours;
+      delete extraCust.options;
+      form.extra_customizations = extraCust;
       form.emoji = product.emoji || '🍽️';
       form.image = product.image || '';
       imageError.value = '';
@@ -1316,6 +1323,7 @@ export default {
           discount_value: discountPct > 0 ? discountPct : 0,
           description: form.description,
           customizations: {
+            ...(form.extra_customizations || {}),
             flavours: form.flavours.filter(f => f.name && f.name.trim()).map(f => ({ name: f.name.trim(), price: Math.max(0, Number(f.price) || 0) })),
             options: form.custom_options.filter(o => o.name && o.name.trim()).map(o => ({ name: o.name.trim(), price: Math.max(0, Number(o.price) || 0) })),
           },

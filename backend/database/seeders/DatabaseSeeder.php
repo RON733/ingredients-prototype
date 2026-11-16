@@ -299,6 +299,8 @@ class DatabaseSeeder extends Seeder
             Recipe::create($r);
         }
 
+        $this->call(MenuCatalogSeeder::class);
+
         // 5. Seed Historical / Initial Orders (Matches Figure 14 & 16 in document)
         $order1 = Order::create([
             'order_number' => '#30',

@@ -812,11 +812,12 @@ export default {
     const categoryOptions = [
       { name: 'All', icon: 'pi-th-large' },
       { name: 'Drinks', icon: 'pi-sparkles' },
-      { name: 'Burgers', icon: 'pi-shopping-bag' },
+      { name: 'Coffee', icon: 'pi-sun' },
       { name: 'Pizzas', icon: 'pi-circle' },
+      { name: 'Burgers', icon: 'pi-shopping-bag' },
       { name: 'RiceMeals', icon: 'pi-box' },
       { name: 'Sides', icon: 'pi-star' },
-      { name: 'Coffee', icon: 'pi-sun' },
+      { name: 'Bundles', icon: 'pi-gift' },
     ];
 
     const priceOptions = [
@@ -1026,7 +1027,12 @@ export default {
     const hasCustomizations = (product) => {
       const c = product?.customizations;
       if (!c) return false;
-      return (Array.isArray(c.flavours) && c.flavours.length > 0) || (Array.isArray(c.options) && c.options.length > 0);
+      return (
+        (Array.isArray(c.sizes) && c.sizes.length > 0) ||
+        (Array.isArray(c.flavours) && c.flavours.length > 0) ||
+        (Array.isArray(c.second_flavours) && c.second_flavours.length > 0) ||
+        (Array.isArray(c.options) && c.options.length > 0)
+      );
     };
 
     const isCustomizableProduct = (product) => {

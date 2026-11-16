@@ -66,10 +66,14 @@
               </div>
               
               <!-- Customizations Details Badge -->
-              <p v-if="item.customization" class="text-[11px] text-gray-400 mt-1">
+              <p v-if="item.customization" class="text-[11px] text-gray-400 mt-1 flex flex-wrap gap-x-1.5 gap-y-0.5">
                 <span v-if="item.customization.size" class="text-brand-400 font-semibold">{{ item.customization.size }}</span>
-                <span v-if="item.customization.sugar"> • {{ item.customization.sugar }} Sugar</span>
-                <span v-if="item.customization.ice"> • {{ item.customization.ice }}</span>
+                <span v-if="item.customization.flavour" class="text-amber-300 font-semibold">{{ item.customization.size ? '• ' : '' }}{{ item.customization.flavour }}<span v-if="item.customization.flavour2"> &amp; {{ item.customization.flavour2 }}</span></span>
+                <span v-if="item.customization.sugar">• {{ item.customization.sugar }} Sugar</span>
+                <span v-if="item.customization.ice">• {{ item.customization.ice }}</span>
+                <span v-if="item.customization.options && item.customization.options.length">
+                  • {{ item.customization.options.map(o => o?.name || o).join(', ') }}
+                </span>
                 <span v-if="item.customization.toppings && item.customization.toppings.length">
                   • {{ item.customization.toppings.join(', ') }}
                 </span>

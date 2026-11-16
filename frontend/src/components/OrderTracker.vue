@@ -229,10 +229,13 @@
                   {{ item.product_name }} 
                   <span class="text-gray-400 font-normal">x{{ item.quantity }}</span>
                 </p>
-                <p v-if="item.customization" class="text-[11px] text-gray-400">
-                  <span v-if="item.customization.size">{{ item.customization.size }}</span>
-                  <span v-if="item.customization.sugar"> • {{ item.customization.sugar }}</span>
-                  <span v-if="item.customization.ice"> • {{ item.customization.ice }}</span>
+                <p v-if="item.customization" class="text-[11px] text-gray-400 flex flex-wrap gap-x-1.5">
+                  <span v-if="item.customization.size" class="text-brand-400 font-semibold">{{ item.customization.size }}</span>
+                  <span v-if="item.customization.flavour" class="text-amber-300">{{ item.customization.flavour }}<span v-if="item.customization.flavour2"> &amp; {{ item.customization.flavour2 }}</span></span>
+                  <span v-if="item.customization.sugar">• {{ item.customization.sugar }}</span>
+                  <span v-if="item.customization.ice">• {{ item.customization.ice }}</span>
+                  <span v-if="item.customization.options && item.customization.options.length">• {{ item.customization.options.map(o => o?.name || o).join(', ') }}</span>
+                  <span v-if="item.customization.toppings && item.customization.toppings.length">• {{ item.customization.toppings.join(', ') }}</span>
                 </p>
               </div>
               <span class="font-black text-white">

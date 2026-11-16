@@ -1362,9 +1362,16 @@ const useGShotStore = defineStore('gshot', {
 
       let unitPrice = Number(liveProduct.price ?? product.price ?? 0);
       if (customization) {
-        if (customization.size === 'Large') unitPrice += 20;
+        if (customization.size_price !== undefined && customization.size_price !== null) {
+          unitPrice += Number(customization.size_price) || 0;
+        } else if (customization.size === 'Large') {
+          unitPrice += 20;
+        }
         if (customization.flavour_price) {
           unitPrice += Number(customization.flavour_price) || 0;
+        }
+        if (customization.flavour2_price) {
+          unitPrice += Number(customization.flavour2_price) || 0;
         }
         if (customization.options && customization.options.length) {
           for (const opt of customization.options) {
@@ -1377,7 +1384,7 @@ const useGShotStore = defineStore('gshot', {
       }
 
       const cartItemId = customization
-        ? `${liveProduct.id}-${customization.size}-${customization.flavour || ''}-${customization.sugar}-${customization.ice}-${(customization.toppings || []).join(',')}-${(customization.options || []).map(o => o?.name || o).join(',')}`
+        ? `${liveProduct.id}-${customization.size || ''}-${customization.flavour || ''}-${customization.flavour2 || ''}-${customization.sugar || ''}-${customization.ice || ''}-${(customization.toppings || []).join(',')}-${(customization.options || []).map(o => o?.name || o).join(',')}`
         : liveProduct.id;
 
       const existingIndex = this.cart.findIndex(i => i.cartItemId === cartItemId);

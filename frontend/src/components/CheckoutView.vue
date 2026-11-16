@@ -419,11 +419,16 @@
                 </div>
                 <div v-if="item.customization" class="text-[11px] text-gray-400 pl-4 space-y-0.5">
                   <p v-if="item.customization.size">Size: <span class="text-white">{{ item.customization.size }}</span></p>
+                  <p v-if="item.customization.flavour">Flavour: <span class="text-amber-300">{{ item.customization.flavour }}<span v-if="item.customization.flavour2"> &amp; {{ item.customization.flavour2 }}</span></span></p>
                   <p v-if="item.customization.sugar">Sugar: <span class="text-white">{{ item.customization.sugar }}</span></p>
                   <p v-if="item.customization.ice">Ice: <span class="text-white">{{ item.customization.ice }}</span></p>
+                  <p v-if="item.customization.options && item.customization.options.length">
+                    Add-ons: <span class="text-brand-300">{{ item.customization.options.map(o => o?.name || o).join(', ') }}</span>
+                  </p>
                   <p v-if="item.customization.toppings && item.customization.toppings.length">
                     Toppings: <span class="text-brand-300">{{ item.customization.toppings.join(', ') }}</span>
                   </p>
+                  <p v-if="item.customization.notes">Note: <span class="text-gray-200 italic">{{ item.customization.notes }}</span></p>
                 </div>
               </div>
 

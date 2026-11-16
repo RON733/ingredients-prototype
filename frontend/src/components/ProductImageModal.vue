@@ -494,7 +494,7 @@ export default {
       if (!store.previewProduct) return false;
       const cat = store.previewProduct.category;
       const c = store.previewProduct.customizations;
-      const hasCust = (Array.isArray(c?.flavours) && c.flavours.length > 0) || (Array.isArray(c?.options) && c.options.length > 0);
+      const hasCust = (Array.isArray(c?.sizes) && c.sizes.length > 0) || (Array.isArray(c?.flavours) && c.flavours.length > 0) || (Array.isArray(c?.second_flavours) && c.second_flavours.length > 0) || (Array.isArray(c?.options) && c.options.length > 0);
       return cat === 'Drinks' || cat === 'Coffee' || hasCust;
     });
 

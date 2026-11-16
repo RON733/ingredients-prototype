@@ -138,7 +138,7 @@
                   type="button"
                   class="px-4 py-2 rounded-xl text-xs font-bold bg-yellow-400 hover:bg-yellow-300 text-black font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95">
                   <i class="pi pi-plus text-[10px]"></i>
-                  <span>{{ (item.category === 'Drinks' || item.category === 'Coffee' || item.customizations?.flavours?.length > 0 || item.customizations?.options?.length > 0) ? 'Customize' : 'Add' }}</span>
+                  <span>{{ (item.category === 'Drinks' || item.category === 'Coffee' || item.customizations?.sizes?.length > 0 || item.customizations?.flavours?.length > 0 || item.customizations?.second_flavours?.length > 0 || item.customizations?.options?.length > 0) ? 'Customize' : 'Add' }}</span>
                 </button>
               </div>
 
@@ -529,7 +529,7 @@ export default {
         return;
       }
 
-      if (matched.category === 'Drinks' || matched.category === 'Coffee' || matched.customizations?.flavours?.length > 0 || matched.customizations?.options?.length > 0) {
+      if (matched.category === 'Drinks' || matched.category === 'Coffee' || matched.customizations?.sizes?.length > 0 || matched.customizations?.flavours?.length > 0 || matched.customizations?.second_flavours?.length > 0 || matched.customizations?.options?.length > 0) {
         store.selectedProductForCustomize = matched;
         store.customizeModalOpen = true;
       } else {

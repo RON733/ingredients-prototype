@@ -214,8 +214,8 @@
               <div v-for="item in order.items" :key="item.id" class="flex justify-between py-1.5 border-b border-surface-700/40">
                 <div>
                   <span class="font-bold text-white">{{ item.quantity }}x {{ item.product_name }}</span>
-                  <span v-if="item.customization?.size" class="text-[10px] text-brand-400 ml-1.5">
-                    ({{ item.customization.size }}<span v-if="item.customization.sugar">, {{ item.customization.sugar }} sugar</span>)
+                  <span v-if="item.customization && (item.customization.size || item.customization.flavour || item.customization.sugar || (item.customization.options && item.customization.options.length))" class="text-[10px] text-brand-400 ml-1.5">
+                    ({{ [item.customization.size, item.customization.flavour ? (item.customization.flavour2 ? item.customization.flavour + ' & ' + item.customization.flavour2 : item.customization.flavour) : null, item.customization.sugar ? item.customization.sugar + ' sugar' : null, item.customization.ice, ...(item.customization.options || []).map(o => o?.name || o)].filter(Boolean).join(', ') }})
                   </span>
                 </div>
                 <span class="font-bold text-gray-300">₱{{ Number(item.subtotal).toFixed(2) }}</span>
