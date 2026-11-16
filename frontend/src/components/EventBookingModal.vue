@@ -413,6 +413,7 @@
                 <p class="text-base sm:text-lg font-black text-amber-400 break-words tabular-nums">₱{{ estimatedCost.toLocaleString() }}.00</p>
               </div>
               <div class="sm:text-right">
+                <span class="text-[10px] text-emerald-300/90 block">No payment needed yet — pay DP after discussion</span>
                 <span class="text-[10px] text-gray-400 block">Transportation fee varies by location</span>
                 <span class="text-[10px] sm:text-[11px] font-bold text-white">Direct: Jefferson Alulod (0994 612 1933)</span>
               </div>
@@ -467,7 +468,7 @@
             <div class="space-y-1">
               <p class="font-black text-xs sm:text-sm text-white">Event Booking Request Submitted!</p>
               <p class="text-[11px] text-emerald-200/90 leading-relaxed">
-                Your booking is now listed in your history below. Once an Admin or Staff member reviews and approves it, the status will update to <strong class="text-emerald-300">Approved</strong>.
+                Your request is listed below. Flow: <strong class="text-amber-300">Pending</strong> → <strong class="text-teal-300">Approved (Discuss with Owner)</strong> → <strong class="text-yellow-300">Pay Downpayment</strong> → <strong class="text-emerald-300">Confirmed</strong>.
               </p>
             </div>
           </div>
@@ -1842,7 +1843,7 @@ export default {
 
     const justSubmitted = Vue.ref(false);
     const hasApprovedBooking = Vue.computed(() =>
-      (store.bookingsList || []).some(b => b.status === 'Approved')
+      (store.bookingsList || []).some(b => ['Approved', 'Awaiting Downpayment', 'Downpayment Submitted', 'Confirmed'].includes(b.status))
     );
 
     const switchToHistoryTab = () => {

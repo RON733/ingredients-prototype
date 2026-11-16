@@ -63,12 +63,39 @@
       </div>
 
       <!-- ================= TAB 1: BOOKING REQUESTS ================= -->
-      <div v-if="activeSubTab === 'requests'" class="space-y-6">
-        <div v-if="bookings.length > 0" class="space-y-6">
+      <div v-if="activeSubTab === 'requests'" class="space-y-5">
+        <!-- Status Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[11px]">
+          <button
+            v-for="tab in requestFilterTabs"
+            :key="tab.key"
+            type="button"
+            @click="requestStatusFilter = tab.key"
+            class="px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer border"
+            :class="requestStatusFilter === tab.key
+              ? 'bg-amber-500 text-neutral-950 border-amber-400 shadow-sm'
+              : tab.key === 'Downpayment Submitted' && tab.count > 0
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
+                : 'bg-surface-900 text-gray-300 hover:text-white border-surface-800'">
+            <span>{{ tab.label }}</span>
+            <span
+              class="text-[10px] px-1.5 py-0.2 rounded-full font-black"
+              :class="requestStatusFilter === tab.key ? 'bg-black/20 text-black' : 'bg-surface-800 text-gray-300'">
+              {{ tab.count }}
+            </span>
+          </button>
+        </div>
+
+        <div v-if="filteredBookings.length > 0" class="space-y-5">
           <div 
-            v-for="b in bookings" 
+            v-for="b in filteredBookings" 
             :key="b.id"
-            class="p-3.5 sm:p-5 rounded-2xl bg-surface-800/90 border border-surface-700  space-y-4">
+            class="p-3.5 sm:p-5 rounded-2xl bg-surface-800/90 border space-y-4 transition-all"
+            :class="b.status === 'Downpayment Submitted'
+              ? 'border-amber-500/60 ring-1 ring-amber-500/25'
+              : b.status === 'Confirmed'
+                ? 'border-emerald-500/40'
+                : 'border-surface-700'">
             
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-700/60 pb-3">
               <div>
@@ -76,14 +103,25 @@
                   <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-surface-900 text-gray-400 border border-surface-700">#{{ b.id }}</span>
                   <span class="text-base font-bold text-white">{{ b.event_type }}</span>
                 </div>
-                <p class="text-xs text-gray-400 mt-0.5">Client: <span class="text-brand-400 font-semibold">{{ b.client_name }}</span> ({{ b.client_phone }})</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  Client: <span class="text-brand-400 font-semibold">{{ b.client_name }}</span> ({{ b.client_phone }})
+                  <span v-if="b.client_email" class="text-gray-500"> • {{ b.client_email }}</span>
+                </p>
               </div>
 
-              <span 
-                class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider self-start sm:self-auto"
-                :class="getStatusBadge(b.status)">
-                {{ b.status }}
-              </span>
+              <div class="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+                <span
+                  v-if="b.payment_status && b.payment_status !== 'Unpaid'"
+                  class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+                  :class="getPaymentBadgeClass(b.payment_status)">
+                  {{ b.payment_status }}
+                </span>
+                <span 
+                  class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border"
+                  :class="getStatusBadge(b.status)">
+                  {{ b.status }}
+                </span>
+              </div>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs bg-surface-900/60 p-4 rounded-2xl border border-surface-700/50">
@@ -101,9 +139,87 @@
                 <p class="font-bold text-white mt-0.5 truncate" :title="b.location">{{ b.location }}</p>
               </div>
               <div>
-                <p class="text-gray-500 font-bold uppercase text-[10px]">Est. Package Cost</p>
-                <p class="font-bold text-amber-400 mt-0.5">₱{{ Number(b.estimated_cost).toLocaleString() }}.00</p>
+                <p class="text-gray-500 font-bold uppercase text-[10px]">{{ b.final_cost && Number(b.final_cost) !== Number(b.estimated_cost) ? 'Final Agreed Cost' : 'Est. Package Cost' }}</p>
+                <p class="font-bold text-amber-400 mt-0.5">₱{{ formatPeso(effectiveCost(b)) }}</p>
+                <p v-if="b.final_cost && Number(b.final_cost) !== Number(b.estimated_cost)" class="text-[10px] text-gray-500 line-through">
+                  Est: ₱{{ formatPeso(b.estimated_cost) }}
+                </p>
               </div>
+            </div>
+
+            <!-- Financial / Downpayment Summary Strip -->
+            <div
+              v-if="Number(b.downpayment_amount) > 0 || ['Approved', 'Awaiting Downpayment', 'Downpayment Submitted', 'Confirmed', 'Completed'].includes(b.status)"
+              class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3.5 rounded-2xl bg-surface-950/70 border border-surface-700/60">
+              <div>
+                <p class="text-[10px] font-bold uppercase text-gray-500">Required Downpayment</p>
+                <p class="font-black text-white mt-0.5">
+                  {{ Number(b.downpayment_amount) > 0 ? `₱${formatPeso(b.downpayment_amount)}` : 'Pending Discussion' }}
+                  <span v-if="b.downpayment_percentage" class="text-[10px] font-semibold text-amber-400">({{ b.downpayment_percentage }}%)</span>
+                </p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase text-gray-500">Amount Paid</p>
+                <p class="font-black mt-0.5" :class="Number(b.amount_paid) > 0 ? 'text-emerald-400' : 'text-gray-400'">
+                  ₱{{ formatPeso(b.amount_paid || 0) }}
+                </p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase text-gray-500">Remaining Balance</p>
+                <p class="font-black mt-0.5" :class="Number(remainingBalance(b)) > 0 ? 'text-amber-300' : 'text-emerald-400'">
+                  ₱{{ formatPeso(remainingBalance(b)) }}
+                </p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase text-gray-500">Payment Deadline</p>
+                <p v-if="b.downpayment_deadline" class="font-bold mt-0.5" :class="b.is_payment_overdue ? 'text-rose-400' : 'text-gray-200'">
+                  {{ formatDateTime(b.downpayment_deadline) }}
+                  <span v-if="b.is_payment_overdue" class="ml-1 px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[9px] uppercase">Overdue</span>
+                </p>
+                <p v-else class="text-gray-500 mt-0.5">—</p>
+              </div>
+            </div>
+
+            <div v-if="b.payment_notes" class="text-xs text-sky-200 bg-sky-500/10 border border-sky-500/25 rounded-xl px-3 py-2 flex items-start gap-2">
+              <i class="pi pi-info-circle text-sky-400 mt-0.5 shrink-0"></i>
+              <span><strong>Agreed Notes:</strong> {{ b.payment_notes }}</span>
+            </div>
+
+            <!-- Submitted Downpayment Verification Card -->
+            <div
+              v-if="b.status === 'Downpayment Submitted' || (b.payment_proof && ['Confirmed', 'Completed'].includes(b.status))"
+              class="p-3.5 rounded-2xl border space-y-3"
+              :class="b.status === 'Downpayment Submitted' ? 'bg-amber-500/10 border-amber-500/40' : 'bg-emerald-500/10 border-emerald-500/30'">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="text-xs space-y-0.5">
+                  <p class="font-black text-white flex items-center gap-1.5">
+                    <i class="pi" :class="b.status === 'Downpayment Submitted' ? 'pi-receipt text-amber-400' : 'pi-verified text-emerald-400'"></i>
+                    <span>{{ b.status === 'Downpayment Submitted' ? 'Downpayment Proof Submitted — Needs Verification' : 'Verified Downpayment Receipt' }}</span>
+                  </p>
+                  <p class="text-[11px] text-gray-300">
+                    Method: <strong class="text-white">{{ b.payment_method }}</strong>
+                    • Ref #: <strong class="font-mono text-amber-300">{{ b.payment_reference }}</strong>
+                    <span v-if="b.downpayment_submitted_at" class="text-gray-400"> • Submitted {{ formatDateTime(b.downpayment_submitted_at) }}</span>
+                  </p>
+                  <p v-if="b.downpayment_verified_at" class="text-[11px] text-emerald-300">
+                    Verified by {{ b.downpayment_verified_by || 'Staff' }} on {{ formatDateTime(b.downpayment_verified_at) }}
+                    <span v-if="b.final_payment_method"> • Final Balance via {{ b.final_payment_method }} {{ b.final_payment_reference ? `(Ref: ${b.final_payment_reference})` : '' }}</span>
+                  </p>
+                </div>
+
+                <button
+                  v-if="b.payment_proof"
+                  type="button"
+                  @click="openProofViewer(b)"
+                  class="px-3 py-2 rounded-xl bg-surface-900 hover:bg-surface-800 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-2 cursor-pointer shrink-0 self-start sm:self-auto">
+                  <img :src="b.payment_proof" alt="Receipt" class="w-7 h-7 rounded object-cover border border-surface-700" />
+                  <span>View Receipt</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="b.downpayment_rejection_reason && b.status !== 'Downpayment Submitted'" class="text-xs text-rose-200 bg-rose-500/10 border border-rose-500/30 rounded-xl px-3 py-2">
+              <strong>Last Note / Rejection Reason:</strong> {{ b.downpayment_rejection_reason }}
             </div>
 
             <div v-if="b.notes" class="text-xs text-gray-400 italic">
@@ -113,35 +229,96 @@
             <!-- Actions -->
             <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-t border-surface-700/50">
               <button
+                v-if="!['Completed', 'Cancelled'].includes(b.status)"
                 type="button"
                 @click="openEditBookingModal(b)"
                 class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-700 hover:bg-surface-600 text-gray-100 border border-surface-600 transition-colors cursor-pointer flex items-center justify-center gap-1.5">
                 <i class="pi pi-pencil text-[11px] text-amber-400"></i>
                 <span>Edit Details / Package / Price</span>
               </button>
+              <span v-else class="text-[11px] text-gray-500 italic">Closed booking</span>
 
-              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <button 
-                  v-if="b.status === 'Pending'"
-                  type="button"
-                  @click="updateStatus(b, 'Approved')"
-                  class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer text-center">
-                  Approve Booking
-                </button>
-                <button 
-                  v-if="b.status === 'Approved'"
-                  type="button"
-                  @click="updateStatus(b, 'Completed')"
-                  class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer text-center">
-                  Mark Completed
-                </button>
-                <button 
-                  v-if="b.status === 'Pending'"
-                  type="button"
-                  @click="updateStatus(b, 'Declined')"
-                  class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors cursor-pointer text-center">
-                  Decline
-                </button>
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap justify-end">
+                <template v-if="b.status === 'Pending'">
+                  <button 
+                    type="button"
+                    @click="updateStatus(b, 'Approved')"
+                    class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer text-center">
+                    Approve Booking (Start Discussion)
+                  </button>
+                  <button 
+                    type="button"
+                    @click="updateStatus(b, 'Declined')"
+                    class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors cursor-pointer text-center">
+                    Decline
+                  </button>
+                </template>
+
+                <template v-else-if="b.status === 'Approved'">
+                  <span class="text-[11px] text-emerald-300/90 px-2 py-1">Done talking with client?</span>
+                  <button 
+                    type="button"
+                    @click="openRequestDpModal(b)"
+                    class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5">
+                    <i class="pi pi-wallet text-xs"></i>
+                    <span>Request Downpayment</span>
+                  </button>
+                  <button 
+                    type="button"
+                    @click="cancelByAdmin(b)"
+                    class="w-full sm:w-auto px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors cursor-pointer text-center">
+                    Cancel
+                  </button>
+                </template>
+
+                <template v-else-if="b.status === 'Awaiting Downpayment'">
+                  <button 
+                    type="button"
+                    @click="openRequestDpModal(b)"
+                    class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-700 hover:bg-surface-600 text-amber-300 border border-amber-500/30 transition-colors cursor-pointer text-center">
+                    Edit DP Terms
+                  </button>
+                  <button 
+                    type="button"
+                    @click="cancelByAdmin(b, b.is_payment_overdue ? 'Payment deadline lapsed' : '')"
+                    class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer text-center border"
+                    :class="b.is_payment_overdue ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-500' : 'text-rose-400 hover:bg-rose-500/20 border-rose-500/30'">
+                    {{ b.is_payment_overdue ? 'Overdue — Release Slot' : 'Cancel Booking' }}
+                  </button>
+                </template>
+
+                <template v-else-if="b.status === 'Downpayment Submitted'">
+                  <button 
+                    type="button"
+                    @click="verifyDownpayment(b)"
+                    :disabled="actionLoadingId === b.id"
+                    class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer text-center disabled:opacity-50 flex items-center justify-center gap-1.5">
+                    <i class="pi pi-check-circle text-xs"></i>
+                    <span>Verify & Confirm Booking</span>
+                  </button>
+                  <button 
+                    type="button"
+                    @click="openRejectDpModal(b)"
+                    class="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold text-rose-300 bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 transition-colors cursor-pointer text-center">
+                    Reject Proof
+                  </button>
+                </template>
+
+                <template v-else-if="b.status === 'Confirmed'">
+                  <button 
+                    type="button"
+                    @click="openCompleteModal(b)"
+                    class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5">
+                    <i class="pi pi-verified text-xs"></i>
+                    <span>Complete & Settle Balance</span>
+                  </button>
+                  <button 
+                    type="button"
+                    @click="cancelByAdmin(b)"
+                    class="w-full sm:w-auto px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors cursor-pointer text-center">
+                    Cancel
+                  </button>
+                </template>
               </div>
             </div>
 
@@ -150,7 +327,7 @@
 
         <div v-else class="text-center py-20 bg-surface-800/40 rounded-2xl border border-surface-700/50">
           <div class="w-12 h-12 rounded-2xl bg-surface-800 text-gray-400 flex items-center justify-center text-2xl mx-auto mb-3"><i class="pi pi-calendar"></i></div>
-          <p class="text-base font-bold text-white">No event booking requests</p>
+          <p class="text-base font-bold text-white">{{ requestStatusFilter === 'all' ? 'No event booking requests' : 'No matching bookings in this tab' }}</p>
           <p class="text-xs text-gray-500 mt-1">Catering and mobile bar reservations will appear here.</p>
         </div>
       </div>
@@ -620,14 +797,11 @@
                 </select>
               </div>
               <div>
-                <label class="block font-bold text-gray-300 mb-1">Status</label>
-                <select v-model="bookingForm.status" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white cursor-pointer">
-                  <option value="Pending">Pending</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Declined">Declined</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
+                <label class="block font-bold text-gray-300 mb-1">Current Status</label>
+                <div class="w-full p-2.5 rounded-xl bg-surface-950 border border-surface-700 text-amber-300 font-bold flex items-center justify-between">
+                  <span>{{ bookingForm.status }}</span>
+                  <span class="text-[10px] text-gray-400 font-normal">Via workflow actions</span>
+                </div>
               </div>
             </div>
 
@@ -688,6 +862,185 @@
         </div>
       </div>
 
+      <!-- ================= REQUEST DOWNPAYMENT MODAL (OPTION A) ================= -->
+      <div
+        v-if="requestDpModalOpen"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        @click.self="requestDpModalOpen = false">
+        <div class="w-full max-w-lg bg-surface-900 border border-surface-700 rounded-2xl p-4 sm:p-5 space-y-4 max-h-[92vh] overflow-y-auto">
+          <div class="flex items-start justify-between border-b border-surface-800 pb-3">
+            <div>
+              <h3 class="text-lg font-black text-white">Request Downpayment — #{{ dpTargetBooking?.id }}</h3>
+              <p class="text-[11px] text-gray-400">Finalize agreed price after talking with {{ dpTargetBooking?.client_name }}, then unlock payment.</p>
+            </div>
+            <button type="button" @click="requestDpModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer"><i class="pi pi-times text-sm"></i></button>
+          </div>
+
+          <form @submit.prevent="submitRequestDownpayment" class="space-y-3.5 text-xs">
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Final Agreed Price (₱)</label>
+              <input v-model.number="dpForm.final_cost" @input="syncDpAmountFromPercent" type="number" min="100" step="0.01" required class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-amber-400 font-black text-sm" />
+              <p class="text-[10px] text-gray-400 mt-1">Original estimate: ₱{{ formatPeso(dpTargetBooking?.estimated_cost || 0) }} — adjust if transport fee or add-ons were agreed.</p>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-bold text-gray-300">Downpayment Percentage</label>
+                <div class="flex items-center gap-1">
+                  <button v-for="pct in [30, 50, 100]" :key="pct" type="button" @click="setDpPreset(pct)"
+                    class="px-2 py-0.5 rounded-lg text-[10px] font-bold cursor-pointer border"
+                    :class="Number(dpForm.downpayment_percentage) === pct ? 'bg-amber-500 text-black border-amber-400' : 'bg-surface-800 text-gray-300 border-surface-700'">
+                    {{ pct }}%
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Percentage (%)</label>
+                  <input v-model.number="dpForm.downpayment_percentage" @input="syncDpAmountFromPercent" type="number" min="1" max="100" step="0.5" required class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white font-bold" />
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-400 mb-1">Required Downpayment (₱)</label>
+                  <input v-model.number="dpForm.downpayment_amount" @input="syncDpPercentFromAmount" type="number" min="1" :max="dpForm.final_cost" step="0.01" required class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-emerald-400 font-black" />
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center justify-between">
+              <span class="text-gray-400">Remaining Balance on Event Day:</span>
+              <span class="font-black text-white">₱{{ formatPeso(Math.max(0, Number(dpForm.final_cost || 0) - Number(dpForm.downpayment_amount || 0))) }}</span>
+            </div>
+
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Payment Deadline</label>
+              <select v-model.number="dpForm.deadline_hours" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white cursor-pointer">
+                <option :value="12">12 Hours</option>
+                <option :value="24">24 Hours (1 Day)</option>
+                <option :value="48">48 Hours (2 Days)</option>
+                <option :value="72">72 Hours (3 Days)</option>
+                <option :value="168">7 Days</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Agreed Terms / Breakdown Notes (Optional)</label>
+              <textarea v-model="dpForm.payment_notes" rows="2" maxlength="500" placeholder="e.g. Includes ₱500 transport fee to Nuvali, 2 coffee flavors + pearl add-on" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-800">
+              <button type="button" @click="requestDpModalOpen = false" class="px-4 py-2 rounded-xl bg-surface-800 text-gray-300 font-bold cursor-pointer">Cancel</button>
+              <button type="submit" :disabled="submittingDpRequest" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black cursor-pointer disabled:opacity-50 flex items-center gap-1.5">
+                <i class="pi" :class="submittingDpRequest ? 'pi-spin pi-spinner' : 'pi-send'"></i>
+                <span>Open Downpayment for Client</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ================= REJECT DOWNPAYMENT PROOF MODAL ================= -->
+      <div
+        v-if="rejectDpModalOpen"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        @click.self="rejectDpModalOpen = false">
+        <div class="w-full max-w-md bg-surface-900 border border-rose-500/40 rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="flex items-start justify-between border-b border-surface-800 pb-3">
+            <div>
+              <h3 class="text-base font-black text-white">Reject Downpayment Proof — #{{ rejectTargetBooking?.id }}</h3>
+              <p class="text-[11px] text-gray-400">Client will be asked to re-upload a valid receipt.</p>
+            </div>
+            <button type="button" @click="rejectDpModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer"><i class="pi pi-times text-sm"></i></button>
+          </div>
+          <form @submit.prevent="submitRejectDownpayment" class="space-y-3 text-xs">
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                v-for="preset in ['Blurry or unreadable receipt image', 'Reference number does not match our records', 'Amount sent is less than required downpayment', 'Payment not yet reflected in our account']"
+                :key="preset"
+                type="button"
+                @click="rejectReason = preset"
+                class="px-2.5 py-1 rounded-lg bg-surface-800 hover:bg-surface-700 text-gray-300 border border-surface-700 text-[10px] cursor-pointer">
+                {{ preset }}
+              </button>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 mb-1">Reason for Rejection (Required)</label>
+              <textarea v-model="rejectReason" rows="3" minlength="5" maxlength="500" required placeholder="Explain why the receipt was rejected..." class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white"></textarea>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-800">
+              <button type="button" @click="rejectDpModalOpen = false" class="px-4 py-2 rounded-xl bg-surface-800 text-gray-300 font-bold cursor-pointer">Cancel</button>
+              <button type="submit" :disabled="submittingReject || rejectReason.trim().length < 5" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black cursor-pointer disabled:opacity-50">
+                {{ submittingReject ? 'Rejecting...' : 'Reject & Notify Client' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ================= COMPLETE & SETTLE BALANCE MODAL ================= -->
+      <div
+        v-if="completeModalOpen"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        @click.self="completeModalOpen = false">
+        <div class="w-full max-w-md bg-surface-900 border border-sky-500/40 rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="flex items-start justify-between border-b border-surface-800 pb-3">
+            <div>
+              <h3 class="text-base font-black text-white">Complete & Settle Booking #{{ completeTargetBooking?.id }}</h3>
+              <p class="text-[11px] text-gray-400">Record final balance payment and mark event completed.</p>
+            </div>
+            <button type="button" @click="completeModalOpen = false" class="text-gray-400 hover:text-white p-1 cursor-pointer"><i class="pi pi-times text-sm"></i></button>
+          </div>
+          <form @submit.prevent="submitCompleteBooking" class="space-y-3 text-xs">
+            <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-1.5">
+              <div class="flex justify-between"><span class="text-gray-400">Final Agreed Cost:</span><span class="font-bold text-white">₱{{ formatPeso(effectiveCost(completeTargetBooking)) }}</span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Already Paid (DP):</span><span class="font-bold text-emerald-400">₱{{ formatPeso(completeTargetBooking?.amount_paid || 0) }}</span></div>
+              <div class="flex justify-between border-t border-surface-800 pt-1.5"><span class="font-bold text-white">Remaining Balance to Collect:</span><span class="font-black text-amber-400">₱{{ formatPeso(remainingBalance(completeTargetBooking)) }}</span></div>
+            </div>
+
+            <template v-if="remainingBalance(completeTargetBooking) > 0">
+              <div>
+                <label class="block font-bold text-gray-300 mb-1">Final Balance Payment Method</label>
+                <select v-model="completeForm.final_payment_method" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white cursor-pointer">
+                  <option value="Cash">Cash (On-site / Counter)</option>
+                  <option value="GCash">GCash</option>
+                  <option value="Maya">Maya</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                </select>
+              </div>
+              <div v-if="completeForm.final_payment_method !== 'Cash'">
+                <label class="block font-bold text-gray-300 mb-1">Reference Number (Required)</label>
+                <input v-model="completeForm.final_payment_reference" type="text" required minlength="4" maxlength="100" placeholder="Enter transaction reference #" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 text-white font-mono" />
+              </div>
+            </template>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-800">
+              <button type="button" @click="completeModalOpen = false" class="px-4 py-2 rounded-xl bg-surface-800 text-gray-300 font-bold cursor-pointer">Cancel</button>
+              <button type="submit" :disabled="submittingComplete" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black cursor-pointer disabled:opacity-50">
+                {{ submittingComplete ? 'Settling...' : 'Mark Completed & Fully Paid' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ================= RECEIPT PROOF LIGHTBOX MODAL ================= -->
+      <div
+        v-if="proofViewerBooking"
+        class="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        @click.self="proofViewerBooking = null">
+        <div class="w-full max-w-xl bg-surface-900 border border-surface-700 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between border-b border-surface-800 pb-2.5">
+            <div class="text-xs">
+              <p class="font-black text-white">Payment Receipt — Booking #{{ proofViewerBooking.id }}</p>
+              <p class="text-gray-400">{{ proofViewerBooking.payment_method }} • Ref: <span class="font-mono text-amber-300">{{ proofViewerBooking.payment_reference }}</span></p>
+            </div>
+            <button type="button" @click="proofViewerBooking = null" class="text-gray-400 hover:text-white p-1 cursor-pointer"><i class="pi pi-times text-sm"></i></button>
+          </div>
+          <div class="max-h-[70vh] overflow-auto rounded-xl bg-black flex items-center justify-center p-2">
+            <img :src="proofViewerBooking.payment_proof" alt="Payment Proof" class="max-w-full max-h-[65vh] object-contain rounded-lg" />
+          </div>
+        </div>
+      </div>
+
     </div>
 </template>
 <script>
@@ -705,6 +1058,209 @@ export default {
     const loading = ref(false);
     const loadingPackages = ref(false);
     const bookings = ref([]);
+    const requestStatusFilter = ref('all');
+    const actionLoadingId = ref(null);
+
+    const effectiveCost = (b) => {
+      if (!b) return 0;
+      const fc = Number(b.final_cost);
+      return Number.isFinite(fc) && fc > 0 ? fc : Number(b.estimated_cost || 0);
+    };
+    const remainingBalance = (b) => {
+      if (!b) return 0;
+      if (b.remaining_balance !== undefined && b.remaining_balance !== null) {
+        return Math.max(0, Number(b.remaining_balance));
+      }
+      return Math.max(0, effectiveCost(b) - Number(b.amount_paid || 0));
+    };
+    const formatPeso = (val) => Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatDateTime = (iso) => {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return String(iso);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    const requestFilterTabs = computed(() => {
+      const list = bookings.value || [];
+      const count = (s) => list.filter(b => b.status === s).length;
+      const closedCount = list.filter(b => ['Declined', 'Cancelled'].includes(b.status)).length;
+      return [
+        { key: 'all', label: 'All', count: list.length },
+        { key: 'Pending', label: 'Pending', count: count('Pending') },
+        { key: 'Approved', label: 'Approved (Discuss)', count: count('Approved') },
+        { key: 'Awaiting Downpayment', label: 'Awaiting DP', count: count('Awaiting Downpayment') },
+        { key: 'Downpayment Submitted', label: 'For Verification', count: count('Downpayment Submitted') },
+        { key: 'Confirmed', label: 'Confirmed', count: count('Confirmed') },
+        { key: 'Completed', label: 'Completed', count: count('Completed') },
+        { key: 'closed', label: 'Declined / Cancelled', count: closedCount },
+      ];
+    });
+
+    const filteredBookings = computed(() => {
+      const list = bookings.value || [];
+      if (requestStatusFilter.value === 'all') return list;
+      if (requestStatusFilter.value === 'closed') return list.filter(b => ['Declined', 'Cancelled'].includes(b.status));
+      return list.filter(b => b.status === requestStatusFilter.value);
+    });
+
+    const requestDpModalOpen = ref(false);
+    const dpTargetBooking = ref(null);
+    const submittingDpRequest = ref(false);
+    const dpForm = reactive({
+      final_cost: 3500,
+      downpayment_percentage: 50,
+      downpayment_amount: 1750,
+      deadline_hours: 48,
+      payment_notes: '',
+    });
+
+    const syncDpAmountFromPercent = () => {
+      const total = Math.max(0, Number(dpForm.final_cost || 0));
+      const pct = Math.min(100, Math.max(1, Number(dpForm.downpayment_percentage || 50)));
+      dpForm.downpayment_amount = Math.round(total * (pct / 100) * 100) / 100;
+    };
+    const syncDpPercentFromAmount = () => {
+      const total = Math.max(1, Number(dpForm.final_cost || 1));
+      const amt = Math.min(total, Math.max(1, Number(dpForm.downpayment_amount || 0)));
+      dpForm.downpayment_percentage = Math.round((amt / total) * 10000) / 100;
+    };
+    const setDpPreset = (pct) => {
+      dpForm.downpayment_percentage = pct;
+      syncDpAmountFromPercent();
+    };
+    const openRequestDpModal = (b) => {
+      dpTargetBooking.value = b;
+      const defaultPct = Number(store.settings?.booking_downpayment_percent ?? 50);
+      const defaultHrs = Number(store.settings?.booking_payment_deadline_hours ?? 48);
+      dpForm.final_cost = effectiveCost(b);
+      dpForm.downpayment_percentage = Number(b.downpayment_percentage || defaultPct);
+      dpForm.downpayment_amount = Number(b.downpayment_amount) > 0
+        ? Number(b.downpayment_amount)
+        : Math.round(dpForm.final_cost * (dpForm.downpayment_percentage / 100) * 100) / 100;
+      dpForm.deadline_hours = defaultHrs;
+      dpForm.payment_notes = b.payment_notes || '';
+      requestDpModalOpen.value = true;
+    };
+    const submitRequestDownpayment = async () => {
+      if (!dpTargetBooking.value?.id) return;
+      submittingDpRequest.value = true;
+      try {
+        const res = await GST_API.requestBookingDownpayment(dpTargetBooking.value.id, {
+          final_cost: Number(dpForm.final_cost),
+          downpayment_percentage: Number(dpForm.downpayment_percentage),
+          downpayment_amount: Number(dpForm.downpayment_amount),
+          deadline_hours: Number(dpForm.deadline_hours),
+          payment_notes: dpForm.payment_notes.trim() || null,
+        });
+        store.notify(res.data?.message || 'Downpayment requested!', 'success');
+        requestDpModalOpen.value = false;
+        await refresh();
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to request downpayment.', 'error');
+      } finally {
+        submittingDpRequest.value = false;
+      }
+    };
+
+    const proofViewerBooking = ref(null);
+    const openProofViewer = (b) => { proofViewerBooking.value = b; };
+
+    const verifyDownpayment = async (b) => {
+      const ok = await store.confirmDialog({
+        title: 'Verify Downpayment Receipt',
+        message: `Confirm you received ₱${formatPeso(b.downpayment_amount)} via ${b.payment_method} (Ref: ${b.payment_reference}) for booking #${b.id}? This will lock the event slot as Confirmed.`,
+        confirmText: 'Verify & Confirm Slot',
+        cancelText: 'Review Again',
+        variant: 'success',
+        icon: 'pi-check-circle',
+      });
+      if (!ok) return;
+      actionLoadingId.value = b.id;
+      try {
+        const res = await GST_API.verifyBookingDownpayment(b.id);
+        store.notify(res.data?.message || 'Downpayment verified!', 'success');
+        await refresh();
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Verification failed.', 'error');
+      } finally {
+        actionLoadingId.value = null;
+      }
+    };
+
+    const rejectDpModalOpen = ref(false);
+    const rejectTargetBooking = ref(null);
+    const rejectReason = ref('');
+    const submittingReject = ref(false);
+    const openRejectDpModal = (b) => {
+      rejectTargetBooking.value = b;
+      rejectReason.value = '';
+      rejectDpModalOpen.value = true;
+    };
+    const submitRejectDownpayment = async () => {
+      if (!rejectTargetBooking.value?.id) return;
+      submittingReject.value = true;
+      try {
+        const res = await GST_API.rejectBookingDownpayment(rejectTargetBooking.value.id, rejectReason.value.trim());
+        store.notify(res.data?.message || 'Downpayment proof rejected.', 'info');
+        rejectDpModalOpen.value = false;
+        await refresh();
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Could not reject proof.', 'error');
+      } finally {
+        submittingReject.value = false;
+      }
+    };
+
+    const completeModalOpen = ref(false);
+    const completeTargetBooking = ref(null);
+    const submittingComplete = ref(false);
+    const completeForm = reactive({
+      final_payment_method: 'Cash',
+      final_payment_reference: '',
+    });
+    const openCompleteModal = (b) => {
+      completeTargetBooking.value = b;
+      completeForm.final_payment_method = 'Cash';
+      completeForm.final_payment_reference = '';
+      completeModalOpen.value = true;
+    };
+    const submitCompleteBooking = async () => {
+      if (!completeTargetBooking.value?.id) return;
+      submittingComplete.value = true;
+      try {
+        const res = await GST_API.completeBooking(completeTargetBooking.value.id, {
+          final_payment_method: completeForm.final_payment_method,
+          final_payment_reference: completeForm.final_payment_reference.trim() || null,
+        });
+        store.notify(res.data?.message || 'Booking completed!', 'success');
+        completeModalOpen.value = false;
+        await refresh();
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to complete booking.', 'error');
+      } finally {
+        submittingComplete.value = false;
+      }
+    };
+
+    const cancelByAdmin = async (b, defaultReason = '') => {
+      const ok = await store.confirmDialog({
+        title: 'Cancel Booking & Release Slot',
+        message: `Cancel booking #${b.id} for ${b.client_name} (${formatDate(b.event_date)})? This will reopen the date/time slot for other customers.`,
+        confirmText: 'Yes, Cancel & Release',
+        cancelText: 'Keep Booking',
+        variant: 'danger',
+        icon: 'pi-ban',
+      });
+      if (!ok) return;
+      try {
+        await GST_API.updateBookingStatus(b.id, 'Cancelled');
+        store.notify(`Booking #${b.id} cancelled and slot released.`, 'info');
+        await refresh();
+      } catch (err) {
+        store.notify(err.response?.data?.message || 'Failed to cancel booking.', 'error');
+      }
+    };
 
     // Package Editor Modal State
     const packageModalOpen = ref(false);
@@ -794,11 +1350,22 @@ export default {
     };
 
     const getStatusBadge = (s) => {
-      if (s === 'Approved') return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      if (s === 'Completed') return 'bg-sky-500/20 text-sky-400 border border-sky-500/30';
-      if (s === 'Declined') return 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
-      if (s === 'Cancelled') return 'bg-surface-700/80 text-gray-300 border border-surface-600';
-      return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
+      if (s === 'Confirmed') return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+      if (s === 'Approved') return 'bg-teal-500/20 text-teal-300 border-teal-500/40';
+      if (s === 'Awaiting Downpayment') return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+      if (s === 'Downpayment Submitted') return 'bg-purple-500/20 text-purple-300 border-purple-500/40';
+      if (s === 'Completed') return 'bg-sky-500/20 text-sky-300 border-sky-500/40';
+      if (s === 'Declined') return 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+      if (s === 'Cancelled') return 'bg-surface-700/80 text-gray-300 border-surface-600';
+      return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+    };
+
+    const getPaymentBadgeClass = (ps) => {
+      if (ps === 'Fully Paid' || ps === 'Downpayment Paid') return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+      if (ps === 'For Verification') return 'bg-purple-500/15 text-purple-300 border-purple-500/30';
+      if (ps === 'Rejected') return 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+      if (ps === 'Requested') return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+      return 'bg-surface-800 text-gray-400 border-surface-700';
     };
 
     const getBadgeColorClass = (color) => {
@@ -1041,7 +1608,7 @@ export default {
       bookingForm.event_type = b.event_type || '';
       bookingForm.package_name = b.package_name || '';
       bookingForm.guest_count = Number(b.guest_count || 50);
-      bookingForm.estimated_cost = Number(b.estimated_cost || 0);
+      bookingForm.estimated_cost = effectiveCost(b);
       bookingForm.event_date = b.event_date ? String(b.event_date).slice(0, 10) : '';
       bookingForm.event_time = b.event_time || '';
       bookingForm.location = b.location || '';
@@ -1090,10 +1657,10 @@ export default {
           package_name: bookingForm.package_name || bookingForm.event_type.trim(),
           guest_count: Number(bookingForm.guest_count),
           estimated_cost: Number(bookingForm.estimated_cost),
+          final_cost: Number(bookingForm.estimated_cost),
           event_date: bookingForm.event_date,
           event_time: bookingForm.event_time.trim(),
           location: bookingForm.location.trim(),
-          status: bookingForm.status,
           notes: bookingForm.notes.trim() || null,
         });
         bookingEditModalOpen.value = false;
@@ -1111,6 +1678,40 @@ export default {
       loading,
       loadingPackages,
       bookings,
+      requestStatusFilter,
+      requestFilterTabs,
+      filteredBookings,
+      actionLoadingId,
+      effectiveCost,
+      remainingBalance,
+      formatPeso,
+      formatDateTime,
+      getPaymentBadgeClass,
+      requestDpModalOpen,
+      dpTargetBooking,
+      submittingDpRequest,
+      dpForm,
+      syncDpAmountFromPercent,
+      syncDpPercentFromAmount,
+      setDpPreset,
+      openRequestDpModal,
+      submitRequestDownpayment,
+      proofViewerBooking,
+      openProofViewer,
+      verifyDownpayment,
+      rejectDpModalOpen,
+      rejectTargetBooking,
+      rejectReason,
+      submittingReject,
+      openRejectDpModal,
+      submitRejectDownpayment,
+      completeModalOpen,
+      completeTargetBooking,
+      submittingComplete,
+      completeForm,
+      openCompleteModal,
+      submitCompleteBooking,
+      cancelByAdmin,
       refresh,
       refreshAll,
       formatDate,

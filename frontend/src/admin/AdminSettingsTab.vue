@@ -83,6 +83,96 @@
     </div>
   </div>
 
+  <!-- Event Booking Downpayment & Payment Accounts -->
+  <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
+    <div class="flex items-center gap-3 pb-3 border-b border-surface-800">
+      <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0">
+        <i class="pi pi-wallet text-emerald-400 text-sm"></i>
+      </div>
+      <div>
+        <h3 class="text-sm sm:text-base font-bold text-white">Event Booking Downpayment & Accounts</h3>
+        <p class="text-xs text-gray-400">Default DP %, payment deadline, and receiving GCash / Maya / Bank details shown to clients</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">Default Downpayment (%)</label>
+        <input v-model.number="bookingPayForm.booking_downpayment_percent" type="number" min="5" max="100" step="5" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-amber-300 font-bold focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">Default Deadline (Hours)</label>
+        <input v-model.number="bookingPayForm.booking_payment_deadline_hours" type="number" min="1" max="720" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-white font-mono focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">GCash Number</label>
+        <input v-model="bookingPayForm.booking_gcash_number" type="text" placeholder="0994 612 1933" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 font-mono focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">GCash Account Name</label>
+        <input v-model="bookingPayForm.booking_gcash_name" type="text" placeholder="Jefferson Alulod / G Shot Teas" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">Maya Number (Optional)</label>
+        <input v-model="bookingPayForm.booking_maya_number" type="text" placeholder="09XX XXX XXXX" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 font-mono focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">Maya Account Name (Optional)</label>
+        <input v-model="bookingPayForm.booking_maya_name" type="text" placeholder="Account Name" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">Bank Name (Optional)</label>
+        <input v-model="bookingPayForm.booking_bank_name" type="text" placeholder="e.g. BDO / BPI / UnionBank" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">Bank Account Number</label>
+        <input v-model="bookingPayForm.booking_bank_account" type="text" placeholder="Account Number" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 font-mono focus:outline-none focus:border-amber-400/70" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-300 mb-1">Bank Account Holder</label>
+        <input v-model="bookingPayForm.booking_bank_account_name" type="text" placeholder="Account Holder Name" class="w-full px-3 py-2.5 rounded-xl bg-surface-950 border border-surface-800 text-xs sm:text-sm text-gray-200 focus:outline-none focus:border-amber-400/70" />
+      </div>
+    </div>
+
+    <!-- Optional Payment QR Upload -->
+    <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-14 h-14 rounded-xl bg-surface-900 border border-surface-700 overflow-hidden flex items-center justify-center shrink-0">
+          <img v-if="bookingPayForm.booking_payment_qr" :src="bookingPayForm.booking_payment_qr" alt="Booking QR" class="w-full h-full object-contain" />
+          <i v-else class="pi pi-qrcode text-gray-500 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-white">Booking Payment QR Code (Optional)</p>
+          <p class="text-[11px] text-gray-400">Upload your GCash / InstaPay QR image so clients can scan directly.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <label class="px-3 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-amber-300 border border-surface-700 text-xs font-bold cursor-pointer flex items-center gap-1.5">
+          <i class="pi pi-upload text-[11px]"></i>
+          <span>{{ bookingPayForm.booking_payment_qr ? 'Change QR' : 'Upload QR' }}</span>
+          <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="handleBookingQrUpload" />
+        </label>
+        <button
+          v-if="bookingPayForm.booking_payment_qr"
+          type="button"
+          @click="bookingPayForm.booking_payment_qr = ''"
+          class="px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold cursor-pointer">
+          Remove
+        </button>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      @click="saveBookingPaymentSettings"
+      :disabled="isSavingBookingPay"
+      class="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-emerald-500 hover:bg-emerald-400 text-neutral-950 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+      <i v-if="isSavingBookingPay" class="pi pi-spin pi-spinner"></i>
+      <i v-else class="pi pi-save"></i>
+      <span>Save Booking Payment Settings</span>
+    </button>
+  </div>
+
   <!-- Customer Order Availability & Area Notice -->
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
@@ -401,6 +491,78 @@ export default {
       }
     };
 
+    // Event Booking Downpayment & Accounts Form State
+    const isSavingBookingPay = Vue.ref(false);
+    const bookingPayForm = Vue.reactive({
+      booking_downpayment_percent: Number(store.settings?.booking_downpayment_percent ?? 50),
+      booking_payment_deadline_hours: Number(store.settings?.booking_payment_deadline_hours ?? 48),
+      booking_gcash_number: store.settings?.booking_gcash_number ?? '0994 612 1933',
+      booking_gcash_name: store.settings?.booking_gcash_name ?? 'Jefferson Alulod / G Shot Teas',
+      booking_maya_number: store.settings?.booking_maya_number ?? '',
+      booking_maya_name: store.settings?.booking_maya_name ?? '',
+      booking_bank_name: store.settings?.booking_bank_name ?? '',
+      booking_bank_account: store.settings?.booking_bank_account ?? '',
+      booking_bank_account_name: store.settings?.booking_bank_account_name ?? '',
+      booking_payment_qr: store.settings?.booking_payment_qr ?? '',
+    });
+
+    const handleBookingQrUpload = (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        store.notify('Please select a valid PNG, JPG, or WebP QR image.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 600;
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width >= height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const webp = canvas.toDataURL('image/webp', 0.85);
+          bookingPayForm.booking_payment_qr = webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', 0.85);
+        };
+        img.src = ev.target?.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const saveBookingPaymentSettings = async () => {
+      isSavingBookingPay.value = true;
+      try {
+        const pct = Math.min(100, Math.max(5, Number(bookingPayForm.booking_downpayment_percent || 50)));
+        const hrs = Math.min(720, Math.max(1, Number(bookingPayForm.booking_payment_deadline_hours || 48)));
+        await store.updateStoreSettings({
+          booking_downpayment_percent: String(pct),
+          booking_payment_deadline_hours: String(hrs),
+          booking_gcash_number: (bookingPayForm.booking_gcash_number || '').trim(),
+          booking_gcash_name: (bookingPayForm.booking_gcash_name || '').trim(),
+          booking_maya_number: (bookingPayForm.booking_maya_number || '').trim(),
+          booking_maya_name: (bookingPayForm.booking_maya_name || '').trim(),
+          booking_bank_name: (bookingPayForm.booking_bank_name || '').trim(),
+          booking_bank_account: (bookingPayForm.booking_bank_account || '').trim(),
+          booking_bank_account_name: (bookingPayForm.booking_bank_account_name || '').trim(),
+          booking_payment_qr: (bookingPayForm.booking_payment_qr || '').trim(),
+        });
+      } finally {
+        isSavingBookingPay.value = false;
+      }
+    };
+
     // General store settings form state
     const storeForm = Vue.reactive({
       store_name: store.settings?.store_name || 'G Shot Teas',
@@ -427,6 +589,17 @@ export default {
         if (newSettings.order_area_note_enabled !== undefined) {
           areaNoteForm.order_area_note_enabled = newSettings.order_area_note_enabled === 'true' || newSettings.order_area_note_enabled === true;
         }
+
+        if (newSettings.booking_downpayment_percent !== undefined) bookingPayForm.booking_downpayment_percent = Number(newSettings.booking_downpayment_percent || 50);
+        if (newSettings.booking_payment_deadline_hours !== undefined) bookingPayForm.booking_payment_deadline_hours = Number(newSettings.booking_payment_deadline_hours || 48);
+        if (newSettings.booking_gcash_number !== undefined) bookingPayForm.booking_gcash_number = newSettings.booking_gcash_number;
+        if (newSettings.booking_gcash_name !== undefined) bookingPayForm.booking_gcash_name = newSettings.booking_gcash_name;
+        if (newSettings.booking_maya_number !== undefined) bookingPayForm.booking_maya_number = newSettings.booking_maya_number;
+        if (newSettings.booking_maya_name !== undefined) bookingPayForm.booking_maya_name = newSettings.booking_maya_name;
+        if (newSettings.booking_bank_name !== undefined) bookingPayForm.booking_bank_name = newSettings.booking_bank_name;
+        if (newSettings.booking_bank_account !== undefined) bookingPayForm.booking_bank_account = newSettings.booking_bank_account;
+        if (newSettings.booking_bank_account_name !== undefined) bookingPayForm.booking_bank_account_name = newSettings.booking_bank_account_name;
+        if (newSettings.booking_payment_qr !== undefined) bookingPayForm.booking_payment_qr = newSettings.booking_payment_qr;
 
         maintForm.maintenance_mode = store.isMaintenanceMode;
         maintForm.maintenance_title = store.maintenanceTitle;
@@ -641,6 +814,10 @@ export default {
       isPaymongoAvailable,
       isTogglingPaymongo,
       togglePaymongoAvailability,
+      bookingPayForm,
+      isSavingBookingPay,
+      handleBookingQrUpload,
+      saveBookingPaymentSettings,
       storeForm,
       saveGeneralSettings,
       areaNoteForm,

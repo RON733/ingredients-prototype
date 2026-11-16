@@ -67,6 +67,7 @@ Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
 Route::get('/bookings/availability', [EventBookingController::class, 'availability']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
 Route::post('/bookings/{id}/cancel', [EventBookingController::class, 'cancel']);
+Route::post('/bookings/{id}/submit-downpayment', [EventBookingController::class, 'submitDownpayment']);
 Route::get('/booking-packages', [BookingPackageController::class, 'index']);
 
 // PayMongo Online Payment Gateway
@@ -114,6 +115,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/bookings', [EventBookingController::class, 'index']);
     Route::match(['put', 'patch'], '/bookings/{id}', [EventBookingController::class, 'update']);
     Route::match(['put', 'patch'], '/bookings/{id}/status', [EventBookingController::class, 'updateStatus']);
+    Route::post('/bookings/{id}/request-downpayment', [EventBookingController::class, 'requestDownpayment']);
+    Route::post('/bookings/{id}/verify-downpayment', [EventBookingController::class, 'verifyDownpayment']);
+    Route::post('/bookings/{id}/reject-downpayment', [EventBookingController::class, 'rejectDownpayment']);
+    Route::post('/bookings/{id}/complete', [EventBookingController::class, 'completeBooking']);
     Route::post('/booking-packages', [BookingPackageController::class, 'store']);
     Route::match(['put', 'patch'], '/booking-packages/{id}', [BookingPackageController::class, 'update']);
     Route::match(['put', 'patch'], '/booking-packages/{id}/toggle', [BookingPackageController::class, 'toggleActive']);

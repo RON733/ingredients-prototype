@@ -182,6 +182,11 @@ export const GST_API = {
   createBooking: (data) => apiClient.post('/bookings', data),
   updateBooking: (id, data) => apiClient.patch(`/bookings/${id}`, data),
   updateBookingStatus: (id, status) => apiClient.patch(`/bookings/${id}/status`, { status }),
+  requestBookingDownpayment: (id, data) => apiClient.post(`/bookings/${id}/request-downpayment`, data),
+  submitBookingDownpayment: (id, data) => apiClient.post(`/bookings/${id}/submit-downpayment`, data),
+  verifyBookingDownpayment: (id) => apiClient.post(`/bookings/${id}/verify-downpayment`),
+  rejectBookingDownpayment: (id, rejection_reason) => apiClient.post(`/bookings/${id}/reject-downpayment`, { rejection_reason }),
+  completeBooking: (id, data = {}) => apiClient.post(`/bookings/${id}/complete`, data),
   cancelBooking: (id, data = {}) => apiClient.post(`/bookings/${id}/cancel`, data),
 
   getBookingPackages: (params) => apiClient.get('/booking-packages', { params }),

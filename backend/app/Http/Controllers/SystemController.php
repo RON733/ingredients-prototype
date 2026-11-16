@@ -13,38 +13,45 @@ use App\Services\SantaRosaDeliveryService;
 
 class SystemController extends Controller
 {
-    public function settings()
+    private function loadAllSettings(): array
     {
-        // High-Performance In-Memory Cache: Serves system settings in 2ms
-        $settings = Cache::remember('system_settings_all', 60, function () {
+        return Cache::remember('system_settings_all', 60, function () {
             $s = SystemSetting::all()->pluck('value', 'key')->toArray();
             if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
                 $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
             }
-            if (!isset($s['paymongo_available'])) {
-                $s['paymongo_available'] = 'true';
-            }
-            if (!isset($s['maintenance_mode'])) {
-                $s['maintenance_mode'] = 'false';
-            }
-            if (!isset($s['maintenance_title'])) {
-                $s['maintenance_title'] = 'Website Under Scheduled Maintenance';
-            }
-            if (!isset($s['maintenance_message'])) {
-                $s['maintenance_message'] = 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!';
-            }
-            if (!isset($s['maintenance_until'])) {
-                $s['maintenance_until'] = '';
-            }
-            if (!isset($s['order_area_note'])) {
-                $s['order_area_note'] = 'Orders are only available in Santa Rosa bayan.';
-            }
-            if (!isset($s['order_area_note_enabled'])) {
-                $s['order_area_note_enabled'] = 'true';
+            $defaults = [
+                'paymongo_available' => 'true',
+                'maintenance_mode' => 'false',
+                'maintenance_title' => 'Website Under Scheduled Maintenance',
+                'maintenance_message' => 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!',
+                'maintenance_until' => '',
+                'order_area_note' => 'Orders are only available in Santa Rosa bayan.',
+                'order_area_note_enabled' => 'true',
+                'booking_downpayment_percent' => '50',
+                'booking_payment_deadline_hours' => '48',
+                'booking_gcash_number' => '0994 612 1933',
+                'booking_gcash_name' => 'Jefferson Alulod / G Shot Teas',
+                'booking_maya_number' => '',
+                'booking_maya_name' => '',
+                'booking_bank_name' => '',
+                'booking_bank_account' => '',
+                'booking_bank_account_name' => '',
+                'booking_payment_qr' => '',
+            ];
+            foreach ($defaults as $key => $val) {
+                if (!isset($s[$key])) {
+                    $s[$key] = $val;
+                }
             }
             return $s;
         });
-        return response()->json($settings);
+    }
+
+    public function settings()
+    {
+        // High-Performance In-Memory Cache: Serves system settings in 2ms
+        return response()->json($this->loadAllSettings());
     }
 
     public function updateSettings(Request $request)
@@ -108,6 +115,9 @@ class SystemController extends Controller
             $action = 'Order Area Notice Updated';
             $noteText = $data['order_area_note'] ?? 'Santa Rosa Bayan notice';
             $details = 'Updated customer order availability note: ' . $noteText;
+        } elseif (isset($data['booking_downpayment_percent']) || isset($data['booking_gcash_number']) || isset($data['booking_payment_qr'])) {
+            $action = 'Booking Downpayment Settings Updated';
+            $details = 'Updated event booking downpayment percentage, deadline, or payment receiving accounts.';
         }
 
         try {
@@ -123,34 +133,7 @@ class SystemController extends Controller
         }
 
         Cache::forget('system_settings_all');
-        $allSettings = Cache::remember('system_settings_all', 60, function () {
-            $s = SystemSetting::all()->pluck('value', 'key')->toArray();
-            if (empty($s['google_client_id']) && env('GOOGLE_CLIENT_ID')) {
-                $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
-            }
-            if (!isset($s['paymongo_available'])) {
-                $s['paymongo_available'] = 'true';
-            }
-            if (!isset($s['maintenance_mode'])) {
-                $s['maintenance_mode'] = 'false';
-            }
-            if (!isset($s['maintenance_title'])) {
-                $s['maintenance_title'] = 'Website Under Scheduled Maintenance';
-            }
-            if (!isset($s['maintenance_message'])) {
-                $s['maintenance_message'] = 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!';
-            }
-            if (!isset($s['maintenance_until'])) {
-                $s['maintenance_until'] = '';
-            }
-            if (!isset($s['order_area_note'])) {
-                $s['order_area_note'] = 'Orders are only available in Santa Rosa bayan.';
-            }
-            if (!isset($s['order_area_note_enabled'])) {
-                $s['order_area_note_enabled'] = 'true';
-            }
-            return $s;
-        });
+        $allSettings = $this->loadAllSettings();
 
         return response()->json([
             'message' => 'Settings updated successfully.',
