@@ -14,6 +14,7 @@ class EventBookingController extends Controller
 {
     private const ACTIVE_STATUSES = ['Pending', 'Approved'];
     private const ALLOWED_STATUSES = ['Pending', 'Approved', 'Declined', 'Completed', 'Cancelled'];
+    private const MAX_PENDING_PER_CUSTOMER = 3;
 
     private function normalizePhone(?string $raw): string
     {
@@ -47,49 +48,131 @@ class EventBookingController extends Controller
         return [$user, null];
     }
 
-    private function buildConflictPayload(string $targetDate, array $parsedTimeSlot, string $conflictingLabel, string $status): array
-    {
+    private function buildConflictPayload(
+        string $targetDate,
+        array $parsedTimeSlot,
+        string $conflictingLabel,
+        string $status,
+        bool $isBufferOnly = false,
+        ?string $bufferWindowLabel = null
+    ): array {
+        if ($isBufferOnly && $bufferWindowLabel) {
+            $message = "This date has an occupied booking at {$conflictingLabel}, and we require a 2-hour preparation and turnaround buffer before and after each event (blocked {$bufferWindowLabel}). Your selected time ({$parsedTimeSlot['range_label']}) falls within this preparation window.";
+            $fieldError = "Selected time ({$parsedTimeSlot['range_label']}) falls within the 2-hour preparation and turnaround buffer around {$conflictingLabel} ({$bufferWindowLabel}).";
+        } else {
+            $message = "This date already has an occupied booking at {$conflictingLabel}. Your selected time ({$parsedTimeSlot['range_label']}) conflicts with it, so this slot cannot be booked.";
+            $fieldError = "Selected time ({$parsedTimeSlot['range_label']}) conflicts with an existing booking ({$conflictingLabel}) on this date.";
+        }
+
         return [
-            'message' => "This date already has an occupied booking at {$conflictingLabel}. Your selected time ({$parsedTimeSlot['range_label']}) conflicts with it, so this slot cannot be booked.",
+            'message' => $message,
+            'reason' => $isBufferOnly ? 'prep_buffer_conflict' : 'time_conflict',
             'conflict' => [
                 'event_date' => $targetDate,
                 'conflicting_time' => $conflictingLabel,
+                'buffer_window' => $bufferWindowLabel,
+                'is_buffer_only' => $isBufferOnly,
                 'status' => $status,
             ],
             'errors' => [
-                'event_time' => ["Selected time ({$parsedTimeSlot['range_label']}) conflicts with an existing booking ({$conflictingLabel}) on this date."],
+                'event_time' => [$fieldError],
             ],
         ];
     }
 
-    private function buildPastTimePayload(string $targetDate, ?array $parsedTimeSlot, array $pastCheck): array
+    private function buildScheduleRulePayload(string $targetDate, ?array $parsedTimeSlot, array $eval): array
     {
-        if ($pastCheck['reason'] === 'past_date') {
+        $reason = $eval['reason'] ?? 'invalid_schedule';
+        $rangeLabel = $parsedTimeSlot['range_label'] ?? 'Selected time';
+        $base = [
+            'reason' => $reason,
+            'server_date' => $eval['now_date'],
+            'max_date' => $eval['max_date'],
+            'server_time_label' => $eval['now_label'],
+            'earliest_start_label' => $eval['earliest_start_label'],
+        ];
+
+        if ($reason === 'past_date') {
             return [
-                'message' => "The selected date ({$targetDate}) has already passed. Today is {$pastCheck['now_date']}.",
-                'reason' => 'past_date',
-                'server_date' => $pastCheck['now_date'],
-                'server_time_label' => $pastCheck['now_label'],
+                ...$base,
+                'message' => "The selected date ({$targetDate}) has already passed. Today is {$eval['now_date']}.",
                 'errors' => [
-                    'event_date' => ["Target date must be today ({$pastCheck['now_date']}) or later."],
+                    'event_date' => ["Target date must be today ({$eval['now_date']}) or later."],
                 ],
             ];
         }
 
-        $rangeLabel = $parsedTimeSlot['range_label'] ?? 'Selected time';
+        if ($reason === 'too_far') {
+            return [
+                ...$base,
+                'message' => "Bookings can only be scheduled up to 1 year in advance (on or before {$eval['max_date']}).",
+                'errors' => [
+                    'event_date' => ["Target date must be on or before {$eval['max_date']}."],
+                ],
+            ];
+        }
+
+        if ($reason === 'service_hours') {
+            return [
+                ...$base,
+                'message' => 'Event catering start times must be between 7:00 AM and 10:00 PM.',
+                'errors' => [
+                    'event_time' => ['Event start time must be between 7:00 AM and 10:00 PM.'],
+                ],
+            ];
+        }
+
+        if ($reason === 'same_day_closed') {
+            return [
+                ...$base,
+                'message' => "Same-day bookings are closed from 6:00 PM onward because we require 2 hours of preparation time and do not accept same-day events from 8:00 PM to 12:00 AM (current time: {$eval['now_label']}). Please choose tomorrow or a future date.",
+                'errors' => [
+                    'event_date' => ['Same-day bookings are closed after 6:00 PM. Please select tomorrow or a future date.'],
+                ],
+            ];
+        }
+
+        if ($reason === 'same_day_night_cutoff') {
+            return [
+                ...$base,
+                'message' => "Same-day bookings between 8:00 PM and 12:00 AM are not allowed. Please choose an earlier time ending by 10:00 PM, or book for tomorrow or a future date.",
+                'errors' => [
+                    'event_time' => ["{$rangeLabel} falls in the restricted 8:00 PM – 12:00 AM window for same-day bookings."],
+                ],
+            ];
+        }
+
+        if ($reason === 'prep_time') {
+            $earliest = $eval['earliest_start_label'] ?? 'a later time';
+            return [
+                ...$base,
+                'message' => "We require at least 2 hours of preparation time for same-day bookings. At {$eval['now_label']}, the earliest available start time today is {$earliest} (before 8:00 PM).",
+                'errors' => [
+                    'event_time' => ["{$rangeLabel} does not meet the 2-hour preparation notice (earliest today: {$earliest})."],
+                ],
+            ];
+        }
+
         return [
-            'message' => "You can't book {$rangeLabel} for today anymore because it is already {$pastCheck['now_label']}. Please choose a later time or another date.",
-            'reason' => 'past_time',
-            'server_date' => $pastCheck['now_date'],
-            'server_time_label' => $pastCheck['now_label'],
+            ...$base,
+            'message' => "You can't book {$rangeLabel} for today anymore because it is already {$eval['now_label']}. Please choose a later time or another date.",
             'errors' => [
-                'event_time' => ["{$rangeLabel} has already passed today (current time: {$pastCheck['now_label']}). Please choose a later time."],
+                'event_time' => ["{$rangeLabel} has already passed today (current time: {$eval['now_label']}). Please choose a later time."],
             ],
         ];
     }
 
+    private function formatBufferWindow(int $startMinutes, int $endMinutes): string
+    {
+        $bufStart = max(0, $startMinutes - BookingTimeSlot::PREP_BUFFER_MINUTES);
+        $bufEnd = $endMinutes + BookingTimeSlot::PREP_BUFFER_MINUTES;
+        return BookingTimeSlot::formatTime($bufStart) . ' – ' . BookingTimeSlot::formatTime($bufEnd);
+    }
+
     private function findConflictingBooking(string $targetDate, array $parsedTimeSlot, ?int $excludeBookingId = null, bool $lock = true): ?array
     {
+        $buffer = BookingTimeSlot::PREP_BUFFER_MINUTES;
+
         $sameDayQuery = EventBooking::whereDate('event_date', $targetDate)
             ->whereIn('status', self::ACTIVE_STATUSES);
         if ($excludeBookingId !== null) {
@@ -105,12 +188,21 @@ class EventBookingController extends Controller
                 $label = $existing->event_time ?: 'TBD (Whole Day Hold)';
                 return $this->buildConflictPayload($targetDate, $parsedTimeSlot, $label, $existing->status);
             }
-            if (BookingTimeSlot::overlaps($parsedTimeSlot, $existingSlot)) {
-                return $this->buildConflictPayload($targetDate, $parsedTimeSlot, $existingSlot['range_label'], $existing->status);
+            if (BookingTimeSlot::overlaps($parsedTimeSlot, $existingSlot, $buffer)) {
+                $directOverlap = BookingTimeSlot::overlaps($parsedTimeSlot, $existingSlot, 0);
+                $bufferWindow = $this->formatBufferWindow($existingSlot['start_minutes'], $existingSlot['end_minutes']);
+                return $this->buildConflictPayload(
+                    $targetDate,
+                    $parsedTimeSlot,
+                    $existingSlot['range_label'],
+                    $existing->status,
+                    !$directOverlap,
+                    $bufferWindow
+                );
             }
         }
 
-        // Check overnight spillover from previous day (end_minutes > 1440)
+        // Check overnight spillover (including 2-hour turnaround buffer) from previous day
         $prevDate = \Carbon\Carbon::parse($targetDate)->subDay()->toDateString();
         $prevDayQuery = EventBooking::whereDate('event_date', $prevDate)
             ->whereIn('status', self::ACTIVE_STATUSES);
@@ -123,21 +215,26 @@ class EventBookingController extends Controller
 
         foreach ($prevDayQuery->get(['id', 'event_time', 'status']) as $prevExisting) {
             $prevSlot = BookingTimeSlot::parse($prevExisting->event_time);
-            if ($prevSlot && $prevSlot['end_minutes'] > 1440) {
+            if ($prevSlot && ($prevSlot['end_minutes'] + $buffer) > 1440) {
                 $spillSlot = BookingTimeSlot::shiftSlot($prevSlot, -1440);
-                if (BookingTimeSlot::overlaps($parsedTimeSlot, $spillSlot)) {
+                if (BookingTimeSlot::overlaps($parsedTimeSlot, $spillSlot, $buffer)) {
+                    $directOverlap = BookingTimeSlot::overlaps($parsedTimeSlot, $spillSlot, 0);
+                    $spillEndBuf = ($prevSlot['end_minutes'] + $buffer) - 1440;
+                    $bufferWindow = '12:00 AM – ' . BookingTimeSlot::formatTime($spillEndBuf);
                     return $this->buildConflictPayload(
                         $targetDate,
                         $parsedTimeSlot,
                         "{$prevSlot['range_label']} (overnight from {$prevDate})",
-                        $prevExisting->status
+                        $prevExisting->status,
+                        !$directOverlap,
+                        $bufferWindow
                     );
                 }
             }
         }
 
-        // Check overnight spillover into next day when candidate extends past midnight
-        if ($parsedTimeSlot['end_minutes'] > 1440) {
+        // Check overnight spillover (including 2-hour turnaround buffer) into next day
+        if (($parsedTimeSlot['end_minutes'] + $buffer) > 1440) {
             $nextDate = \Carbon\Carbon::parse($targetDate)->addDay()->toDateString();
             $nextDayCandidate = BookingTimeSlot::shiftSlot($parsedTimeSlot, -1440);
             $nextDayQuery = EventBooking::whereDate('event_date', $nextDate)
@@ -155,12 +252,16 @@ class EventBookingController extends Controller
                     $label = ($nextExisting->event_time ?: 'TBD') . " (next day {$nextDate})";
                     return $this->buildConflictPayload($targetDate, $parsedTimeSlot, $label, $nextExisting->status);
                 }
-                if (BookingTimeSlot::overlaps($nextDayCandidate, $nextSlot)) {
+                if (BookingTimeSlot::overlaps($nextDayCandidate, $nextSlot, $buffer)) {
+                    $directOverlap = BookingTimeSlot::overlaps($nextDayCandidate, $nextSlot, 0);
+                    $bufferWindow = $this->formatBufferWindow($nextSlot['start_minutes'], $nextSlot['end_minutes']);
                     return $this->buildConflictPayload(
                         $targetDate,
                         $parsedTimeSlot,
                         "{$nextSlot['range_label']} (next day {$nextDate})",
-                        $nextExisting->status
+                        $nextExisting->status,
+                        !$directOverlap,
+                        $bufferWindow
                     );
                 }
             }
@@ -183,7 +284,10 @@ class EventBookingController extends Controller
 
         $manilaNow = BookingTimeSlot::storeNow();
         $today = $manilaNow->toDateString();
+        $maxDate = $manilaNow->copy()->addDays(BookingTimeSlot::MAX_ADVANCE_DAYS)->toDateString();
         $nowMinutes = ((int) $manilaNow->hour * 60) + (int) $manilaNow->minute;
+        $earliestTodayMinutes = $nowMinutes + BookingTimeSlot::PREP_BUFFER_MINUTES;
+        $buffer = BookingTimeSlot::PREP_BUFFER_MINUTES;
 
         $targetDate = $request->filled('date')
             ? \Carbon\Carbon::parse($request->input('date'))->toDateString()
@@ -198,17 +302,24 @@ class EventBookingController extends Controller
 
             foreach ($dayBookings as $booking) {
                 $parsed = BookingTimeSlot::parse($booking->event_time);
+                $bufStart = $parsed ? max(0, $parsed['start_minutes'] - $buffer) : null;
+                $bufEnd = $parsed ? ($parsed['end_minutes'] + $buffer) : null;
                 $occupiedSlots[] = [
                     'event_time' => $parsed ? $parsed['label'] : ($booking->event_time ?: 'TBD'),
                     'range_label' => $parsed ? $parsed['range_label'] : ($booking->event_time ?: 'TBD'),
                     'start_minutes' => $parsed['start_minutes'] ?? null,
                     'end_minutes' => $parsed['end_minutes'] ?? null,
+                    'buffer_start_minutes' => $bufStart,
+                    'buffer_end_minutes' => $bufEnd,
+                    'buffer_range_label' => ($bufStart !== null && $bufEnd !== null)
+                        ? BookingTimeSlot::formatTime($bufStart) . ' – ' . BookingTimeSlot::formatTime($bufEnd)
+                        : null,
                     'blocks_whole_day' => $parsed === null,
                     'status' => $booking->status,
                 ];
             }
 
-            // Include overnight spillover slots from the previous day
+            // Include overnight spillover (and 2h turnaround tail) from previous day
             $prevDate = \Carbon\Carbon::parse($targetDate)->subDay()->toDateString();
             $prevDayBookings = EventBooking::whereDate('event_date', $prevDate)
                 ->whereIn('status', self::ACTIVE_STATUSES)
@@ -217,13 +328,20 @@ class EventBookingController extends Controller
 
             foreach ($prevDayBookings as $prevBooking) {
                 $prevParsed = BookingTimeSlot::parse($prevBooking->event_time);
-                if ($prevParsed && $prevParsed['end_minutes'] > 1440) {
-                    $spillEnd = $prevParsed['end_minutes'] - 1440;
+                if ($prevParsed && ($prevParsed['end_minutes'] + $buffer) > 1440) {
+                    $spillEndRaw = $prevParsed['end_minutes'] - 1440;
+                    $spillEndWithBuffer = ($prevParsed['end_minutes'] + $buffer) - 1440;
                     $occupiedSlots[] = [
                         'event_time' => $prevParsed['label'],
-                        'range_label' => '12:00 AM – ' . BookingTimeSlot::formatTime($spillEnd) . " (from {$prevDate} overnight)",
+                        'range_label' => ($spillEndRaw > 0
+                            ? '12:00 AM – ' . BookingTimeSlot::formatTime($spillEndRaw)
+                            : 'Overnight prep/cleanup until ' . BookingTimeSlot::formatTime($spillEndWithBuffer))
+                            . " (from {$prevDate})",
                         'start_minutes' => 0,
-                        'end_minutes' => $spillEnd,
+                        'end_minutes' => max(0, $spillEndRaw),
+                        'buffer_start_minutes' => 0,
+                        'buffer_end_minutes' => $spillEndWithBuffer,
+                        'buffer_range_label' => '12:00 AM – ' . BookingTimeSlot::formatTime($spillEndWithBuffer),
                         'blocks_whole_day' => false,
                         'status' => $prevBooking->status,
                     ];
@@ -249,8 +367,13 @@ class EventBookingController extends Controller
             'occupied_dates' => $occupiedDates,
             'server_timezone' => BookingTimeSlot::STORE_TIMEZONE,
             'server_date' => $today,
+            'max_date' => $maxDate,
             'server_minutes' => $nowMinutes,
             'server_time_label' => $manilaNow->format('g:i A'),
+            'prep_buffer_minutes' => $buffer,
+            'same_day_closed' => $earliestTodayMinutes >= BookingTimeSlot::SAME_DAY_CUTOFF_START_MINUTES,
+            'earliest_today_minutes' => $earliestTodayMinutes,
+            'earliest_today_label' => $earliestTodayMinutes < 1440 ? BookingTimeSlot::formatTime($earliestTodayMinutes) : null,
         ]);
     }
 
@@ -369,6 +492,22 @@ class EventBookingController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
+        $cleanName = trim($validated['client_name']);
+        if (mb_strlen($cleanName) < 2) {
+            return response()->json([
+                'message' => 'Please enter your full name (at least 2 characters).',
+                'errors' => ['client_name' => ['Client name must be at least 2 characters.']],
+            ], 422);
+        }
+
+        $cleanLocation = trim($validated['location']);
+        if (mb_strlen($cleanLocation) < 5) {
+            return response()->json([
+                'message' => 'Please enter a complete event venue or address (at least 5 characters).',
+                'errors' => ['location' => ['Event venue/location must be at least 5 characters.']],
+            ], 422);
+        }
+
         // Normalize and validate 11-digit contact number
         $cleanPhone = $this->normalizePhone($validated['client_phone']);
         if (strlen($cleanPhone) !== 11 || !str_starts_with($cleanPhone, '09')) {
@@ -381,17 +520,10 @@ class EventBookingController extends Controller
         $targetDate = \Carbon\Carbon::parse($validated['event_date'])->toDateString();
         $manilaNow = BookingTimeSlot::storeNow();
 
-        if ($targetDate < $manilaNow->toDateString()) {
-            return response()->json(
-                $this->buildPastTimePayload($targetDate, null, [
-                    'is_past' => true,
-                    'reason' => 'past_date',
-                    'now_date' => $manilaNow->toDateString(),
-                    'now_minutes' => ((int) $manilaNow->hour * 60) + (int) $manilaNow->minute,
-                    'now_label' => $manilaNow->format('g:i A'),
-                ]),
-                422
-            );
+        // Check date bounds before parsing time
+        $dateEval = BookingTimeSlot::evaluateScheduleRules($targetDate, null, $manilaNow);
+        if (!$dateEval['valid']) {
+            return response()->json($this->buildScheduleRulePayload($targetDate, null, $dateEval), 422);
         }
 
         $rawEventTime = trim((string) ($validated['event_time'] ?? ''));
@@ -399,20 +531,17 @@ class EventBookingController extends Controller
         $parsedTimeSlot = BookingTimeSlot::parse($timeInput);
         if (!$parsedTimeSlot) {
             return response()->json([
-                'message' => 'Please select a target time slot or enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).',
+                'message' => 'Please select a target time slot (2 to 10 hours duration, e.g. 2:00 PM - 5:00 PM).',
                 'errors' => [
-                    'event_time' => ['Please enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).'],
+                    'event_time' => ['Please enter a valid time range (2 to 10 hours, e.g. 2:00 PM - 5:00 PM).'],
                 ],
             ], 422);
         }
 
-        // Prevent booking a time slot that has already started or passed today (Asia/Manila)
-        $pastCheck = BookingTimeSlot::isPastSlotForDate($targetDate, $parsedTimeSlot, $manilaNow);
-        if ($pastCheck['is_past']) {
-            return response()->json(
-                $this->buildPastTimePayload($targetDate, $parsedTimeSlot, $pastCheck),
-                422
-            );
+        // Enforce service hours, 2-hour preparation lead time, and same-day 8 PM - 12 AM cutoff
+        $scheduleEval = BookingTimeSlot::evaluateScheduleRules($targetDate, $parsedTimeSlot, $manilaNow);
+        if (!$scheduleEval['valid']) {
+            return response()->json($this->buildScheduleRulePayload($targetDate, $parsedTimeSlot, $scheduleEval), 422);
         }
 
         BookingPackage::seedDefaultsIfEmpty();
@@ -443,31 +572,55 @@ class EventBookingController extends Controller
                 : $validated['guest_count'] * 95;
         }
 
-        $conflictError = null;
+        $isOperator = $actingUser && in_array($actingUser->role, ['staff', 'admin', 'super_admin'], true);
+
+        $rejectionError = null;
         $booking = DB::transaction(function () use (
-            &$conflictError,
+            &$rejectionError,
             $targetDate,
             $parsedTimeSlot,
             $actingUser,
+            $isOperator,
+            $cleanName,
+            $cleanLocation,
             $validated,
             $matchedPackage,
             $serverEstimatedCost
         ) {
-            $conflictError = $this->findConflictingBooking($targetDate, $parsedTimeSlot, null, true);
-            if ($conflictError !== null) {
+            if (!$isOperator) {
+                $pendingCount = EventBooking::where('status', 'Pending')
+                    ->where(function ($q) use ($actingUser, $validated) {
+                        $q->where('client_phone', $validated['client_phone']);
+                        if ($actingUser?->id) {
+                            $q->orWhere('user_id', $actingUser->id);
+                        }
+                    })
+                    ->count();
+
+                if ($pendingCount >= self::MAX_PENDING_PER_CUSTOMER) {
+                    $rejectionError = [
+                        'message' => 'You already have ' . self::MAX_PENDING_PER_CUSTOMER . ' pending booking requests awaiting review. Please wait for approval or cancel an unused pending request before submitting another.',
+                        'reason' => 'pending_limit',
+                    ];
+                    return null;
+                }
+            }
+
+            $rejectionError = $this->findConflictingBooking($targetDate, $parsedTimeSlot, null, true);
+            if ($rejectionError !== null) {
                 return null;
             }
 
             return EventBooking::create([
                 'user_id' => $actingUser?->id ?? null,
-                'client_name' => trim($validated['client_name']),
+                'client_name' => $cleanName,
                 'client_phone' => $validated['client_phone'],
                 'client_email' => $validated['client_email'] ?? $actingUser?->email ?? null,
                 'event_type' => $validated['event_type'],
                 'event_date' => $targetDate,
                 'event_time' => $parsedTimeSlot['label'],
                 'guest_count' => $validated['guest_count'],
-                'location' => trim($validated['location']),
+                'location' => $cleanLocation,
                 'package_name' => $validated['package_name'] ?? $matchedPackage?->name ?? 'Standard Catering Package',
                 'estimated_cost' => $serverEstimatedCost,
                 'status' => 'Pending',
@@ -475,15 +628,15 @@ class EventBookingController extends Controller
             ]);
         });
 
-        if ($conflictError !== null || !$booking) {
-            return response()->json($conflictError, 422);
+        if ($rejectionError !== null || !$booking) {
+            return response()->json($rejectionError, 422);
         }
 
         $bookingRole = $actingUser?->role;
         if ($bookingRole && in_array($bookingRole, ['staff', 'admin', 'super_admin'])) {
             AuditLog::create([
                 'user_id' => $actingUser?->id,
-                'user_name' => $actingUser?->name ?? $validated['client_name'],
+                'user_name' => $actingUser?->name ?? $cleanName,
                 'user_role' => $bookingRole,
                 'action' => 'Event Booking Logged',
                 'details' => "Booking for {$validated['event_type']} on {$validated['event_date']} ({$validated['guest_count']} guests)",
@@ -554,7 +707,7 @@ class EventBookingController extends Controller
             if ($rawTime === '' || strcasecmp($rawTime, 'TBD') === 0) {
                 if (in_array($effectiveStatus, self::ACTIVE_STATUSES, true)) {
                     return response()->json([
-                        'message' => 'Please provide a valid time range (e.g. 2:00 PM - 5:00 PM) for Pending or Approved bookings.',
+                        'message' => 'Please provide a valid time range (2 to 10 hours, e.g. 2:00 PM - 5:00 PM) for Pending or Approved bookings.',
                         'errors' => [
                             'event_time' => ['A valid time range is required for active bookings.'],
                         ],
@@ -565,9 +718,9 @@ class EventBookingController extends Controller
                 $parsedTimeSlot = BookingTimeSlot::parse($rawTime);
                 if (!$parsedTimeSlot) {
                     return response()->json([
-                        'message' => 'Please enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).',
+                        'message' => 'Please enter a recognizable time range (2 to 10 hours, e.g. 2:00 PM - 5:00 PM).',
                         'errors' => [
-                            'event_time' => ['Please enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).'],
+                            'event_time' => ['Please enter a valid time range (2 to 10 hours, e.g. 2:00 PM - 5:00 PM).'],
                         ],
                     ], 422);
                 }
@@ -583,25 +736,9 @@ class EventBookingController extends Controller
 
         if (in_array($effectiveStatus, self::ACTIVE_STATUSES, true) && ($dateOrTimeChanged || $reactivated)) {
             $manilaNow = BookingTimeSlot::storeNow();
-            if ($parsedTimeSlot) {
-                $pastCheck = BookingTimeSlot::isPastSlotForDate($effectiveDate, $parsedTimeSlot, $manilaNow);
-                if ($pastCheck['is_past']) {
-                    return response()->json(
-                        $this->buildPastTimePayload($effectiveDate, $parsedTimeSlot, $pastCheck),
-                        422
-                    );
-                }
-            } elseif ($effectiveDate < $manilaNow->toDateString()) {
-                return response()->json(
-                    $this->buildPastTimePayload($effectiveDate, null, [
-                        'is_past' => true,
-                        'reason' => 'past_date',
-                        'now_date' => $manilaNow->toDateString(),
-                        'now_minutes' => ((int) $manilaNow->hour * 60) + (int) $manilaNow->minute,
-                        'now_label' => $manilaNow->format('g:i A'),
-                    ]),
-                    422
-                );
+            $scheduleEval = BookingTimeSlot::evaluateScheduleRules($effectiveDate, $parsedTimeSlot, $manilaNow);
+            if (!$scheduleEval['valid']) {
+                return response()->json($this->buildScheduleRulePayload($effectiveDate, $parsedTimeSlot, $scheduleEval), 422);
             }
         }
 
@@ -692,20 +829,9 @@ class EventBookingController extends Controller
 
                 if (!in_array($oldStatus, self::ACTIVE_STATUSES, true)) {
                     $manilaNow = BookingTimeSlot::storeNow();
-                    if ($parsedSlot) {
-                        $pastCheck = BookingTimeSlot::isPastSlotForDate($bookingDate, $parsedSlot, $manilaNow);
-                        if ($pastCheck['is_past']) {
-                            $errorResponse = $this->buildPastTimePayload($bookingDate, $parsedSlot, $pastCheck);
-                            return null;
-                        }
-                    } elseif ($bookingDate < $manilaNow->toDateString()) {
-                        $errorResponse = $this->buildPastTimePayload($bookingDate, null, [
-                            'is_past' => true,
-                            'reason' => 'past_date',
-                            'now_date' => $manilaNow->toDateString(),
-                            'now_minutes' => ((int) $manilaNow->hour * 60) + (int) $manilaNow->minute,
-                            'now_label' => $manilaNow->format('g:i A'),
-                        ]);
+                    $scheduleEval = BookingTimeSlot::evaluateScheduleRules($bookingDate, $parsedSlot, $manilaNow);
+                    if (!$scheduleEval['valid']) {
+                        $errorResponse = $this->buildScheduleRulePayload($bookingDate, $parsedSlot, $scheduleEval);
                         return null;
                     }
                 }

@@ -273,6 +273,7 @@
                   v-model="form.event_date"
                   type="date" 
                   :min="minEventDate"
+                  :max="maxEventDate"
                   required
                   class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border text-white focus:outline-none transition-colors"
                   :class="form.event_date && occupiedSlotsOnDate.length > 0
@@ -287,15 +288,15 @@
                     Target Time
                   </label>
                   <span
-                    v-if="form.event_date && pastSlotStatus.isPast"
+                    v-if="form.event_date && !scheduleStatus.valid"
                     class="text-[10px] font-bold text-rose-400">
-                    {{ pastSlotStatus.reason === 'past_date' ? 'Past Date' : 'Time Passed' }}
+                    {{ scheduleStatusBadgeLabel }}
                   </span>
                   <span
                     v-else-if="form.event_date && activeParsedTime"
                     class="text-[10px] font-bold"
                     :class="conflictingOccupiedSlot ? 'text-rose-400' : 'text-emerald-400'">
-                    {{ conflictingOccupiedSlot ? 'Conflicts' : 'Time Open' }}
+                    {{ conflictingOccupiedSlot ? (activeConflictInfo?.isBufferOnly ? '2h Prep Buffer' : 'Conflicts') : 'Time Open' }}
                   </span>
                   <span v-else class="text-[10px] text-amber-400/90 font-semibold">
                     Click to set
@@ -305,7 +306,7 @@
                   type="button"
                   @click="openTimePicker"
                   class="w-full px-3.5 py-2.5 rounded-xl bg-surface-800 border text-left flex items-center justify-between gap-2 transition-colors cursor-pointer focus:outline-none"
-                  :class="(pastSlotStatus.isPast || conflictingOccupiedSlot)
+                  :class="((form.event_date && !scheduleStatus.valid) || conflictingOccupiedSlot)
                     ? 'border-rose-500/70 hover:border-rose-400 text-rose-100'
                     : 'border-surface-700 hover:border-amber-400/60 focus:border-brand-500 text-white'">
                   <span class="truncate font-medium">
@@ -313,28 +314,24 @@
                   </span>
                   <i
                     class="pi pi-clock text-xs shrink-0"
-                    :class="(pastSlotStatus.isPast || conflictingOccupiedSlot) ? 'text-rose-400' : 'text-amber-400'">
+                    :class="((form.event_date && !scheduleStatus.valid) || conflictingOccupiedSlot) ? 'text-rose-400' : 'text-amber-400'">
                   </i>
                 </button>
               </div>
             </div>
 
-            <!-- Past Time / Past Date Notice -->
+            <!-- Schedule Rule Notice (2h Prep Time, 8 PM–12 AM Same-Day Cutoff, Service Hours, Past Date) -->
             <div
-              v-if="form.event_date && pastSlotStatus.isPast"
+              v-if="form.event_date && !scheduleStatus.valid"
               class="p-2.5 sm:p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fade-in">
               <div class="flex items-start gap-2 min-w-0">
                 <i class="pi pi-clock text-rose-400 text-sm mt-0.5 shrink-0"></i>
                 <p class="leading-relaxed">
-                  <template v-if="pastSlotStatus.reason === 'past_date'">
-                    <strong class="text-rose-300">{{ formattedSelectedDate }}</strong> has already passed (today is {{ pastSlotStatus.nowDate }}). Please select today or a future date.
-                  </template>
-                  <template v-else>
-                    You can't book <strong class="text-rose-300">{{ activeParsedTime?.rangeLabel }}</strong> for today anymore — it is already <strong>{{ pastSlotStatus.nowLabel }}</strong>. Please pick a later time or another date.
-                  </template>
+                  {{ scheduleStatusMessage }}
                 </p>
               </div>
               <button
+                v-if="!['past_date', 'too_far', 'same_day_closed'].includes(scheduleStatus.reason)"
                 type="button"
                 @click="openTimePicker"
                 class="px-2.5 py-1.5 rounded-lg bg-rose-500/25 hover:bg-rose-500/35 text-rose-100 font-bold text-[10px] shrink-0 self-start sm:self-center cursor-pointer transition-colors">
@@ -342,14 +339,19 @@
               </button>
             </div>
 
-            <!-- Compact Occupied Date / Conflict Status Notice -->
+            <!-- Compact Occupied Date / Conflict Status Notice (Includes 2h Prep/Turnaround Buffer) -->
             <div
               v-else-if="form.event_date && conflictingOccupiedSlot"
               class="p-2.5 sm:p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fade-in">
               <div class="flex items-start gap-2 min-w-0">
                 <i class="pi pi-times-circle text-rose-400 text-sm mt-0.5 shrink-0"></i>
                 <p class="leading-relaxed">
-                  <strong class="text-rose-300">{{ formattedSelectedDate }}</strong> is already occupied at <strong>{{ conflictingOccupiedSlot.range_label || conflictingOccupiedSlot.event_time }}</strong>. You can still book a different time, or change the date.
+                  <template v-if="activeConflictInfo?.isBufferOnly">
+                    <strong class="text-rose-300">{{ formattedSelectedDate }}</strong> has an existing booking at <strong>{{ conflictingOccupiedSlot.range_label || conflictingOccupiedSlot.event_time }}</strong> and requires a <strong>2-hour preparation &amp; turnaround buffer</strong> (blocked {{ conflictingOccupiedSlot.buffer_range_label }}). Pick another time or date.
+                  </template>
+                  <template v-else>
+                    <strong class="text-rose-300">{{ formattedSelectedDate }}</strong> is already occupied at <strong>{{ conflictingOccupiedSlot.range_label || conflictingOccupiedSlot.event_time }}</strong>. You can still book a different time (at least 2 hours apart), or change the date.
+                  </template>
                 </p>
               </div>
               <button
@@ -446,8 +448,8 @@
                 ? 'bg-surface-700 text-gray-400 cursor-not-allowed opacity-70'
                 : 'bg-yellow-400 hover:bg-yellow-300 text-black cursor-pointer'">
               <i v-if="loading" class="pi pi-spin pi-spinner"></i>
-              <span v-else-if="pastSlotStatus.isPast">{{ pastSlotStatus.reason === 'past_date' ? 'Past Date — Pick Today or Later' : 'Time Passed — Pick Later Slot' }}</span>
-              <span v-else-if="conflictingOccupiedSlot">Time Conflict — Pick Another Slot</span>
+              <span v-else-if="form.event_date && !scheduleStatus.valid">{{ submitBlockedLabel }}</span>
+              <span v-else-if="conflictingOccupiedSlot">{{ activeConflictInfo?.isBufferOnly ? '2h Prep Buffer — Pick Another Slot' : 'Time Conflict — Pick Another Slot' }}</span>
               <span v-else-if="!activeParsedTime">Enter a Valid Time</span>
               <span v-else>Submit Booking Request</span>
             </button>
@@ -615,7 +617,7 @@
               v-else
               class="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-surface-900/90 backdrop-blur-md text-amber-300 text-[10px] sm:text-xs flex items-center gap-1.5 border border-amber-500/30 pointer-events-none shadow-lg animate-fade-in whitespace-nowrap">
               <i class="pi pi-arrows-alt text-amber-400 text-xs"></i>
-              <span>Drag to move • I-drag para igalaw</span>
+              <span>Drag to move photo</span>
             </div>
           </div>
 
@@ -698,7 +700,7 @@
                   v-for="(slot, idx) in occupiedSlotsOnDate"
                   :key="idx"
                   class="px-2 py-0.5 rounded-md bg-black/40 border border-amber-500/30 text-[10px] font-bold text-amber-100">
-                  {{ slot.range_label || slot.event_time }}
+                  {{ slot.range_label || slot.event_time }}<template v-if="slot.buffer_range_label"> (2h buffer: {{ slot.buffer_range_label }})</template>
                 </span>
               </div>
             </div>
@@ -866,15 +868,15 @@
               v-if="pickerMode === 'wheel' && !draftParsedSlot"
               class="p-2.5 rounded-xl bg-amber-500/12 border border-amber-500/35 text-amber-200 text-[11px] flex items-center gap-2">
               <i class="pi pi-exclamation-circle text-amber-400 text-xs shrink-0"></i>
-              <span>End time must be 30 mins to 14 hours after Start time.</span>
+              <span>Event duration must be 2 to 10 hours long.</span>
             </div>
 
             <div
-              v-else-if="form.event_date && draftPastSlotStatus.isPast"
+              v-else-if="draftParsedSlot && !draftScheduleStatus.valid"
               class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex items-start gap-2">
               <i class="pi pi-clock text-rose-400 text-xs mt-0.5 shrink-0"></i>
               <span>
-                You can't book <strong>{{ draftParsedSlot?.rangeLabel }}</strong> for today anymore (it is already <strong>{{ draftPastSlotStatus.nowLabel }}</strong>). Pick a later time or change the date.
+                {{ draftScheduleMessage }}
               </span>
             </div>
 
@@ -883,7 +885,12 @@
               class="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-[11px] flex items-start gap-2">
               <i class="pi pi-ban text-rose-400 text-xs mt-0.5 shrink-0"></i>
               <span>
-                <strong>{{ draftParsedSlot?.rangeLabel }}</strong> conflicts with an occupied slot (<strong>{{ draftConflictingSlot.range_label || draftConflictingSlot.event_time }}</strong>). Pick another time.
+                <template v-if="draftConflictInfo?.isBufferOnly">
+                  <strong>{{ draftParsedSlot?.rangeLabel }}</strong> falls inside the 2-hour preparation &amp; turnaround buffer around <strong>{{ draftConflictingSlot.range_label || draftConflictingSlot.event_time }}</strong> ({{ draftConflictingSlot.buffer_range_label }}). Pick another time.
+                </template>
+                <template v-else>
+                  <strong>{{ draftParsedSlot?.rangeLabel }}</strong> conflicts with an occupied slot (<strong>{{ draftConflictingSlot.range_label || draftConflictingSlot.event_time }}</strong>). Pick another time.
+                </template>
               </span>
             </div>
 
@@ -931,7 +938,9 @@ import {
   parseBookingTime,
   slotsOverlap,
   getStoreDateTimeParts,
-  isSlotPastForDate,
+  evaluateBookingSchedule,
+  formatScheduleErrorMessage,
+  PREP_BUFFER_MINUTES,
   MIN_DURATION_MINUTES,
   MAX_DURATION_MINUTES,
 } from '@/utils/bookingTime';
@@ -1189,6 +1198,7 @@ export default {
     );
 
     const minEventDate = Vue.computed(() => storeNow.value.dateString);
+    const maxEventDate = Vue.computed(() => storeNow.value.maxDateString);
 
     const availablePackages = Vue.computed(() => {
       const list = store.activeBookingPackages || [];
@@ -1389,30 +1399,60 @@ export default {
       }
     }, { immediate: true });
 
-    const findSlotConflict = (candidateSlot) => {
+    const getSlotConflictInfo = (candidateSlot) => {
       if (!candidateSlot || !form.event_date || occupiedSlotsOnDate.value.length === 0) {
         return null;
       }
-      return occupiedSlotsOnDate.value.find((occupied) => {
+      for (const occupied of occupiedSlotsOnDate.value) {
         if (occupied.blocks_whole_day || occupied.start_minutes === null || occupied.end_minutes === null) {
-          return true;
+          return { occupied, isBufferOnly: false };
         }
-        return slotsOverlap(candidateSlot, occupied);
-      }) || null;
+        if (slotsOverlap(candidateSlot, occupied, PREP_BUFFER_MINUTES)) {
+          const direct = slotsOverlap(candidateSlot, occupied, 0);
+          return { occupied, isBufferOnly: !direct };
+        }
+      }
+      return null;
     };
 
-    const conflictingOccupiedSlot = Vue.computed(() => findSlotConflict(activeParsedTime.value));
+    const activeConflictInfo = Vue.computed(() => getSlotConflictInfo(activeParsedTime.value));
+    const conflictingOccupiedSlot = Vue.computed(() => activeConflictInfo.value?.occupied || null);
 
-    const pastSlotStatus = Vue.computed(() => {
-      if (!form.event_date) {
-        return { isPast: false, reason: null, nowDate: storeNow.value.dateString, nowMinutes: storeNow.value.minutes, nowLabel: storeNow.value.timeLabel };
+    const scheduleStatus = Vue.computed(() =>
+      evaluateBookingSchedule(form.event_date || '', activeParsedTime.value, storeNow.value)
+    );
+
+    const scheduleStatusMessage = Vue.computed(() =>
+      formatScheduleErrorMessage(scheduleStatus.value, activeParsedTime.value, formattedSelectedDate.value)
+    );
+
+    const scheduleStatusBadgeLabel = Vue.computed(() => {
+      switch (scheduleStatus.value.reason) {
+        case 'past_date': return 'Past Date';
+        case 'too_far': return 'Date Too Far';
+        case 'same_day_closed': return 'Closed Today';
+        case 'same_day_night_cutoff': return '8 PM–12 AM Blocked';
+        case 'prep_time': return 'Needs 2h Prep';
+        case 'service_hours': return 'Outside 7 AM–10 PM';
+        default: return 'Time Passed';
       }
-      return isSlotPastForDate(form.event_date, activeParsedTime.value, storeNow.value);
+    });
+
+    const submitBlockedLabel = Vue.computed(() => {
+      switch (scheduleStatus.value.reason) {
+        case 'past_date': return 'Past Date — Pick Today or Later';
+        case 'too_far': return 'Date Over 1 Year — Pick Earlier Date';
+        case 'same_day_closed': return 'Same-Day Closed — Pick Future Date';
+        case 'same_day_night_cutoff': return '8 PM–12 AM Blocked Today';
+        case 'prep_time': return 'Needs 2h Prep — Pick Later Slot';
+        case 'service_hours': return 'Outside Hours (7 AM–10 PM)';
+        default: return 'Time Passed — Pick Later Slot';
+      }
     });
 
     const canSubmitBooking = Vue.computed(() => {
       if (!activeParsedTime.value) return false;
-      if (form.event_date && pastSlotStatus.value.isPast) return false;
+      if (!scheduleStatus.value.valid) return false;
       if (form.event_date && conflictingOccupiedSlot.value) return false;
       return true;
     });
@@ -1428,18 +1468,20 @@ export default {
       return normalizeRangeMinutes(draftStartMinutes.value, draftEndMinutes.value);
     });
 
-    const draftConflictingSlot = Vue.computed(() => findSlotConflict(draftParsedSlot.value));
+    const draftConflictInfo = Vue.computed(() => getSlotConflictInfo(draftParsedSlot.value));
+    const draftConflictingSlot = Vue.computed(() => draftConflictInfo.value?.occupied || null);
 
-    const draftPastSlotStatus = Vue.computed(() => {
-      if (!form.event_date || !draftParsedSlot.value) {
-        return { isPast: false, reason: null, nowDate: storeNow.value.dateString, nowMinutes: storeNow.value.minutes, nowLabel: storeNow.value.timeLabel };
-      }
-      return isSlotPastForDate(form.event_date, draftParsedSlot.value, storeNow.value);
-    });
+    const draftScheduleStatus = Vue.computed(() =>
+      evaluateBookingSchedule(form.event_date || '', draftParsedSlot.value, storeNow.value)
+    );
+
+    const draftScheduleMessage = Vue.computed(() =>
+      formatScheduleErrorMessage(draftScheduleStatus.value, draftParsedSlot.value, formattedSelectedDate.value)
+    );
 
     const canConfirmTimePicker = Vue.computed(() => {
       if (!draftParsedSlot.value) return false;
-      if (form.event_date && draftPastSlotStatus.value.isPast) return false;
+      if (!draftScheduleStatus.value.valid) return false;
       if (form.event_date && draftConflictingSlot.value) return false;
       return true;
     });
@@ -1595,19 +1637,20 @@ export default {
 
     const confirmTimePicker = () => {
       const slot = draftParsedSlot.value;
-      if (!slot) return;
-      if (form.event_date && draftPastSlotStatus.value.isPast) {
-        store.notify(
-          `You can't book ${slot.rangeLabel} for today anymore (it is already ${draftPastSlotStatus.value.nowLabel}). Please pick a later time or another date.`,
-          'warning'
-        );
+      if (!slot) {
+        store.notify('Event duration must be between 2 and 10 hours. Please adjust your start or end time.', 'warning');
+        return;
+      }
+      if (!draftScheduleStatus.value.valid) {
+        store.notify(draftScheduleMessage.value, 'warning');
         return;
       }
       if (form.event_date && draftConflictingSlot.value) {
-        store.notify(
-          `Time conflict: ${slot.rangeLabel} overlaps with an occupied booking (${draftConflictingSlot.value.range_label || draftConflictingSlot.value.event_time}) on this date.`,
-          'warning'
-        );
+        const occLabel = draftConflictingSlot.value.range_label || draftConflictingSlot.value.event_time;
+        const msg = draftConflictInfo.value?.isBufferOnly
+          ? `2-hour prep buffer conflict: ${slot.rangeLabel} is too close to the existing booking (${occLabel}).`
+          : `Time conflict: ${slot.rangeLabel} overlaps with an occupied booking (${occLabel}) on this date.`;
+        store.notify(msg, 'warning');
         return;
       }
 
@@ -1679,39 +1722,33 @@ export default {
     });
 
     Vue.watch(
-      [() => store.bookingModalOpen, () => form.event_date, activeParsedTime, pastSlotStatus, conflictingOccupiedSlot],
-      ([isOpen, dateVal, slot, pastState, conflict]) => {
+      [() => store.bookingModalOpen, () => form.event_date, activeParsedTime, scheduleStatus, activeConflictInfo],
+      ([isOpen, dateVal, slot, schedState, conflictInfo]) => {
         if (!isOpen || !dateVal) return;
 
-        if (pastState?.isPast) {
-          const pastKey = `${dateVal}|${slot?.rangeLabel || 'past'}`;
+        if (!schedState?.valid) {
+          const pastKey = `${dateVal}|${schedState.reason}|${slot?.rangeLabel || 'none'}`;
           if (lastNotifiedPastKey.value !== pastKey) {
             lastNotifiedPastKey.value = pastKey;
-            if (pastState.reason === 'past_date') {
-              store.notify(
-                `${formattedSelectedDate.value || dateVal} has already passed. Please choose today or a future date.`,
-                'warning'
-              );
-            } else {
-              store.notify(
-                `You can't book ${slot?.rangeLabel || 'that time'} for today anymore because it is already ${pastState.nowLabel}. Please pick a later time or another date.`,
-                'warning'
-              );
-            }
+            store.notify(
+              formatScheduleErrorMessage(schedState, slot, formattedSelectedDate.value || dateVal),
+              'warning'
+            );
           }
           return;
         }
         lastNotifiedPastKey.value = '';
 
+        const conflict = conflictInfo?.occupied;
         if (conflict && slot) {
           const conflictLabel = conflict.range_label || conflict.event_time || 'another booking';
-          const cKey = `${dateVal}|${slot.rangeLabel}|${conflictLabel}`;
+          const cKey = `${dateVal}|${slot.rangeLabel}|${conflictLabel}|${conflictInfo.isBufferOnly}`;
           if (lastNotifiedConflictKey.value !== cKey) {
             lastNotifiedConflictKey.value = cKey;
-            store.notify(
-              `Time conflict: ${slot.rangeLabel} overlaps with an existing booking (${conflictLabel}) on ${formattedSelectedDate.value || dateVal}.`,
-              'warning'
-            );
+            const msg = conflictInfo.isBufferOnly
+              ? `2-hour prep buffer required: ${slot.rangeLabel} is within 2 hours of an existing booking (${conflictLabel}) on ${formattedSelectedDate.value || dateVal}.`
+              : `Time conflict: ${slot.rangeLabel} overlaps with an existing booking (${conflictLabel}) on ${formattedSelectedDate.value || dateVal}.`;
+            store.notify(msg, 'warning');
           }
         } else {
           lastNotifiedConflictKey.value = '';
@@ -1900,21 +1937,19 @@ export default {
         return;
       }
       if (!activeParsedTime.value) {
-        store.notify('Please select a target time slot or enter a recognizable time range (e.g. 2:00 PM - 5:00 PM).', 'warning');
+        store.notify('Please select a target time slot (2 to 10 hours, e.g. 2:00 PM - 5:00 PM).', 'warning');
         return;
       }
-      if (pastSlotStatus.value.isPast) {
-        store.notify(
-          `You can't book ${activeParsedTime.value.rangeLabel} for today anymore (it is already ${pastSlotStatus.value.nowLabel}). Please choose a later time or another date.`,
-          'error'
-        );
+      if (!scheduleStatus.value.valid) {
+        store.notify(scheduleStatusMessage.value, 'error');
         return;
       }
       if (conflictingOccupiedSlot.value) {
-        store.notify(
-          `Time conflict: ${activeParsedTime.value.rangeLabel} overlaps with an occupied booking (${conflictingOccupiedSlot.value.range_label || conflictingOccupiedSlot.value.event_time}) on this date.`,
-          'error'
-        );
+        const occLabel = conflictingOccupiedSlot.value.range_label || conflictingOccupiedSlot.value.event_time;
+        const msg = activeConflictInfo.value?.isBufferOnly
+          ? `2-hour prep buffer conflict: ${activeParsedTime.value.rangeLabel} is within the 2-hour preparation window of ${occLabel}.`
+          : `Time conflict: ${activeParsedTime.value.rangeLabel} overlaps with an occupied booking (${occLabel}) on this date.`;
+        store.notify(msg, 'error');
         return;
       }
       const cleanLocation = form.location.trim().slice(0, 200);
@@ -1976,6 +2011,7 @@ export default {
       loading,
       enlargedPreview,
       minEventDate,
+      maxEventDate,
       onPhoneInput,
       onGuestCountKeydown,
       onGuestCountInput,
@@ -2035,13 +2071,19 @@ export default {
       occupiedSlotsSummary,
       formattedSelectedDate,
       activeParsedTime,
+      activeConflictInfo,
       conflictingOccupiedSlot,
-      pastSlotStatus,
+      scheduleStatus,
+      scheduleStatusMessage,
+      scheduleStatusBadgeLabel,
+      submitBlockedLabel,
       canSubmitBooking,
       durationHourOptions,
       draftParsedSlot,
+      draftConflictInfo,
       draftConflictingSlot,
-      draftPastSlotStatus,
+      draftScheduleStatus,
+      draftScheduleMessage,
       canConfirmTimePicker,
       draftDurationExactHours,
       meridiemWheelRows,

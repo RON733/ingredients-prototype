@@ -6,17 +6,17 @@ use App\Models\BookingPackage;
 use App\Models\EventBooking;
 use App\Models\User;
 use Carbon\Carbon;
-use Laravel\Sanctum\Sanctum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class EventBookingValidationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_booking_rejects_excessive_guest_count_invalid_phone_and_overlong_fields(): void
+    public function test_booking_rejects_excessive_guest_count_invalid_phone_short_fields_and_overlong_fields(): void
     {
-        $futureDate = now()->addDays(7)->toDateString();
+        $futureDate = now('Asia/Manila')->addDays(7)->toDateString();
 
         $this->postJson('/api/bookings', [
             'client_name' => 'Test Client',
@@ -46,6 +46,24 @@ class EventBookingValidationTest extends TestCase
         ])->assertStatus(422);
 
         $this->postJson('/api/bookings', [
+            'client_name' => 'A',
+            'client_phone' => '09123456789',
+            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+            'event_date' => $futureDate,
+            'guest_count' => 50,
+            'location' => 'Santa Rosa, Laguna',
+        ])->assertStatus(422)->assertJsonValidationErrors(['client_name']);
+
+        $this->postJson('/api/bookings', [
+            'client_name' => 'Test Client',
+            'client_phone' => '09123456789',
+            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+            'event_date' => $futureDate,
+            'guest_count' => 50,
+            'location' => 'Home',
+        ])->assertStatus(422)->assertJsonValidationErrors(['location']);
+
+        $this->postJson('/api/bookings', [
             'client_name' => 'Test Client',
             'client_phone' => '09123456789',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
@@ -58,7 +76,7 @@ class EventBookingValidationTest extends TestCase
 
     public function test_valid_booking_succeeds_and_computes_server_estimated_cost(): void
     {
-        $futureDate = now()->addDays(7)->toDateString();
+        $futureDate = now('Asia/Manila')->addDays(7)->toDateString();
 
         $response = $this->postJson('/api/bookings', [
             'client_name' => 'Maria Clara',
@@ -78,9 +96,9 @@ class EventBookingValidationTest extends TestCase
         $this->assertEquals(10500, (float) $response->json('booking.estimated_cost'));
     }
 
-    public function test_occupied_date_allows_different_time_but_blocks_conflicting_time(): void
+    public function test_occupied_date_enforces_2_hour_prep_buffer_and_blocks_conflicts(): void
     {
-        $targetDate = now()->addDays(14)->toDateString();
+        $targetDate = now('Asia/Manila')->addDays(14)->toDateString();
 
         EventBooking::create([
             'client_name' => 'Secret Client',
@@ -96,7 +114,7 @@ class EventBookingValidationTest extends TestCase
             'status' => 'Approved',
         ]);
 
-        // Availability endpoint notifies date is occupied with non-PII slot details
+        // Availability endpoint exposes slot + 2h buffer without PII
         $availRes = $this->getJson("/api/bookings/availability?date={$targetDate}");
         $availRes->assertOk()
             ->assertJsonPath('date', $targetDate)
@@ -104,11 +122,13 @@ class EventBookingValidationTest extends TestCase
             ->assertJsonPath('occupied_count', 1)
             ->assertJsonPath('occupied_slots.0.start_minutes', 840)
             ->assertJsonPath('occupied_slots.0.end_minutes', 1020)
+            ->assertJsonPath('occupied_slots.0.buffer_start_minutes', 720)
+            ->assertJsonPath('occupied_slots.0.buffer_end_minutes', 1140)
             ->assertJsonMissing(['client_name' => 'Secret Client'])
             ->assertJsonMissing(['client_phone' => '09170001111']);
 
         // Overlapping custom typed time (15:00 - 18:00 = 3:00 PM - 6:00 PM) is rejected
-        $conflictRes = $this->postJson('/api/bookings', [
+        $this->postJson('/api/bookings', [
             'client_name' => 'Another Client',
             'client_phone' => '09172223333',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
@@ -116,23 +136,37 @@ class EventBookingValidationTest extends TestCase
             'event_time' => '15:00 - 18:00',
             'guest_count' => 50,
             'location' => 'Clubhouse',
-        ]);
-        $conflictRes->assertStatus(422)
-            ->assertJsonValidationErrors(['event_time']);
+        ])->assertStatus(422)
+          ->assertJsonPath('reason', 'time_conflict')
+          ->assertJsonValidationErrors(['event_time']);
 
-        // Exact same time slot is rejected
+        // Back-to-back without 2h prep buffer (5:00 PM - 8:00 PM) is rejected
         $this->postJson('/api/bookings', [
-            'client_name' => 'Another Client',
-            'client_phone' => '09172223333',
+            'client_name' => 'BackToBack Client',
+            'client_phone' => '09172224444',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
             'event_date' => $targetDate,
-            'event_time' => '2pm to 5pm',
+            'event_time' => '17:00 - 20:00',
             'guest_count' => 50,
             'location' => 'Clubhouse',
-        ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
+        ])->assertStatus(422)
+          ->assertJsonPath('reason', 'prep_buffer_conflict')
+          ->assertJsonValidationErrors(['event_time']);
 
-        // Different non-overlapping time on the same date (9:00 AM - 12:00 PM) succeeds
-        $nonConflictRes = $this->postJson('/api/bookings', [
+        // Ending within 2h before 2:00 PM (11:00 AM - 2:00 PM) is rejected
+        $this->postJson('/api/bookings', [
+            'client_name' => 'TooCloseMorning Client',
+            'client_phone' => '09172225555',
+            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+            'event_date' => $targetDate,
+            'event_time' => '11:00 AM - 2:00 PM',
+            'guest_count' => 50,
+            'location' => 'Clubhouse',
+        ])->assertStatus(422)
+          ->assertJsonPath('reason', 'prep_buffer_conflict');
+
+        // 9:00 AM - 12:00 PM leaves full 2h prep buffer before 2:00 PM -> succeeds
+        $this->postJson('/api/bookings', [
             'client_name' => 'Morning Client',
             'client_phone' => '09174445555',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
@@ -140,145 +174,130 @@ class EventBookingValidationTest extends TestCase
             'event_time' => '9:00 AM - 12:00 PM',
             'guest_count' => 50,
             'location' => 'Tagaytay Hall',
-        ]);
-        $nonConflictRes->assertStatus(201)
-            ->assertJsonPath('booking.event_time', '9:00 AM – 12:00 PM (3 Hours)');
+        ])->assertStatus(201)
+          ->assertJsonPath('booking.event_time', '9:00 AM – 12:00 PM (3 Hours)');
 
-        // Back-to-back after 5:00 PM (5:00 PM - 8:00 PM) also succeeds
-        $eveningRes = $this->postJson('/api/bookings', [
+        // 7:00 PM - 10:00 PM leaves full 2h turnaround buffer after 5:00 PM -> succeeds
+        $this->postJson('/api/bookings', [
             'client_name' => 'Evening Client',
             'client_phone' => '09176667777',
             'event_type' => 'Fruity Float Package (₱3,500 / 50 pax)',
             'event_date' => $targetDate,
-            'event_time' => '17:00 - 20:00',
+            'event_time' => '19:00 - 22:00',
             'guest_count' => 50,
             'location' => 'Nuvali Pavilion',
-        ]);
-        $eveningRes->assertStatus(201)
-            ->assertJsonPath('booking.event_time', '5:00 PM – 8:00 PM (3 Hours)');
+        ])->assertStatus(201)
+          ->assertJsonPath('booking.event_time', '7:00 PM – 10:00 PM (3 Hours)');
     }
 
-    public function test_declined_booking_does_not_block_date_and_unrecognizable_time_is_rejected(): void
+    public function test_same_day_requires_2_hour_prep_and_blocks_8pm_to_12am_and_late_evening_bookings(): void
     {
-        $targetDate = now()->addDays(20)->toDateString();
-
-        EventBooking::create([
-            'client_name' => 'Declined Client',
-            'client_phone' => '09170009999',
-            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
-            'event_date' => $targetDate,
-            'event_time' => '2:00 PM – 5:00 PM (3 Hours)',
-            'guest_count' => 50,
-            'location' => 'Test Venue',
-            'package_name' => 'Coffee Package',
-            'estimated_cost' => 3500,
-            'status' => 'Declined',
-        ]);
-
-        // Unrecognizable text time is rejected
-        $this->postJson('/api/bookings', [
-            'client_name' => 'Vague Client',
-            'client_phone' => '09171112222',
-            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
-            'event_date' => $targetDate,
-            'event_time' => 'sometime afternoon',
-            'guest_count' => 50,
-            'location' => 'Test Venue',
-        ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
-
-        // Same slot as Declined booking succeeds
-        $this->postJson('/api/bookings', [
-            'client_name' => 'New Client',
-            'client_phone' => '09171112222',
-            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
-            'event_date' => $targetDate,
-            'event_time' => '2:00 PM – 5:00 PM (3 Hours)',
-            'guest_count' => 50,
-            'location' => 'Test Venue',
-        ])->assertStatus(201);
-    }
-
-    public function test_booking_today_blocks_already_passed_or_started_time_slots_in_manila_timezone(): void
-    {
-        Carbon::setTestNow(Carbon::create(2026, 11, 16, 17, 0, 0, 'Asia/Manila'));
+        // Case 1: At 2:00 PM today
+        Carbon::setTestNow(Carbon::create(2026, 11, 16, 14, 0, 0, 'Asia/Manila'));
         try {
-            // 2:00 PM - 5:00 PM has already passed at 5:00 PM
+            // 1:00 PM - 4:00 PM already started -> past_time
             $this->postJson('/api/bookings', [
-                'client_name' => 'Late Client',
+                'client_name' => 'Past Client',
                 'client_phone' => '09171234567',
                 'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
                 'event_date' => '2026-11-16',
-                'event_time' => '2:00 PM – 5:00 PM (3 Hours)',
+                'event_time' => '1:00 PM - 4:00 PM',
                 'guest_count' => 50,
                 'location' => 'Santa Rosa, Laguna',
-            ])->assertStatus(422)
-              ->assertJsonPath('reason', 'past_time')
-              ->assertJsonValidationErrors(['event_time']);
+            ])->assertStatus(422)->assertJsonPath('reason', 'past_time');
 
-            // 3:00 PM - 6:00 PM already started at 3:00 PM
+            // 3:00 PM - 6:00 PM is only 1h away -> blocked by 2h prep time
             $this->postJson('/api/bookings', [
-                'client_name' => 'Late Client',
+                'client_name' => 'ShortNotice Client',
                 'client_phone' => '09171234567',
                 'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
                 'event_date' => '2026-11-16',
                 'event_time' => '3:00 PM - 6:00 PM',
                 'guest_count' => 50,
                 'location' => 'Santa Rosa, Laguna',
-            ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
+            ])->assertStatus(422)->assertJsonPath('reason', 'prep_time');
 
-            // 5:00 PM - 8:00 PM starts at exact current minute (5:00 PM) -> blocked
+            // 8:00 PM - 11:00 PM today -> blocked by same-day 8 PM - 12 AM cutoff
             $this->postJson('/api/bookings', [
-                'client_name' => 'Exact Minute Client',
+                'client_name' => 'NightToday Client',
                 'client_phone' => '09171234567',
                 'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
                 'event_date' => '2026-11-16',
-                'event_time' => '5:00 PM - 8:00 PM',
+                'event_time' => '8:00 PM - 11:00 PM',
                 'guest_count' => 50,
                 'location' => 'Santa Rosa, Laguna',
-            ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
+            ])->assertStatus(422)->assertJsonPath('reason', 'same_day_night_cutoff');
 
-            // Past date (yesterday) -> blocked
+            // 8:00 PM - 12:00 AM today -> blocked by same-day 8 PM - 12 AM cutoff
             $this->postJson('/api/bookings', [
-                'client_name' => 'Yesterday Client',
-                'client_phone' => '09171234567',
-                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
-                'event_date' => '2026-11-15',
-                'event_time' => '6:00 PM - 9:00 PM',
-                'guest_count' => 50,
-                'location' => 'Santa Rosa, Laguna',
-            ])->assertStatus(422)
-              ->assertJsonPath('reason', 'past_date')
-              ->assertJsonValidationErrors(['event_date']);
-
-            // Later today (6:00 PM - 9:00 PM) -> allowed
-            $this->postJson('/api/bookings', [
-                'client_name' => 'Tonight Client',
+                'client_name' => 'MidnightToday Client',
                 'client_phone' => '09171234567',
                 'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
                 'event_date' => '2026-11-16',
-                'event_time' => '6:00 PM - 9:00 PM',
+                'event_time' => '8:00 PM - 12:00 AM',
+                'guest_count' => 50,
+                'location' => 'Santa Rosa, Laguna',
+            ])->assertStatus(422)->assertJsonPath('reason', 'same_day_night_cutoff');
+
+            // 7:30 PM - 10:30 PM today extends past 10:00 PM -> blocked
+            $this->postJson('/api/bookings', [
+                'client_name' => 'SpillNight Client',
+                'client_phone' => '09171234567',
+                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+                'event_date' => '2026-11-16',
+                'event_time' => '7:30 PM - 10:30 PM',
+                'guest_count' => 50,
+                'location' => 'Santa Rosa, Laguna',
+            ])->assertStatus(422)->assertJsonPath('reason', 'same_day_night_cutoff');
+
+            // 4:00 PM - 7:00 PM today (exact 2h prep, ends before 8 PM) -> allowed
+            $this->postJson('/api/bookings', [
+                'client_name' => 'ValidSameDay Client',
+                'client_phone' => '09171234567',
+                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+                'event_date' => '2026-11-16',
+                'event_time' => '4:00 PM - 7:00 PM',
                 'guest_count' => 50,
                 'location' => 'Santa Rosa, Laguna',
             ])->assertStatus(201);
 
-            // Tomorrow at 2:00 PM - 5:00 PM -> allowed
+            // Future date (tomorrow) CAN book 8:00 PM - 11:00 PM -> allowed
             $this->postJson('/api/bookings', [
-                'client_name' => 'Tomorrow Client',
+                'client_name' => 'FutureNight Client',
                 'client_phone' => '09179998888',
                 'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
                 'event_date' => '2026-11-17',
-                'event_time' => '2:00 PM - 5:00 PM',
+                'event_time' => '8:00 PM - 11:00 PM',
                 'guest_count' => 50,
                 'location' => 'Santa Rosa, Laguna',
             ])->assertStatus(201);
         } finally {
             Carbon::setTestNow();
         }
+
+        // Case 2: At 6:00 PM today (evening / mag-gagabi na), same-day bookings are completely closed
+        Carbon::setTestNow(Carbon::create(2026, 11, 16, 18, 0, 0, 'Asia/Manila'));
+        try {
+            $this->getJson('/api/bookings/availability')
+                ->assertOk()
+                ->assertJsonPath('same_day_closed', true);
+
+            $this->postJson('/api/bookings', [
+                'client_name' => 'EveningSameDay Client',
+                'client_phone' => '09171234567',
+                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+                'event_date' => '2026-11-16',
+                'event_time' => '8:00 PM - 11:00 PM',
+                'guest_count' => 50,
+                'location' => 'Santa Rosa, Laguna',
+            ])->assertStatus(422)->assertJsonPath('reason', 'same_day_closed');
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
-    public function test_manila_midnight_boundary_does_not_fall_back_to_utc_yesterday(): void
+    public function test_manila_midnight_boundary_and_service_hours_and_max_advance_days(): void
     {
-        // 1:30 AM Manila on Nov 17 is 5:30 PM UTC on Nov 16
         Carbon::setTestNow(Carbon::create(2026, 11, 17, 1, 30, 0, 'Asia/Manila'));
         try {
             $this->getJson('/api/bookings/availability')
@@ -286,6 +305,7 @@ class EventBookingValidationTest extends TestCase
                 ->assertJsonPath('server_date', '2026-11-17')
                 ->assertJsonPath('server_minutes', 90);
 
+            // Yesterday in Manila
             $this->postJson('/api/bookings', [
                 'client_name' => 'Past Manila Day',
                 'client_phone' => '09171234567',
@@ -296,6 +316,40 @@ class EventBookingValidationTest extends TestCase
                 'location' => 'Santa Rosa',
             ])->assertStatus(422)->assertJsonPath('reason', 'past_date');
 
+            // Unreasonable 3:00 AM start time -> rejected by service_hours
+            $this->postJson('/api/bookings', [
+                'client_name' => 'TooEarly Client',
+                'client_phone' => '09171234567',
+                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+                'event_date' => '2026-11-18',
+                'event_time' => '3:00 AM - 6:00 AM',
+                'guest_count' => 50,
+                'location' => 'Santa Rosa',
+            ])->assertStatus(422)->assertJsonPath('reason', 'service_hours');
+
+            // Under 2 hours duration (1 hour) -> rejected
+            $this->postJson('/api/bookings', [
+                'client_name' => 'TooShort Client',
+                'client_phone' => '09171234567',
+                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+                'event_date' => '2026-11-18',
+                'event_time' => '2:00 PM - 3:00 PM',
+                'guest_count' => 50,
+                'location' => 'Santa Rosa',
+            ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
+
+            // Over 1 year ahead -> rejected
+            $this->postJson('/api/bookings', [
+                'client_name' => 'FarFuture Client',
+                'client_phone' => '09171234567',
+                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+                'event_date' => '2028-01-01',
+                'event_time' => '2:00 PM - 5:00 PM',
+                'guest_count' => 50,
+                'location' => 'Santa Rosa',
+            ])->assertStatus(422)->assertJsonPath('reason', 'too_far');
+
+            // Valid 9:00 AM - 12:00 PM today
             $this->postJson('/api/bookings', [
                 'client_name' => 'Morning Client',
                 'client_phone' => '09171234567',
@@ -310,9 +364,47 @@ class EventBookingValidationTest extends TestCase
         }
     }
 
+    public function test_declined_booking_does_not_block_date_and_unrecognizable_time_is_rejected(): void
+    {
+        $targetDate = now('Asia/Manila')->addDays(20)->toDateString();
+
+        EventBooking::create([
+            'client_name' => 'Declined Client',
+            'client_phone' => '09170009999',
+            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+            'event_date' => $targetDate,
+            'event_time' => '2:00 PM – 5:00 PM (3 Hours)',
+            'guest_count' => 50,
+            'location' => 'Test Venue',
+            'package_name' => 'Coffee Package',
+            'estimated_cost' => 3500,
+            'status' => 'Declined',
+        ]);
+
+        $this->postJson('/api/bookings', [
+            'client_name' => 'Vague Client',
+            'client_phone' => '09171112222',
+            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+            'event_date' => $targetDate,
+            'event_time' => 'sometime afternoon',
+            'guest_count' => 50,
+            'location' => 'Test Venue',
+        ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
+
+        $this->postJson('/api/bookings', [
+            'client_name' => 'New Client',
+            'client_phone' => '09171112222',
+            'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+            'event_date' => $targetDate,
+            'event_time' => '2:00 PM – 5:00 PM (3 Hours)',
+            'guest_count' => 50,
+            'location' => 'Test Venue',
+        ])->assertStatus(201);
+    }
+
     public function test_admin_update_and_status_approval_prevent_time_conflicts_and_tbd_on_active(): void
     {
-        $targetDate = now()->addDays(12)->toDateString();
+        $targetDate = now('Asia/Manila')->addDays(12)->toDateString();
 
         EventBooking::create([
             'client_name' => 'Occupied Slot',
@@ -321,7 +413,7 @@ class EventBookingValidationTest extends TestCase
             'event_date' => $targetDate,
             'event_time' => '2:00 PM – 5:00 PM (3 Hours)',
             'guest_count' => 50,
-            'location' => 'Hall A',
+            'location' => 'Hall A, Santa Rosa',
             'package_name' => 'Coffee Package',
             'estimated_cost' => 3500,
             'status' => 'Approved',
@@ -334,20 +426,20 @@ class EventBookingValidationTest extends TestCase
             'event_date' => $targetDate,
             'event_time' => '9:00 AM – 12:00 PM (3 Hours)',
             'guest_count' => 50,
-            'location' => 'Hall B',
+            'location' => 'Hall B, Santa Rosa',
             'package_name' => 'Coffee Package',
             'estimated_cost' => 3500,
             'status' => 'Pending',
         ]);
 
-        $declinedConflict = EventBooking::create([
+        $declinedBufferConflict = EventBooking::create([
             'client_name' => 'Previously Declined',
             'client_phone' => '09170003333',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
             'event_date' => $targetDate,
-            'event_time' => '3:00 PM – 6:00 PM (3 Hours)',
+            'event_time' => '5:00 PM – 8:00 PM (3 Hours)',
             'guest_count' => 50,
-            'location' => 'Hall C',
+            'location' => 'Hall C, Santa Rosa',
             'package_name' => 'Coffee Package',
             'estimated_cost' => 3500,
             'status' => 'Declined',
@@ -366,28 +458,29 @@ class EventBookingValidationTest extends TestCase
             'event_time' => 'TBD',
         ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
 
-        // Admin cannot re-approve declinedConflict because it overlaps Approved 2-5 PM
-        $this->patchJson("/api/bookings/{$declinedConflict->id}/status", [
+        // Admin cannot re-approve declinedBufferConflict (5-8 PM violates 2h buffer after 2-5 PM)
+        $this->patchJson("/api/bookings/{$declinedBufferConflict->id}/status", [
             'status' => 'Approved',
-        ])->assertStatus(422);
+        ])->assertStatus(422)->assertJsonPath('reason', 'prep_buffer_conflict');
 
-        // Non-conflicting morningBooking approval succeeds
+        // Non-conflicting morningBooking approval succeeds (9 AM - 12 PM has 2h gap before 2 PM)
         $this->patchJson("/api/bookings/{$morningBooking->id}/status", [
             'status' => 'Approved',
         ])->assertOk()->assertJsonPath('booking.status', 'Approved');
     }
 
-    public function test_overnight_booking_prevents_next_day_early_morning_overlap(): void
+    public function test_overnight_booking_with_2h_buffer_prevents_next_day_morning_overlap(): void
     {
-        $day1 = now()->addDays(15)->toDateString();
-        $day2 = now()->addDays(16)->toDateString();
+        $day1 = now('Asia/Manila')->addDays(15)->toDateString();
+        $day2 = now('Asia/Manila')->addDays(16)->toDateString();
 
+        // 10:00 PM - 6:00 AM (8 hours) + 2h turnaround buffer = blocked until 8:00 AM on day2
         $this->postJson('/api/bookings', [
-            'client_name' => 'Night Party',
+            'client_name' => 'Overnight Gala',
             'client_phone' => '09171110000',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
             'event_date' => $day1,
-            'event_time' => '10:00 PM - 1:00 AM',
+            'event_time' => '10:00 PM - 6:00 AM',
             'guest_count' => 50,
             'location' => 'Clubhouse',
         ])->assertStatus(201);
@@ -395,27 +488,26 @@ class EventBookingValidationTest extends TestCase
         $this->getJson("/api/bookings/availability?date={$day2}")
             ->assertOk()
             ->assertJsonPath('is_occupied', true)
-            ->assertJsonPath('occupied_slots.0.start_minutes', 0)
-            ->assertJsonPath('occupied_slots.0.end_minutes', 60);
+            ->assertJsonPath('occupied_slots.0.buffer_end_minutes', 480);
 
-        // 12:30 AM - 3:30 AM overlaps the 12:00 AM - 1:00 AM overnight tail
+        // 7:00 AM - 10:00 AM on day2 violates 2h buffer ending at 8:00 AM -> rejected
         $this->postJson('/api/bookings', [
             'client_name' => 'Early Overlap',
             'client_phone' => '09172220000',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
             'event_date' => $day2,
-            'event_time' => '12:30 AM - 3:30 AM',
+            'event_time' => '7:00 AM - 10:00 AM',
             'guest_count' => 50,
             'location' => 'Clubhouse',
-        ])->assertStatus(422)->assertJsonValidationErrors(['event_time']);
+        ])->assertStatus(422)->assertJsonPath('reason', 'prep_buffer_conflict');
 
-        // 1:00 AM - 4:00 AM starts right when overnight ends -> allowed
+        // 8:00 AM - 11:00 AM starts right after 2h turnaround buffer -> allowed
         $this->postJson('/api/bookings', [
-            'client_name' => 'After Overnight',
+            'client_name' => 'After Turnaround',
             'client_phone' => '09173330000',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
             'event_date' => $day2,
-            'event_time' => '1:00 AM - 4:00 AM',
+            'event_time' => '8:00 AM - 11:00 AM',
             'guest_count' => 50,
             'location' => 'Clubhouse',
         ])->assertStatus(201);
@@ -433,48 +525,61 @@ class EventBookingValidationTest extends TestCase
             'client_phone' => '09171234567',
             'booking_package_id' => $pkg->id,
             'event_type' => $pkg->name,
-            'event_date' => now()->addDays(9)->toDateString(),
+            'event_date' => now('Asia/Manila')->addDays(9)->toDateString(),
             'event_time' => '2:00 PM - 5:00 PM',
             'guest_count' => 50,
-            'location' => 'Santa Rosa',
+            'location' => 'Santa Rosa, Laguna',
         ])->assertStatus(422)->assertJsonValidationErrors(['booking_package_id']);
     }
 
-    public function test_customer_can_cancel_pending_booking_and_release_slot(): void
+    public function test_customer_pending_booking_limit_and_cancel_releases_slot(): void
     {
-        $targetDate = now()->addDays(18)->toDateString();
+        $baseDate = now('Asia/Manila')->addDays(21);
+        $ids = [];
 
-        $createRes = $this->postJson('/api/bookings', [
-            'client_name' => 'Cancel Tester',
+        for ($i = 0; $i < 3; $i++) {
+            $res = $this->postJson('/api/bookings', [
+                'client_name' => 'Repeat Booker',
+                'client_phone' => '09175551234',
+                'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
+                'event_date' => $baseDate->copy()->addDays($i)->toDateString(),
+                'event_time' => '2:00 PM - 5:00 PM',
+                'guest_count' => 50,
+                'location' => 'Santa Rosa, Laguna',
+            ])->assertStatus(201);
+            $ids[] = $res->json('booking.id');
+        }
+
+        // 4th pending booking by same customer is blocked
+        $this->postJson('/api/bookings', [
+            'client_name' => 'Repeat Booker',
             'client_phone' => '09175551234',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
-            'event_date' => $targetDate,
+            'event_date' => $baseDate->copy()->addDays(4)->toDateString(),
             'event_time' => '2:00 PM - 5:00 PM',
             'guest_count' => 50,
-            'location' => 'Santa Rosa',
-        ])->assertStatus(201);
-
-        $bookingId = $createRes->json('booking.id');
+            'location' => 'Santa Rosa, Laguna',
+        ])->assertStatus(422)->assertJsonPath('reason', 'pending_limit');
 
         // Stranger with wrong phone cannot cancel
-        $this->postJson("/api/bookings/{$bookingId}/cancel", [
+        $this->postJson("/api/bookings/{$ids[0]}/cancel", [
             'client_phone' => '09179999999',
         ])->assertStatus(403);
 
-        // Matching phone cancels Pending booking
-        $this->postJson("/api/bookings/{$bookingId}/cancel", [
+        // Matching phone cancels Pending booking -> frees pending quota & slot
+        $this->postJson("/api/bookings/{$ids[0]}/cancel", [
             'client_phone' => '09175551234',
         ])->assertOk()->assertJsonPath('booking.status', 'Cancelled');
 
-        // Slot is now free for another booking
+        // Slot on first date can now be rebooked
         $secondRes = $this->postJson('/api/bookings', [
             'client_name' => 'Rebooker',
             'client_phone' => '09176661234',
             'event_type' => 'Coffee Package (₱3,500 / 50 pax)',
-            'event_date' => $targetDate,
+            'event_date' => $baseDate->toDateString(),
             'event_time' => '2:00 PM - 5:00 PM',
             'guest_count' => 50,
-            'location' => 'Santa Rosa',
+            'location' => 'Santa Rosa, Laguna',
         ])->assertStatus(201);
 
         // Approved booking cannot be cancelled online

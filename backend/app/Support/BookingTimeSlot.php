@@ -6,8 +6,14 @@ class BookingTimeSlot
 {
     public const STORE_TIMEZONE = 'Asia/Manila';
     public const DEFAULT_DURATION_MINUTES = 180;
-    public const MIN_DURATION_MINUTES = 30;
-    public const MAX_DURATION_MINUTES = 840; // 14 hours
+    public const MIN_DURATION_MINUTES = 120; // 2 hours minimum
+    public const MAX_DURATION_MINUTES = 600; // 10 hours maximum
+    public const PREP_BUFFER_MINUTES = 120;  // 2 hours prep lead time & turnaround buffer
+    public const MIN_START_MINUTES = 420;    // 7:00 AM
+    public const MAX_START_MINUTES = 1320;   // 10:00 PM
+    public const SAME_DAY_CUTOFF_START_MINUTES = 1200; // 8:00 PM
+    public const SAME_DAY_MAX_END_MINUTES = 1320;      // 10:00 PM
+    public const MAX_ADVANCE_DAYS = 365;
 
     /**
      * Parse a booking time string (e.g. "2:00 PM – 5:00 PM (3 Hours)", "14:00 - 17:00", "2pm to 5pm", "1:00 PM")
@@ -126,12 +132,12 @@ class BookingTimeSlot
     }
 
     /**
-     * Check whether two parsed time slots overlap.
+     * Check whether two parsed time slots overlap (optionally with turnaround/prep buffer minutes).
      */
-    public static function overlaps(array $slotA, array $slotB): bool
+    public static function overlaps(array $slotA, array $slotB, int $bufferMinutes = 0): bool
     {
-        return $slotA['start_minutes'] < $slotB['end_minutes']
-            && $slotB['start_minutes'] < $slotA['end_minutes'];
+        return $slotA['start_minutes'] < ($slotB['end_minutes'] + $bufferMinutes)
+            && $slotB['start_minutes'] < ($slotA['end_minutes'] + $bufferMinutes);
     }
 
     /**
@@ -147,58 +153,112 @@ class BookingTimeSlot
     }
 
     /**
-     * Check if a target date + time slot has already passed in the store timezone.
+     * Evaluate all date, service hour, 2-hour preparation lead time, and same-day 8 PM - 12 AM rules.
      *
-     * @return array{is_past: bool, reason: ?string, now_date: string, now_minutes: int, now_label: string}
+     * @return array{
+     *   valid: bool,
+     *   is_past: bool,
+     *   reason: ?string,
+     *   now_date: string,
+     *   max_date: string,
+     *   now_minutes: int,
+     *   now_label: string,
+     *   earliest_start_minutes: ?int,
+     *   earliest_start_label: ?string
+     * }
      */
-    public static function isPastSlotForDate(string $targetDate, array $parsedSlot, ?\Carbon\CarbonInterface $now = null): array
+    public static function evaluateScheduleRules(string $targetDate, ?array $parsedSlot = null, ?\Carbon\CarbonInterface $now = null): array
     {
         $manilaNow = ($now ? \Carbon\Carbon::instance($now) : self::storeNow())
             ->copy()
             ->setTimezone(self::STORE_TIMEZONE);
 
         $today = $manilaNow->toDateString();
+        $maxDate = $manilaNow->copy()->addDays(self::MAX_ADVANCE_DAYS)->toDateString();
         $nowMinutes = ((int) $manilaNow->hour * 60) + (int) $manilaNow->minute;
         $nowLabel = $manilaNow->format('g:i A');
+        $earliestTodayMinutes = $nowMinutes + self::PREP_BUFFER_MINUTES;
+        $earliestTodayLabel = $earliestTodayMinutes < 1440 ? self::formatTime($earliestTodayMinutes) : null;
 
-        if ($targetDate < $today) {
-            return [
-                'is_past' => true,
-                'reason' => 'past_date',
-                'now_date' => $today,
-                'now_minutes' => $nowMinutes,
-                'now_label' => $nowLabel,
-            ];
-        }
-
-        if ($targetDate === $today) {
-            if ($parsedSlot['end_minutes'] <= $nowMinutes) {
-                return [
-                    'is_past' => true,
-                    'reason' => 'ended',
-                    'now_date' => $today,
-                    'now_minutes' => $nowMinutes,
-                    'now_label' => $nowLabel,
-                ];
-            }
-            if ($parsedSlot['start_minutes'] <= $nowMinutes) {
-                return [
-                    'is_past' => true,
-                    'reason' => 'started',
-                    'now_date' => $today,
-                    'now_minutes' => $nowMinutes,
-                    'now_label' => $nowLabel,
-                ];
-            }
-        }
-
-        return [
+        $base = [
+            'valid' => true,
             'is_past' => false,
             'reason' => null,
             'now_date' => $today,
+            'max_date' => $maxDate,
             'now_minutes' => $nowMinutes,
             'now_label' => $nowLabel,
+            'earliest_start_minutes' => $targetDate === $today ? $earliestTodayMinutes : self::MIN_START_MINUTES,
+            'earliest_start_label' => $targetDate === $today ? $earliestTodayLabel : self::formatTime(self::MIN_START_MINUTES),
         ];
+
+        if ($targetDate < $today) {
+            return [
+                ...$base,
+                'valid' => false,
+                'is_past' => true,
+                'reason' => 'past_date',
+            ];
+        }
+
+        if ($targetDate > $maxDate) {
+            return [
+                ...$base,
+                'valid' => false,
+                'reason' => 'too_far',
+            ];
+        }
+
+        if ($parsedSlot !== null) {
+            if ($parsedSlot['start_minutes'] < self::MIN_START_MINUTES || $parsedSlot['start_minutes'] > self::MAX_START_MINUTES) {
+                return [
+                    ...$base,
+                    'valid' => false,
+                    'reason' => 'service_hours',
+                ];
+            }
+        }
+
+        if ($targetDate === $today) {
+            if ($earliestTodayMinutes >= self::SAME_DAY_CUTOFF_START_MINUTES) {
+                return [
+                    ...$base,
+                    'valid' => false,
+                    'is_past' => true,
+                    'reason' => 'same_day_closed',
+                ];
+            }
+
+            if ($parsedSlot !== null) {
+                if ($parsedSlot['end_minutes'] <= $nowMinutes || $parsedSlot['start_minutes'] <= $nowMinutes) {
+                    return [
+                        ...$base,
+                        'valid' => false,
+                        'is_past' => true,
+                        'reason' => 'past_time',
+                    ];
+                }
+
+                if ($parsedSlot['start_minutes'] >= self::SAME_DAY_CUTOFF_START_MINUTES || $parsedSlot['end_minutes'] > self::SAME_DAY_MAX_END_MINUTES) {
+                    return [
+                        ...$base,
+                        'valid' => false,
+                        'reason' => 'same_day_night_cutoff',
+                    ];
+                }
+
+                if ($parsedSlot['start_minutes'] < $earliestTodayMinutes) {
+                    return [
+                        ...$base,
+                        'valid' => false,
+                        'is_past' => true,
+                        'reason' => 'prep_time',
+                    ];
+                }
+            }
+        }
+
+        return $base;
     }
 
     public static function formatTime(int $minutes): string

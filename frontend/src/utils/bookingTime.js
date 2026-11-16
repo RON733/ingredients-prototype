@@ -2,16 +2,19 @@
 
 export const STORE_TIMEZONE = 'Asia/Manila';
 export const DEFAULT_DURATION_MINUTES = 180;
-export const MIN_DURATION_MINUTES = 30;
-export const MAX_DURATION_MINUTES = 840; // 14 hours
+export const MIN_DURATION_MINUTES = 120; // 2 hours minimum
+export const MAX_DURATION_MINUTES = 600; // 10 hours maximum
+export const PREP_BUFFER_MINUTES = 120;  // 2 hours prep lead time & turnaround buffer
+export const MIN_START_MINUTES = 7 * 60; // 7:00 AM
+export const MAX_START_MINUTES = 22 * 60; // 10:00 PM
+export const SAME_DAY_CUTOFF_START_MINUTES = 20 * 60; // 8:00 PM
+export const SAME_DAY_MAX_END_MINUTES = 22 * 60; // 10:00 PM
+export const MAX_ADVANCE_DAYS = 365;
 
 export const PRESET_TIME_SLOTS = [
   { startMinutes: 9 * 60, durationHours: 3, tag: 'Morning' },
-  { startMinutes: 10 * 60, durationHours: 3, tag: 'Late Morning' },
-  { startMinutes: 13 * 60, durationHours: 3, tag: 'Early Afternoon' },
   { startMinutes: 14 * 60, durationHours: 3, tag: 'Afternoon' },
-  { startMinutes: 17 * 60, durationHours: 3, tag: 'Evening' },
-  { startMinutes: 18 * 60, durationHours: 3, tag: 'Night' },
+  { startMinutes: 19 * 60, durationHours: 3, tag: 'Evening' },
 ];
 
 export const DURATION_HOUR_OPTIONS = [2, 3, 4, 5, 6];
@@ -45,8 +48,8 @@ export const buildSlotFromMinutes = (startMinutes, endMinutes) => {
   };
 };
 
-export const START_TIME_OPTIONS = Array.from({ length: 29 }, (_, idx) => {
-  const minutes = 7 * 60 + idx * 30; // 7:00 AM through 9:00 PM
+export const START_TIME_OPTIONS = Array.from({ length: 31 }, (_, idx) => {
+  const minutes = 7 * 60 + idx * 30; // 7:00 AM through 10:00 PM
   return {
     minutes,
     label: formatTimeLabel(minutes),
@@ -173,8 +176,19 @@ export const parseBookingTime = (raw, defaultDurationMinutes = DEFAULT_DURATION_
   return buildSlotFromMinutes(single.minutes, single.minutes + durationMinutes);
 };
 
+const addDaysToDateString = (dateStr, days) => {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  const yy = dt.getUTCFullYear();
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  return `${yy}-${mm}-${dd}`;
+};
+
 export const getStoreDateTimeParts = (nowInput = new Date(), serverClockOffsetMs = 0) => {
   const adjusted = new Date(nowInput.getTime() + (Number.isFinite(serverClockOffsetMs) ? serverClockOffsetMs : 0));
+  let dateString;
+  let minutes;
   try {
     const parts = new Intl.DateTimeFormat('en-CA', {
       timeZone: STORE_TIMEZONE,
@@ -192,47 +206,113 @@ export const getStoreDateTimeParts = (nowInput = new Date(), serverClockOffsetMs
     }
     const hour = parseInt(map.hour || '0', 10) % 24;
     const minute = parseInt(map.minute || '0', 10);
-    const minutes = hour * 60 + minute;
-    return {
-      dateString: `${map.year}-${map.month}-${map.day}`,
-      minutes,
-      timeLabel: formatTimeLabel(minutes),
-    };
+    minutes = hour * 60 + minute;
+    dateString = `${map.year}-${map.month}-${map.day}`;
   } catch (e) {
     const manilaFallback = new Date(adjusted.getTime() + (8 * 60 + adjusted.getTimezoneOffset()) * 60000);
     const y = manilaFallback.getFullYear();
     const m = String(manilaFallback.getMonth() + 1).padStart(2, '0');
     const d = String(manilaFallback.getDate()).padStart(2, '0');
-    const minutes = manilaFallback.getHours() * 60 + manilaFallback.getMinutes();
-    return {
-      dateString: `${y}-${m}-${d}`,
-      minutes,
-      timeLabel: formatTimeLabel(minutes),
-    };
+    minutes = manilaFallback.getHours() * 60 + manilaFallback.getMinutes();
+    dateString = `${y}-${m}-${d}`;
   }
+
+  return {
+    dateString,
+    maxDateString: addDaysToDateString(dateString, MAX_ADVANCE_DAYS),
+    minutes,
+    timeLabel: formatTimeLabel(minutes),
+  };
+};
+
+export const evaluateBookingSchedule = (targetDate, slot = null, storeNow = getStoreDateTimeParts()) => {
+  const earliestTodayMinutes = storeNow.minutes + PREP_BUFFER_MINUTES;
+  const earliestTodayLabel = earliestTodayMinutes < 1440 ? formatTimeLabel(earliestTodayMinutes) : null;
+  const base = {
+    valid: true,
+    isPast: false,
+    reason: null,
+    nowDate: storeNow.dateString,
+    maxDate: storeNow.maxDateString,
+    nowMinutes: storeNow.minutes,
+    nowLabel: storeNow.timeLabel,
+    earliestStartMinutes: targetDate === storeNow.dateString ? earliestTodayMinutes : MIN_START_MINUTES,
+    earliestStartLabel: targetDate === storeNow.dateString ? earliestTodayLabel : formatTimeLabel(MIN_START_MINUTES),
+  };
+
+  if (!targetDate) {
+    if (slot && (slot.startMinutes < MIN_START_MINUTES || slot.startMinutes > MAX_START_MINUTES)) {
+      return { ...base, valid: false, reason: 'service_hours' };
+    }
+    return base;
+  }
+
+  if (targetDate < storeNow.dateString) {
+    return { ...base, valid: false, isPast: true, reason: 'past_date' };
+  }
+
+  if (storeNow.maxDateString && targetDate > storeNow.maxDateString) {
+    return { ...base, valid: false, reason: 'too_far' };
+  }
+
+  if (slot && (slot.startMinutes < MIN_START_MINUTES || slot.startMinutes > MAX_START_MINUTES)) {
+    return { ...base, valid: false, reason: 'service_hours' };
+  }
+
+  if (targetDate === storeNow.dateString) {
+    if (earliestTodayMinutes >= SAME_DAY_CUTOFF_START_MINUTES) {
+      return { ...base, valid: false, isPast: true, reason: 'same_day_closed' };
+    }
+
+    if (slot) {
+      const startMin = slot.startMinutes ?? slot.start_minutes;
+      const endMin = slot.endMinutes ?? slot.end_minutes;
+      if ((Number.isFinite(endMin) && endMin <= storeNow.minutes) || (Number.isFinite(startMin) && startMin <= storeNow.minutes)) {
+        return { ...base, valid: false, isPast: true, reason: 'past_time' };
+      }
+      if ((Number.isFinite(startMin) && startMin >= SAME_DAY_CUTOFF_START_MINUTES) || (Number.isFinite(endMin) && endMin > SAME_DAY_MAX_END_MINUTES)) {
+        return { ...base, valid: false, reason: 'same_day_night_cutoff' };
+      }
+      if (Number.isFinite(startMin) && startMin < earliestTodayMinutes) {
+        return { ...base, valid: false, isPast: true, reason: 'prep_time' };
+      }
+    }
+  }
+
+  return base;
 };
 
 export const isSlotPastForDate = (targetDate, slot, storeNow = getStoreDateTimeParts()) => {
-  if (!targetDate) {
-    return { isPast: false, reason: null, nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
-  }
-  if (targetDate < storeNow.dateString) {
-    return { isPast: true, reason: 'past_date', nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
-  }
-  if (targetDate === storeNow.dateString && slot) {
-    const startMin = slot.startMinutes ?? slot.start_minutes;
-    const endMin = slot.endMinutes ?? slot.end_minutes;
-    if (Number.isFinite(endMin) && endMin <= storeNow.minutes) {
-      return { isPast: true, reason: 'ended', nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
-    }
-    if (Number.isFinite(startMin) && startMin <= storeNow.minutes) {
-      return { isPast: true, reason: 'started', nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
-    }
-  }
-  return { isPast: false, reason: null, nowDate: storeNow.dateString, nowMinutes: storeNow.minutes, nowLabel: storeNow.timeLabel };
+  const res = evaluateBookingSchedule(targetDate, slot, storeNow);
+  return {
+    ...res,
+    isPast: !res.valid,
+  };
 };
 
-export const slotsOverlap = (slotA, slotB) => {
+export const formatScheduleErrorMessage = (evalResult, slot = null, dateLabel = '') => {
+  if (!evalResult || evalResult.valid) return '';
+  const rangeLabel = slot?.rangeLabel || 'the selected time';
+  switch (evalResult.reason) {
+    case 'past_date':
+      return `${dateLabel || 'The selected date'} has already passed (today is ${evalResult.nowDate}). Please choose today or a future date.`;
+    case 'too_far':
+      return `Bookings can only be scheduled up to 1 year in advance (on or before ${evalResult.maxDate}).`;
+    case 'service_hours':
+      return 'Event catering start times must be between 7:00 AM and 10:00 PM.';
+    case 'same_day_closed':
+      return `Same-day bookings are closed from 6:00 PM onward because we require 2 hours of preparation time and do not accept same-day bookings from 8:00 PM to 12:00 AM (current time: ${evalResult.nowLabel}). Please choose tomorrow or a future date.`;
+    case 'same_day_night_cutoff':
+      return `Same-day bookings between 8:00 PM and 12:00 AM are not allowed. Please choose an earlier time ending by 10:00 PM, or book for tomorrow or a future date.`;
+    case 'prep_time':
+      return `We require at least 2 hours of preparation time for same-day bookings. At ${evalResult.nowLabel}, the earliest available start time today is ${evalResult.earliestStartLabel || 'a later slot'}.`;
+    case 'past_time':
+    default:
+      return `You can't book ${rangeLabel} for today anymore because it is already ${evalResult.nowLabel}. Please choose a later time or another date.`;
+  }
+};
+
+export const slotsOverlap = (slotA, slotB, bufferMinutes = 0) => {
   if (!slotA || !slotB) return false;
   const s1 = slotA.startMinutes ?? slotA.start_minutes;
   const e1 = slotA.endMinutes ?? slotA.end_minutes;
@@ -246,5 +326,5 @@ export const slotsOverlap = (slotA, slotB) => {
   ) {
     return false;
   }
-  return s1 < e2 && s2 < e1;
+  return s1 < (e2 + bufferMinutes) && s2 < (e1 + bufferMinutes);
 };
