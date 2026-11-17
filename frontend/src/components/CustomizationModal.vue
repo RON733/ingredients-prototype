@@ -73,7 +73,7 @@
           <!-- Size / Variant Selector -->
           <div v-if="showSizeSelector">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Select Size
+              {{ product.customizations?.size_label || 'Select Size' }}
             </label>
             <div v-if="hasCustomSizes" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               <button
@@ -111,7 +111,7 @@
           <!-- Flavour Selector (Configured per product) -->
           <div v-if="productFlavours.length > 0">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              {{ productSecondFlavours.length > 0 ? 'Select 1st Flavour' : 'Select Flavour' }}
+              {{ product.customizations?.flavour_label || (productSecondFlavours.length > 0 ? 'Select 1st Flavour' : 'Select Flavour') }}
             </label>
             <div class="grid grid-cols-2 gap-2">
               <button
@@ -149,7 +149,7 @@
           <!-- Custom Options / Add-ons (Configured per product) -->
           <div v-if="productOptions.length > 0">
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Customizations &amp; Add-ons
+              {{ product.customizations?.options_label || 'Customizations & Add-ons' }}
             </label>
             <div class="grid grid-cols-2 gap-2">
               <label

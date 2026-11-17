@@ -570,17 +570,26 @@
                     <i class="pi pi-sliders-h text-amber-400"></i>
                     <span>Sizes, Flavours &amp; Customizations</span>
                   </span>
-                  <span class="text-[10px] text-gray-400">Optional choices for customers</span>
+                  <span class="text-[10px] text-gray-400">Editable labels &amp; choices</span>
                 </div>
 
                 <!-- Sizes (Select Size) -->
                 <div class="space-y-1.5">
-                  <div class="flex items-center justify-between">
-                    <label class="text-[11px] font-semibold text-gray-300">Sizes (Select Size)</label>
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                      <i class="pi pi-pencil text-[10px] text-amber-400/80 shrink-0"></i>
+                      <input
+                        v-model="form.size_label"
+                        type="text"
+                        placeholder="Select Size"
+                        title="Customize section label shown to customers"
+                        class="w-full max-w-[220px] px-2 py-1 rounded-lg bg-surface-900/80 border border-surface-700/80 focus:border-amber-500 focus:outline-none text-[11px] font-semibold text-gray-200 placeholder-gray-500"
+                      />
+                    </div>
                     <button
                       type="button"
                       @click="form.sizes.push({ name: '', price: 0 })"
-                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors">
+                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0">
                       <i class="pi pi-plus text-[10px]"></i> Add Size
                     </button>
                   </div>
@@ -617,12 +626,21 @@
 
                 <!-- Flavours -->
                 <div class="space-y-1.5 pt-2 border-t border-surface-700/70">
-                  <div class="flex items-center justify-between">
-                    <label class="text-[11px] font-semibold text-gray-300">Flavours</label>
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                      <i class="pi pi-pencil text-[10px] text-amber-400/80 shrink-0"></i>
+                      <input
+                        v-model="form.flavour_label"
+                        type="text"
+                        placeholder="Select Flavour"
+                        title="Customize section label shown to customers"
+                        class="w-full max-w-[220px] px-2 py-1 rounded-lg bg-surface-900/80 border border-surface-700/80 focus:border-amber-500 focus:outline-none text-[11px] font-semibold text-gray-200 placeholder-gray-500"
+                      />
+                    </div>
                     <button
                       type="button"
                       @click="form.flavours.push({ name: '', price: 0 })"
-                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors">
+                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0">
                       <i class="pi pi-plus text-[10px]"></i> Add Flavour
                     </button>
                   </div>
@@ -659,12 +677,21 @@
 
                 <!-- Customizations / Add-ons -->
                 <div class="space-y-1.5 pt-2 border-t border-surface-700/70">
-                  <div class="flex items-center justify-between">
-                    <label class="text-[11px] font-semibold text-gray-300">Customizations / Add-ons</label>
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                      <i class="pi pi-pencil text-[10px] text-amber-400/80 shrink-0"></i>
+                      <input
+                        v-model="form.options_label"
+                        type="text"
+                        placeholder="Customizations & Add-ons"
+                        title="Customize section label shown to customers"
+                        class="w-full max-w-[220px] px-2 py-1 rounded-lg bg-surface-900/80 border border-surface-700/80 focus:border-amber-500 focus:outline-none text-[11px] font-semibold text-gray-200 placeholder-gray-500"
+                      />
+                    </div>
                     <button
                       type="button"
                       @click="form.custom_options.push({ name: '', price: 0 })"
-                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors">
+                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors shrink-0">
                       <i class="pi pi-plus text-[10px]"></i> Add Customization
                     </button>
                   </div>
@@ -923,6 +950,9 @@ export default {
       base_price: 99,
       discount_percent: 0,
       description: '',
+      size_label: '',
+      flavour_label: '',
+      options_label: '',
       sizes: [],
       flavours: [],
       custom_options: [],
@@ -1289,6 +1319,9 @@ export default {
       form.base_price = 79;
       form.discount_percent = 0;
       form.description = '';
+      form.size_label = '';
+      form.flavour_label = '';
+      form.options_label = '';
       form.sizes = [];
       form.flavours = [];
       form.custom_options = [];
@@ -1322,10 +1355,16 @@ export default {
         : Number(product.price);
       form.discount_percent = Number(product.discount_percent || 0);
       form.description = product.description || '';
+      form.size_label = product.customizations?.size_label || '';
+      form.flavour_label = product.customizations?.flavour_label || '';
+      form.options_label = product.customizations?.options_label || '';
       form.sizes = Array.isArray(product.customizations?.sizes) ? product.customizations.sizes.map(s => ({ name: s.name || s, price: Number(s.price || 0) })) : [];
       form.flavours = Array.isArray(product.customizations?.flavours) ? product.customizations.flavours.map(f => ({ name: f.name || f, price: Number(f.price || 0) })) : [];
       form.custom_options = Array.isArray(product.customizations?.options) ? product.customizations.options.map(o => ({ name: o.name || o, price: Number(o.price || 0) })) : [];
       const extraCust = { ...(product.customizations || {}) };
+      delete extraCust.size_label;
+      delete extraCust.flavour_label;
+      delete extraCust.options_label;
       delete extraCust.sizes;
       delete extraCust.flavours;
       delete extraCust.options;
@@ -1374,6 +1413,9 @@ export default {
           description: form.description,
           customizations: {
             ...(form.extra_customizations || {}),
+            ...(form.size_label.trim() ? { size_label: form.size_label.trim() } : {}),
+            ...(form.flavour_label.trim() ? { flavour_label: form.flavour_label.trim() } : {}),
+            ...(form.options_label.trim() ? { options_label: form.options_label.trim() } : {}),
             ...(cleanedSizes.length > 0 ? { sizes: cleanedSizes } : {}),
             flavours: form.flavours.filter(f => f.name && f.name.trim()).map(f => ({ name: f.name.trim(), price: Math.max(0, Number(f.price) || 0) })),
             options: form.custom_options.filter(o => o.name && o.name.trim()).map(o => ({ name: o.name.trim(), price: Math.max(0, Number(o.price) || 0) })),
