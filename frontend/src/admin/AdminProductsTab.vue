@@ -563,18 +563,60 @@
                 <textarea v-model="form.description" rows="2" class="w-full p-2.5 rounded-xl bg-surface-800 border border-surface-700 focus:border-amber-500 focus:outline-none text-white" placeholder="Describe the ingredients, flavor, or serving..."></textarea>
               </div>
 
-              <!-- Flavours & Customizations -->
+              <!-- Sizes, Flavours & Customizations -->
               <div class="p-3.5 rounded-2xl bg-surface-800/80 border border-surface-700 space-y-3">
                 <div class="flex items-center justify-between">
                   <span class="font-bold text-gray-200 flex items-center gap-1.5">
                     <i class="pi pi-sliders-h text-amber-400"></i>
-                    <span>Flavours &amp; Customizations</span>
+                    <span>Sizes, Flavours &amp; Customizations</span>
                   </span>
                   <span class="text-[10px] text-gray-400">Optional choices for customers</span>
                 </div>
 
-                <!-- Flavours -->
+                <!-- Sizes (Select Size) -->
                 <div class="space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-semibold text-gray-300">Sizes (Select Size)</label>
+                    <button
+                      type="button"
+                      @click="form.sizes.push({ name: '', price: 0 })"
+                      class="px-2 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors">
+                      <i class="pi pi-plus text-[10px]"></i> Add Size
+                    </button>
+                  </div>
+                  <div v-if="form.sizes.length === 0" class="text-[11px] text-gray-500 italic">
+                    No custom sizes added (uses category default if applicable).
+                  </div>
+                  <div v-for="(sz, idx) in form.sizes" :key="'sz-' + idx" class="flex items-center gap-2">
+                    <input
+                      v-model="sz.name"
+                      type="text"
+                      placeholder="Size name (e.g. 16oz, 22oz, Regular)"
+                      class="flex-1 p-2 rounded-xl bg-surface-900 border border-surface-700 focus:border-amber-500 focus:outline-none text-white text-xs"
+                    />
+                    <div class="relative w-24">
+                      <span class="absolute left-2.5 top-2 text-gray-400 text-xs">+₱</span>
+                      <input
+                        v-model.number="sz.price"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        class="w-full pl-7 pr-2 py-2 rounded-xl bg-surface-900 border border-surface-700 focus:border-amber-500 focus:outline-none text-white text-xs"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      @click="form.sizes.splice(idx, 1)"
+                      class="p-2 rounded-xl bg-red-500/15 hover:bg-red-500/30 text-red-400 cursor-pointer"
+                      aria-label="Remove size">
+                      <i class="pi pi-times text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Flavours -->
+                <div class="space-y-1.5 pt-2 border-t border-surface-700/70">
                   <div class="flex items-center justify-between">
                     <label class="text-[11px] font-semibold text-gray-300">Flavours</label>
                     <button
@@ -881,6 +923,7 @@ export default {
       base_price: 99,
       discount_percent: 0,
       description: '',
+      sizes: [],
       flavours: [],
       custom_options: [],
       extra_customizations: {},
@@ -1246,6 +1289,7 @@ export default {
       form.base_price = 79;
       form.discount_percent = 0;
       form.description = '';
+      form.sizes = [];
       form.flavours = [];
       form.custom_options = [];
       form.extra_customizations = {};
@@ -1278,9 +1322,11 @@ export default {
         : Number(product.price);
       form.discount_percent = Number(product.discount_percent || 0);
       form.description = product.description || '';
+      form.sizes = Array.isArray(product.customizations?.sizes) ? product.customizations.sizes.map(s => ({ name: s.name || s, price: Number(s.price || 0) })) : [];
       form.flavours = Array.isArray(product.customizations?.flavours) ? product.customizations.flavours.map(f => ({ name: f.name || f, price: Number(f.price || 0) })) : [];
       form.custom_options = Array.isArray(product.customizations?.options) ? product.customizations.options.map(o => ({ name: o.name || o, price: Number(o.price || 0) })) : [];
       const extraCust = { ...(product.customizations || {}) };
+      delete extraCust.sizes;
       delete extraCust.flavours;
       delete extraCust.options;
       form.extra_customizations = extraCust;
@@ -1313,6 +1359,10 @@ export default {
 
         const imageValue = (form.image || '').trim() || '/assets/hero-banner.png';
 
+        const cleanedSizes = form.sizes
+          .filter(s => s.name && s.name.trim())
+          .map(s => ({ name: s.name.trim(), price: Math.max(0, Number(s.price) || 0) }));
+
         const payload = {
           name: form.name.trim(),
           category: form.category,
@@ -1324,6 +1374,7 @@ export default {
           description: form.description,
           customizations: {
             ...(form.extra_customizations || {}),
+            ...(cleanedSizes.length > 0 ? { sizes: cleanedSizes } : {}),
             flavours: form.flavours.filter(f => f.name && f.name.trim()).map(f => ({ name: f.name.trim(), price: Math.max(0, Number(f.price) || 0) })),
             options: form.custom_options.filter(o => o.name && o.name.trim()).map(o => ({ name: o.name.trim(), price: Math.max(0, Number(o.price) || 0) })),
           },
