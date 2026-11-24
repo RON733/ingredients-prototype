@@ -20,6 +20,7 @@
         </button>
 
         <button
+          v-if="store.isEventBookingEnabled"
           type="button"
           @click="openNewBooking"
           class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black transition-all shadow-md shadow-yellow-400/20 cursor-pointer">

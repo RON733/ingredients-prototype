@@ -407,6 +407,10 @@ class OrderController extends Controller
         $order->status = $newStatus;
         $order->save();
 
+        if ($newStatus === 'Completed' || $oldStatus === 'Completed') {
+            \Illuminate\Support\Facades\Cache::forget('product_bestseller_ids');
+        }
+
         // Automatically clear on_delivery lock once all active deliveries for this rider finish or are cancelled
         if ($order->driver_id && in_array($newStatus, ['Completed', 'Cancelled'])) {
             $remainingActive = Order::where('driver_id', $order->driver_id)

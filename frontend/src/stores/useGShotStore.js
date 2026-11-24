@@ -307,6 +307,7 @@ const useGShotStore = defineStore('gshot', {
     settings: {
       order_area_note: 'Orders are only available in Santa Rosa bayan.',
       order_area_note_enabled: 'true',
+      event_booking_enabled: 'true',
     },
     auditLogs: [],
     usersList: [],
@@ -425,6 +426,12 @@ const useGShotStore = defineStore('gshot', {
     isOrderAreaNoteEnabled: (state) => {
       if (state.settings && state.settings.order_area_note_enabled !== undefined && state.settings.order_area_note_enabled !== null) {
         return state.settings.order_area_note_enabled === 'true' || state.settings.order_area_note_enabled === true || state.settings.order_area_note_enabled === '1' || state.settings.order_area_note_enabled === 1;
+      }
+      return true;
+    },
+    isEventBookingEnabled: (state) => {
+      if (state.settings && state.settings.event_booking_enabled !== undefined && state.settings.event_booking_enabled !== null) {
+        return state.settings.event_booking_enabled === 'true' || state.settings.event_booking_enabled === true || state.settings.event_booking_enabled === '1' || state.settings.event_booking_enabled === 1;
       }
       return true;
     },
@@ -1615,6 +1622,12 @@ const useGShotStore = defineStore('gshot', {
       });
     },
 
+    async toggleEventBooking(enabled) {
+      return await this.updateStoreSettings({
+        event_booking_enabled: enabled ? 'true' : 'false',
+      });
+    },
+
     async updateStoreSettings(newSettings) {
       try {
         const res = await GST_API.updateSettings(newSettings);
@@ -1634,13 +1647,22 @@ const useGShotStore = defineStore('gshot', {
     },
 
     openBookingWithPackage(pkg) {
+      if (!this.isEventBookingEnabled && !this.isStaffOrAdmin) {
+        this.notify('Event booking is currently unavailable.', 'info');
+        return;
+      }
       this.selectedBookingPackage = pkg;
       this.bookingModalTab = 'form';
       this.bookingModalOpen = true;
     },
 
     openBookingModal(tab = 'form') {
-      this.bookingModalTab = tab === 'history' ? 'history' : 'form';
+      const targetTab = tab === 'history' ? 'history' : 'form';
+      if (targetTab === 'form' && !this.isEventBookingEnabled && !this.isStaffOrAdmin) {
+        this.notify('Event booking is currently unavailable.', 'info');
+        return;
+      }
+      this.bookingModalTab = targetTab;
       this.bookingModalOpen = true;
     },
 

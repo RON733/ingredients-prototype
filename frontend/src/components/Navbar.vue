@@ -51,6 +51,7 @@
 
           <!-- Catering / Event Booking Button -->
           <button 
+            v-if="store.isEventBookingEnabled"
             @click="store.openBookingModal('form')"
             class="ml-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-yellow-400 border border-surface-700 flex items-center gap-1.5 transition-all cursor-pointer">
             <i class="pi pi-calendar-plus text-xs"></i><span>Book Event</span>
@@ -299,8 +300,9 @@
         </div>
 
         <!-- Event Booking History & Book Event Call to Action -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div class="grid gap-2" :class="store.isEventBookingEnabled ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'">
           <button 
+            v-if="store.isEventBookingEnabled"
             @click="store.openBookingModal('form'); mobileMenuOpen = false" 
             class="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-yellow-400 hover:bg-yellow-300 text-black flex items-center justify-center gap-2 cursor-pointer">
             <i class="pi pi-calendar-plus text-xs"></i><span>Book Catering & Mobile Bar</span>

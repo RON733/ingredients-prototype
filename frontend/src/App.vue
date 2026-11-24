@@ -96,7 +96,8 @@
 
         <!-- Mobile Bottom App Bar (Customer Cellphone Navigation) -->
         <nav v-if="!store.isMaintenanceMode"
-          class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-1.5 pt-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))] grid grid-cols-6 gap-0.5 shadow-2xl">
+          :class="store.isEventBookingEnabled ? 'grid-cols-6' : 'grid-cols-5'"
+          class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-900/98 backdrop-blur-xl border-t border-surface-800/80 px-1.5 pt-1.5 pb-[max(0.4rem,env(safe-area-inset-bottom))] grid gap-0.5 shadow-2xl">
           
           <!-- 1. Home -->
           <button 
@@ -164,6 +165,7 @@
 
           <!-- 6. Book Catering Package -->
           <button 
+            v-if="store.isEventBookingEnabled"
             @click="store.openBookingModal('form')"
             type="button"
             class="flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl transition-all cursor-pointer min-w-0 text-gray-400 hover:text-gray-200">

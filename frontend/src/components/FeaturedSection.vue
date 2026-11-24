@@ -2,8 +2,8 @@
 <section class="py-10 sm:py-16 bg-surface-950/60 border-t border-surface-800/80">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-20">
         
-        <!-- 1. Bestsellers Showcase -->
-        <div>
+        <!-- 1. Bestsellers Showcase (only shown once there are actual sales) -->
+        <div v-if="bestsellers.length > 0">
           <div class="text-center max-w-3xl mx-auto mb-6 sm:mb-12">
             <span class="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold px-3 sm:px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
               <i class="pi pi-bolt text-amber-400 text-[10px]"></i> Customer Favorites
@@ -214,7 +214,7 @@
         </div>
 
         <!-- 3. Official Catering & Mobile Bar Booking Packages Showcase -->
-        <div id="booking-services" class="space-y-8">
+        <div v-if="store.isEventBookingEnabled" id="booking-services" class="space-y-8">
           
           <div class="text-center max-w-3xl mx-auto">
             <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1 rounded-full bg-surface-800 text-gray-300 uppercase tracking-wider border border-surface-700">
@@ -449,65 +449,30 @@ export default {
   setup() {
     const store = useGShotStore();
 
+    const rankBadges = ['TOP SELLER', 'FAN FAVORITE', 'POPULAR', 'BEST SELLER'];
     const bestsellers = Vue.computed(() => {
-      const templates = [
-        {
-          id: 'brown-sugar-milktea',
-          name: 'Brown Sugar Boba Milk',
-          category: 'Drinks',
-          price: 69.00,
-          desc: 'Tiger-striped brown sugar caramel, cold fresh milk, and warm chewy boba pearls.',
-          emoji: '🧋',
-          badge: 'TOP SELLER',
-          image: '/assets/menu-coffee.png',
-        },
-        {
-          id: 'pepperoni-pizza',
-          name: 'Pepperoni Feast Pizza',
-          category: 'Pizzas',
-          price: 169.00,
-          desc: 'Crispy thin crust topped with savory pepperoni cuts and melted mozzarella cheese.',
-          emoji: '🍕',
-          badge: 'FAN FAVORITE',
-          image: '/assets/menu-pizza.png',
-        },
-        {
-          id: 'classic-cheeseburger',
-          name: 'Cheese Burger',
-          category: 'Burgers',
-          price: 89.00,
-          desc: 'Juicy grilled beef patty in buttery toasted brioche with melted golden cheddar.',
-          emoji: '🍔',
-          badge: 'POPULAR',
-          image: '/assets/hero-banner.png',
-        },
-        {
-          id: 'classic-milktea',
-          name: 'Milktea Classic',
-          category: 'Drinks',
-          price: 49.00,
-          desc: 'Timeless brewed black tea infused with creamy milk and chewy tapioca pearls.',
-          emoji: '🧋',
-          badge: 'VALUE CRAVE',
-          image: '/assets/menu-coffee.png',
-        },
-      ];
+      const ranked = (store.products || [])
+        .filter(p => Boolean(p?.is_bestseller))
+        .sort((a, b) => (Number(a.bestseller_rank) || 999) - (Number(b.bestseller_rank) || 999))
+        .slice(0, 4);
 
-      return templates.map(tpl => {
-        const matched = store.products.find(p => p.id === tpl.id)
-          || store.products.find(p => (p.name || '').toLowerCase() === tpl.name.toLowerCase());
-        const source = matched || tpl;
-        const maxPortions = matched ? store.getProductMaxStock(matched) : 0;
-        const remainingStock = matched ? store.getRemainingStock(matched) : 0;
+      return ranked.map((p, idx) => {
+        const rank = Number(p.bestseller_rank) || (idx + 1);
+        const maxPortions = store.getProductMaxStock(p);
+        const remainingStock = store.getRemainingStock(p);
         return {
-          ...tpl,
-          price: matched && matched.price !== undefined ? Number(matched.price) : tpl.price,
-          category: source.category || tpl.category,
-          image: (matched && matched.image) || tpl.image,
-          is_available: matched ? matched.is_available !== false : false,
+          id: p.id,
+          name: p.name,
+          category: p.category || 'Drinks',
+          price: Number(p.price || 0),
+          desc: p.description || '',
+          badge: rankBadges[rank - 1] || 'BEST SELLER',
+          image: p.image || '/assets/hero-banner.png',
+          is_available: p.is_available !== false,
           max_portions: maxPortions,
           remainingStock,
-          productRef: matched || null,
+          customizations: p.customizations,
+          productRef: p,
         };
       });
     });

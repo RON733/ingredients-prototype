@@ -836,23 +836,10 @@ export default {
     const bestsellersOnly = ref(false);
     const priceRangeFilter = ref('all'); // 'all' | 'under100' | '100to150' | 'over150'
 
-    const DEFAULT_BESTSELLER_IDS = ['brown-sugar-milktea', 'pepperoni-pizza', 'classic-cheeseburger', 'classic-milktea'];
-    const DEFAULT_BESTSELLER_NAMES = ['brown sugar boba milk', 'pepperoni feast pizza', 'cheese burger', 'milktea classic'];
-
-    const hasBackendBestsellers = computed(() =>
-      Array.isArray(store.products) && store.products.some(p => p.is_bestseller)
-    );
-
     const getBestsellerRank = (product) => {
       if (!product) return null;
       if (product.is_bestseller) {
         return Number(product.bestseller_rank) || 1;
-      }
-      if (!hasBackendBestsellers.value) {
-        const idIdx = DEFAULT_BESTSELLER_IDS.indexOf(product.id);
-        if (idIdx !== -1) return idIdx + 1;
-        const nameIdx = DEFAULT_BESTSELLER_NAMES.indexOf((product.name || '').toLowerCase());
-        if (nameIdx !== -1) return nameIdx + 1;
       }
       return null;
     };

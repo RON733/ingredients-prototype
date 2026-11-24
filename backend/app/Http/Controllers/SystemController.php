@@ -27,6 +27,7 @@ class SystemController extends Controller
                 'maintenance_until' => '',
                 'order_area_note' => 'Orders are only available in Santa Rosa bayan.',
                 'order_area_note_enabled' => 'true',
+                'event_booking_enabled' => 'true',
                 'booking_downpayment_percent' => '50',
                 'booking_payment_deadline_hours' => '48',
                 'booking_gcash_number' => '0994 612 1933',
@@ -145,6 +146,12 @@ class SystemController extends Controller
         } elseif (isset($data['booking_downpayment_percent']) || isset($data['booking_gcash_number']) || isset($data['booking_payment_qr'])) {
             $action = 'Booking Downpayment Settings Updated';
             $details = 'Updated event booking downpayment percentage, deadline, or payment receiving accounts.';
+        } elseif (isset($data['event_booking_enabled'])) {
+            $isEnabled = in_array($data['event_booking_enabled'], ['true', true, '1', 1], true);
+            $action = $isEnabled ? 'Event Booking Enabled on Storefront' : 'Event Booking Hidden from Storefront';
+            $details = $isEnabled
+                ? 'Staff/Admin enabled Book Event on the customer storefront.'
+                : 'Staff/Admin turned off Book Event, removing it from the customer storefront.';
         }
 
         try {

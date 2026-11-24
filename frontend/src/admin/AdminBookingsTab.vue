@@ -31,6 +31,43 @@
         </div>
       </div>
 
+      <!-- Storefront Book Event On/Off Toggle -->
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-900 border border-surface-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
+            :class="store.isEventBookingEnabled ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' : 'bg-surface-800 border-surface-700 text-gray-400'">
+            <i class="pi pi-globe text-sm"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-xs sm:text-sm font-bold text-white">Storefront Book Event</h3>
+              <span
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1"
+                :class="store.isEventBookingEnabled
+                  ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25'
+                  : 'bg-surface-950 text-gray-400 border-surface-700'">
+                <span class="w-1.5 h-1.5 rounded-full" :class="store.isEventBookingEnabled ? 'bg-emerald-400' : 'bg-gray-500'"></span>
+                <span>{{ store.isEventBookingEnabled ? 'Visible on Storefront' : 'Hidden from Storefront' }}</span>
+              </span>
+            </div>
+            <p class="text-[11px] text-gray-400 mt-0.5">
+              Turn on or off to show or remove Book Event &amp; Catering Packages from the customer storefront.
+            </p>
+          </div>
+        </div>
+
+        <label class="relative inline-flex items-center cursor-pointer shrink-0 self-start sm:self-auto" :class="{ 'opacity-60 pointer-events-none': togglingStorefrontBooking }">
+          <input
+            type="checkbox"
+            :checked="store.isEventBookingEnabled"
+            :disabled="togglingStorefrontBooking"
+            @change="toggleStorefrontBooking($event.target.checked)"
+            class="sr-only peer"
+          />
+          <div class="w-11 h-6 bg-surface-800 border border-surface-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+        </label>
+      </div>
+
       <!-- Sub-Tab Switcher: Requests vs Packages & Pricing -->
       <div class="flex flex-wrap items-center gap-2 border-b border-surface-800 pb-3">
         <button
@@ -1056,6 +1093,17 @@ export default {
     const store = useGShotStore();
     const activeSubTab = ref('requests');
     const loading = ref(false);
+    const togglingStorefrontBooking = ref(false);
+    const toggleStorefrontBooking = async (enabled) => {
+      togglingStorefrontBooking.value = true;
+      try {
+        await store.toggleEventBooking(enabled);
+      } catch (err) {
+        // Store notifies on error
+      } finally {
+        togglingStorefrontBooking.value = false;
+      }
+    };
     const loadingPackages = ref(false);
     const bookings = ref([]);
     const requestStatusFilter = ref('all');
@@ -1676,6 +1724,8 @@ export default {
       store,
       activeSubTab,
       loading,
+      togglingStorefrontBooking,
+      toggleStorefrontBooking,
       loadingPackages,
       bookings,
       requestStatusFilter,

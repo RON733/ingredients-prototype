@@ -52,12 +52,12 @@ class ProductController extends Controller
     }
 
     /**
-     * Mark top-selling products from completed orders (with featured fallback if none yet).
+     * Mark top-selling products from completed orders (empty when no sales exist yet).
      */
     protected function attachBestsellerFlags($products): void
     {
         $bestsellerIds = Cache::remember('product_bestseller_ids', 120, function () {
-            $ids = OrderItem::query()
+            return OrderItem::query()
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->where('orders.status', 'Completed')
                 ->whereNotNull('order_items.product_id')
@@ -68,12 +68,6 @@ class ProductController extends Controller
                 ->pluck('order_items.product_id')
                 ->values()
                 ->all();
-
-            if (empty($ids)) {
-                return ['brown-sugar-milktea', 'pepperoni-pizza', 'classic-cheeseburger', 'classic-milktea'];
-            }
-
-            return $ids;
         });
 
         foreach ($products as $product) {
