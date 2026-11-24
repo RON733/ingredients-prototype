@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia';
 import GST_API from '../services/api.js';
 import initEcho from '../services/echo.js';
+import { SANTA_ROSA_BARANGAYS, normalizeBarangayList } from '../utils/santaRosaBarangays.js';
 
 const DEFAULT_PRODUCTS = [
   {
@@ -563,6 +564,21 @@ const useGShotStore = defineStore('gshot', {
     maintenanceUntil: (state) => state.settings?.maintenance_until || '',
 
     orderAreaNote: (state) => state.settings?.order_area_note || 'Orders are only available in Santa Rosa bayan.',
+    supportedBarangays: (state) => {
+      const raw = state.settings?.delivery_barangays;
+      if (raw === undefined || raw === null || raw === '') {
+        return SANTA_ROSA_BARANGAYS;
+      }
+      try {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Array.isArray(parsed)) {
+          return normalizeBarangayList(parsed);
+        }
+      } catch (e) {
+        // fallback to default
+      }
+      return SANTA_ROSA_BARANGAYS;
+    },
     isOrderAreaNoteEnabled: (state) => {
       if (state.settings && state.settings.order_area_note_enabled !== undefined && state.settings.order_area_note_enabled !== null) {
         return state.settings.order_area_note_enabled === 'true' || state.settings.order_area_note_enabled === true || state.settings.order_area_note_enabled === '1' || state.settings.order_area_note_enabled === 1;
@@ -723,19 +739,6 @@ const useGShotStore = defineStore('gshot', {
         }
       }, 7000);
 
-      // Periodic automatic background synchronization with Loyverse POS
-      setInterval(async () => {
-        if (this.currentView === 'admin' || this.isStaffOrAdmin) {
-          try {
-            const res = await GST_API.syncLoyverse();
-            if (res?.data?.results?.synced > 0) {
-              this.fetchProducts();
-            }
-          } catch (e) {
-            // silent background sync
-          }
-        }
-      }, 30000);
     },
 
     async refreshAllData() {
@@ -1755,6 +1758,13 @@ const useGShotStore = defineStore('gshot', {
 
 
 
+    async updateDeliveryBarangays(barangays) {
+      const normalized = normalizeBarangayList(barangays);
+      return await this.updateStoreSettings({
+        delivery_barangays: JSON.stringify(normalized),
+      });
+    },
+
     async updateOrderAreaNote(note, enabled = true) {
       return await this.updateStoreSettings({
         order_area_note: note,
@@ -2056,98 +2066,6 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    // Loyverse POS Integration Actions
-    async getLoyverseStatus() {
-      try {
-        const res = await GST_API.getLoyverseStatus();
-        return res.data;
-      } catch (err) {
-        console.error('Failed to get Loyverse status:', err);
-        return { connected: false, error: err.message };
-      }
-    },
-
-    async syncLoyverseSales() {
-      this.loading = true;
-      try {
-        const res = await GST_API.syncLoyverse();
-        const count = res.data?.results?.synced ?? 0;
-        await Promise.all([
-          this.fetchOrders(),
-          this.fetchProducts(),
-        ]);
-        if (count > 0) {
-          this.notify(`Synced ${count} new sale(s) from Loyverse POS!`, 'success');
-        } else {
-          this.notify('Loyverse POS is up to date. No new un-synced sales.', 'info');
-        }
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse sync failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to sync with Loyverse POS.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-        async exportMenuToLoyverse() {
-      this.loading = true;
-      try {
-        const res = await GST_API.exportMenuToLoyverse();
-        const total = res.data?.results?.total ?? 0;
-        this.notify(`Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse export failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to export menu to Loyverse.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-        async pullLoyverseItems() {
-      this.loading = true;
-      try {
-        const res = await GST_API.pullLoyverseItems();
-        const created = res.data?.results?.created_count ?? 0;
-        const updated = res.data?.results?.updated_count ?? 0;
-        await this.fetchProducts();
-        if (created > 0 || updated > 0) {
-          this.notify(`Imported ${created} new and updated ${updated} item(s) from Loyverse POS!`, 'success');
-        } else {
-          this.notify('Website menu is already in sync with Loyverse POS.', 'info');
-        }
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse pull items failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to pull menu items from Loyverse.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async fullLoyverseSync() {
-      this.loading = true;
-      try {
-        const res = await GST_API.fullLoyverseSync();
-        await Promise.all([
-          this.fetchProducts(),
-          this.fetchOrders(),
-        ]);
-        this.notify('Full Loyverse sync complete! Menu & Orders are synchronized.', 'success');
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse full sync failed:', err);
-        const errorMsg = err.response?.data?.message || (err.code === 'ECONNABORTED' ? 'Sync timed out. Loyverse took too long to respond.' : 'Failed to full sync with Loyverse.');
-        this.notify(errorMsg, 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
   },
 });
 

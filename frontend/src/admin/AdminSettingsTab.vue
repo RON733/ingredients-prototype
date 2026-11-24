@@ -172,6 +172,140 @@
     </button>
   </div>
 
+  <!-- Delivery Locations / Accepted Barangays (Owner / Admin) -->
+  <div v-if="store.isAdminOrSuper" class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0">
+          <i class="pi pi-map-marker text-amber-400 text-sm"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-sm sm:text-base font-bold text-white">Delivery Locations (Accepted Barangays)</h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/25">Owner / Admin</span>
+          </div>
+          <p class="text-xs text-gray-400">Add or remove Santa Rosa barangays available for online delivery</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <span class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border bg-emerald-500/10 text-emerald-300 border-emerald-500/25 font-mono">
+          {{ activeBarangays.length }} Active
+        </span>
+        <button
+          type="button"
+          @click="resetDefaultBarangays"
+          :disabled="isSavingBarangays"
+          class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-surface-700 bg-surface-950 hover:bg-surface-800 text-gray-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+          title="Restore the default 9 Santa Rosa barangays">
+          Reset Defaults
+        </button>
+      </div>
+    </div>
+
+    <!-- Add New Barangay Form -->
+    <div class="p-3 sm:p-4 rounded-xl bg-surface-950 border border-surface-800 space-y-3">
+      <p class="text-xs font-bold text-gray-200 flex items-center gap-1.5">
+        <i class="pi pi-plus-circle text-amber-400 text-xs"></i>
+        <span>Add Available Barangay</span>
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div>
+          <label class="block text-[11px] font-medium text-gray-400 mb-1">Barangay Name *</label>
+          <input
+            v-model="newBarangay.name"
+            type="text"
+            placeholder="e.g. Pooc"
+            @keyup.enter="addBarangay"
+            class="w-full px-3 py-2 rounded-xl bg-surface-900 border border-surface-800 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400/70"
+          />
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-gray-400 mb-1">Est. Delivery Time</label>
+          <input
+            v-model="newBarangay.eta"
+            type="text"
+            placeholder="25–35 Mins"
+            @keyup.enter="addBarangay"
+            class="w-full px-3 py-2 rounded-xl bg-surface-900 border border-surface-800 text-xs sm:text-sm text-amber-300 font-mono placeholder-gray-500 focus:outline-none focus:border-amber-400/70"
+          />
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-gray-400 mb-1">Aliases (Optional, comma-separated)</label>
+          <input
+            v-model="newBarangay.aliases"
+            type="text"
+            placeholder="e.g. pooc, pook"
+            @keyup.enter="addBarangay"
+            class="w-full px-3 py-2 rounded-xl bg-surface-900 border border-surface-800 text-xs sm:text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-amber-400/70"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+        <button
+          type="button"
+          @click="addBarangay"
+          :disabled="isSavingBarangays || !newBarangay.name.trim()"
+          class="w-full sm:w-auto px-4 py-2 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50">
+          <i v-if="isSavingBarangays" class="pi pi-spin pi-spinner"></i>
+          <i v-else class="pi pi-plus"></i>
+          <span>Add Barangay</span>
+        </button>
+      </div>
+
+      <!-- Quick-Add Suggestions for Other Santa Rosa Barangays -->
+      <div v-if="suggestedBarangays.length > 0" class="pt-2 border-t border-surface-800/80 space-y-1.5">
+        <p class="text-[11px] text-gray-400 font-medium">Quick-add other Santa Rosa barangays:</p>
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            v-for="s in suggestedBarangays"
+            :key="s.id"
+            type="button"
+            @click="quickAddBarangay(s)"
+            :disabled="isSavingBarangays"
+            class="px-2.5 py-1 rounded-lg bg-surface-900 hover:bg-amber-500/15 border border-surface-700 hover:border-amber-500/40 text-[11px] font-semibold text-gray-300 hover:text-amber-300 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50">
+            <i class="pi pi-plus text-[9px]"></i>
+            <span>{{ s.name }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Accepted Barangays List -->
+    <div v-if="activeBarangays.length === 0" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
+      <i class="pi pi-exclamation-triangle text-sm shrink-0"></i>
+      <span>No delivery barangays are currently enabled. Delivery orders will be rejected until you add at least one barangay.</span>
+    </div>
+
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+      <div
+        v-for="b in activeBarangays"
+        :key="b.id"
+        class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center justify-between gap-2.5">
+        <div class="min-w-0">
+          <p class="text-xs sm:text-sm font-bold text-white truncate">{{ b.name }}</p>
+          <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+            <span class="text-[10px] font-mono font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+              {{ b.eta }}
+            </span>
+            <span v-if="b.aliases && b.aliases.length > 1" class="text-[10px] text-gray-500 truncate max-w-[140px]" :title="b.aliases.join(', ')">
+              {{ b.aliases.slice(0, 3).join(', ') }}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          @click="removeBarangay(b)"
+          :disabled="isSavingBarangays"
+          class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 text-[11px] font-semibold flex items-center gap-1 shrink-0 cursor-pointer disabled:opacity-50 transition-colors"
+          :title="'Remove ' + b.name">
+          <i class="pi pi-trash text-[10px]"></i>
+          <span>Remove</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- General Store & Operations Settings -->
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
     <div class="flex items-center gap-3 pb-3 border-b border-surface-800">
@@ -322,67 +456,6 @@
     </div>
   </div>
 
-  <!-- Loyverse POS Integration -->
-  <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-surface-800">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center shrink-0">
-          <i class="pi pi-sync text-teal-400 text-sm"></i>
-        </div>
-        <div>
-          <h3 class="text-sm sm:text-base font-bold text-white">Loyverse POS Sync</h3>
-          <p class="text-xs text-gray-400">Store: {{ loyverseInfo.store_name }}</p>
-        </div>
-      </div>
-      <span class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 self-start sm:self-auto flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        <span>Auto-Sync Active</span>
-      </span>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-amber-300/80 uppercase tracking-wider">Menu Products</p>
-        <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ store.products.length }}</p>
-      </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-teal-300/80 uppercase tracking-wider">Catalog Items</p>
-        <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ loyverseInfo.items_count }}</p>
-      </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-emerald-300/80 uppercase tracking-wider">POS Sync</p>
-        <p class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5">Active</p>
-      </div>
-    </div>
-
-    <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 space-y-2">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <span class="text-xs font-semibold text-gray-300">Webhook URL</span>
-        <button
-          type="button"
-          @click="handleRegisterWebhook"
-          :disabled="isRegisteringWebhook"
-          class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-teal-500/10 hover:bg-teal-500/20 text-white border border-teal-500/25 transition-colors flex items-center gap-1 self-start sm:self-auto cursor-pointer">
-          <i class="pi" :class="isRegisteringWebhook ? 'pi-spin pi-spinner' : 'pi-check'"></i>
-          <span>{{ isRegisteringWebhook ? 'Registering...' : 'Register Webhook' }}</span>
-        </button>
-      </div>
-      <div class="flex items-center gap-2">
-        <input
-          readonly
-          :value="loyverseWebhookUrl"
-          class="w-full min-w-0 px-3 py-2 rounded-lg bg-surface-900 border border-surface-800 text-xs font-mono text-gray-300 focus:outline-none select-all"
-        />
-        <button
-          type="button"
-          @click="copyWebhookUrl"
-          class="px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-white border border-amber-500/25 text-xs font-semibold flex items-center gap-1 shrink-0 cursor-pointer">
-          <i class="pi pi-copy"></i>
-          <span>Copy</span>
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
 </template>
 
@@ -391,6 +464,7 @@ import * as Vue from 'vue';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 import GST_API from '@/services/api';
+import { ALL_KNOWN_BARANGAYS, SANTA_ROSA_BARANGAYS, slugifyBarangayId } from '@/utils/santaRosaBarangays';
 
 // G Shot Teas — Store & Payment Settings (Admin & Super Admin)
 export default {
@@ -423,6 +497,95 @@ export default {
         // Handled by store
       } finally {
         isSavingAreaNote.value = false;
+      }
+    };
+
+    // Delivery Locations (Accepted Barangays) Management
+    const isSavingBarangays = Vue.ref(false);
+    const newBarangay = Vue.reactive({
+      name: '',
+      eta: '25–35 Mins',
+      aliases: '',
+    });
+
+    const activeBarangays = Vue.computed(() => store.supportedBarangays || []);
+
+    const suggestedBarangays = Vue.computed(() => {
+      const activeIds = new Set(activeBarangays.value.map((b) => b.id));
+      return ALL_KNOWN_BARANGAYS.filter((b) => !activeIds.has(b.id));
+    });
+
+    const addBarangay = async () => {
+      const name = newBarangay.name.trim();
+      if (!name) {
+        store.notify('Please enter a barangay name.', 'error');
+        return;
+      }
+      const id = slugifyBarangayId(name);
+      if (activeBarangays.value.some((b) => b.id === id || b.name.toLowerCase() === name.toLowerCase())) {
+        store.notify(`"${name}" is already in the accepted barangays list.`, 'error');
+        return;
+      }
+      const customAliases = newBarangay.aliases
+        .split(',')
+        .map((a) => a.trim().toLowerCase())
+        .filter(Boolean);
+      const entry = {
+        id,
+        name,
+        aliases: [name.toLowerCase(), ...customAliases],
+        eta: newBarangay.eta.trim() || '25–35 Mins',
+      };
+      isSavingBarangays.value = true;
+      try {
+        await store.updateDeliveryBarangays([...activeBarangays.value, entry]);
+        newBarangay.name = '';
+        newBarangay.aliases = '';
+      } finally {
+        isSavingBarangays.value = false;
+      }
+    };
+
+    const quickAddBarangay = async (barangay) => {
+      if (activeBarangays.value.some((b) => b.id === barangay.id)) return;
+      isSavingBarangays.value = true;
+      try {
+        await store.updateDeliveryBarangays([...activeBarangays.value, barangay]);
+      } finally {
+        isSavingBarangays.value = false;
+      }
+    };
+
+    const removeBarangay = async (barangay) => {
+      const ok = await store.confirmDialog({
+        title: 'Remove Delivery Barangay',
+        message: `Remove "${barangay.name}" from accepted delivery locations? Customers in this barangay will no longer be able to place delivery orders.`,
+        confirmText: 'Remove',
+        variant: 'danger',
+      });
+      if (!ok) return;
+      isSavingBarangays.value = true;
+      try {
+        const next = activeBarangays.value.filter((b) => b.id !== barangay.id);
+        await store.updateDeliveryBarangays(next);
+      } finally {
+        isSavingBarangays.value = false;
+      }
+    };
+
+    const resetDefaultBarangays = async () => {
+      const ok = await store.confirmDialog({
+        title: 'Reset Delivery Barangays',
+        message: 'Restore the default 9 Santa Rosa barangays? Any custom barangays you added will be removed.',
+        confirmText: 'Restore Defaults',
+        variant: 'warning',
+      });
+      if (!ok) return;
+      isSavingBarangays.value = true;
+      try {
+        await store.updateDeliveryBarangays(SANTA_ROSA_BARANGAYS);
+      } finally {
+        isSavingBarangays.value = false;
       }
     };
 
@@ -604,119 +767,6 @@ export default {
       }
     };
 
-    // Loyverse Integration State
-    const loyverseConnected = Vue.ref(true);
-    const isSyncingLoyverse = Vue.ref(false);
-    const isExportingLoyverse = Vue.ref(false);
-    const isRegisteringWebhook = Vue.ref(false);
-    const loyverseInfo = Vue.reactive({
-      store_name: 'GSHOT',
-      store_id: 'f8bbd4a6-96c5-48f1-929e-fef388325796',
-      items_count: 12,
-    });
-
-    const loyverseWebhookUrl = Vue.computed(() => {
-      const origin = window.location.origin;
-      return origin + '/api/loyverse/webhook';
-    });
-
-    const checkLoyverse = async () => {
-      try {
-        const res = await GST_API.getLoyverseStatus();
-        if (res.data?.success) {
-          loyverseConnected.value = true;
-          if (res.data.active_store) {
-            loyverseInfo.store_name = res.data.active_store.name;
-            loyverseInfo.store_id = res.data.active_store.id;
-          }
-          if (res.data.items_count !== undefined) {
-            loyverseInfo.items_count = res.data.items_count;
-          }
-        }
-      } catch (err) {
-        console.warn('Loyverse status check:', err);
-      }
-    };
-
-    const handleSyncLoyverse = async () => {
-      isSyncingLoyverse.value = true;
-      try {
-        await store.syncLoyverseSales();
-        await checkLoyverse();
-      } catch (err) {
-        // notification already handled in store
-      } finally {
-        isSyncingLoyverse.value = false;
-      }
-    };
-
-    const handleExportMenu = async () => {
-      isExportingLoyverse.value = true;
-      try {
-        await store.exportMenuToLoyverse();
-        await checkLoyverse();
-      } catch (err) {
-        // notification handled in store
-      } finally {
-        isExportingLoyverse.value = false;
-      }
-    };
-
-    const isFullSyncing = Vue.ref(false);
-    const isPulling = Vue.ref(false);
-    const isPushing = Vue.ref(false);
-
-    const handleFullSync = async () => {
-      isFullSyncing.value = true;
-      try {
-        await store.fullLoyverseSync();
-        await checkLoyverse();
-      } finally {
-        isFullSyncing.value = false;
-      }
-    };
-
-    const handlePullInventory = async () => {
-      isPulling.value = true;
-      try {
-        await store.pullLoyverseInventory();
-        await checkLoyverse();
-      } finally {
-        isPulling.value = false;
-      }
-    };
-
-    const handlePushInventory = async () => {
-      isPushing.value = true;
-      try {
-        await store.pushLoyverseInventory();
-        await checkLoyverse();
-      } finally {
-        isPushing.value = false;
-      }
-    };
-
-    const handleRegisterWebhook = async () => {
-      isRegisteringWebhook.value = true;
-      try {
-        const url = loyverseWebhookUrl.value;
-        const res = await GST_API.registerLoyverseWebhook(url);
-        store.notify('Webhook registered successfully with Loyverse API!', 'success');
-      } catch (err) {
-        store.notify(err.response?.data?.message || 'Could not register webhook automatically. You can paste the URL into Loyverse Back Office > Settings > Webhooks.', 'info');
-      } finally {
-        isRegisteringWebhook.value = false;
-      }
-    };
-
-    const copyWebhookUrl = () => {
-      navigator.clipboard.writeText(loyverseWebhookUrl.value);
-      store.notify('Webhook URL copied to clipboard!', 'info');
-    };
-
-    Vue.onMounted(() => {
-      checkLoyverse();
-    });
 
 
 
@@ -743,23 +793,15 @@ export default {
       areaNoteForm,
       isSavingAreaNote,
       saveAreaNoteSettings,
+      activeBarangays,
+      suggestedBarangays,
+      newBarangay,
+      isSavingBarangays,
+      addBarangay,
+      quickAddBarangay,
+      removeBarangay,
+      resetDefaultBarangays,
       reloadSettings,
-      loyverseConnected,
-      isSyncingLoyverse,
-      isExportingLoyverse,
-      isRegisteringWebhook,
-      loyverseInfo,
-      loyverseWebhookUrl,
-      handleSyncLoyverse,
-      handleExportMenu,
-      isFullSyncing,
-      isPulling,
-      isPushing,
-      handleFullSync,
-      handlePullInventory,
-      handlePushInventory,
-      handleRegisterWebhook,
-      copyWebhookUrl,
       maintForm,
       isSavingMaint,
       saveMaintenanceSettings,

@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
+use App\Models\SystemSetting;
+
 class SantaRosaDeliveryService
 {
     public const STORE_LAT = 14.3167;
     public const STORE_LNG = 121.1167;
 
     /**
-     * Hardcoded 9 supported delivery Barangays of Santa Rosa, Laguna with aliases,
+     * Default 9 supported delivery Barangays of Santa Rosa, Laguna with aliases,
      * approximate centroid coordinates, and estimated delivery times from
      * the store in Brgy. Sinalhan, Santa Rosa, Laguna.
      */
@@ -112,8 +114,23 @@ class SantaRosaDeliveryService
     ];
 
     /**
-     * Other Santa Rosa barangays outside our delivery coverage so GPS reverse-geocoding
-     * does not snap them to a neighboring supported barangay.
+     * Known additional Santa Rosa barangays (used for auto-filling coordinates & aliases when added by the owner).
+     */
+    public const KNOWN_ADDITIONAL_BARANGAYS = [
+        'balibago' => ['name' => 'Balibago', 'aliases' => ['balibago', 'balibago complex'], 'lat' => 14.2934, 'lng' => 121.1082, 'eta' => '25–35 Mins'],
+        'dila' => ['name' => 'Dila', 'aliases' => ['dila'], 'lat' => 14.2896, 'lng' => 121.1162, 'eta' => '25–35 Mins'],
+        'dita' => ['name' => 'Dita', 'aliases' => ['dita'], 'lat' => 14.2775, 'lng' => 121.1165, 'eta' => '30–40 Mins'],
+        'don-jose' => ['name' => 'Don Jose', 'aliases' => ['don jose', 'nuvali'], 'lat' => 14.2450, 'lng' => 121.0600, 'eta' => '35–50 Mins'],
+        'macabling' => ['name' => 'Macabling', 'aliases' => ['macabling'], 'lat' => 14.2968, 'lng' => 121.1010, 'eta' => '25–35 Mins'],
+        'malitlit' => ['name' => 'Malitlit', 'aliases' => ['malitlit'], 'lat' => 14.2680, 'lng' => 121.0960, 'eta' => '30–45 Mins'],
+        'pooc' => ['name' => 'Pooc', 'aliases' => ['pooc', 'pook'], 'lat' => 14.3030, 'lng' => 121.1235, 'eta' => '25–35 Mins'],
+        'pulong-santa-cruz' => ['name' => 'Pulong Santa Cruz', 'aliases' => ['pulong santa cruz', 'pulong sta. cruz', 'pulong sta cruz'], 'lat' => 14.2805, 'lng' => 121.0870, 'eta' => '30–40 Mins'],
+        'santo-domingo' => ['name' => 'Santo Domingo', 'aliases' => ['santo domingo', 'sto. domingo', 'sto domingo'], 'lat' => 14.2620, 'lng' => 121.0720, 'eta' => '35–45 Mins'],
+    ];
+
+    /**
+     * Other Santa Rosa barangays outside our default delivery coverage so GPS reverse-geocoding
+     * does not snap them to a neighboring supported barangay unless explicitly enabled by the owner.
      */
     private const UNSUPPORTED_SANTA_ROSA_BARANGAYS = [
         'balibago complex',
@@ -167,6 +184,106 @@ class SantaRosaDeliveryService
         'Bulacan' => ['bulacan'],
     ];
 
+    public static function slugifyId(string $name): string
+    {
+        $slug = mb_strtolower(trim($name));
+        $slug = preg_replace('/[^a-z0-9]+/i', '-', $slug);
+        return trim((string) $slug, '-') ?: ('brgy-' . substr(md5($name), 0, 6));
+    }
+
+    public static function normalizeBarangayList(array $items): array
+    {
+        $knownCatalog = [];
+        foreach (self::BARANGAYS as $b) {
+            $knownCatalog[$b['id']] = $b;
+        }
+        foreach (self::KNOWN_ADDITIONAL_BARANGAYS as $id => $b) {
+            $knownCatalog[$id] = array_merge(['id' => $id], $b);
+        }
+
+        $normalized = [];
+        $seenIds = [];
+
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $name = trim((string) ($item['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $id = trim((string) ($item['id'] ?? ''));
+            $id = $id === '' ? self::slugifyId($name) : self::slugifyId($id);
+            if (isset($seenIds[$id])) {
+                continue;
+            }
+            $seenIds[$id] = true;
+
+            $known = $knownCatalog[$id] ?? null;
+
+            $aliases = [];
+            if (!empty($item['aliases']) && is_array($item['aliases'])) {
+                foreach ($item['aliases'] as $a) {
+                    $aTrim = mb_strtolower(trim((string) $a));
+                    if ($aTrim !== '') {
+                        $aliases[] = $aTrim;
+                    }
+                }
+            }
+            $nameLower = mb_strtolower($name);
+            if (!in_array($nameLower, $aliases, true)) {
+                array_unshift($aliases, $nameLower);
+            }
+            if ($known && !empty($known['aliases'])) {
+                foreach ($known['aliases'] as $ka) {
+                    if (!in_array($ka, $aliases, true)) {
+                        $aliases[] = $ka;
+                    }
+                }
+            }
+            $aliases = array_values(array_unique($aliases));
+
+            $lat = isset($item['lat']) && is_numeric($item['lat']) && (float) $item['lat'] != 0.0
+                ? (float) $item['lat']
+                : ($known['lat'] ?? self::STORE_LAT);
+            $lng = isset($item['lng']) && is_numeric($item['lng']) && (float) $item['lng'] != 0.0
+                ? (float) $item['lng']
+                : ($known['lng'] ?? self::STORE_LNG);
+            $eta = trim((string) ($item['eta'] ?? ''));
+            if ($eta === '') {
+                $eta = $known['eta'] ?? '20–30 Mins';
+            }
+
+            $normalized[] = [
+                'id' => $id,
+                'name' => $name,
+                'aliases' => $aliases,
+                'lat' => $lat,
+                'lng' => $lng,
+                'eta' => $eta,
+            ];
+        }
+
+        return $normalized;
+    }
+
+    public static function getSupportedBarangays(): array
+    {
+        try {
+            $raw = SystemSetting::where('key', 'delivery_barangays')->value('value');
+            if ($raw !== null && trim((string) $raw) !== '') {
+                $decoded = json_decode((string) $raw, true);
+                if (is_array($decoded)) {
+                    return self::normalizeBarangayList($decoded);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fallback to defaults if DB is unavailable
+        }
+
+        return self::BARANGAYS;
+    }
+
     public static function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         $earthRadiusKm = 6371.0;
@@ -202,14 +319,26 @@ class SantaRosaDeliveryService
         return null;
     }
 
-    public static function hasUnsupportedSantaRosaBarangay(?string $text): bool
+    public static function hasUnsupportedSantaRosaBarangay(?string $text, ?array $barangays = null): bool
     {
         $normalized = preg_replace('/\s+/u', ' ', mb_strtolower(trim((string) $text)));
         if ($normalized === '') {
             return false;
         }
 
+        $activeBarangays = $barangays ?? self::getSupportedBarangays();
+        $activeAliases = [];
+        foreach ($activeBarangays as $b) {
+            $activeAliases[] = mb_strtolower($b['name']);
+            foreach ($b['aliases'] ?? [] as $a) {
+                $activeAliases[] = mb_strtolower($a);
+            }
+        }
+
         foreach (self::UNSUPPORTED_SANTA_ROSA_BARANGAYS as $term) {
+            if (in_array(mb_strtolower($term), $activeAliases, true)) {
+                continue;
+            }
             $regex = '/(?<![\p{L}\p{N}])' . preg_quote($term, '/') . '(?![\p{L}\p{N}])/iu';
             if (preg_match($regex, $normalized)) {
                 return true;
@@ -219,23 +348,24 @@ class SantaRosaDeliveryService
         return false;
     }
 
-    public static function isWithinSantaRosaBounds(float $lat, float $lng): bool
+    public static function isWithinSantaRosaBounds(float $lat, float $lng, ?array $barangays = null): bool
     {
-        if ($lat < 14.300 || $lat > 14.338 || $lng < 121.095 || $lng > 121.136) {
+        if ($lat < 14.210 || $lat > 14.345 || $lng < 121.030 || $lng > 121.145) {
             return false;
         }
 
-        $nearest = self::nearestBarangay($lat, $lng);
+        $nearest = self::nearestBarangay($lat, $lng, $barangays);
         return $nearest !== null && $nearest['distance_km'] <= 1.8;
     }
 
-    public static function nearestBarangay(float $lat, float $lng): ?array
+    public static function nearestBarangay(float $lat, float $lng, ?array $barangays = null): ?array
     {
+        $list = $barangays ?? self::getSupportedBarangays();
         $closest = null;
         $minKm = PHP_FLOAT_MAX;
 
-        foreach (self::BARANGAYS as $barangay) {
-            $km = self::haversineKm($lat, $lng, $barangay['lat'], $barangay['lng']);
+        foreach ($list as $barangay) {
+            $km = self::haversineKm($lat, $lng, (float) $barangay['lat'], (float) $barangay['lng']);
             if ($km < $minKm) {
                 $minKm = $km;
                 $closest = $barangay;
@@ -250,7 +380,7 @@ class SantaRosaDeliveryService
         return $closest;
     }
 
-    public static function detectFromText(?string $address): array
+    public static function detectFromText(?string $address, ?array $barangays = null): array
     {
         $raw = trim((string) $address);
         if ($raw === '') {
@@ -272,11 +402,12 @@ class SantaRosaDeliveryService
             ];
         }
 
+        $list = $barangays ?? self::getSupportedBarangays();
         $normalized = preg_replace('/\s+/u', ' ', mb_strtolower($raw));
 
         $candidates = [];
-        foreach (self::BARANGAYS as $barangay) {
-            foreach ($barangay['aliases'] as $alias) {
+        foreach ($list as $barangay) {
+            foreach ($barangay['aliases'] ?? [mb_strtolower($barangay['name'])] as $alias) {
                 $candidates[] = [
                     'alias' => $alias,
                     'len' => mb_strlen($alias),
@@ -311,8 +442,11 @@ class SantaRosaDeliveryService
         float $lat,
         float $lng,
         ?string $resolvedAddress = null,
-        ?string $detectedCity = null
+        ?string $detectedCity = null,
+        ?array $barangays = null
     ): array {
+        $list = $barangays ?? self::getSupportedBarangays();
+
         $outsideCity = self::detectOutsideCity($detectedCity) ?? self::detectOutsideCity($resolvedAddress);
         if ($outsideCity !== null) {
             return [
@@ -324,11 +458,11 @@ class SantaRosaDeliveryService
         }
 
         if ($resolvedAddress) {
-            $textMatch = self::detectFromText($resolvedAddress);
+            $textMatch = self::detectFromText($resolvedAddress, $list);
             if ($textMatch['matched']) {
                 return $textMatch;
             }
-            if (self::hasUnsupportedSantaRosaBarangay($resolvedAddress)) {
+            if (self::hasUnsupportedSantaRosaBarangay($resolvedAddress, $list)) {
                 return [
                     'matched' => false,
                     'reason' => 'not_in_list',
@@ -344,7 +478,7 @@ class SantaRosaDeliveryService
             && !str_contains($cityNormalized, 'sta. rosa')
             && !str_contains($cityNormalized, 'sta rosa');
 
-        if ($cityIsNonSantaRosa || !self::isWithinSantaRosaBounds($lat, $lng)) {
+        if ($cityIsNonSantaRosa || !self::isWithinSantaRosaBounds($lat, $lng, $list)) {
             return [
                 'matched' => false,
                 'reason' => 'outside_area',
@@ -353,7 +487,7 @@ class SantaRosaDeliveryService
             ];
         }
 
-        $nearest = self::nearestBarangay($lat, $lng);
+        $nearest = self::nearestBarangay($lat, $lng, $list);
         if ($nearest !== null && $nearest['distance_km'] <= 1.8) {
             return [
                 'matched' => true,
@@ -372,16 +506,42 @@ class SantaRosaDeliveryService
         ];
     }
 
-    public static function rejectionMessage(array $detection): string
+    private static function formatBarangayListText(array $list): string
     {
-        if (($detection['reason'] ?? null) === 'outside_city' && !empty($detection['outside_city'])) {
-            return "Delivery rejected: {$detection['outside_city']} is outside our delivery area. We only deliver to Aplaya, Caingin, Ibaba, Kanluran (Poblacion Uno), Labas, Malusak (Poblacion Dos), Market Area (Poblacion Tres), Sinalhan, and Tagapo in Santa Rosa, Laguna.";
+        $names = array_map(fn ($b) => $b['name'], $list);
+        $count = count($names);
+        if ($count === 0) {
+            return '';
         }
+        if ($count === 1) {
+            return $names[0];
+        }
+        if ($count === 2) {
+            return $names[0] . ' or ' . $names[1];
+        }
+        $last = array_pop($names);
+        return implode(', ', $names) . ', or ' . $last;
+    }
 
+    public static function rejectionMessage(array $detection, ?array $barangays = null): string
+    {
         if (($detection['reason'] ?? null) === 'empty') {
             return 'Delivery address is required for Delivery orders.';
         }
 
-        return 'Delivery rejected: Please enter or pin an address within our 9 supported Santa Rosa barangays (Aplaya, Caingin, Ibaba, Kanluran (Poblacion Uno), Labas, Malusak (Poblacion Dos), Market Area (Poblacion Tres), Sinalhan, or Tagapo).';
+        $list = $barangays ?? self::getSupportedBarangays();
+        $count = count($list);
+        if ($count === 0) {
+            return 'Delivery rejected: Delivery is currently unavailable because no supported barangays are configured.';
+        }
+
+        $listText = self::formatBarangayListText($list);
+
+        if (($detection['reason'] ?? null) === 'outside_city' && !empty($detection['outside_city'])) {
+            return "Delivery rejected: {$detection['outside_city']} is outside our delivery area. We only deliver to {$listText} in Santa Rosa, Laguna.";
+        }
+
+        $plural = $count === 1 ? 'barangay' : 'barangays';
+        return "Delivery rejected: Please enter or pin an address within our {$count} supported Santa Rosa {$plural} ({$listText}).";
     }
 }

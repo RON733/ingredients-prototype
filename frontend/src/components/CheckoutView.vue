@@ -243,7 +243,7 @@
                 @click="showSupportedBarangays = !showSupportedBarangays"
                 class="text-[11px] font-bold text-amber-300/90 hover:text-amber-200 flex items-center gap-1.5 transition-colors cursor-pointer">
                 <i class="pi" :class="showSupportedBarangays ? 'pi-chevron-up text-[10px]' : 'pi-map-marker text-[10px]'"></i>
-                <span>{{ showSupportedBarangays ? 'Hide' : 'View' }} 9 Accepted Santa Rosa Barangays &amp; Est. Delivery Times</span>
+                <span>{{ showSupportedBarangays ? 'Hide' : 'View' }} {{ supportedBarangays.length }} Accepted Santa Rosa Barangay{{ supportedBarangays.length === 1 ? '' : 's' }} &amp; Est. Delivery Times</span>
               </button>
 
               <div 
@@ -497,7 +497,7 @@ export default {
     const pinnedAddressPreview = Vue.ref('');
     const gpsRejectionError = Vue.ref('');
     const showSupportedBarangays = Vue.ref(false);
-    const supportedBarangays = SANTA_ROSA_BARANGAYS;
+    const supportedBarangays = Vue.computed(() => store.supportedBarangays);
     let checkoutMap = null;
     let pinMarker = null;
 
@@ -551,7 +551,7 @@ export default {
     });
 
     const detectedBarangayResult = Vue.computed(() => {
-      return detectSantaRosaBarangay(form.delivery_address);
+      return detectSantaRosaBarangay(form.delivery_address, supportedBarangays.value);
     });
 
     const detectedBarangay = Vue.computed(() => {
@@ -566,7 +566,7 @@ export default {
     const onManualAddressInput = () => {
       gpsRejectionError.value = '';
       if (form.customer_lat || form.customer_lng) {
-        const res = detectSantaRosaBarangay(form.delivery_address);
+        const res = detectSantaRosaBarangay(form.delivery_address, supportedBarangays.value);
         if (!res.matched) {
           form.customer_lat = null;
           form.customer_lng = null;
@@ -583,7 +583,7 @@ export default {
         return isValidationTriggered.value ? 'Delivery address is required for Delivery orders.' : '';
       }
       if (!detectedBarangayResult.value.matched) {
-        return getBarangayRejectionMessage(detectedBarangayResult.value);
+        return getBarangayRejectionMessage(detectedBarangayResult.value, supportedBarangays.value);
       }
       return '';
     });
@@ -611,7 +611,7 @@ export default {
         if (!form.delivery_address.trim()) {
           reasons.push('Delivery Address is required for Delivery orders.');
         } else if (!detectedBarangayResult.value.matched) {
-          reasons.push(getBarangayRejectionMessage(detectedBarangayResult.value));
+          reasons.push(getBarangayRejectionMessage(detectedBarangayResult.value, supportedBarangays.value));
         }
       }
 
@@ -730,7 +730,7 @@ export default {
     };
 
     const getQuickLocationHint = (lat, lng) => {
-      const match = detectBarangayFromCoords(lat, lng);
+      const match = detectBarangayFromCoords(lat, lng, '', '', supportedBarangays.value);
       if (match.matched && match.barangay) {
         return `Brgy. ${match.barangay.name}, Santa Rosa, Laguna`;
       }
@@ -798,10 +798,10 @@ export default {
       }
 
       // 3. Validate resolved address & coordinates against the hardcoded 18 barangays
-      const coordCheck = detectBarangayFromCoords(lat, lng, resolvedAddress, detectedCity);
+      const coordCheck = detectBarangayFromCoords(lat, lng, resolvedAddress, detectedCity, supportedBarangays.value);
 
       if (backendServiceable === false || !coordCheck.matched) {
-        gpsRejectionError.value = backendRejectionReason || getBarangayRejectionMessage(coordCheck);
+        gpsRejectionError.value = backendRejectionReason || getBarangayRejectionMessage(coordCheck, supportedBarangays.value);
         form.customer_lat = null;
         form.customer_lng = null;
         form.delivery_address = resolvedAddress || `Outside Coverage (${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)})`;
@@ -813,7 +813,7 @@ export default {
       if (!resolvedAddress && coordCheck.barangay) {
         resolvedAddress = `Brgy. ${coordCheck.barangay.name}, Santa Rosa, Laguna`;
         shortAddr = `Brgy. ${coordCheck.barangay.name}`;
-      } else if (coordCheck.barangay && !detectSantaRosaBarangay(resolvedAddress).matched) {
+      } else if (coordCheck.barangay && !detectSantaRosaBarangay(resolvedAddress, supportedBarangays.value).matched) {
         resolvedAddress = `${resolvedAddress.replace(/,\s*$/, '')}, Brgy. ${coordCheck.barangay.name}`;
       }
 

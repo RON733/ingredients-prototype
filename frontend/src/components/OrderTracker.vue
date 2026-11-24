@@ -446,7 +446,7 @@ export default {
 
     const orderBarangayEta = Vue.computed(() => {
       const addr = order.value?.delivery_address || '';
-      const match = detectSantaRosaBarangay(addr);
+      const match = detectSantaRosaBarangay(addr, store.supportedBarangays);
       return match.matched && match.barangay ? match.barangay.eta : '30–45 Mins';
     });
 

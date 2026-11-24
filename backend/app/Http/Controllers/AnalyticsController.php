@@ -8,21 +8,11 @@ use Illuminate\Support\Carbon;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
-use App\Services\LoyverseService;
 
 class AnalyticsController extends Controller
 {
     public function overview(Request $request)
     {
-        // Optional quick sync with Loyverse POS if requested or requested via button
-        if ($request->boolean('sync')) {
-            try {
-                app(LoyverseService::class)->syncRecentReceipts();
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("Loyverse auto-sync during analytics overview: " . $e->getMessage());
-            }
-        }
-
         $range = $request->input('range', '30days'); // today, yesterday, this_week, this_month, last_month, this_year, 7days, 30days, month, custom, all
         $now = now();
         $startDate = null;
@@ -227,10 +217,6 @@ class AnalyticsController extends Controller
         $totalCustomers = User::where('role', 'customer')->count();
         $activeOrdersCount = Order::whereIn('status', ['Pending', 'Preparing', 'Ready for Pickup', 'Out for Delivery'])->count();
 
-        // Count Loyverse synced orders in this period
-        $loyverseOrdersCount = $completedOrders->where('source', 'loyverse_pos')->count();
-        $websiteOrdersCount = $completedOrders->where('source', '!=', 'loyverse_pos')->count();
-
         // Comparison datasets for Bar Comparison mode
         $comparisonPeriod = $this->buildComparisonPeriod(
             $range,
@@ -257,8 +243,6 @@ class AnalyticsController extends Controller
             'highest_day' => round($highestDayAmount, 2),
             'active_orders_count' => $activeOrdersCount,
             'total_customers' => $totalCustomers,
-            'loyverse_orders_count' => $loyverseOrdersCount,
-            'website_orders_count' => $websiteOrdersCount,
             'trend_data' => $trendData,
             'comparison_period' => $comparisonPeriod,
             'monthly_comparison' => $monthlyComparison,
@@ -351,7 +335,7 @@ class AnalyticsController extends Controller
 
         $prevOrders = Order::where('status', 'Completed')
             ->whereBetween('created_at', [$prevStart, $prevEnd])
-            ->select(['id', 'total_amount', 'source', 'created_at'])
+            ->select(['id', 'total_amount', 'created_at'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -421,11 +405,6 @@ class AnalyticsController extends Controller
             ];
         }
 
-        $curPosSales = (float) $completedOrders->where('source', 'loyverse_pos')->sum('total_amount');
-        $curWebSales = (float) $completedOrders->where('source', '!=', 'loyverse_pos')->sum('total_amount');
-        $prevPosSales = (float) $prevOrders->where('source', 'loyverse_pos')->sum('total_amount');
-        $prevWebSales = (float) $prevOrders->where('source', '!=', 'loyverse_pos')->sum('total_amount');
-
         return [
             'previous_label' => $prevLabel,
             'previous_total_sales' => round($prevTotalSales, 2),
@@ -434,10 +413,6 @@ class AnalyticsController extends Controller
             'sales_change_pct' => $this->calcChangePct($totalSales, $prevTotalSales),
             'orders_change_pct' => $this->calcChangePct((float) $ordersCount, (float) $prevOrdersCount),
             'avg_change_pct' => $this->calcChangePct($averageSales, $prevAvgSales),
-            'current_pos_sales' => round($curPosSales, 2),
-            'current_web_sales' => round($curWebSales, 2),
-            'previous_pos_sales' => round($prevPosSales, 2),
-            'previous_web_sales' => round($prevWebSales, 2),
             'series' => $series,
         ];
     }
@@ -450,7 +425,7 @@ class AnalyticsController extends Controller
 
         $orders = Order::where('status', 'Completed')
             ->whereBetween('created_at', [$windowStart, $windowEnd])
-            ->select(['total_amount', 'source', 'created_at'])
+            ->select(['total_amount', 'created_at'])
             ->get();
 
         $buckets = [];
@@ -463,10 +438,6 @@ class AnalyticsController extends Controller
                 'short_label' => $cursor->format('M'),
                 'sales' => 0.0,
                 'orders' => 0,
-                'pos_sales' => 0.0,
-                'website_sales' => 0.0,
-                'pos_orders' => 0,
-                'website_orders' => 0,
             ];
             $cursor->addMonth();
         }
@@ -479,13 +450,6 @@ class AnalyticsController extends Controller
             $amt = (float) $order->total_amount;
             $buckets[$key]['sales'] += $amt;
             $buckets[$key]['orders'] += 1;
-            if ($order->source === 'loyverse_pos') {
-                $buckets[$key]['pos_sales'] += $amt;
-                $buckets[$key]['pos_orders'] += 1;
-            } else {
-                $buckets[$key]['website_sales'] += $amt;
-                $buckets[$key]['website_orders'] += 1;
-            }
         }
 
         $all = array_values($buckets);
@@ -505,10 +469,6 @@ class AnalyticsController extends Controller
                 'sales' => $sales,
                 'orders' => $cur['orders'],
                 'avg_ticket' => $avgTicket,
-                'pos_sales' => round($cur['pos_sales'], 2),
-                'website_sales' => round($cur['website_sales'], 2),
-                'pos_orders' => $cur['pos_orders'],
-                'website_orders' => $cur['website_orders'],
                 'change_pct' => $this->calcChangePct($sales, $prevSales),
             ];
         }
@@ -519,7 +479,7 @@ class AnalyticsController extends Controller
     private function buildYearlyComparison(Carbon $now): array
     {
         $orders = Order::where('status', 'Completed')
-            ->select(['total_amount', 'source', 'created_at'])
+            ->select(['total_amount', 'created_at'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -537,10 +497,6 @@ class AnalyticsController extends Controller
                 'label' => $key,
                 'sales' => 0.0,
                 'orders' => 0,
-                'pos_sales' => 0.0,
-                'website_sales' => 0.0,
-                'pos_orders' => 0,
-                'website_orders' => 0,
             ];
         }
 
@@ -552,13 +508,6 @@ class AnalyticsController extends Controller
             $amt = (float) $order->total_amount;
             $buckets[$key]['sales'] += $amt;
             $buckets[$key]['orders'] += 1;
-            if ($order->source === 'loyverse_pos') {
-                $buckets[$key]['pos_sales'] += $amt;
-                $buckets[$key]['pos_orders'] += 1;
-            } else {
-                $buckets[$key]['website_sales'] += $amt;
-                $buckets[$key]['website_orders'] += 1;
-            }
         }
 
         $list = array_values($buckets);
@@ -574,10 +523,6 @@ class AnalyticsController extends Controller
                 'sales' => $sales,
                 'orders' => $cur['orders'],
                 'avg_ticket' => $avgTicket,
-                'pos_sales' => round($cur['pos_sales'], 2),
-                'website_sales' => round($cur['website_sales'], 2),
-                'pos_orders' => $cur['pos_orders'],
-                'website_orders' => $cur['website_orders'],
                 'change_pct' => $prevSales !== null ? $this->calcChangePct($sales, $prevSales) : null,
             ];
         }

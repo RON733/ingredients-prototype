@@ -86,11 +86,11 @@
           <div class="max-w-6xl mx-auto px-4 space-y-3">
             <div class="flex items-center justify-center gap-2">
               <span class="font-extrabold text-white text-sm">G SHOT TEAS</span>
-              <span class="text-yellow-400 font-bold">•</span>
+              <span class="text-yellow-400 font-bold">â€¢</span>
               <span class="text-gray-400">Web-Based Ordering & Sales Management System</span>
             </div>
-            <p>STI College Santa Rosa — Capstone Project by Tyron Erick Rico, Mhar Anthony Lirio, Kurt Xyler Munoz, Raymond Barajas</p>
-            <p class="text-[10px] text-gray-600">Client: Jefferson Anore Alulod • Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna</p>
+            <p>STI College Santa Rosa â€” Capstone Project by Tyron Erick Rico, Mhar Anthony Lirio, Kurt Xyler Munoz, Raymond Barajas</p>
+            <p class="text-[10px] text-gray-600">Client: Jefferson Anore Alulod â€¢ Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna</p>
           </div>
         </footer>
 
@@ -180,7 +180,6 @@
         <EventBookingModal />
         <AnnouncementModal />
         <AuthModal />
-        <ChatbotAssistant />
 
         <!-- Flyer Fullscreen Lightbox Modal -->
         <div 
@@ -200,7 +199,7 @@
               <img :src="store.previewFlyerImage" alt="Flyer Preview" class="max-h-[72vh] w-auto object-contain rounded-xl shadow-lg" />
             </div>
             <div class="p-3 sm:p-4 bg-surface-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 border-t border-surface-700">
-              <span class="text-[11px] sm:text-xs text-gray-300 font-medium truncate text-center sm:text-left">Direct: Jefferson Alulod • 0994 612 1933</span>
+              <span class="text-[11px] sm:text-xs text-gray-300 font-medium truncate text-center sm:text-left">Direct: Jefferson Alulod â€¢ 0994 612 1933</span>
               <button 
                 @click="const targetPkg = store.previewFlyerPackage || (store.previewFlyerImage.includes('coffee') ? 'Coffee Package' : 'Fruity Float Package'); store.closeFlyer(); store.openBookingWithPackage(targetPkg)"
                 class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black bg-yellow-400 hover:bg-yellow-300 text-black font-bold transition-all shrink-0 text-center">
@@ -246,7 +245,7 @@ import * as Vue from 'vue';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
 
-// G Shot Teas — Vue 3 Main Application Root
+// G Shot Teas â€” Vue 3 Main Application Root
 
 
 export default {
@@ -326,23 +325,23 @@ export default {
     watch(
       [() => store.currentView, () => store.activeSection],
       ([view, section]) => {
-        const defaultTitle = 'G Shot Teas — Milk Tea, Coffee, Pizza, Burgers & Rice Meals in Santa Rosa, Laguna';
+        const defaultTitle = 'G Shot Teas â€” Milk Tea, Coffee, Pizza, Burgers & Rice Meals in Santa Rosa, Laguna';
         if (view === 'menu') {
-          document.title = 'Menu — G Shot Teas | Milk Tea, Coffee, Pizza, Burgers & Rice Meals';
+          document.title = 'Menu â€” G Shot Teas | Milk Tea, Coffee, Pizza, Burgers & Rice Meals';
         } else if (view === 'checkout') {
-          document.title = 'Checkout — G Shot Teas';
+          document.title = 'Checkout â€” G Shot Teas';
         } else if (view === 'track') {
-          document.title = 'Track Your Order — G Shot Teas';
+          document.title = 'Track Your Order â€” G Shot Teas';
         } else if (view === 'history') {
-          document.title = 'Order History — G Shot Teas';
+          document.title = 'Order History â€” G Shot Teas';
         } else if (view === 'bookings') {
-          document.title = 'Event Catering Bookings — G Shot Teas';
+          document.title = 'Event Catering Bookings â€” G Shot Teas';
         } else if (section === 'about') {
-          document.title = 'About Us — G Shot Teas | Santa Rosa, Laguna';
+          document.title = 'About Us â€” G Shot Teas | Santa Rosa, Laguna';
         } else if (section === 'contact') {
-          document.title = 'Contact & Location — G Shot Teas | Santa Rosa, Laguna';
+          document.title = 'Contact & Location â€” G Shot Teas | Santa Rosa, Laguna';
         } else if (section === 'menu') {
-          document.title = 'Menu — G Shot Teas | Milk Tea, Coffee, Pizza, Burgers & Rice Meals';
+          document.title = 'Menu â€” G Shot Teas | Milk Tea, Coffee, Pizza, Burgers & Rice Meals';
         } else {
           document.title = defaultTitle;
         }

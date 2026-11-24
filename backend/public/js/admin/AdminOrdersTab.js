@@ -16,15 +16,6 @@ const AdminOrdersTab = {
 
         <div class="flex items-center gap-2.5 flex-wrap">
           <button 
-            @click="handleSyncLoyverse"
-            :disabled="isSyncingLoyverse"
-            class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
-            title="Sync latest sales and receipts from Loyverse POS tablet">
-            <i class="pi" :class="isSyncingLoyverse ? 'pi-spin pi-spinner text-amber-400' : 'pi-sync text-emerald-400'"></i>
-            <span>{{ isSyncingLoyverse ? 'Syncing...' : 'Sync Loyverse' }}</span>
-          </button>
-
-          <button 
             v-if="store.isAdminOrSuper"
             @click="store.adminTab = 'settings'"
             class="px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-surface-800 hover:bg-surface-750 text-neutral-200 border border-surface-700 transition-all flex items-center gap-2 cursor-pointer shadow-sm active:scale-95"
@@ -173,9 +164,6 @@ const AdminOrdersTab = {
               <span class="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase"
                 :class="order.order_type === 'Delivery' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
                 {{ order.order_type }}
-              </span>
-              <span v-if="order.source === 'loyverse_pos' || (order.order_number && order.order_number.startsWith('LV-'))" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                <i class="pi pi-bolt text-[10px]"></i> Loyverse POS
               </span>
               <span v-if="order.driver" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
                 <i class="pi pi-send text-[10px]"></i> {{ order.driver.name }}
@@ -628,16 +616,6 @@ const AdminOrdersTab = {
     const selectedDriverId = Vue.ref(null);
     const isDispatching = Vue.ref(false);
     const ordersProofLightbox = Vue.ref(null);
-    const isSyncingLoyverse = Vue.ref(false);
-
-    const handleSyncLoyverse = async () => {
-      isSyncingLoyverse.value = true;
-      try {
-        await store.syncLoyverseSales();
-      } finally {
-        isSyncingLoyverse.value = false;
-      }
-    };
 
     const openDispatchModal = async (order) => {
       dispatchModalOrder.value = order;
@@ -734,8 +712,6 @@ const AdminOrdersTab = {
       openDispatchModal,
       autoAssignRider,
       confirmDispatch,
-      isSyncingLoyverse,
-      handleSyncLoyverse,
       ordersProofLightbox,
       pendingRiderNotices,
       handleAcceptNotice,

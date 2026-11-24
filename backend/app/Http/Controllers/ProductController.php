@@ -8,18 +8,10 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\AuditLog;
-use App\Services\LoyverseService;
 use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
-    protected ?LoyverseService $loyverse;
-
-    public function __construct(?LoyverseService $loyverse = null)
-    {
-        $this->loyverse = $loyverse ?? app(LoyverseService::class);
-    }
-
     public function index(Request $request)
     {
         $hasFilters = $request->filled('category') || $request->filled('search') || $request->filled('sort');
@@ -147,13 +139,6 @@ class ProductController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        // Auto-push newly created product to Loyverse POS
-        try {
-            $this->loyverse->pushSingleProductToLoyverse($product);
-        } catch (\Throwable $e) {
-            Log::warning("Loyverse auto-push failed for product {$product->name}: " . $e->getMessage());
-        }
-
         return response()->json($product, 201);
     }
 
@@ -191,13 +176,6 @@ class ProductController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        // Auto-push updated product to Loyverse POS
-        try {
-            $this->loyverse->pushSingleProductToLoyverse($product);
-        } catch (\Throwable $e) {
-            Log::warning("Loyverse auto-push failed for product {$product->name}: " . $e->getMessage());
-        }
-
         return response()->json($product);
     }
 
@@ -215,12 +193,6 @@ class ProductController extends Controller
             'details' => "{$product->name} is now marked " . ($product->is_available ? 'Available' : 'Out of Stock'),
             'ip_address' => $request->ip(),
         ]);
-
-        try {
-            $this->loyverse->pushSingleProductToLoyverse($product);
-        } catch (\Throwable $e) {
-            Log::warning("Loyverse availability sync failed for product {$product->name}: " . $e->getMessage());
-        }
 
         return response()->json([
             'product' => $product,
@@ -242,12 +214,6 @@ class ProductController extends Controller
             'details' => "Removed product {$name} from catalog",
             'ip_address' => $request->ip(),
         ]);
-
-        try {
-            $this->loyverse->deleteProductFromLoyverse($product);
-        } catch (\Throwable $e) {
-            Log::warning("Loyverse delete failed for product {$name}: " . $e->getMessage());
-        }
 
         return response()->json(['message' => 'Product deleted successfully']);
     }
@@ -305,11 +271,6 @@ class ProductController extends Controller
             $product->save();
             $updatedCount++;
 
-            try {
-                $this->loyverse->pushSingleProductToLoyverse($product);
-            } catch (\Throwable $e) {
-                // non-blocking
-            }
         }
 
         Cache::forget('products_catalog_default');
@@ -369,11 +330,6 @@ class ProductController extends Controller
             $product->save();
             $updatedCount++;
 
-            try {
-                $this->loyverse->pushSingleProductToLoyverse($product);
-            } catch (\Throwable $e) {
-                // non-blocking
-            }
         }
 
         Cache::forget('products_catalog_default');

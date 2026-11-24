@@ -410,16 +410,6 @@ const useGShotStore = defineStore('gshot', {
         }
       }, 7000);
 
-      // Periodic automatic background synchronization with Loyverse POS
-      setInterval(async () => {
-        if (this.currentView === 'admin' || this.isStaffOrAdmin) {
-          try {
-            await GST_API.syncLoyverse();
-          } catch (e) {
-            // silent background sync
-          }
-        }
-      }, 30000);
     },
 
     async refreshAllData() {
@@ -1222,57 +1212,6 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    // Loyverse POS Integration Actions
-    async getLoyverseStatus() {
-      try {
-        const res = await GST_API.getLoyverseStatus();
-        return res.data;
-      } catch (err) {
-        console.error('Failed to get Loyverse status:', err);
-        return { connected: false, error: err.message };
-      }
-    },
-
-    async syncLoyverseSales() {
-      this.loading = true;
-      try {
-        const res = await GST_API.syncLoyverse();
-        const count = res.data?.results?.synced ?? 0;
-        await Promise.all([
-          this.fetchOrders(),
-          this.fetchIngredients(),
-          this.fetchProducts(),
-        ]);
-        if (count > 0) {
-          this.notify(`Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
-        } else {
-          this.notify('Loyverse POS is up to date. No new un-synced sales.', 'info');
-        }
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse sync failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to sync with Loyverse POS.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async exportMenuToLoyverse() {
-      this.loading = true;
-      try {
-        const res = await GST_API.exportMenuToLoyverse();
-        const total = res.data?.results?.total ?? 0;
-        this.notify(`Successfully exported/synced ${total} menu items to Loyverse POS!`, 'success');
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse export failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to export menu to Loyverse.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
   },
 });
 

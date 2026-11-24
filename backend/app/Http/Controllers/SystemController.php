@@ -37,6 +37,7 @@ class SystemController extends Controller
                 'booking_bank_account' => '',
                 'booking_bank_account_name' => '',
                 'booking_payment_qr' => '',
+                'delivery_barangays' => json_encode(SantaRosaDeliveryService::BARANGAYS),
             ];
             foreach ($defaults as $key => $val) {
                 if (!isset($s[$key])) {
@@ -57,6 +58,34 @@ class SystemController extends Controller
     {
         $data = $request->all();
         $user = $request->user('sanctum') ?? $request->user();
+
+        // Strict Authorization: Modifying supported delivery barangays is restricted to Owner / Admin
+        if (array_key_exists('delivery_barangays', $data)) {
+            if ($user && !in_array($user->role, ['admin', 'super_admin'], true)) {
+                return response()->json([
+                    'message' => 'Access Denied: Only the Owner / Admin can modify supported delivery barangays.'
+                ], 403);
+            }
+
+            $rawBarangays = $data['delivery_barangays'];
+            if (is_string($rawBarangays)) {
+                $decodedBarangays = json_decode($rawBarangays, true);
+            } elseif (is_array($rawBarangays)) {
+                $decodedBarangays = $rawBarangays;
+            } else {
+                $decodedBarangays = null;
+            }
+
+            if (!is_array($decodedBarangays)) {
+                return response()->json([
+                    'message' => 'Invalid delivery_barangays payload. Expected a JSON array.'
+                ], 422);
+            }
+
+            $normalizedBarangays = SantaRosaDeliveryService::normalizeBarangayList($decodedBarangays);
+            $data['delivery_barangays'] = json_encode($normalizedBarangays, JSON_UNESCAPED_UNICODE);
+            Cache::put('delivery_barangays_version', (int) Cache::get('delivery_barangays_version', 1) + 1, 86400 * 30);
+        }
 
         // Strict Authorization: If modifying maintenance mode, ONLY Super Admin is permitted
         if (isset($data['maintenance_mode'])) {
@@ -108,6 +137,11 @@ class SystemController extends Controller
             $action = 'Order Area Notice Updated';
             $noteText = $data['order_area_note'] ?? 'Santa Rosa Bayan notice';
             $details = 'Updated customer order availability note: ' . $noteText;
+        } elseif (array_key_exists('delivery_barangays', $data)) {
+            $action = 'Delivery Barangays Updated';
+            $list = json_decode($data['delivery_barangays'], true) ?: [];
+            $names = array_map(fn ($b) => $b['name'] ?? '', $list);
+            $details = 'Updated supported delivery barangays (' . count($list) . '): ' . (count($names) ? implode(', ', $names) : 'None');
         } elseif (isset($data['booking_downpayment_percent']) || isset($data['booking_gcash_number']) || isset($data['booking_payment_qr'])) {
             $action = 'Booking Downpayment Settings Updated';
             $details = 'Updated event booking downpayment percentage, deadline, or payment receiving accounts.';
@@ -167,225 +201,6 @@ class SystemController extends Controller
         return response()->json($logs);
     }
 
-    public function chatbot(Request $request)
-    {
-        $rawMessage = trim($request->input('message', ''));
-        $message = strtolower($rawMessage);
-
-        $owner = env('STORE_OWNER', 'Jefferson Alulod');
-        $address = env('STORE_ADDRESS', 'Block 9 Lot 3 Amira Townhomes, Brgy. Sinalhan, Santa Rosa, Laguna');
-        $phone = env('STORE_PHONE', '0994 612 1933');
-        $apiKey = env('GEMINI_API_KEY', '');
-
-        if (empty($rawMessage)) {
-            return response()->json([
-                'reply' => "Hello! I am your Gshot Assistant 🧋 How can I help you today? You can ask about our drinks, food menu, walk-in orders, our owner ({$owner}), store location at {$address}, or event catering!"
-            ]);
-        }
-
-        // Live menu context with manual availability status
-        $products = Product::orderBy('name', 'asc')->get();
-        $menuList = [];
-        $outOfStockItems = [];
-        $inStockItems = [];
-
-        foreach ($products as $p) {
-            $stockStatus = $p->stock_status;
-            $maxPortions = $p->max_portions;
-
-            if ($stockStatus === 'unavailable' || $stockStatus === 'soldout') {
-                $statusTag = '[OUT OF STOCK]';
-                $outOfStockItems[] = $p->name;
-            } elseif ($stockStatus === 'low') {
-                $statusTag = "[LOW STOCK - {$maxPortions} left]";
-                $inStockItems[] = $p->name;
-            } else {
-                $statusTag = '[IN STOCK]';
-                $inStockItems[] = $p->name;
-            }
-
-            $priceStr = '₱' . number_format($p->price, 2);
-            if ($p->is_discounted && $p->original_price) {
-                $priceStr .= ' (was ₱' . number_format($p->original_price, 2) . ')';
-            }
-
-            $menuList[] = "- {$p->name} ({$p->category}) {$statusTag}: {$priceStr} — {$p->description}";
-        }
-        $menuSummary = !empty($menuList) ? implode("\n", $menuList) : "No menu items available.";
-        $outOfStockSummary = !empty($outOfStockItems)
-            ? implode(', ', $outOfStockItems)
-            : 'None (all menu items are currently in stock)';
-
-        // Live announcements
-        $announcements = \App\Models\Announcement::where('is_active', true)->get();
-        $announcementList = [];
-        foreach ($announcements as $a) {
-            $announcementList[] = "- [{$a->badge}] {$a->title}: {$a->description}";
-        }
-        $announcementsSummary = !empty($announcementList) ? implode("\n", $announcementList) : "None at the moment.";
-
-        // Live event booking packages
-        \App\Models\BookingPackage::seedDefaultsIfEmpty();
-        $bookingPackages = \App\Models\BookingPackage::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
-        $bookingPackageLines = [];
-        foreach ($bookingPackages as $pkg) {
-            $priceStr = '₱' . number_format($pkg->price, 0);
-            if ($pkg->pricing_type === 'per_pack') {
-                $priceStr .= " per {$pkg->base_pax} pax";
-            } elseif ($pkg->pricing_type === 'per_guest') {
-                $priceStr .= " per pax";
-            } else {
-                $priceStr .= " flat rate";
-            }
-            $bookingPackageLines[] = "{$pkg->name} ({$priceStr}" . ($pkg->description ? " — {$pkg->description}" : '') . ")";
-        }
-        $bookingPackagesSummary = !empty($bookingPackageLines)
-            ? implode('; ', $bookingPackageLines)
-            : "Coffee Package (₱3,500 for 50 pax) and Fruity Float Package (₱3,500 for 50 pax)";
-
-        // Build comprehensive knowledge context for Gemini AI
-        $systemPrompt = "You are G Shot Assistant, the official, intelligent, and friendly AI assistant for 'G Shot Teas' (a premier milk tea, burger, pizza, and coffee destination in Santa Rosa, Laguna).\n"
-            . "You think freely, converse warmly, and answer customer inquiries accurately and naturally (in friendly English or Taglish).\n\n"
-            . "KEY STORE PROFILE:\n"
-            . "- Store Owner & Proprietor: {$owner} (Jefferson Anore Alulod)\n"
-            . "- Official Address / Location: {$address}\n"
-            . "- Contact / Phone: {$phone} (Direct to Jefferson Alulod) or +63 912 345 6789\n"
-            . "- Business Hours: Monday to Saturday, 9:00 AM – 10:00 PM (Closed on Sundays)\n"
-            . "- Walk-In Orders: YES! Walk-in orders for dine-in and takeout are 100% welcomed directly at our physical store at {$address}. Customers can also order online through this website for delivery or pickup!\n"
-            . "- Payment Methods: Cash on Delivery (COD) for deliveries and Cash at Counter for store pickup and walk-ins.\n"
-            . "- Event Catering & Mobile Bar: {$bookingPackagesSummary}. Inquiries handled directly by {$owner} ({$phone}).\n\n"
-            . "CURRENT STORE MENU, PRICES & LIVE STOCK STATUS:\n{$menuSummary}\n\n"
-            . "CURRENTLY OUT OF STOCK ITEMS:\n{$outOfStockSummary}\n\n"
-            . "LIVE PROMOTIONS & ANNOUNCEMENTS:\n{$announcementsSummary}\n\n"
-            . "GUIDELINES FOR YOUR RESPONSE:\n"
-            . "1. Answer the customer's specific query directly and intelligently.\n"
-            . "2. If asked 'can I order walk in' or about visiting, warmly confirm that walk-ins are welcomed and provide the address: {$address}.\n"
-            . "3. If asked who owns the store, state proudly that G Shot Teas is owned and operated by {$owner}.\n"
-            . "4. Keep answers engaging, helpful, and concise with clean Markdown formatting when listing recommendations.\n"
-            . "5. ALWAYS check each menu item's stock tag ([IN STOCK], [LOW STOCK - X left], or [OUT OF STOCK]) before answering.\n"
-            . "6. If a customer asks about an item marked [OUT OF STOCK], clearly inform them that it is currently out of stock / unavailable right now, and suggest similar [IN STOCK] alternatives from the menu.\n"
-            . "7. Never recommend [OUT OF STOCK] items as available to order; when listing menu items or best sellers, clearly note if an item is [OUT OF STOCK] or [LOW STOCK].\n"
-            . "8. Do not invent products not listed in the menu.";
-
-        set_time_limit(45);
-
-        // Attempt Gemini AI call
-        if (!empty($apiKey)) {
-            $models = ['gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3.1-flash-lite'];
-            foreach ($models as $model) {
-                try {
-                    $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
-                    $payload = [
-                        'contents' => [
-                            [
-                                'role' => 'user',
-                                'parts' => [
-                                    ['text' => "SYSTEM INSTRUCTION:\n{$systemPrompt}\n\nCUSTOMER QUESTION: {$rawMessage}"]
-                                ]
-                            ]
-                        ],
-                        'generationConfig' => [
-                            'temperature' => 0.7,
-                            'maxOutputTokens' => 800,
-                        ]
-                    ];
-
-                    $ch = curl_init($url);
-                    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-                    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                    $apiRes = curl_exec($ch);
-                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                    curl_close($ch);
-
-                    if ($httpCode === 200 && !empty($apiRes)) {
-                        $parsed = json_decode($apiRes, true);
-                        $replyText = $parsed['candidates'][0]['content']['parts'][0]['text'] ?? null;
-                        if (!empty($replyText)) {
-                            return response()->json([
-                                'reply' => trim($replyText),
-                                'ai_powered' => true,
-                                'model' => $model
-                            ]);
-                        }
-                    }
-                } catch (\Exception $e) {
-                    // Try next model or fallback
-                }
-            }
-        }
-
-        // Smart Knowledge Fallback (Guaranteed to answer walk-in, owner, address, menu, payments, and catering even if offline)
-        if (str_contains($message, 'walk in') || str_contains($message, 'walk-in') || str_contains($message, 'dine in') || str_contains($message, 'visit') || str_contains($message, 'physical')) {
-            return response()->json([
-                'reply' => "Yes, absolutely! Walk-in orders for dine-in and takeout are 100% welcomed at **G Shot Teas**! 😊\n\n📍 **Store Address**: {$address}\n⏰ **Operating Hours**: Monday – Saturday, 9:00 AM to 10:00 PM\n\nYou can order directly at our counter or order in advance through this website. We look forward to serving you!",
-                'ai_powered' => false
-            ]);
-        }
-
-        if (str_contains($message, 'owner') || str_contains($message, 'jefferson') || str_contains($message, 'founder') || str_contains($message, 'who owns')) {
-            return response()->json([
-                'reply' => "👑 **G Shot Teas** is proudly owned and operated by **{$owner}** (Jefferson Anore Alulod)!\n\nFor direct business inquiries, special bulk orders, and mobile bar bookings, you can contact Mr. Jefferson directly at **{$phone}**.",
-                'ai_powered' => false
-            ]);
-        }
-
-        if (str_contains($message, 'address') || str_contains($message, 'location') || str_contains($message, 'where')) {
-            return response()->json([
-                'reply' => "📍 **Store Address**: {$address}\n\nWe are open Monday to Saturday from 9:00 AM to 10:00 PM. Drop by for freshly brewed milk tea, hot burgers, and stone-baked pizza!",
-                'ai_powered' => false
-            ]);
-        }
-
-        if (str_contains($message, 'out of stock') || str_contains($message, 'available') || str_contains($message, 'stock') || str_contains($message, 'menu')) {
-            $matchedProducts = $products->filter(fn($p) => str_contains($message, strtolower($p->name)));
-            if ($matchedProducts->isNotEmpty()) {
-                $lines = $matchedProducts->map(function ($p) {
-                    $isOos = in_array($p->stock_status, ['unavailable', 'soldout'], true);
-                    if ($isOos) {
-                        return "❌ **{$p->name}** is currently **Out of Stock**.";
-                    }
-                    if ($p->stock_status === 'low') {
-                        return "⚠️ **{$p->name}** is **In Stock** (Low stock: {$p->max_portions} left) — ₱" . number_format($p->price, 2) . ".";
-                    }
-                    return "✅ **{$p->name}** is **In Stock** — ₱" . number_format($p->price, 2) . ".";
-                })->implode("\n");
-
-                return response()->json([
-                    'reply' => $lines,
-                    'ai_powered' => false
-                ]);
-            }
-
-            $reply = "Here is our current menu availability at **G Shot Teas**:\n\n";
-            if (!empty($outOfStockItems)) {
-                $reply .= "❌ **Currently Out of Stock:** " . implode(', ', $outOfStockItems) . "\n\n";
-            } else {
-                $reply .= "✅ **All menu items are currently in stock!**\n\n";
-            }
-            if (!empty($inStockItems)) {
-                $reply .= "✅ **Available Now:** " . implode(', ', array_slice($inStockItems, 0, 12));
-                if (count($inStockItems) > 12) {
-                    $reply .= " (and " . (count($inStockItems) - 12) . " more on our Menu section)";
-                }
-            }
-            return response()->json([
-                'reply' => $reply,
-                'ai_powered' => false
-            ]);
-        }
-
-        return response()->json([
-            'reply' => "Hello! G Shot Teas is owned by **{$owner}** and located at **{$address}**. We warmly welcome walk-in orders, store pickup, and online deliveries! How can I assist you today?",
-            'ai_powered' => false
-        ]);
-    }
-
     public function reverseGeocode(Request $request)
     {
         $lat = filter_var($request->query('lat'), FILTER_VALIDATE_FLOAT);
@@ -395,7 +210,8 @@ class SystemController extends Controller
             return response()->json(['error' => 'Invalid coordinates provided.'], 422);
         }
 
-        $cacheKey = 'rev_geo_v2_' . round($lat, 4) . '_' . round($lng, 4);
+        $brgyVer = Cache::get('delivery_barangays_version', 1);
+        $cacheKey = 'rev_geo_v2_' . $brgyVer . '_' . round($lat, 4) . '_' . round($lng, 4);
         $cached = Cache::get($cacheKey);
         if ($cached) {
             return response()->json($cached);

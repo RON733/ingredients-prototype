@@ -334,16 +334,6 @@ class OrderController extends Controller
 
 
 
-            // Automatically push order to Loyverse POS ONLY if already Completed or Paid (e.g. staff created POS order)
-            // Online pending orders will sync upon approval / completion
-            if ($order->status === 'Completed' || in_array($order->payment_status, ['Paid', 'Verified'])) {
-                try {
-                    app(\App\Services\LoyverseService::class)->pushOrderToLoyverse($order);
-                } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::warning("Loyverse auto-sync warning: " . $e->getMessage());
-                }
-            }
-
             $placingRole = $request->user()?->role;
             if ($placingRole && in_array($placingRole, ['staff', 'admin', 'super_admin'])) {
                 AuditLog::create([
@@ -439,15 +429,6 @@ class OrderController extends Controller
                     $assignedDriver->driver_status = $assignedDriver->is_available ? 'available' : 'offline';
                     $assignedDriver->save();
                 }
-            }
-        }
-
-        // Push to Loyverse POS when order is completed
-        if ($newStatus === 'Completed' && empty($order->loyverse_receipt_id) && $order->source !== 'loyverse_pos') {
-            try {
-                app(\App\Services\LoyverseService::class)->pushOrderToLoyverse($order);
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('Loyverse push on completion warning: ' . $e->getMessage());
             }
         }
 

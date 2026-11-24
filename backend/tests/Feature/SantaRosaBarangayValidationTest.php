@@ -204,4 +204,82 @@ class SantaRosaBarangayValidationTest extends TestCase
             ->assertJsonPath('is_serviceable', false)
             ->assertJsonPath('detected_barangay', null);
     }
+
+    public function test_owner_can_add_and_remove_delivery_barangays(): void
+    {
+        [$customer, $product] = $this->seedOrderFixtures();
+
+        $owner = User::create([
+            'name' => 'Store Owner',
+            'email' => 'owner@test.com',
+            'password' => Hash::make('password123'),
+            'role' => 'admin',
+            'status' => 'active',
+        ]);
+
+        $staff = User::create([
+            'name' => 'Staff Member',
+            'email' => 'staff@test.com',
+            'password' => Hash::make('password123'),
+            'role' => 'staff',
+            'status' => 'active',
+        ]);
+
+        // 1. Staff cannot modify delivery_barangays
+        $staffRes = $this->actingAs($staff, 'sanctum')
+            ->postJson('/api/settings', [
+                'delivery_barangays' => json_encode(SantaRosaDeliveryService::BARANGAYS),
+            ]);
+        $staffRes->assertStatus(403);
+
+        // 2. Owner adds Pooc and removes Tagapo
+        $updatedList = array_values(array_filter(
+            SantaRosaDeliveryService::BARANGAYS,
+            fn ($b) => $b['id'] !== 'tagapo'
+        ));
+        $updatedList[] = [
+            'id' => 'pooc',
+            'name' => 'Pooc',
+            'eta' => '25–35 Mins',
+        ];
+
+        $ownerRes = $this->actingAs($owner, 'sanctum')
+            ->postJson('/api/settings', [
+                'delivery_barangays' => json_encode($updatedList),
+            ]);
+        $ownerRes->assertStatus(200);
+
+        // 3. Pooc is now accepted on order placement
+        $poocOrder = $this->actingAs($customer, 'sanctum')
+            ->postJson('/api/orders', [
+                'user_id' => $customer->id,
+                'customer_name' => 'Maria Santos',
+                'customer_phone' => '09171234567',
+                'order_type' => 'Delivery',
+                'delivery_address' => 'Bagong Santa Rosa Village 1, Pooc, Santa Rosa, Laguna',
+                'payment_method' => 'Cash',
+                'items' => [
+                    ['product_id' => $product->id, 'quantity' => 1],
+                ],
+            ]);
+        $poocOrder->assertStatus(201)
+            ->assertJsonPath('detected_barangay', 'Pooc')
+            ->assertJsonPath('estimated_delivery_time', '25–35 Mins');
+
+        // 4. Removed barangay (Tagapo) is now rejected
+        $tagapoOrder = $this->actingAs($customer, 'sanctum')
+            ->postJson('/api/orders', [
+                'user_id' => $customer->id,
+                'customer_name' => 'Maria Santos',
+                'customer_phone' => '09171234567',
+                'order_type' => 'Delivery',
+                'delivery_address' => 'Blk 2 Lot 8, Brgy. Tagapo, Santa Rosa, Laguna',
+                'payment_method' => 'Cash',
+                'items' => [
+                    ['product_id' => $product->id, 'quantity' => 1],
+                ],
+            ]);
+        $tagapoOrder->assertStatus(422)
+            ->assertJsonPath('outside_delivery_area', true);
+    }
 }

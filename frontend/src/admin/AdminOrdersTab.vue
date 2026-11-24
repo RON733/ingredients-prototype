@@ -13,11 +13,6 @@
         </div>
 
         <div class="flex items-center gap-2.5 flex-wrap">
-          <div class="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2" title="Loyverse POS sales automatically sync every minute in the background">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 "></span>
-            <span class="hidden sm:inline">POS Auto-Sync Active</span>
-          </div>
-
           <button 
             @click="refresh"
             class="p-2.5 rounded-xl bg-surface-800 hover:bg-surface-750 text-neutral-300 hover:text-white border border-surface-700 text-xs transition-colors cursor-pointer"
@@ -157,9 +152,6 @@
               <span class="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase shrink-0"
                 :class="order.order_type === 'Delivery' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'">
                 {{ order.order_type }}
-              </span>
-              <span v-if="order.source === 'loyverse_pos' || (order.order_number && order.order_number.startsWith('LV-'))" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shrink-0">
-                <i class="pi pi-bolt text-[10px]"></i> Loyverse POS
               </span>
               <span v-if="order.driver" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1 shrink-0">
                 <i class="pi pi-send text-[10px]"></i> {{ order.driver.name }}
@@ -706,7 +698,6 @@ export default {
     const selectedDriverId = Vue.ref(null);
     const isDispatching = Vue.ref(false);
     const ordersProofLightbox = Vue.ref(null);
-    const isSyncingLoyverse = Vue.ref(false);
 
     // Quick Order Availability Notice Modal State (Staff, Admin, Super Admin)
     const showAreaNoteModal = Vue.ref(false);
@@ -733,15 +724,6 @@ export default {
         // Handled by store
       } finally {
         isSavingQuickAreaNote.value = false;
-      }
-    };
-
-    const handleSyncLoyverse = async () => {
-      isSyncingLoyverse.value = true;
-      try {
-        await store.syncLoyverseSales();
-      } finally {
-        isSyncingLoyverse.value = false;
       }
     };
 
@@ -851,8 +833,6 @@ export default {
       openDispatchModal,
       autoAssignRider,
       confirmDispatch,
-      isSyncingLoyverse,
-      handleSyncLoyverse,
       ordersProofLightbox,
       pendingRiderNotices,
       handleAcceptNotice,

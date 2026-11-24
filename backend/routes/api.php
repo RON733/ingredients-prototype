@@ -10,7 +10,6 @@ use App\Http\Controllers\BookingPackageController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\AnnouncementController;
-use App\Http\Controllers\LoyverseController;
 use App\Http\Controllers\RemittanceController;
 
 // --- Public Endpoints ---
@@ -59,24 +58,12 @@ Route::get('/settings', [SystemController::class, 'settings']);
 Route::get('/reverse-geocode', [SystemController::class, 'reverseGeocode']);
 Route::get('/geocode-search', [SystemController::class, 'searchAddress']);
 Route::get('/announcements', [AnnouncementController::class, 'index']);
-Route::post('/chatbot', [SystemController::class, 'chatbot']);
 Route::get('/bookings/my', [EventBookingController::class, 'myBookings']);
 Route::get('/bookings/availability', [EventBookingController::class, 'availability']);
 Route::post('/bookings', [EventBookingController::class, 'store']);
 Route::post('/bookings/{id}/cancel', [EventBookingController::class, 'cancel']);
 Route::post('/bookings/{id}/submit-downpayment', [EventBookingController::class, 'submitDownpayment']);
 Route::get('/booking-packages', [BookingPackageController::class, 'index']);
-
-// Loyverse Advanced Inventory Integration
-Route::get('/loyverse/status', [LoyverseController::class, 'status']);
-Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
-Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
-Route::post('/loyverse/pull-items', [LoyverseController::class, 'pullItems']);
-Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
-Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);
-Route::post('/loyverse/suppliers', [LoyverseController::class, 'saveSupplier']);
-Route::post('/loyverse/register-webhook', [LoyverseController::class, 'registerWebhook']);
-Route::post('/loyverse/webhook', [LoyverseController::class, 'webhook']);
 
 // --- Authenticated & Operational Endpoints ---
 Route::middleware('auth:sanctum')->group(function () {
@@ -186,15 +173,4 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::match(['put', 'patch'], '/announcements/{id}', [AnnouncementController::class, 'update']);
     Route::match(['put', 'patch'], '/announcements/{id}/toggle', [AnnouncementController::class, 'toggleActive']);
     Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
-
-// Loyverse Advanced Inventory Integration
-    Route::get('/loyverse/status', [LoyverseController::class, 'status']);
-    Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
-    Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
-        Route::post('/loyverse/pull-items', [LoyverseController::class, 'pullItems']);
-        Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
-    Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);
-    Route::post('/loyverse/suppliers', [LoyverseController::class, 'saveSupplier']);
-    Route::post('/loyverse/register-webhook', [LoyverseController::class, 'registerWebhook']);
-    Route::post('/loyverse/webhook', [LoyverseController::class, 'webhook']);
 });

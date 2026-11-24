@@ -26,9 +26,6 @@ class Product extends Model
         'emoji',
         'image',
         'is_available',
-        'loyverse_item_id',
-        'loyverse_variant_id',
-        'loyverse_discount_id',
     ];
 
     protected $casts = [

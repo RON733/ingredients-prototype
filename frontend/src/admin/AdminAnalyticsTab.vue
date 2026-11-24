@@ -13,15 +13,8 @@
             </span>
           </div>
           <h2 class="text-lg sm:text-2xl font-bold text-white mt-1">Sales Analytics</h2>
-          <p class="text-[11px] sm:text-xs text-gray-400 flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 mt-0.5">
-            <span>Track physical POS and online channels.</span>
-            <span v-if="analyticsData" class="inline-flex items-center gap-1.5 sm:gap-2 bg-surface-800/80 px-2 py-0.5 rounded-lg border border-surface-700/60 text-[10px]">
-              <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              POS: <strong class="text-emerald-400">{{ analyticsData.loyverse_orders_count || 0 }}</strong>
-              <span class="text-gray-600">|</span>
-              <span class="inline-block w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-              Website: <strong class="text-sky-400">{{ analyticsData.website_orders_count || 0 }}</strong>
-            </span>
+          <p class="text-[11px] sm:text-xs text-gray-400 mt-0.5">
+            Track revenue, order volume, and product performance.
           </p>
         </div>
 
@@ -82,13 +75,6 @@
               class="px-2.5 py-1 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold transition-colors">
               Apply
             </button>
-          </div>
-
-          <!-- Loyverse POS Live Indicator -->
-          <div class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold flex items-center gap-1.5 shrink-0" title="POS sales automatically synchronize every minute in the background">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 "></span>
-            <span class="hidden sm:inline">POS Auto-Sync Active</span>
-            <span class="sm:hidden">POS Live</span>
           </div>
 
           <!-- Export to Excel Button -->
@@ -359,7 +345,7 @@
               Prior ({{ hoveredBar.prevLabel }}): ₱{{ formatCurrency(hoveredBar.secondarySales) }} ({{ hoveredBar.secondaryOrders }} ord)
             </p>
             <p v-else class="text-[10px] text-neutral-400 mt-0.5 truncate">
-              {{ hoveredBar.orders }} orders • Avg ₱{{ formatCurrency(hoveredBar.avgTicket) }} • POS ₱{{ formatCurrency(hoveredBar.posSales) }} / Web ₱{{ formatCurrency(hoveredBar.websiteSales) }}
+              {{ hoveredBar.orders }} orders • Avg ₱{{ formatCurrency(hoveredBar.avgTicket) }}
             </p>
           </div>
           <button @click="hoveredBarIndex = null" class="w-5 h-5 rounded-full bg-surface-800 text-neutral-400 hover:text-white flex items-center justify-center text-[10px] shrink-0" aria-label="Close"><i class="pi pi-times text-[9px]"></i></button>
@@ -589,7 +575,6 @@ export default {
   setup() {
     const store = useGShotStore();
     const loading = Vue.ref(false);
-    const isSyncing = Vue.ref(false);
     const timeRange = Vue.ref('30days');
     const analyticsData = Vue.ref(null);
     const hoveredIndex = Vue.ref(null);
@@ -692,18 +677,6 @@ export default {
       } finally {
         loading.value = false;
         scrollChartToEnd();
-      }
-    };
-
-    const syncLoyverseAndReload = async () => {
-      isSyncing.value = true;
-      try {
-        await store.syncLoyverseSales();
-        await loadAnalytics();
-      } catch (err) {
-        console.error('Loyverse sync failed:', err);
-      } finally {
-        isSyncing.value = false;
       }
     };
 
@@ -832,7 +805,7 @@ export default {
         return 'Annual revenue, order volume, and average ticket across past years';
       }
       if (compareScope.value === 'months') {
-        return 'Month-over-month revenue, orders, and channel split across the past 12 months';
+        return 'Month-over-month revenue and order volume across the past 12 months';
       }
       const prevLbl = comparisonPeriod.value?.previous_label || 'prior period';
       return `Side-by-side comparison: ${analyticsData.value?.period_label || 'Current'} vs ${prevLbl}`;
@@ -848,8 +821,6 @@ export default {
           secondarySales: 0,
           orders: m.orders || 0,
           avgTicket: Number(m.avg_ticket || 0),
-          posSales: Number(m.pos_sales || 0),
-          websiteSales: Number(m.website_sales || 0),
           changePct: m.change_pct,
         }));
       }
@@ -862,8 +833,6 @@ export default {
           secondarySales: 0,
           orders: y.orders || 0,
           avgTicket: Number(y.avg_ticket || 0),
-          posSales: Number(y.pos_sales || 0),
-          websiteSales: Number(y.website_sales || 0),
           changePct: y.change_pct,
         }));
       }
@@ -966,9 +935,9 @@ export default {
             badge: cp.avg_change_pct,
           },
           {
-            title: 'Channel Split',
-            value: `POS ₱${formatCompactCurrency(cp.current_pos_sales)}`,
-            sub: `Website: ₱${formatCurrency(cp.current_web_sales)}`,
+            title: 'Peak Period',
+            value: `₱${formatCurrency(analyticsData.value?.highest_day || 0)}`,
+            sub: 'Highest in selected range',
             badge: null,
           },
         ];
@@ -1035,9 +1004,9 @@ export default {
           badge: latest ? latest.change_pct : null,
         },
         {
-          title: 'Latest Channel Mix',
-          value: latest ? `POS ₱${formatCompactCurrency(latest.pos_sales)}` : '₱0',
-          sub: latest ? `Website: ₱${formatCurrency(latest.website_sales)}` : 'No data',
+          title: 'Latest Year Orders',
+          value: latest ? `${latest.orders}` : '0',
+          sub: latest ? `Year ${latest.label} fulfilled` : 'No data',
           badge: null,
         },
       ];
@@ -1057,8 +1026,6 @@ export default {
         { Metric: 'Highest Period Sales (PHP)', Value: Number(data.highest_day || 0) },
         { Metric: 'Average Ticket (PHP)', Value: Number(data.average_sales || 0) },
         { Metric: 'Total Fulfilled Orders', Value: Number(data.orders_count || 0) },
-        { Metric: 'POS Orders', Value: Number(data.loyverse_orders_count || 0) },
-        { Metric: 'Website Orders', Value: Number(data.website_orders_count || 0) },
       ];
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), 'Summary');
 
@@ -1087,8 +1054,6 @@ export default {
         'Total Sales (PHP)': Number(m.sales || 0),
         Orders: Number(m.orders || 0),
         'Avg Ticket (PHP)': Number(m.avg_ticket || 0),
-        'POS Sales (PHP)': Number(m.pos_sales || 0),
-        'Website Sales (PHP)': Number(m.website_sales || 0),
         'MoM Change (%)': m.change_pct ?? '',
       }));
       if (monthlyRows.length > 0) {
@@ -1100,8 +1065,6 @@ export default {
         'Total Sales (PHP)': Number(y.sales || 0),
         Orders: Number(y.orders || 0),
         'Avg Ticket (PHP)': Number(y.avg_ticket || 0),
-        'POS Sales (PHP)': Number(y.pos_sales || 0),
-        'Website Sales (PHP)': Number(y.website_sales || 0),
         'YoY Change (%)': y.change_pct ?? '',
       }));
       if (yearlyRows.length > 0) {
@@ -1116,7 +1079,6 @@ export default {
     return {
       store,
       loading,
-      isSyncing,
       timeRange,
       selectedMonth,
       selectedYear,
@@ -1161,7 +1123,6 @@ export default {
       getLabelPosition,
       onRangeChange,
       loadAnalytics,
-      syncLoyverseAndReload,
       formatCurrency,
       exportToExcel,
     };

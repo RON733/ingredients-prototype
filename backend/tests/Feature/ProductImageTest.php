@@ -3,24 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Services\LoyverseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
 use Tests\TestCase;
 
 class ProductImageTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $loyverseMock = Mockery::mock(LoyverseService::class);
-        $loyverseMock->shouldReceive('pushSingleProductToLoyverse')->andReturnNull();
-        $this->app->instance(LoyverseService::class, $loyverseMock);
-    }
-
     public function test_can_create_product_with_data_url_image_and_defaults_when_empty(): void
     {
         $longDataUrl = 'data:image/webp;base64,' . str_repeat('QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo=', 20);

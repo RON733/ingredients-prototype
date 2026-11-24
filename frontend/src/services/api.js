@@ -181,19 +181,6 @@ export const GST_API = {
   toggleBookingPackage: (id) => apiClient.patch(`/booking-packages/${id}/toggle`),
   deleteBookingPackage: (id) => apiClient.delete(`/booking-packages/${id}`),
 
-  // Chatbot Support
-  chatWithBot: (message, history = []) => apiClient.post('/chatbot', { message, history }),
-  sendChatbot: (message) => apiClient.post('/chatbot', { message }),
-
-  // Loyverse Advanced Inventory Integration
-  getLoyverseStatus: (params) => apiClient.get('/loyverse/status', { params }),
-  syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}, { timeout: 60000 }),
-  exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu', {}, { timeout: 120000 }),
-  pullLoyverseItems: (params) => apiClient.post('/loyverse/pull-items', params || {}, { timeout: 60000 }),
-  fullLoyverseSync: (data) => apiClient.post('/loyverse/full-sync', data || {}, { timeout: 180000 }),
-  getLoyverseSuppliers: () => apiClient.get('/loyverse/suppliers'),
-  saveLoyverseSupplier: (data) => apiClient.post('/loyverse/suppliers', data),
-  registerLoyverseWebhook: (url) => apiClient.post('/loyverse/register-webhook', { url }),
 };
 
 export default GST_API;

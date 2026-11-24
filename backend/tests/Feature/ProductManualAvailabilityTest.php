@@ -4,25 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\User;
-use App\Services\LoyverseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use Mockery;
 use Tests\TestCase;
 
 class ProductManualAvailabilityTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $loyverseMock = Mockery::mock(LoyverseService::class);
-        $loyverseMock->shouldReceive('pushSingleProductToLoyverse')->andReturnNull();
-        $this->app->instance(LoyverseService::class, $loyverseMock);
-    }
-
     public function test_staff_can_toggle_product_availability_manually_and_unavailable_orders_are_blocked(): void
     {
         $staff = User::factory()->create(['role' => 'staff']);

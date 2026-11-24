@@ -11,8 +11,6 @@ class Order extends Model
 
     protected $fillable = [
         'order_number',
-        'source',
-        'loyverse_receipt_id',
         'user_id',
         'driver_id',
         'customer_name',

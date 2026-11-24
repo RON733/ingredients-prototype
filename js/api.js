@@ -1,4 +1,4 @@
-// G Shot Teas - Axios API Client & Network Service
+// G Shot Teas -Â Axios API Client & Network Service
 (function () {
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const API_BASE_URL = window.GST_BACKEND_URL || (isLocal ? (window.location.port === '8000' ? '/api' : 'http://127.0.0.1:8000/api') : '/api');
@@ -94,12 +94,6 @@
     getSettings: () => apiClient.get('/settings'),
     updateSettings: (data) => apiClient.post('/v1/settings', data),
     getAuditLogs: (params) => apiClient.get('/v1/audit-logs', { params }),
-    sendChatbot: (message) => apiClient.post('/chatbot', { message }),
 
-    // Loyverse POS Integration
-    getLoyverseStatus: () => apiClient.get('/loyverse/status'),
-    syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}),
-    exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu'),
-    registerLoyverseWebhook: (url) => apiClient.post('/loyverse/register-webhook', { url }),
   };
 })();
