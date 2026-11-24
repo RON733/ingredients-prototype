@@ -298,18 +298,8 @@ class OrderController extends Controller
             $deliveryFee = ($validated['order_type'] === 'Delivery') ? 40.00 : 0.00;
             $totalAmount = $subtotal + $deliveryFee;
 
-            // Generate unique order number (prevents duplicate key collisions with existing / seeded orders)
-            $existingNumbers = Order::pluck('order_number')->map(function ($num) {
-                return preg_match('/(\d+)/', (string)$num, $m) ? (int)$m[1] : 0;
-            })->filter()->all();
-
-            $maxExisting = !empty($existingNumbers) ? max($existingNumbers) : 0;
-            $nextNum = max($maxExisting + 1, 31);
-
-            do {
-                $orderNumber = '#' . $nextNum;
-                $nextNum++;
-            } while (Order::where('order_number', $orderNumber)->exists());
+            // Generate unique order number safely under concurrency
+            $orderNumber = $this->generateNextOrderNumber();
 
             // 5. Create Order
             $order = Order::create([
@@ -1114,5 +1104,33 @@ class OrderController extends Controller
 
         return response()->json($orders);
     }
-}
 
+    /**
+     * Allocate the next unique order number safely across concurrent checkouts.
+     */
+    private function generateNextOrderNumber(): string
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            // Serialize order number allocation across concurrent transactions until commit/rollback
+            DB::statement('SELECT pg_advisory_xact_lock(?)', [948271]);
+            $maxExisting = (int) DB::table('orders')
+                ->selectRaw("COALESCE(MAX((REGEXP_MATCH(order_number, '(\\d+)'))[1]::INTEGER), 0) AS max_num")
+                ->value('max_num');
+        } else {
+            $existingNumbers = Order::pluck('order_number')->map(function ($num) {
+                return preg_match('/(\d+)/', (string) $num, $m) ? (int) $m[1] : 0;
+            })->filter()->all();
+
+            $maxExisting = !empty($existingNumbers) ? max($existingNumbers) : 0;
+        }
+
+        $nextNum = max($maxExisting + 1, 31);
+
+        do {
+            $orderNumber = '#' . $nextNum;
+            $nextNum++;
+        } while (Order::where('order_number', $orderNumber)->exists());
+
+        return $orderNumber;
+    }
+}
