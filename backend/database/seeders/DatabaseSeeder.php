@@ -5,9 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Models\Ingredient;
 use App\Models\Product;
-use App\Models\Recipe;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\EventBooking;
@@ -80,33 +78,6 @@ class DatabaseSeeder extends Seeder
             'address' => 'Phase 2 Annex A, St. Joseph Village 6, Cabuyao, Laguna',
             'status' => 'active',
         ]);
-
-        // 2. Seed Ingredients (Prototype Inventory)
-        $ingredients = [
-            ['id' => 'brioche-bun',    'name' => 'Brioche Bun',       'category' => 'Bakery',  'stock' => 35, 'unit' => 'pcs',    'low_threshold' => 10],
-            ['id' => 'beef-patty',     'name' => 'Beef Patty',        'category' => 'Meat',    'stock' => 45, 'unit' => 'pcs',    'low_threshold' => 12],
-            ['id' => 'cheddar-slice',  'name' => 'Cheddar Slice',     'category' => 'Dairy',   'stock' => 50, 'unit' => 'slices', 'low_threshold' => 15],
-            ['id' => 'lettuce',        'name' => 'Fresh Lettuce',     'category' => 'Produce', 'stock' => 25, 'unit' => 'pcs',    'low_threshold' => 8],
-            ['id' => 'pizza-dough',    'name' => 'Pizza Dough Base',  'category' => 'Bakery',  'stock' => 20, 'unit' => 'pcs',    'low_threshold' => 5],
-            ['id' => 'mozzarella',     'name' => 'Mozzarella Cheese', 'category' => 'Dairy',   'stock' => 30, 'unit' => 'slices', 'low_threshold' => 10],
-            ['id' => 'tomato-sauce',   'name' => 'Italian Pizza Sauce','category' => 'Produce', 'stock' => 40, 'unit' => 'cups',   'low_threshold' => 10],
-            ['id' => 'pepperoni',      'name' => 'Pepperoni Slices',  'category' => 'Meat',    'stock' => 60, 'unit' => 'slices', 'low_threshold' => 15],
-            ['id' => 'potato-fries',   'name' => 'Cut Potato Fries',  'category' => 'Produce', 'stock' => 30, 'unit' => 'portions','low_threshold' => 8],
-            ['id' => 'chicken-wings',  'name' => 'Crispy Wings Cut',  'category' => 'Meat',    'stock' => 50, 'unit' => 'pcs',    'low_threshold' => 12],
-            ['id' => 'cooked-rice',    'name' => 'Steamed Rice',      'category' => 'Produce', 'stock' => 60, 'unit' => 'cups',   'low_threshold' => 15],
-            ['id' => 'tea-base',       'name' => 'Brewed Tea Base',   'category' => 'Produce', 'stock' => 50, 'unit' => 'cups',   'low_threshold' => 12],
-            ['id' => 'fresh-milk',     'name' => 'Fresh Dairy Milk',  'category' => 'Dairy',   'stock' => 45, 'unit' => 'cups',   'low_threshold' => 10],
-            ['id' => 'tapioca-pearls', 'name' => 'Chewy Tapioca Pearls','category' => 'Bakery','stock' => 55, 'unit' => 'cups',   'low_threshold' => 15],
-            ['id' => 'brown-sugar',    'name' => 'Brown Sugar Syrup', 'category' => 'Produce', 'stock' => 35, 'unit' => 'cups',   'low_threshold' => 8],
-            ['id' => 'matcha-powder',  'name' => 'Matcha Powder',      'category' => 'Produce', 'stock' => 25, 'unit' => 'scoops', 'low_threshold' => 6],
-            ['id' => 'taro-powder',    'name' => 'Taro Flavor Powder','category' => 'Produce', 'stock' => 25, 'unit' => 'scoops', 'low_threshold' => 6],
-            ['id' => 'cream-cheese',   'name' => 'Cream Cheese Puff', 'category' => 'Dairy',   'stock' => 30, 'unit' => 'scoops', 'low_threshold' => 8],
-            ['id' => 'coffee-beans',   'name' => 'Espresso Roast',    'category' => 'Produce', 'stock' => 40, 'unit' => 'shots',  'low_threshold' => 10],
-        ];
-
-        foreach ($ingredients as $ing) {
-            Ingredient::create($ing);
-        }
 
         // 3. Seed Menu Products
         $products = [
@@ -236,69 +207,6 @@ class DatabaseSeeder extends Seeder
             Product::create($prod);
         }
 
-        // 4. Seed Recipes (Product Ingredients)
-        $recipes = [
-            // Cheese Burger
-            ['product_id' => 'classic-cheeseburger', 'ingredient_id' => 'brioche-bun',   'qty' => 1],
-            ['product_id' => 'classic-cheeseburger', 'ingredient_id' => 'beef-patty',    'qty' => 1],
-            ['product_id' => 'classic-cheeseburger', 'ingredient_id' => 'cheddar-slice', 'qty' => 1],
-            ['product_id' => 'classic-cheeseburger', 'ingredient_id' => 'lettuce',       'qty' => 1],
-
-            // Double Cheese Burger
-            ['product_id' => 'double-cheeseburger', 'ingredient_id' => 'brioche-bun',   'qty' => 1],
-            ['product_id' => 'double-cheeseburger', 'ingredient_id' => 'beef-patty',    'qty' => 2],
-            ['product_id' => 'double-cheeseburger', 'ingredient_id' => 'cheddar-slice', 'qty' => 2],
-
-            // Pepperoni Pizza
-            ['product_id' => 'pepperoni-pizza', 'ingredient_id' => 'pizza-dough',  'qty' => 1],
-            ['product_id' => 'pepperoni-pizza', 'ingredient_id' => 'tomato-sauce', 'qty' => 1],
-            ['product_id' => 'pepperoni-pizza', 'ingredient_id' => 'mozzarella',   'qty' => 2],
-            ['product_id' => 'pepperoni-pizza', 'ingredient_id' => 'pepperoni',    'qty' => 6],
-
-            // All Cheese Pizza
-            ['product_id' => 'all-cheese-pizza', 'ingredient_id' => 'pizza-dough',  'qty' => 1],
-            ['product_id' => 'all-cheese-pizza', 'ingredient_id' => 'tomato-sauce', 'qty' => 1],
-            ['product_id' => 'all-cheese-pizza', 'ingredient_id' => 'mozzarella',   'qty' => 3],
-            ['product_id' => 'all-cheese-pizza', 'ingredient_id' => 'cheddar-slice', 'qty' => 2],
-
-            // Chicken Wings Rice Meal
-            ['product_id' => 'chicken-wings-rice', 'ingredient_id' => 'chicken-wings', 'qty' => 4],
-            ['product_id' => 'chicken-wings-rice', 'ingredient_id' => 'cooked-rice',   'qty' => 1],
-
-            // Loaded Fries
-            ['product_id' => 'loaded-fries', 'ingredient_id' => 'potato-fries',  'qty' => 1],
-            ['product_id' => 'loaded-fries', 'ingredient_id' => 'cheddar-slice', 'qty' => 2],
-
-            // Milktea Classic
-            ['product_id' => 'classic-milktea', 'ingredient_id' => 'tea-base',       'qty' => 1],
-            ['product_id' => 'classic-milktea', 'ingredient_id' => 'fresh-milk',     'qty' => 1],
-            ['product_id' => 'classic-milktea', 'ingredient_id' => 'tapioca-pearls', 'qty' => 1],
-
-            // Brown Sugar Boba Milk
-            ['product_id' => 'brown-sugar-milktea', 'ingredient_id' => 'fresh-milk',     'qty' => 1],
-            ['product_id' => 'brown-sugar-milktea', 'ingredient_id' => 'brown-sugar',    'qty' => 1],
-            ['product_id' => 'brown-sugar-milktea', 'ingredient_id' => 'tapioca-pearls', 'qty' => 1],
-
-            // Matcha Latte
-            ['product_id' => 'matcha-latte', 'ingredient_id' => 'matcha-powder',  'qty' => 2],
-            ['product_id' => 'matcha-latte', 'ingredient_id' => 'fresh-milk',     'qty' => 1],
-            ['product_id' => 'matcha-latte', 'ingredient_id' => 'tapioca-pearls', 'qty' => 1],
-
-            // Taro Sweet Milktea
-            ['product_id' => 'taro-milktea', 'ingredient_id' => 'taro-powder',    'qty' => 2],
-            ['product_id' => 'taro-milktea', 'ingredient_id' => 'tea-base',       'qty' => 1],
-            ['product_id' => 'taro-milktea', 'ingredient_id' => 'fresh-milk',     'qty' => 1],
-            ['product_id' => 'taro-milktea', 'ingredient_id' => 'tapioca-pearls', 'qty' => 1],
-
-            // Caramel Macchiato
-            ['product_id' => 'caramel-macchiato', 'ingredient_id' => 'coffee-beans', 'qty' => 1],
-            ['product_id' => 'caramel-macchiato', 'ingredient_id' => 'fresh-milk',   'qty' => 1],
-        ];
-
-        foreach ($recipes as $r) {
-            Recipe::create($r);
-        }
-
         $this->call(MenuCatalogSeeder::class);
 
         // 5. Seed Historical / Initial Orders (Matches Figure 14 & 16 in document)
@@ -309,7 +217,7 @@ class DatabaseSeeder extends Seeder
             'customer_phone' => '09989109529',
             'order_type' => 'Delivery',
             'delivery_address' => 'Phase 1 Mabuhay City, Cabuyao, Laguna, Marinig, Gulod, Cabuyao, Laguna, Calabarzon 4025, Philippines',
-            'payment_method' => 'PayMongo',
+            'payment_method' => 'Cash',
             'payment_status' => 'Pending',
             'status' => 'Pending',
             'subtotal' => 436.00,
@@ -440,7 +348,7 @@ class DatabaseSeeder extends Seeder
                 'customer_phone' => '09985677725',
                 'order_type' => ($i % 2 == 0) ? 'Delivery' : 'Store Pickup',
                 'delivery_address' => 'St. Joseph Village 6, Cabuyao, Laguna',
-                'payment_method' => ($i % 2 == 0) ? 'PayMongo' : 'Cash',
+                'payment_method' => 'Cash',
                 'payment_status' => 'Paid',
                 'status' => 'Completed',
                 'subtotal' => $amt,
@@ -476,7 +384,6 @@ class DatabaseSeeder extends Seeder
             'store_email' => 'gshotteas2@gmail.com',
             'business_hours' => 'Monday - Saturday: 9:00 AM - 10:00 PM',
             'delivery_fee' => '40.00',
-            'paymongo_available' => 'true',
             'store_open' => 'true',
             'order_area_note' => 'Orders are only available in Santa Rosa bayan.',
             'order_area_note_enabled' => 'true',
@@ -498,14 +405,7 @@ class DatabaseSeeder extends Seeder
             'user_name' => 'Jefferson Anore Alulod',
             'user_role' => 'admin',
             'action' => 'Menu Updated',
-            'details' => 'Initial 12 menu items and raw ingredient inventory mapped.',
-            'ip_address' => '127.0.0.1',
-        ]);
-        AuditLog::create([
-            'user_name' => 'Mhar Anthony Lirio',
-            'user_role' => 'staff',
-            'action' => 'Inventory Audit Completed',
-            'details' => 'Opening stock levels verified for brioche buns, tea bags, and syrups.',
+            'details' => 'Initial menu items mapped.',
             'ip_address' => '127.0.0.1',
         ]);
     }

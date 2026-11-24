@@ -65,16 +65,6 @@ export const GST_API = {
   removeDiscount: (data) => apiClient.post('/products/discount/remove', data),
   deleteProduct: (id) => apiClient.delete(`/products/${id}`),
 
-  // Ingredients & Inventory
-  getIngredients: () => apiClient.get('/ingredients'),
-  createIngredient: (data) => apiClient.post('/ingredients', data),
-  updateIngredient: (id, data) => apiClient.patch(`/ingredients/${id}`, data),
-  adjustStock: (id, amount) => apiClient.post(`/ingredients/${id}/adjust`, { amount }),
-  adjustIngredientStock: (id, amount) => apiClient.post(`/ingredients/${id}/adjust`, { amount }),
-  restockIngredient: (id, data) => apiClient.post(`/ingredients/${id}/restock`, data),
-  setStockIngredient: (id, data) => apiClient.put(`/ingredients/${id}/set-stock`, data),
-  deleteIngredient: (id) => apiClient.delete(`/ingredients/${id}`),
-
   // Orders
   getOrders: (params) => apiClient.get('/orders', { params }),
   getOrder: (id) => apiClient.get(`/orders/${encodeURIComponent(String(id).replace('#', '').trim())}`),
@@ -82,11 +72,6 @@ export const GST_API = {
   createOrder: (data) => apiClient.post('/orders', data),
   placeOrder: (data) => apiClient.post('/orders', data),
   updateOrderStatus: (id, status, notes = '', cancellation_reason = '') => apiClient.patch(`/orders/${id}/status`, { status, notes, cancellation_reason }),
-
-  // PayMongo Online Payment Gateway
-  getPayMongoConfig: () => apiClient.get('/paymongo/config'),
-  createPayMongoCheckout: (id) => apiClient.post(`/paymongo/checkout/${id}`),
-  verifyPayMongoPayment: (id) => apiClient.post(`/paymongo/verify/${id}`),
   updateDriverLocation: (id, coords) => apiClient.patch(`/orders/${id}/driver-location`, coords),
   notifyDriverOnTheWay: (id, payload = {}) => apiClient.post(`/orders/${id}/notify-on-the-way`, payload),
   updateCustomerLocation: (id, data) => apiClient.patch(`/orders/${id}/customer-location`, data),
@@ -204,10 +189,7 @@ export const GST_API = {
   getLoyverseStatus: (params) => apiClient.get('/loyverse/status', { params }),
   syncLoyverse: (params) => apiClient.post('/loyverse/sync', params || {}, { timeout: 60000 }),
   exportMenuToLoyverse: () => apiClient.post('/loyverse/export-menu', {}, { timeout: 120000 }),
-  exportIngredientsToLoyverse: () => apiClient.post('/loyverse/export-ingredients', {}, { timeout: 120000 }),
-  pullLoyverseInventory: () => apiClient.post('/loyverse/pull-inventory', {}, { timeout: 60000 }),
   pullLoyverseItems: (params) => apiClient.post('/loyverse/pull-items', params || {}, { timeout: 60000 }),
-  pushLoyverseInventory: (data) => apiClient.post('/loyverse/push-inventory', data || {}, { timeout: 60000 }),
   fullLoyverseSync: (data) => apiClient.post('/loyverse/full-sync', data || {}, { timeout: 180000 }),
   getLoyverseSuppliers: () => apiClient.get('/loyverse/suppliers'),
   saveLoyverseSupplier: (data) => apiClient.post('/loyverse/suppliers', data),

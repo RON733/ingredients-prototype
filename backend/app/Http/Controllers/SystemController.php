@@ -21,7 +21,6 @@ class SystemController extends Controller
                 $s['google_client_id'] = env('GOOGLE_CLIENT_ID');
             }
             $defaults = [
-                'paymongo_available' => 'true',
                 'maintenance_mode' => 'false',
                 'maintenance_title' => 'Website Under Scheduled Maintenance',
                 'maintenance_message' => 'G Shot Teas is currently undergoing essential system updates and performance enhancements. Customer ordering is temporarily paused. We will be back online shortly!',
@@ -105,12 +104,6 @@ class SystemController extends Controller
             $details = $isShutdown 
                 ? 'EMERGENCY: Super Admin initiated website shutdown. Customer access placed into Maintenance Mode.' 
                 : 'Super Admin deactivated Maintenance Mode. Public website and customer ordering restored.';
-        } elseif (isset($data['paymongo_available'])) {
-            $isAvail = in_array($data['paymongo_available'], ['true', true, '1', 1], true);
-            $action = $isAvail ? 'PayMongo Marked Available' : 'PayMongo Flagged Unavailable';
-            $details = $isAvail 
-                ? 'PayMongo online payment gateway enabled for customer checkout.' 
-                : 'PayMongo online payment gateway flagged unavailable. Customers restricted to Cash on Delivery / Counter.';
         } elseif (isset($data['order_area_note']) || isset($data['order_area_note_enabled'])) {
             $action = 'Order Area Notice Updated';
             $noteText = $data['order_area_note'] ?? 'Santa Rosa Bayan notice';
@@ -190,8 +183,8 @@ class SystemController extends Controller
             ]);
         }
 
-        // Live menu context with real-time stock/availability status
-        $products = Product::with('recipes.ingredient')->orderBy('name', 'asc')->get();
+        // Live menu context with manual availability status
+        $products = Product::orderBy('name', 'asc')->get();
         $menuList = [];
         $outOfStockItems = [];
         $inStockItems = [];
@@ -259,7 +252,7 @@ class SystemController extends Controller
             . "- Contact / Phone: {$phone} (Direct to Jefferson Alulod) or +63 912 345 6789\n"
             . "- Business Hours: Monday to Saturday, 9:00 AM – 10:00 PM (Closed on Sundays)\n"
             . "- Walk-In Orders: YES! Walk-in orders for dine-in and takeout are 100% welcomed directly at our physical store at {$address}. Customers can also order online through this website for delivery or pickup!\n"
-            . "- Payment Methods: PayMongo Online Payment (QR Ph, E-Wallets & Online Banking) and Cash on Delivery (COD) / Cash at Counter for walk-ins.\n"
+            . "- Payment Methods: Cash on Delivery (COD) for deliveries and Cash at Counter for store pickup and walk-ins.\n"
             . "- Event Catering & Mobile Bar: {$bookingPackagesSummary}. Inquiries handled directly by {$owner} ({$phone}).\n\n"
             . "CURRENT STORE MENU, PRICES & LIVE STOCK STATUS:\n{$menuSummary}\n\n"
             . "CURRENTLY OUT OF STOCK ITEMS:\n{$outOfStockSummary}\n\n"

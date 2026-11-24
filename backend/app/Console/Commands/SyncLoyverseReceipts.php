@@ -8,7 +8,7 @@ use App\Services\LoyverseService;
 class SyncLoyverseReceipts extends Command
 {
     protected $signature = 'loyverse:sync {--since= : ISO timestamp to sync receipts from}';
-    protected $description = 'Synchronize receipts from Loyverse POS and deduct kitchen ingredient inventory';
+    protected $description = 'Synchronize receipts and menu items from Loyverse POS';
 
     public function handle(LoyverseService $loyverse)
     {
@@ -25,25 +25,12 @@ class SyncLoyverseReceipts extends Command
             if (!empty($results['details'])) {
                 foreach ($results['details'] as $detail) {
                     if (($detail['status'] ?? '') === 'success') {
-                        $this->line(" - Synced Order: {$detail['order_number']} (?{$detail['total']})");
-                        foreach ($detail['deductions'] as $ded) {
-                            $this->line("   * {$ded}");
-                        }
+                        $this->line(" - Synced Order: {$detail['order_number']} ({$detail['total']})");
                     }
                 }
             }
 
-            // 2. Auto-pull inventory levels from Loyverse (PO receipts & counts)
-            try {
-                $invRes = $loyverse->pullInventoryFromLoyverse();
-                if (!empty($invRes['updated_count'])) {
-                    $this->info("Stock levels updated for {$invRes['updated_count']} ingredient(s).");
-                }
-            } catch (\Exception $e) {
-                // Non-blocking
-            }
-
-            // 3. Auto-pull new or updated menu items from Loyverse into website catalog
+            // 2. Auto-pull new or updated menu items from Loyverse into website catalog
             try {
                 $itemsRes = $loyverse->pullItemsFromLoyverse();
                 if (!empty($itemsRes['created_count'])) {

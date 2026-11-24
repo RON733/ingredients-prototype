@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Ingredient;
 use App\Models\User;
 use App\Services\LoyverseService;
 
@@ -222,10 +221,7 @@ class AnalyticsController extends Controller
                 ->get();
         }
 
-        // Low stock alerts count
-        $lowStockIngredients = Ingredient::all()->filter(function ($i) {
-            return $i->stock <= $i->low_threshold;
-        })->values();
+        $lowStockIngredients = collect();
 
         // Customer & active orders counts
         $totalCustomers = User::where('role', 'customer')->count();

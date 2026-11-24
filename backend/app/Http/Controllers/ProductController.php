@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\OrderItem;
-use App\Models\Recipe;
 use App\Models\AuditLog;
 use App\Services\LoyverseService;
 use Illuminate\Support\Facades\Log;
@@ -27,12 +26,12 @@ class ProductController extends Controller
 
         // High-Performance In-Memory Cache: Serves default catalog in 3ms instead of 4,000ms
         if (!$hasFilters) {
-            $products = Product::with('recipes.ingredient')->orderBy('name', 'asc')->get();
+            $products = Product::orderBy('name', 'asc')->get();
             $this->attachBestsellerFlags($products);
             return response()->json($products);
         }
 
-        $query = Product::with('recipes.ingredient');
+        $query = Product::query();
 
         if ($request->filled('category') && $request->category !== 'All') {
             $query->where('category', $request->category);
@@ -94,7 +93,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with('recipes.ingredient')->findOrFail($id);
+        $product = Product::findOrFail($id);
         return response()->json($product);
     }
 
@@ -110,11 +109,10 @@ class ProductController extends Controller
             'emoji' => 'nullable|string',
             'image' => 'nullable|string',
             'is_available' => 'boolean',
-            'recipes' => 'nullable|array',
             'original_price' => 'nullable|numeric|min:0',
             'discount_percent' => 'nullable|numeric|min:0|max:100',
             'discount_type' => 'nullable|string',
-            'discount_value' => 'nullable|numeric|min:0', // array of { ingredient_id, qty }
+            'discount_value' => 'nullable|numeric|min:0',
         ]);
 
         $imageValue = trim((string) ($validated['image'] ?? ''));
@@ -141,16 +139,6 @@ class ProductController extends Controller
         $product = Product::create($productData);
         Cache::forget('products_catalog_default');
 
-        if (!empty($validated['recipes'])) {
-            foreach ($validated['recipes'] as $r) {
-                Recipe::create([
-                    'product_id' => $product->id,
-                    'ingredient_id' => $r['ingredient_id'],
-                    'qty' => $r['qty'] ?? 1,
-                ]);
-            }
-        }
-
         AuditLog::create([
             'user_name' => $request->user()?->name ?? 'Admin',
             'user_role' => $request->user()?->role ?? 'admin',
@@ -166,7 +154,7 @@ class ProductController extends Controller
             Log::warning("Loyverse auto-push failed for product {$product->name}: " . $e->getMessage());
         }
 
-        return response()->json($product->load('recipes.ingredient'), 201);
+        return response()->json($product, 201);
     }
 
     public function update(Request $request, $id)
@@ -181,7 +169,6 @@ class ProductController extends Controller
             'emoji' => 'nullable|string',
             'image' => 'nullable|string',
             'is_available' => 'sometimes|boolean',
-            'recipes' => 'nullable|array',
             'original_price' => 'nullable|numeric|min:0',
             'discount_percent' => 'nullable|numeric|min:0|max:100',
             'discount_type' => 'nullable|string',
@@ -195,17 +182,6 @@ class ProductController extends Controller
 
         $product->update($validated);
         Cache::forget('products_catalog_default');
-
-        if (isset($validated['recipes'])) {
-            Recipe::where('product_id', $product->id)->delete();
-            foreach ($validated['recipes'] as $r) {
-                Recipe::create([
-                    'product_id' => $product->id,
-                    'ingredient_id' => $r['ingredient_id'],
-                    'qty' => $r['qty'] ?? 1,
-                ]);
-            }
-        }
 
         AuditLog::create([
             'user_name' => $request->user()?->name ?? 'Admin',
@@ -222,7 +198,7 @@ class ProductController extends Controller
             Log::warning("Loyverse auto-push failed for product {$product->name}: " . $e->getMessage());
         }
 
-        return response()->json($product->load('recipes.ingredient'));
+        return response()->json($product);
     }
 
     public function toggleAvailability(Request $request, $id)
@@ -359,7 +335,7 @@ class ProductController extends Controller
         return response()->json([
             'message' => "Successfully applied {$discLabel} discount to {$scopeLabel} ({$updatedCount} items updated).",
             'updated_count' => $updatedCount,
-            'products' => Product::with('recipes.ingredient')->orderBy('name', 'asc')->get()
+            'products' => Product::orderBy('name', 'asc')->get()
         ]);
     }
 
@@ -421,7 +397,7 @@ class ProductController extends Controller
         return response()->json([
             'message' => "Discounts successfully removed from {$scopeLabel} ({$updatedCount} items restored).",
             'updated_count' => $updatedCount,
-            'products' => Product::with('recipes.ingredient')->orderBy('name', 'asc')->get()
+            'products' => Product::orderBy('name', 'asc')->get()
         ]);
     }
 }

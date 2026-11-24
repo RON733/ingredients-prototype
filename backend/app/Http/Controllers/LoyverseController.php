@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use App\Services\LoyverseService;
 use App\Models\Order;
-use App\Models\Ingredient;
 use App\Models\Product;
 
 class LoyverseController extends Controller
@@ -39,9 +38,7 @@ class LoyverseController extends Controller
             $lastOrder = Order::where('source', 'loyverse_pos')->latest('created_at')->first();
             $webhookUrl = url('/api/loyverse/webhook');
 
-            $ingredientsCount = Ingredient::count();
             $productsCount = Product::count();
-            $trackedIngredients = Ingredient::whereNotNull('loyverse_variant_id')->count();
 
             $suppliers = [];
             try {
@@ -56,9 +53,7 @@ class LoyverseController extends Controller
                 'stores' => $stores,
                 'active_store' => !empty($stores) ? $stores[0] : null,
                 'items_count' => count($items),
-                'ingredients_count' => $ingredientsCount,
                 'products_count' => $productsCount,
-                'tracked_ingredients' => $trackedIngredients,
                 'suppliers_count' => count($suppliers),
                 'suppliers' => $suppliers,
                 'registered_webhooks' => $webhooks,
@@ -133,31 +128,7 @@ class LoyverseController extends Controller
     }
 
     /**
-     * Export raw ingredients to Loyverse with track_stock = true.
-     */
-    public function exportIngredients(Request $request)
-    {
-        set_time_limit(300);
-        ini_set('max_execution_time', '300');
-        try {
-            $results = $this->loyverse->exportIngredientsToLoyverse();
-
-            return response()->json([
-                'success' => true,
-                'message' => "Exported {$results['created']} ingredients, updated {$results['updated']}, synced {$results['stocks_updated']} stock levels to Loyverse.",
-                'results' => $results
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Loyverse ingredient export error: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Export all products from website menu to Loyverse POS with Composite Recipes.
+     * Export all products from website menu to Loyverse POS.
      */
     public function exportMenu(Request $request)
     {
@@ -168,60 +139,11 @@ class LoyverseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Exported {$results['created']} items, updated {$results['updated']} items, linked {$results['composite_recipes_linked']} composite recipes to Loyverse POS.",
+                'message' => "Exported {$results['created']} items, updated {$results['updated']} items to Loyverse POS.",
                 'results' => $results
             ]);
         } catch (\Exception $e) {
             Log::error("Loyverse export error: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Pull inventory levels from Loyverse into website ingredients stock.
-     */
-    public function pullInventory(Request $request)
-    {
-        set_time_limit(300);
-        ini_set('max_execution_time', '300');
-        try {
-            $results = $this->loyverse->pullInventoryFromLoyverse();
-
-            return response()->json([
-                'success' => true,
-                'message' => "Pulled inventory from Loyverse: updated {$results['updated_count']} ingredient stock levels.",
-                'results' => $results
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Loyverse pull inventory error: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Push current website ingredient stock levels to Loyverse.
-     */
-    public function pushInventory(Request $request)
-    {
-        set_time_limit(300);
-        ini_set('max_execution_time', '300');
-        try {
-            $ids = $request->input('ingredient_ids');
-            $results = $this->loyverse->pushInventoryToLoyverse($ids);
-
-            return response()->json([
-                'success' => true,
-                'message' => "Pushed {$results['pushed_count']} ingredient stock levels to Loyverse.",
-                'results' => $results
-            ]);
-        } catch (\Exception $e) {
-            Log::error("Loyverse push inventory error: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

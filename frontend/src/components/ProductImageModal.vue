@@ -153,7 +153,13 @@
               <!-- Availability Badge -->
               <div class="flex items-center gap-2">
                 <span 
-                  v-if="liveMaxPortions > 8"
+                  v-if="liveMaxPortions >= 999"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/60">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  Available
+                </span>
+                <span 
+                  v-else-if="liveMaxPortions > 8"
                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/60">
                   <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                   In Stock ({{ liveMaxPortions }} portions available)
@@ -172,16 +178,6 @@
                 </span>
               </div>
 
-              <!-- Recipe Ingredients summary if present -->
-              <div v-if="store.previewProduct.recipes && store.previewProduct.recipes.length > 0" class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-[10px] text-gray-500 font-semibold uppercase">Kitchen Ingredients:</span>
-                <span 
-                  v-for="rec in store.previewProduct.recipes.slice(0, 4)" 
-                  :key="rec.id" 
-                  class="text-[10px] px-2 py-0.5 rounded-md bg-surface-800 text-gray-300 border border-surface-700">
-                  {{ rec.ingredient ? rec.ingredient.name : rec.ingredient_id }} ({{ rec.qty }})
-                </span>
-              </div>
             </div>
           </div>
 

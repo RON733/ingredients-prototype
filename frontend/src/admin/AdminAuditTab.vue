@@ -107,7 +107,7 @@
             <i class="pi pi-user text-sky-400 text-xs"></i>
           </div>
           <div class="text-xl font-black text-sky-300 mt-1">{{ staffCount }}</div>
-          <span class="text-[9px] text-sky-400/80">POS & Inventory Operations</span>
+          <span class="text-[9px] text-sky-400/80">POS & Order Operations</span>
         </div>
 
         <!-- Driver Card -->
@@ -581,7 +581,7 @@ export default {
       if (act.includes('setting') || act.includes('initial')) {
         return 'bg-purple-950/60 border-purple-700/60 text-purple-300';
       }
-      if (act.includes('menu') || act.includes('product') || act.includes('recipe')) {
+      if (act.includes('menu') || act.includes('product')) {
         return 'bg-amber-950/60 border-amber-700/60 text-amber-300';
       }
       if (act.includes('stock') || act.includes('ingredient') || act.includes('inventory')) {

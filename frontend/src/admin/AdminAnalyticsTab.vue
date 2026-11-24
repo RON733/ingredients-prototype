@@ -536,11 +536,11 @@
         </Transition>
       </div>
 
-      <!-- Two Column Bottom Section: Top Products & Low Stock Warnings -->
+      <!-- Top Selling Products -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 lg:gap-8">
         
         <!-- Top Selling Products Table -->
-        <div class="lg:col-span-7 p-3.5 sm:p-3.5 sm:p-5 lg:p-8 rounded-2xl sm:rounded-2xl bg-surface-800/90 border border-surface-700  space-y-3 sm:space-y-4">
+        <div class="lg:col-span-12 p-3.5 sm:p-3.5 sm:p-5 lg:p-8 rounded-2xl sm:rounded-2xl bg-surface-800/90 border border-surface-700  space-y-3 sm:space-y-4">
           <div class="flex items-center justify-between border-b border-surface-700 pb-3">
             <div>
               <h3 class="text-sm sm:text-base font-black text-white">Top Selling Menu Items</h3>
@@ -570,41 +570,6 @@
           </div>
           <div v-else class="text-center py-6 text-gray-500 text-xs">
             No product sales data recorded for {{ analyticsData?.period_label || 'this period' }}.
-          </div>
-        </div>
-
-        <!-- Raw Ingredient Alerts -->
-        <div class="lg:col-span-5 p-3.5 sm:p-3.5 sm:p-5 lg:p-8 rounded-2xl sm:rounded-2xl bg-surface-800/90 border border-surface-700  space-y-3 sm:space-y-4">
-          <div class="flex items-center justify-between border-b border-surface-700 pb-3">
-            <div>
-              <h3 class="text-sm sm:text-base font-black text-white">Kitchen Inventory Watch</h3>
-              <p class="text-[10px] sm:text-[11px] text-gray-400">Ingredients tracked and auto-deducted</p>
-            </div>
-            <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-bold">
-              {{ lowStockCount }} Alerts
-            </span>
-          </div>
-
-          <div v-if="lowStockList.length > 0" class="space-y-2 sm:space-y-2.5 max-h-64 overflow-y-auto">
-            <div 
-              v-for="ing in lowStockList" 
-              :key="ing.id"
-              class="p-2.5 sm:p-3 rounded-xl bg-amber-950/20 border border-amber-700/40 flex items-center justify-between text-xs">
-              <div class="min-w-0 flex-1 mr-2">
-                <p class="font-bold text-white truncate">{{ ing.name }}</p>
-                <p class="text-[10px] text-amber-400 font-medium truncate">
-                  Stock: {{ ing.stock }} {{ ing.unit }} (Min: {{ ing.low_threshold }})
-                </p>
-              </div>
-              <button 
-                @click="goToInventory"
-                class="px-2 sm:px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-surface-950 transition-colors cursor-pointer shrink-0">
-                Restock
-              </button>
-            </div>
-          </div>
-          <div v-else class="text-center py-6 text-emerald-400 text-xs">
-            <i class="pi pi-check-circle mr-1.5"></i>All kitchen raw ingredients are above minimum thresholds!
           </div>
         </div>
 
@@ -1078,16 +1043,6 @@ export default {
       ];
     });
 
-    const lowStockList = Vue.computed(() => {
-      return store.ingredients.filter(i => i.stock <= i.low_threshold);
-    });
-
-    const lowStockCount = Vue.computed(() => lowStockList.value.length);
-
-    const goToInventory = () => {
-      store.adminTab = 'inventory';
-    };
-
     const exportToExcel = () => {
       const data = analyticsData.value;
       if (!data) return;
@@ -1204,13 +1159,10 @@ export default {
       chartContainerMinWidth,
       displayedAxisLabels,
       getLabelPosition,
-      lowStockList,
-      lowStockCount,
       onRangeChange,
       loadAnalytics,
       syncLoyverseAndReload,
       formatCurrency,
-      goToInventory,
       exportToExcel,
     };
   },

@@ -4,7 +4,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\EventBookingController;
 use App\Http\Controllers\BookingPackageController;
@@ -12,7 +11,6 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\LoyverseController;
-use App\Http\Controllers\PayMongoController;
 use App\Http\Controllers\RemittanceController;
 
 // --- Public Endpoints ---
@@ -57,7 +55,6 @@ Route::post('/driver/remittances/{id}/accept', [RemittanceController::class, 'ac
 Route::post('/driver/remittances/{id}/reject', [RemittanceController::class, 'reject']);
 Route::delete('/driver/remittances/{id}', [RemittanceController::class, 'cancel']);
 
-Route::get('/ingredients', [IngredientController::class, 'index']);
 Route::get('/settings', [SystemController::class, 'settings']);
 Route::get('/reverse-geocode', [SystemController::class, 'reverseGeocode']);
 Route::get('/geocode-search', [SystemController::class, 'searchAddress']);
@@ -70,21 +67,11 @@ Route::post('/bookings/{id}/cancel', [EventBookingController::class, 'cancel']);
 Route::post('/bookings/{id}/submit-downpayment', [EventBookingController::class, 'submitDownpayment']);
 Route::get('/booking-packages', [BookingPackageController::class, 'index']);
 
-// PayMongo Online Payment Gateway
-Route::get('/paymongo/config', [PayMongoController::class, 'config']);
-Route::post('/paymongo/checkout/{id}', [PayMongoController::class, 'createCheckout']);
-Route::get('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
-Route::post('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
-Route::post('/paymongo/webhook', [PayMongoController::class, 'webhook']);
-
 // Loyverse Advanced Inventory Integration
 Route::get('/loyverse/status', [LoyverseController::class, 'status']);
 Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
 Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
-Route::post('/loyverse/export-ingredients', [LoyverseController::class, 'exportIngredients']);
-Route::post('/loyverse/pull-inventory', [LoyverseController::class, 'pullInventory']);
 Route::post('/loyverse/pull-items', [LoyverseController::class, 'pullItems']);
-Route::post('/loyverse/push-inventory', [LoyverseController::class, 'pushInventory']);
 Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
 Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);
 Route::post('/loyverse/suppliers', [LoyverseController::class, 'saveSupplier']);
@@ -96,12 +83,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
-
-    // Ingredients & Kitchen Inventory Management (Prototype)
-    Route::post('/ingredients', [IngredientController::class, 'store']);
-    Route::match(['put', 'patch'], '/ingredients/{id}', [IngredientController::class, 'update']);
-    Route::post('/ingredients/{id}/adjust', [IngredientController::class, 'quickAdjust']);
-    Route::delete('/ingredients/{id}', [IngredientController::class, 'destroy']);
 
     // Menu / Product Management
     Route::post('/products', [ProductController::class, 'store']);
@@ -166,10 +147,6 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::post('/driver/remittances/{id}/accept', [RemittanceController::class, 'accept']);
     Route::post('/driver/remittances/{id}/reject', [RemittanceController::class, 'reject']);
     Route::delete('/driver/remittances/{id}', [RemittanceController::class, 'cancel']);
-    Route::post('/ingredients', [IngredientController::class, 'store']);
-    Route::match(['put', 'patch'], '/ingredients/{id}', [IngredientController::class, 'update']);
-    Route::post('/ingredients/{id}/adjust', [IngredientController::class, 'quickAdjust']);
-    Route::delete('/ingredients/{id}', [IngredientController::class, 'destroy']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::match(['put', 'patch'], '/products/{id}', [ProductController::class, 'update']);
     Route::match(['put', 'patch'], '/products/{id}/toggle-availability', [ProductController::class, 'toggleAvailability']);
@@ -210,22 +187,12 @@ Route::get('/driver/active-notice', [OrderController::class, 'getActiveRiderNoti
     Route::match(['put', 'patch'], '/announcements/{id}/toggle', [AnnouncementController::class, 'toggleActive']);
     Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
 
-    // PayMongo Online Payment Gateway
-Route::get('/paymongo/config', [PayMongoController::class, 'config']);
-Route::post('/paymongo/checkout/{id}', [PayMongoController::class, 'createCheckout']);
-Route::get('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
-Route::post('/paymongo/verify/{id}', [PayMongoController::class, 'verifyPayment']);
-Route::post('/paymongo/webhook', [PayMongoController::class, 'webhook']);
-
 // Loyverse Advanced Inventory Integration
     Route::get('/loyverse/status', [LoyverseController::class, 'status']);
     Route::post('/loyverse/sync', [LoyverseController::class, 'sync']);
     Route::post('/loyverse/export-menu', [LoyverseController::class, 'exportMenu']);
-    Route::post('/loyverse/export-ingredients', [LoyverseController::class, 'exportIngredients']);
-    Route::post('/loyverse/pull-inventory', [LoyverseController::class, 'pullInventory']);
-Route::post('/loyverse/pull-items', [LoyverseController::class, 'pullItems']);
-    Route::post('/loyverse/push-inventory', [LoyverseController::class, 'pushInventory']);
-    Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
+        Route::post('/loyverse/pull-items', [LoyverseController::class, 'pullItems']);
+        Route::post('/loyverse/full-sync', [LoyverseController::class, 'fullSync']);
     Route::get('/loyverse/suppliers', [LoyverseController::class, 'suppliers']);
     Route::post('/loyverse/suppliers', [LoyverseController::class, 'saveSupplier']);
     Route::post('/loyverse/register-webhook', [LoyverseController::class, 'registerWebhook']);

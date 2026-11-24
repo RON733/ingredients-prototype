@@ -13,14 +13,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🍔',
     image: '/assets/hero-banner.png',
     is_available: true,
-    max_portions: 23,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 1, ingredient_id: 'brioche-bun', qty: 1, ingredient: { id: 'brioche-bun', name: 'Brioche Bun', category: 'Bakery', stock: 33, unit: 'pcs' } },
-      { id: 2, ingredient_id: 'beef-patty', qty: 1, ingredient: { id: 'beef-patty', name: 'Beef Patty', category: 'Meat', stock: 43, unit: 'pcs' } },
-      { id: 3, ingredient_id: 'cheddar-slice', qty: 1, ingredient: { id: 'cheddar-slice', name: 'Cheddar Slice', category: 'Dairy', stock: 48, unit: 'slices' } },
-      { id: 4, ingredient_id: 'lettuce', qty: 1, ingredient: { id: 'lettuce', name: 'Fresh Lettuce', category: 'Produce', stock: 23, unit: 'pcs' } },
-    ]
+
   },
   {
     id: 'double-cheeseburger',
@@ -31,13 +26,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🍔',
     image: '/assets/hero-banner.png',
     is_available: true,
-    max_portions: 21,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 5, ingredient_id: 'brioche-bun', qty: 1, ingredient: { id: 'brioche-bun', name: 'Brioche Bun', category: 'Bakery', stock: 33, unit: 'pcs' } },
-      { id: 6, ingredient_id: 'beef-patty', qty: 2, ingredient: { id: 'beef-patty', name: 'Beef Patty', category: 'Meat', stock: 43, unit: 'pcs' } },
-      { id: 7, ingredient_id: 'cheddar-slice', qty: 2, ingredient: { id: 'cheddar-slice', name: 'Cheddar Slice', category: 'Dairy', stock: 48, unit: 'slices' } },
-    ]
+
   },
   {
     id: 'pepperoni-pizza',
@@ -48,14 +39,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🍕',
     image: '/assets/menu-pizza.png',
     is_available: true,
-    max_portions: 10,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 8, ingredient_id: 'pizza-dough', qty: 1, ingredient: { id: 'pizza-dough', name: 'Pizza Dough Base', category: 'Bakery', stock: 20, unit: 'pcs' } },
-      { id: 9, ingredient_id: 'tomato-sauce', qty: 1, ingredient: { id: 'tomato-sauce', name: 'Italian Pizza Sauce', category: 'Produce', stock: 40, unit: 'cups' } },
-      { id: 10, ingredient_id: 'mozzarella', qty: 2, ingredient: { id: 'mozzarella', name: 'Mozzarella Cheese', category: 'Dairy', stock: 30, unit: 'slices' } },
-      { id: 11, ingredient_id: 'pepperoni', qty: 6, ingredient: { id: 'pepperoni', name: 'Pepperoni Slices', category: 'Meat', stock: 60, unit: 'slices' } },
-    ]
+
   },
   {
     id: 'all-cheese-pizza',
@@ -66,14 +52,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🧀',
     image: '/assets/menu-pizza.png',
     is_available: true,
-    max_portions: 10,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 12, ingredient_id: 'pizza-dough', qty: 1, ingredient: { id: 'pizza-dough', name: 'Pizza Dough Base', category: 'Bakery', stock: 20, unit: 'pcs' } },
-      { id: 13, ingredient_id: 'tomato-sauce', qty: 1, ingredient: { id: 'tomato-sauce', name: 'Italian Pizza Sauce', category: 'Produce', stock: 40, unit: 'cups' } },
-      { id: 14, ingredient_id: 'mozzarella', qty: 3, ingredient: { id: 'mozzarella', name: 'Mozzarella Cheese', category: 'Dairy', stock: 30, unit: 'slices' } },
-      { id: 15, ingredient_id: 'cheddar-slice', qty: 2, ingredient: { id: 'cheddar-slice', name: 'Cheddar Slice', category: 'Dairy', stock: 48, unit: 'slices' } },
-    ]
+
   },
   {
     id: 'chicken-wings-rice',
@@ -84,12 +65,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🍗',
     image: '/assets/hero-banner.png',
     is_available: true,
-    max_portions: 12,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 16, ingredient_id: 'chicken-wings', qty: 4, ingredient: { id: 'chicken-wings', name: 'Crispy Wings Cut', category: 'Meat', stock: 50, unit: 'pcs' } },
-      { id: 17, ingredient_id: 'cooked-rice', qty: 1, ingredient: { id: 'cooked-rice', name: 'Steamed Rice', category: 'Produce', stock: 60, unit: 'cups' } },
-    ]
+
   },
   {
     id: 'loaded-fries',
@@ -100,12 +78,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🍟',
     image: '/assets/hero-banner.png',
     is_available: true,
-    max_portions: 24,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 18, ingredient_id: 'potato-fries', qty: 1, ingredient: { id: 'potato-fries', name: 'Cut Potato Fries', category: 'Produce', stock: 30, unit: 'portions' } },
-      { id: 19, ingredient_id: 'cheddar-slice', qty: 2, ingredient: { id: 'cheddar-slice', name: 'Cheddar Slice', category: 'Dairy', stock: 48, unit: 'slices' } },
-    ]
+
   },
   {
     id: 'classic-milktea',
@@ -116,13 +91,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🧋',
     image: '/assets/menu-coffee.png',
     is_available: true,
-    max_portions: 44,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 20, ingredient_id: 'tea-base', qty: 1, ingredient: { id: 'tea-base', name: 'Brewed Tea Base', category: 'Produce', stock: 50, unit: 'cups' } },
-      { id: 21, ingredient_id: 'fresh-milk', qty: 1, ingredient: { id: 'fresh-milk', name: 'Fresh Dairy Milk', category: 'Dairy', stock: 44, unit: 'cups' } },
-      { id: 22, ingredient_id: 'tapioca-pearls', qty: 1, ingredient: { id: 'tapioca-pearls', name: 'Chewy Tapioca Pearls', category: 'Bakery', stock: 54, unit: 'cups' } },
-    ]
+
   },
   {
     id: 'brown-sugar-milktea',
@@ -133,13 +104,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🧋',
     image: '/assets/menu-coffee.png',
     is_available: true,
-    max_portions: 34,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 23, ingredient_id: 'fresh-milk', qty: 1, ingredient: { id: 'fresh-milk', name: 'Fresh Dairy Milk', category: 'Dairy', stock: 44, unit: 'cups' } },
-      { id: 24, ingredient_id: 'brown-sugar', qty: 1, ingredient: { id: 'brown-sugar', name: 'Brown Sugar Syrup', category: 'Produce', stock: 34, unit: 'cups' } },
-      { id: 25, ingredient_id: 'tapioca-pearls', qty: 1, ingredient: { id: 'tapioca-pearls', name: 'Chewy Tapioca Pearls', category: 'Bakery', stock: 54, unit: 'cups' } },
-    ]
+
   },
   {
     id: 'matcha-latte',
@@ -150,13 +117,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🍵',
     image: '/assets/menu-coffee.png',
     is_available: true,
-    max_portions: 12,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 26, ingredient_id: 'matcha-powder', qty: 2, ingredient: { id: 'matcha-powder', name: 'Matcha Powder', category: 'Produce', stock: 25, unit: 'scoops' } },
-      { id: 27, ingredient_id: 'fresh-milk', qty: 1, ingredient: { id: 'fresh-milk', name: 'Fresh Dairy Milk', category: 'Dairy', stock: 44, unit: 'cups' } },
-      { id: 28, ingredient_id: 'tapioca-pearls', qty: 1, ingredient: { id: 'tapioca-pearls', name: 'Chewy Tapioca Pearls', category: 'Bakery', stock: 54, unit: 'cups' } },
-    ]
+
   },
   {
     id: 'taro-milktea',
@@ -167,14 +130,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '🧋',
     image: '/assets/menu-coffee.png',
     is_available: true,
-    max_portions: 12,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 29, ingredient_id: 'taro-powder', qty: 2, ingredient: { id: 'taro-powder', name: 'Taro Flavor Powder', category: 'Produce', stock: 25, unit: 'scoops' } },
-      { id: 30, ingredient_id: 'tea-base', qty: 1, ingredient: { id: 'tea-base', name: 'Brewed Tea Base', category: 'Produce', stock: 50, unit: 'cups' } },
-      { id: 31, ingredient_id: 'fresh-milk', qty: 1, ingredient: { id: 'fresh-milk', name: 'Fresh Dairy Milk', category: 'Dairy', stock: 44, unit: 'cups' } },
-      { id: 32, ingredient_id: 'tapioca-pearls', qty: 1, ingredient: { id: 'tapioca-pearls', name: 'Chewy Tapioca Pearls', category: 'Bakery', stock: 54, unit: 'cups' } },
-    ]
+
   },
   {
     id: 'caramel-macchiato',
@@ -185,12 +143,9 @@ const DEFAULT_PRODUCTS = [
     emoji: '☕',
     image: '/assets/menu-coffee.png',
     is_available: true,
-    max_portions: 40,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: [
-      { id: 33, ingredient_id: 'coffee-beans', qty: 1, ingredient: { id: 'coffee-beans', name: 'Espresso Roast', category: 'Produce', stock: 40, unit: 'shots' } },
-      { id: 34, ingredient_id: 'fresh-milk', qty: 1, ingredient: { id: 'fresh-milk', name: 'Fresh Dairy Milk', category: 'Dairy', stock: 44, unit: 'cups' } },
-    ]
+
   },
   {
     id: 'halo-halo-deluxe',
@@ -201,32 +156,10 @@ const DEFAULT_PRODUCTS = [
     emoji: '🍧',
     image: '/assets/hero-banner.png',
     is_available: true,
-    max_portions: 30,
+    max_portions: 999,
     stock_status: 'available',
-    recipes: []
-  }
-];
 
-const DEFAULT_INGREDIENTS = [
-  { id: 'brioche-bun', name: 'Brioche Bun', category: 'Bakery', stock: 33, unit: 'pcs', low_threshold: 10 },
-  { id: 'beef-patty', name: 'Beef Patty', category: 'Meat', stock: 43, unit: 'pcs', low_threshold: 12 },
-  { id: 'cheddar-slice', name: 'Cheddar Slice', category: 'Dairy', stock: 48, unit: 'slices', low_threshold: 15 },
-  { id: 'lettuce', name: 'Fresh Lettuce', category: 'Produce', stock: 23, unit: 'pcs', low_threshold: 8 },
-  { id: 'pizza-dough', name: 'Pizza Dough Base', category: 'Bakery', stock: 20, unit: 'pcs', low_threshold: 5 },
-  { id: 'mozzarella', name: 'Mozzarella Cheese', category: 'Dairy', stock: 30, unit: 'slices', low_threshold: 10 },
-  { id: 'tomato-sauce', name: 'Italian Pizza Sauce', category: 'Produce', stock: 40, unit: 'cups', low_threshold: 10 },
-  { id: 'pepperoni', name: 'Pepperoni Slices', category: 'Meat', stock: 60, unit: 'slices', low_threshold: 15 },
-  { id: 'potato-fries', name: 'Cut Potato Fries', category: 'Produce', stock: 30, unit: 'portions', low_threshold: 8 },
-  { id: 'chicken-wings', name: 'Crispy Wings Cut', category: 'Meat', stock: 50, unit: 'pcs', low_threshold: 12 },
-  { id: 'cooked-rice', name: 'Steamed Rice', category: 'Produce', stock: 60, unit: 'cups', low_threshold: 15 },
-  { id: 'tea-base', name: 'Brewed Tea Base', category: 'Produce', stock: 50, unit: 'cups', low_threshold: 12 },
-  { id: 'fresh-milk', name: 'Fresh Dairy Milk', category: 'Dairy', stock: 44, unit: 'cups', low_threshold: 10 },
-  { id: 'tapioca-pearls', name: 'Chewy Tapioca Pearls', category: 'Bakery', stock: 54, unit: 'cups', low_threshold: 15 },
-  { id: 'brown-sugar', name: 'Brown Sugar Syrup', category: 'Produce', stock: 34, unit: 'cups', low_threshold: 8 },
-  { id: 'matcha-powder', name: 'Matcha Powder', category: 'Produce', stock: 25, unit: 'scoops', low_threshold: 6 },
-  { id: 'taro-powder', name: 'Taro Flavor Powder', category: 'Produce', stock: 25, unit: 'scoops', low_threshold: 6 },
-  { id: 'cream-cheese', name: 'Cream Cheese Puff', category: 'Dairy', stock: 30, unit: 'scoops', low_threshold: 8 },
-  { id: 'coffee-beans', name: 'Espresso Roast', category: 'Produce', stock: 40, unit: 'shots', low_threshold: 10 }
+  }
 ];
 
 const DEFAULT_ANNOUNCEMENTS = [
@@ -510,7 +443,7 @@ const useGShotStore = defineStore('gshot', {
     ), // 'customer' | 'admin' | 'driver' | 'checkout' | 'track' | 'history'
     activeSection: 'home',   // 'home' | 'menu' | 'about' | 'contact'
     scrollLockUntil: 0,      // Timestamp to suppress scroll-spy during programmatic smooth scroll
-    adminTab: 'orders',      // 'orders' | 'analytics' | 'products' | 'inventory' | 'recipes' | 'bookings' | 'users' | 'audit'
+    adminTab: 'orders',      // 'orders' | 'analytics' | 'products' | 'bookings' | 'users' | 'audit'
     cartOpen: false,
     authModalOpen: false,
     authMode: 'login', // 'login' | 'register'
@@ -525,7 +458,6 @@ const useGShotStore = defineStore('gshot', {
 
     // Data from Backend API (Pre-populated with rich defaults so menu never disappears)
     products: JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
-    ingredients: JSON.parse(JSON.stringify(DEFAULT_INGREDIENTS)),
     orders: [],
     activeOrder: null,
     settings: {
@@ -645,24 +577,7 @@ const useGShotStore = defineStore('gshot', {
       return true;
     },
 
-    ingredientMap: (state) => {
-      const map = {};
-      const list = Array.isArray(state.ingredients) ? state.ingredients : [];
-      list.forEach(ing => { if (ing && ing.id) map[ing.id] = ing; });
-      return map;
-    },
 
-    lowStockAlerts: (state) => {
-      if (!Array.isArray(state.ingredients)) return [];
-      return state.ingredients.filter(ing => ing && Number(ing.stock) <= Number(ing.low_threshold));
-    },
-
-    isPaymongoAvailable: (state) => {
-      if (state.settings && state.settings.paymongo_available !== undefined && state.settings.paymongo_available !== null) {
-        return state.settings.paymongo_available === 'true' || state.settings.paymongo_available === true || state.settings.paymongo_available === '1' || state.settings.paymongo_available === 1;
-      }
-      return true;
-    },
 
 
     discountedProductsCount: (state) => state.products.filter(p => (p.original_price && Number(p.original_price) > Number(p.price)) || (p.discount_percent && Number(p.discount_percent) > 0)).length,
@@ -814,7 +729,7 @@ const useGShotStore = defineStore('gshot', {
           try {
             const res = await GST_API.syncLoyverse();
             if (res?.data?.results?.synced > 0) {
-              this.fetchIngredients();
+              this.fetchProducts();
             }
           } catch (e) {
             // silent background sync
@@ -825,9 +740,8 @@ const useGShotStore = defineStore('gshot', {
 
     async refreshAllData() {
       try {
-        const [prodRes, ingRes, setRes, googRes, annRes, pkgRes] = await Promise.allSettled([
+        const [prodRes, setRes, googRes, annRes, pkgRes] = await Promise.allSettled([
           GST_API.getProducts(),
-          GST_API.getIngredients(),
           GST_API.getSettings(),
           GST_API.getGoogleConfig(),
           this.isStaffOrAdmin ? GST_API.getAllAnnouncements() : GST_API.getAnnouncements(),
@@ -839,16 +753,6 @@ const useGShotStore = defineStore('gshot', {
             this.products = prodRes.value.data;
           }
           this.backendConnected = true;
-        }
-        if (ingRes.status === 'fulfilled' && ingRes.value.data) {
-          const ingPayload = ingRes.value.data;
-          const ingList = Array.isArray(ingPayload) ? ingPayload : (Array.isArray(ingPayload?.data) ? ingPayload.data : null);
-          if (ingList) {
-            this.ingredients = ingList.map(i => ({
-              ...i,
-              stock: Math.max(0, Number(i?.stock || 0)),
-            }));
-          }
         }
         if (setRes.status === 'fulfilled' && setRes.value.data) {
           this.settings = setRes.value.data;
@@ -883,22 +787,6 @@ const useGShotStore = defineStore('gshot', {
         }
       } catch (err) {
         console.error('Error fetching products:', err);
-      }
-    },
-
-    async fetchIngredients() {
-      try {
-        const res = await GST_API.getIngredients();
-        const payload = res.data;
-        const list = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : null);
-        if (list) {
-          this.ingredients = list.map(i => ({
-            ...i,
-            stock: Math.max(0, Number(i?.stock || 0)),
-          }));
-        }
-      } catch (err) {
-        console.error('Error fetching ingredients:', err);
       }
     },
 
@@ -1218,43 +1106,7 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    // Stock & Cart Limit Helpers
-    getIngredientStockMap() {
-      const map = {};
-      for (const product of this.products || []) {
-        if (!Array.isArray(product.recipes)) continue;
-        for (const recipe of product.recipes) {
-          if (recipe.ingredient_id && recipe.ingredient && recipe.ingredient.stock !== undefined) {
-            map[recipe.ingredient_id] = Number(recipe.ingredient.stock) || 0;
-          }
-        }
-      }
-      for (const ing of this.ingredients || []) {
-        if (ing && ing.id && ing.stock !== undefined) {
-          map[ing.id] = Number(ing.stock) || 0;
-        }
-      }
-      return map;
-    },
-
-    getCartIngredientUsage(excludeProductId = null) {
-      const usage = {};
-      for (const item of this.cart) {
-        if (excludeProductId && item.product_id === excludeProductId) continue;
-        const prod = this.products.find(p => p.id === item.product_id);
-        if (!prod || !Array.isArray(prod.recipes)) continue;
-        const itemQty = Number(item.quantity) || 0;
-        if (itemQty <= 0) continue;
-        for (const recipe of prod.recipes) {
-          const reqQty = Number(recipe.qty) || 0;
-          if (reqQty > 0 && recipe.ingredient_id) {
-            usage[recipe.ingredient_id] = (usage[recipe.ingredient_id] || 0) + reqQty * itemQty;
-          }
-        }
-      }
-      return usage;
-    },
-
+    // Availability & Cart Limit Helpers
     getProductMaxStock(productOrId) {
       const id = typeof productOrId === 'string' ? productOrId : productOrId?.id;
       const liveProduct = (id ? this.products.find(p => p.id === id) : null)
@@ -1262,33 +1114,6 @@ const useGShotStore = defineStore('gshot', {
 
       if (!liveProduct || liveProduct.is_available === false) {
         return 0;
-      }
-
-      if (Array.isArray(liveProduct.recipes) && liveProduct.recipes.length > 0) {
-        const stockMap = this.getIngredientStockMap();
-        const usedByOthers = this.getCartIngredientUsage(liveProduct.id);
-        let max = Infinity;
-
-        for (const recipe of liveProduct.recipes) {
-          const reqQty = Number(recipe.qty) || 0;
-          if (reqQty <= 0) continue;
-          const ingId = recipe.ingredient_id;
-          const totalStock = Object.prototype.hasOwnProperty.call(stockMap, ingId)
-            ? stockMap[ingId]
-            : (Number(recipe.ingredient?.stock) || 0);
-          const used = usedByOthers[ingId] || 0;
-          const available = Math.max(0, totalStock - used);
-          const possible = Math.floor((available + 1e-9) / reqQty);
-          if (possible < max) {
-            max = possible;
-          }
-        }
-
-        return max === Infinity ? 0 : Math.max(0, max);
-      }
-
-      if (liveProduct.max_portions !== undefined && liveProduct.max_portions !== null) {
-        return Math.max(0, Math.floor(Number(liveProduct.max_portions) || 0));
       }
       return 999;
     },
@@ -1342,11 +1167,7 @@ const useGShotStore = defineStore('gshot', {
       const addQty = Math.max(1, Math.floor(Number(qty) || 1));
 
       if (maxStock <= 0) {
-        if (liveProduct.is_available !== false && Number(liveProduct.max_portions) > 0) {
-          this.notify(`Cannot add ${liveProduct.name}. Insufficient remaining ingredients (shared ingredients already reserved in your cart).`, 'warning');
-        } else {
-          this.notify(`${liveProduct.name} is currently sold out.`, 'error');
-        }
+        this.notify(`${liveProduct.name} is currently unavailable.`, 'error');
         return false;
       }
 
@@ -1932,26 +1753,7 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    async setPaymongoAvailability(isAvailable) {
-      const valStr = isAvailable ? 'true' : 'false';
-      if (!this.settings) this.settings = {};
-      this.settings.paymongo_available = valStr;
-      try {
-        await GST_API.updateSettings({ paymongo_available: valStr });
-        this.notify(
-          isAvailable 
-            ? 'PayMongo online payments marked as AVAILABLE for customer checkout.' 
-            : 'PayMongo online payments flagged as UNAVAILABLE for customer checkout.', 
-          isAvailable ? 'success' : 'info'
-        );
-        return true;
-      } catch (err) {
-        console.error('Failed to update PayMongo availability on backend:', err);
-        const msg = err.response?.data?.message || 'Failed to update PayMongo availability.';
-        this.notify(msg, 'error');
-        throw err;
-      }
-    },
+
 
     async updateOrderAreaNote(note, enabled = true) {
       return await this.updateStoreSettings({
@@ -2100,8 +1902,7 @@ const useGShotStore = defineStore('gshot', {
           price: null,
           description: '',
           emoji: '',
-          max_portions: 99,
-          recipes: [],
+          max_portions: 999,
         };
         return;
       }
@@ -2117,8 +1918,7 @@ const useGShotStore = defineStore('gshot', {
         description: item.description || item.desc || matched.description || '',
         emoji: safeEmoji,
         image: item.image || item.image_url || matched.image || '/assets/hero-banner.png',
-        max_portions: matched.max_portions !== undefined ? matched.max_portions : (item.max_portions !== undefined ? item.max_portions : 99),
-        recipes: matched.recipes || item.recipes || [],
+        max_portions: (matched.is_available === false || item.is_available === false) ? 0 : 999,
         is_available: matched.is_available !== undefined ? matched.is_available : (item.is_available !== false),
         badge: item.badge || null,
       };
@@ -2274,11 +2074,10 @@ const useGShotStore = defineStore('gshot', {
         const count = res.data?.results?.synced ?? 0;
         await Promise.all([
           this.fetchOrders(),
-          this.fetchIngredients(),
           this.fetchProducts(),
         ]);
         if (count > 0) {
-          this.notify(`Synced ${count} new sale(s) from Loyverse POS! Kitchen ingredients deducted.`, 'success');
+          this.notify(`Synced ${count} new sale(s) from Loyverse POS!`, 'success');
         } else {
           this.notify('Loyverse POS is up to date. No new un-synced sales.', 'info');
         }
@@ -2308,24 +2107,6 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    async exportIngredientsToLoyverse() {
-      this.loading = true;
-      try {
-        const res = await GST_API.exportIngredientsToLoyverse();
-        const created = res.data?.results?.created ?? 0;
-        const updated = res.data?.results?.updated ?? 0;
-        await this.fetchIngredients();
-        this.notify(`Synced ${created + updated} raw ingredients & stock levels to Loyverse Advanced Inventory!`, 'success');
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse ingredients export failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to export ingredients to Loyverse.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
         async pullLoyverseItems() {
       this.loading = true;
       try {
@@ -2348,56 +2129,15 @@ const useGShotStore = defineStore('gshot', {
       }
     },
 
-    async pullLoyverseInventory() {
-      this.loading = true;
-      try {
-        const res = await GST_API.pullLoyverseInventory();
-        const count = res.data?.results?.updated_count ?? 0;
-        await Promise.all([
-          this.fetchIngredients(),
-          this.fetchProducts(),
-        ]);
-        if (count > 0) {
-          this.notify(`Updated ${count} ingredient stock level(s) from Loyverse Inventory!`, 'success');
-        } else {
-          this.notify('Website inventory is already in sync with Loyverse.', 'info');
-        }
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse pull inventory failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to pull inventory from Loyverse.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async pushLoyverseInventory() {
-      this.loading = true;
-      try {
-        const res = await GST_API.pushLoyverseInventory();
-        const count = res.data?.results?.pushed_count ?? 0;
-        this.notify(`Pushed ${count} ingredient stock levels to Loyverse!`, 'success');
-        return res.data;
-      } catch (err) {
-        console.error('Loyverse push inventory failed:', err);
-        this.notify(err.response?.data?.message || 'Failed to push inventory to Loyverse.', 'error');
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
     async fullLoyverseSync() {
       this.loading = true;
       try {
         const res = await GST_API.fullLoyverseSync();
         await Promise.all([
-          this.fetchIngredients(),
           this.fetchProducts(),
           this.fetchOrders(),
         ]);
-        this.notify('Full Advanced Inventory sync complete! Ingredients, Recipes & Stocks are synchronized.', 'success');
+        this.notify('Full Loyverse sync complete! Menu & Orders are synchronized.', 'success');
         return res.data;
       } catch (err) {
         console.error('Loyverse full sync failed:', err);
@@ -2411,7 +2151,7 @@ const useGShotStore = defineStore('gshot', {
   },
 });
 
-export { useGShotStore, DEFAULT_PRODUCTS, DEFAULT_INGREDIENTS };
+export { useGShotStore, DEFAULT_PRODUCTS };
 export default useGShotStore;
 if (typeof window !== 'undefined') window.useGShotStore = useGShotStore;
 

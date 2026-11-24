@@ -270,119 +270,28 @@
             <p class="text-[11px] text-brand-400 font-medium">Estimated ready time: 10–15 mins after order acceptance.</p>
           </div>
 
-          <!-- Payment Method (PayMongo QR vs Cash) -->
+          <!-- Payment Method (Cash / COD Only) -->
           <div>
             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
               Payment Method <span class="text-amber-400">*</span>
             </label>
-            <div class="grid grid-cols-2 gap-2.5 sm:gap-3 mb-4">
-              <!-- Online QR Payment Option -->
-              <button 
-                type="button"
-                @click="store.isPaymongoAvailable ? (form.payment_method = 'PayMongo') : store.notify('Online QR payment is currently unavailable. Please select Cash.', 'info')"
-                :disabled="!store.isPaymongoAvailable"
-                class="py-3 px-2.5 sm:px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all relative text-center"
-                :class="[
-                  !store.isPaymongoAvailable 
-                    ? 'border-surface-800 bg-surface-950/60 text-gray-500 cursor-not-allowed opacity-60' 
-                    : form.payment_method === 'PayMongo' 
-                      ? 'border-amber-400/70 bg-amber-500/12 text-amber-300 shadow-md ring-1 ring-amber-400/40 cursor-pointer' 
-                      : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600 cursor-pointer'
-                ]">
-                <div class="flex items-center gap-1.5">
-                  <i class="pi pi-qrcode text-amber-400"></i>
-                  <span class="font-extrabold tracking-wide text-xs">QR Payment</span>
+            <div class="p-3.5 sm:p-4 rounded-xl border border-amber-400/70 bg-amber-500/12 text-amber-300 shadow-md ring-1 ring-amber-400/40 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0">
+                  <i class="pi pi-money-bill text-base"></i>
                 </div>
-                <span class="text-[10px] text-gray-400 font-medium leading-tight">
-                  PayMongo • QR Ph
-                </span>
-                <span v-if="!store.isPaymongoAvailable" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-extrabold border border-rose-500/30">
-                  Unavailable
-                </span>
-              </button>
-
-              <!-- Cash / COD Option -->
-              <button 
-                type="button"
-                @click="form.payment_method = 'Cash'"
-                class="py-3 px-2.5 sm:px-3 rounded-xl border flex flex-col items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer text-center"
-                :class="form.payment_method === 'Cash' ? 'border-amber-400/70 bg-amber-500/12 text-amber-300 shadow-md ring-1 ring-amber-400/40' : 'border-surface-700 bg-surface-900 text-gray-300 hover:border-surface-600'">
-                <div class="flex items-center gap-1.5">
-                  <i class="pi pi-money-bill text-amber-400"></i>
-                  <span class="font-extrabold text-xs">Cash</span>
-                </div>
-                <span class="text-[10px] text-gray-400 font-medium leading-tight">
-                  {{ form.order_type === 'Delivery' ? 'Cash on Delivery' : 'Cash at Counter' }}
-                </span>
-              </button>
-            </div>
-
-            <!-- Notice when Online QR is unavailable -->
-            <div v-if="!store.isPaymongoAvailable" class="mb-4 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center gap-2.5 text-xs text-amber-200 animate-fade-in">
-              <i class="pi pi-info-circle text-amber-300 text-sm shrink-0"></i>
-              <span>Online QR payment is currently unavailable. Please proceed with <strong>{{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}</strong>.</span>
-            </div>
-
-            <!-- PayMongo Online Checkout Card -->
-            <div v-if="form.payment_method === 'PayMongo'" class="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-surface-900 border border-amber-500/30 space-y-3.5 relative overflow-hidden animate-fade-in shadow-xl mb-4">
-              <div class="absolute -top-16 -right-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-              <div class="flex items-center justify-between gap-2 pb-3 border-b border-surface-800">
-                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                  <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 text-base shrink-0">
-                    <i class="pi pi-qrcode"></i>
-                  </div>
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-1.5 sm:gap-2">
-                      <p class="text-xs font-black uppercase tracking-wider text-amber-300">QR Ph Checkout</p>
-                      <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-amber-500/15 text-amber-200 border border-amber-500/25">
-                        Instant
-                      </span>
-                    </div>
-                    <p class="text-[11px] text-gray-400 mt-0.5 truncate">Scan with any e-wallet or bank app</p>
-                  </div>
-                </div>
-                <div class="text-right shrink-0">
-                  <span class="text-[11px] text-gray-400 block sm:inline">Total</span>
-                  <span class="text-sm sm:text-base font-black text-amber-300 sm:ml-1">₱{{ Number(grandTotal).toFixed(2) }}</span>
+                <div>
+                  <p class="font-extrabold text-xs sm:text-sm text-amber-200">
+                    {{ form.order_type === 'Delivery' ? 'Cash on Delivery (COD)' : 'Cash at Counter' }}
+                  </p>
+                  <p class="text-[11px] text-gray-300 mt-0.5">
+                    {{ form.order_type === 'Delivery' ? 'Pay in cash to the rider upon delivery.' : 'Pay in cash when picking up your order at the store.' }}
+                  </p>
                 </div>
               </div>
-
-              <!-- Direct Action Button inside PayMongo Card -->
-              <div class="space-y-2">
-                <button 
-                  type="button"
-                  @click="submitOrder"
-                  :disabled="isSubmitting || store.cart.length === 0 || (Boolean(store.user) && isDeliveryUnavailable)"
-                  class="w-full py-3.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-amber-400 hover:bg-amber-300 active:scale-[0.99] text-surface-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/15 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                  <i v-if="isSubmitting" class="pi pi-spin pi-spinner text-base"></i>
-                  <span v-else class="flex items-center gap-2">
-                    <i class="pi" :class="!store.user ? 'pi-lock text-sm' : 'pi-qrcode text-sm'"></i>
-                    <span>{{ !store.user ? 'Sign In to Pay with QR' : ('Place Order & Pay via QR (₱' + Number(grandTotal).toFixed(2) + ')') }}</span>
-                    <i class="pi pi-arrow-right text-xs"></i>
-                  </span>
-                </button>
-
-                <p class="text-[11px] text-amber-200/80 text-center flex items-center justify-center gap-1.5 font-medium">
-                  <i class="pi pi-shield text-amber-400 text-[10px]"></i>
-                  <span>Instant confirmation • No receipt upload needed</span>
-                </p>
-              </div>
-
-              <!-- Inline validation warning inside PayMongo card if required fields are missing -->
-              <div 
-                v-if="isValidationTriggered && checkoutBlockReasons.length > 0" 
-                class="p-3.5 rounded-2xl bg-rose-950/80 border border-rose-500/60 space-y-1.5 animate-shake">
-                <div class="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-wider">
-                  <i class="pi pi-exclamation-triangle"></i>
-                  <span>Please Complete Required Details Above:</span>
-                </div>
-                <ul class="text-xs text-rose-200/90 space-y-1 pl-4 list-disc">
-                  <li v-for="(reason, idx) in checkoutBlockReasons" :key="idx">
-                    {{ reason }}
-                  </li>
-                </ul>
-              </div>
+              <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-amber-500/20 text-amber-200 border border-amber-400/30 shrink-0">
+                Selected
+              </span>
             </div>
           </div>
 
@@ -495,7 +404,7 @@
             <i v-if="isSubmitting" class="pi pi-spin pi-spinner"></i>
             <span v-else class="flex items-center gap-2">
               <i v-if="!store.user" class="pi pi-lock text-sm"></i>
-              <span>{{ !store.user ? 'Sign In to Place Order' : (form.payment_method === 'PayMongo' ? 'Proceed to QR Checkout' : 'Confirm & Place Order') }}</span>
+              <span>{{ !store.user ? 'Sign In to Place Order' : 'Confirm & Place Order' }}</span>
             </span>
           </button>
 
@@ -560,144 +469,7 @@
         </div>
       </div>
 
-      <!-- Interactive PayMongo QR Ph Payment Modal (Instant In-Page Checkout) -->
-      <div 
-        v-if="paymongoModalOpen" 
-        class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-        @click.self="dismissPaymongoModal">
-        <div class="relative max-w-md w-full bg-surface-900 border border-amber-500/35 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 animate-scale-up text-center overflow-hidden">
-          
-          <div class="absolute -top-12 -right-12 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-          <!-- Header -->
-          <div class="flex items-center justify-between pb-3 border-b border-surface-800">
-            <div class="flex items-center gap-2 text-left">
-              <span class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-300 flex items-center justify-center font-bold text-base">
-                <i class="pi pi-qrcode"></i>
-              </span>
-              <div>
-                <h4 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                  <span>QR Ph Payment</span>
-                  <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-amber-500/15 text-amber-200 border border-amber-400/30">
-                    Auto-Checkout
-                  </span>
-                </h4>
-                <p class="text-[11px] text-gray-400">Order {{ activePaymongoOrder?.order_number || '' }}</p>
-              </div>
-            </div>
-            <button 
-              @click="dismissPaymongoModal" 
-              class="w-8 h-8 rounded-full bg-surface-800 text-gray-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
-              <i class="pi pi-times text-xs"></i>
-            </button>
-          </div>
-
-          <!-- SUCCESS STATE (Once Paid) -->
-          <div v-if="paymongoPaymentConfirmed" class="py-8 space-y-4 animate-scale-up">
-            <div class="w-20 h-20 mx-auto rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 text-3xl shadow-xl shadow-emerald-500/20 animate-bounce">
-              <i class="pi pi-check text-3xl font-black"></i>
-            </div>
-            <div class="space-y-1">
-              <h3 class="text-xl font-black text-white">Payment Received!</h3>
-              <p class="text-sm text-emerald-400 font-bold">₱{{ Number(activePaymongoOrder?.total_amount || grandTotal).toFixed(2) }} Verified</p>
-              <p class="text-xs text-gray-300 mt-2">Your order has been checked out automatically and sent to the kitchen staff to prepare!</p>
-            </div>
-            <div class="pt-2">
-              <span class="inline-flex items-center gap-2 text-xs text-gray-400 font-mono">
-                <i class="pi pi-spin pi-spinner text-emerald-400 text-xs"></i>
-                <span>Redirecting to order tracker...</span>
-              </span>
-            </div>
-          </div>
-
-          <!-- AWAITING PAYMENT STATE -->
-          <div v-else class="space-y-4">
-            <!-- QR Box -->
-            <div class="p-4 rounded-2xl bg-surface-950/90 border border-surface-800 space-y-3">
-              <div class="flex items-center justify-between px-1">
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total to Pay</span>
-                <span class="text-sm font-black text-amber-300">₱{{ Number(activePaymongoOrder?.total_amount || grandTotal).toFixed(2) }}</span>
-              </div>
-
-              <div class="relative group inline-block mx-auto">
-                <div class="w-52 h-52 sm:w-64 sm:h-64 mx-auto rounded-2xl bg-white p-3 border-2 border-amber-400/50 shadow-xl flex items-center justify-center overflow-hidden">
-                  <img 
-                    v-if="activePaymongoQr" 
-                    :src="activePaymongoQr" 
-                    alt="QR Ph Payment Code" 
-                    class="w-full h-full object-contain"
-                  />
-                  <div v-else class="text-center py-10 space-y-2">
-                    <i class="pi pi-spin pi-spinner text-2xl text-amber-500"></i>
-                    <p class="text-xs text-gray-500 font-medium">Loading QR Code...</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Badges -->
-              <div class="flex items-center justify-center gap-1.5 text-[10px] text-amber-200/90 font-bold flex-wrap pt-1">
-                <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-400/25">PayMongo QR Ph</span>
-                <span class="px-2 py-0.5 rounded-md bg-surface-800 text-gray-300 border border-surface-700">Maya</span>
-                <span class="px-2 py-0.5 rounded-md bg-surface-800 text-gray-300 border border-surface-700">BDO / BPI</span>
-                <span class="px-2 py-0.5 rounded-md bg-surface-800 text-gray-300 border border-surface-700">Any QR Ph App</span>
-              </div>
-            </div>
-
-            <!-- Live Status Radar -->
-            <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center justify-center gap-2.5 text-xs text-amber-300">
-              <span class="relative flex h-2.5 w-2.5">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>
-              </span>
-              <span class="font-bold">Awaiting Payment Confirmation...</span>
-            </div>
-
-            <p class="text-[11px] text-gray-400 leading-relaxed">
-              Open your <strong>e-wallet</strong> or <strong>banking</strong> app, tap <strong>Scan QR</strong>, and scan the code. This page automatically completes checkout upon payment!
-            </p>
-
-            <!-- Actions -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
-              <button 
-                type="button" 
-                @click="checkModalPaymongoStatus"
-                :disabled="isCheckingModalPayment"
-                class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-surface-950 font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50">
-                <i class="pi" :class="isCheckingModalPayment ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
-                <span>{{ isCheckingModalPayment ? 'Checking...' : 'Check Payment Status' }}</span>
-              </button>
-
-              <a 
-                v-if="activePaymongoQr" 
-                :href="activePaymongoQr" 
-                :download="`QR-Order-${activePaymongoOrder?.order_number || 'GST'}.png`"
-                class="w-full sm:w-auto py-2.5 px-3 rounded-xl bg-surface-800 hover:bg-surface-700 text-gray-300 hover:text-white border border-surface-700 font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
-                <i class="pi pi-download"></i>
-                <span>Save QR</span>
-              </a>
-            </div>
-
-            <div class="flex items-center justify-between text-xs pt-2 border-t border-surface-800 text-gray-400">
-              <a 
-                v-if="activePaymongoCheckoutUrl" 
-                :href="activePaymongoCheckoutUrl" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                class="text-emerald-400 hover:text-emerald-300 underline font-semibold flex items-center gap-1 text-[11px]">
-                <span>Open PayMongo Checkout</span>
-                <i class="pi pi-external-link text-[10px]"></i>
-              </a>
-              <button 
-                type="button" 
-                @click="dismissPaymongoModal"
-                class="text-gray-400 hover:text-white text-[11px] underline ml-auto">
-                Track Order & Pay Later &rarr;
-              </button>
-            </div>
-          </div>
-
-        </div>
-      </div>
 
     </div>
 </template>
@@ -717,13 +489,6 @@ export default {
     const isSubmitting = Vue.ref(false);
     const isValidationTriggered = Vue.ref(false);
     const serverErrorMessage = Vue.ref('');
-    const paymongoModalOpen = Vue.ref(false);
-    const activePaymongoOrder = Vue.ref(null);
-    const activePaymongoQr = Vue.ref('');
-    const activePaymongoCheckoutUrl = Vue.ref('');
-    const paymongoPaymentConfirmed = Vue.ref(false);
-    const isCheckingModalPayment = Vue.ref(false);
-    let modalPollTimer = null;
 
     // Live GPS & Map Pin State
     const isLocatingGPS = Vue.ref(false);
@@ -746,7 +511,7 @@ export default {
       delivery_address: store.user?.address || '',
       customer_lat: null,
       customer_lng: null,
-      payment_method: store.isPaymongoAvailable ? 'PayMongo' : 'Cash',
+      payment_method: 'Cash',
       notes: '',
     });
 
@@ -758,12 +523,7 @@ export default {
       return store.cartSubtotal + deliveryFee.value;
     });
 
-    // Auto-fallback payment method if PayMongo is flagged unavailable
-    Vue.watch(() => store.isPaymongoAvailable, (pmAvail) => {
-      if (!pmAvail && form.payment_method === 'PayMongo') {
-        form.payment_method = 'Cash';
-      }
-    }, { immediate: true });
+
 
     // Enforce numbers only and standard 11 digits for Phone Number
     const onPhoneInput = (e) => {
@@ -861,10 +621,6 @@ export default {
         reasons.push(`"${v.name}" exceeds available stock (${v.cartQty} in cart, only ${v.maxStock} available). Please adjust quantity in your cart.`);
       }
 
-      // Online QR Payment Check
-      if (form.payment_method === 'PayMongo' && !store.isPaymongoAvailable) {
-        reasons.push('Online QR payment is currently unavailable. Please select Cash.');
-      }
       return reasons;
     });
 
@@ -1246,89 +1002,7 @@ export default {
       }
     });
 
-    const startModalPaymongoPolling = (orderId) => {
-      if (modalPollTimer) clearInterval(modalPollTimer);
-      modalPollTimer = setInterval(async () => {
-        if (!paymongoModalOpen.value || paymongoPaymentConfirmed.value) {
-          clearInterval(modalPollTimer);
-          modalPollTimer = null;
-          return;
-        }
-        try {
-          const res = await GST_API.verifyPayMongoPayment(orderId);
-          if (res.data?.paid) {
-            handlePaymongoSuccess(res.data.order || activePaymongoOrder.value);
-          }
-        } catch (e) {}
-      }, 2500);
-    };
 
-    const checkModalPaymongoStatus = async () => {
-      if (!activePaymongoOrder.value) return;
-      isCheckingModalPayment.value = true;
-      try {
-        const res = await GST_API.verifyPayMongoPayment(activePaymongoOrder.value.id);
-        if (res.data?.paid) {
-          handlePaymongoSuccess(res.data.order || activePaymongoOrder.value);
-        } else {
-          store.notify('Payment is still pending on PayMongo. Please scan the QR code to finish paying.', 'info');
-        }
-      } catch (err) {
-        store.notify(err.response?.data?.message || 'Error checking payment status.', 'error');
-      } finally {
-        isCheckingModalPayment.value = false;
-      }
-    };
-
-    const handlePaymongoSuccess = (confirmedOrder) => {
-      paymongoPaymentConfirmed.value = true;
-      if (modalPollTimer) {
-        clearInterval(modalPollTimer);
-        modalPollTimer = null;
-      }
-
-      store.clearCart();
-      store.activeOrder = confirmedOrder;
-      localStorage.setItem('gst_active_order_id', confirmedOrder.id);
-      try {
-        const localHistory = JSON.parse(localStorage.getItem('gst_local_order_history') || '[]');
-        const idStr = String(confirmedOrder.id);
-        if (!localHistory.includes(idStr)) {
-          localHistory.unshift(idStr);
-          localStorage.setItem('gst_local_order_history', JSON.stringify(localHistory.slice(0, 50)));
-        }
-      } catch (e) {}
-
-      store.notify(`Payment confirmed for Order ${confirmedOrder.order_number || ''}! Your order is sent to the kitchen.`, 'success');
-
-      setTimeout(() => {
-        paymongoModalOpen.value = false;
-        store.currentView = 'track';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 1800);
-    };
-
-    const dismissPaymongoModal = () => {
-      if (modalPollTimer) {
-        clearInterval(modalPollTimer);
-        modalPollTimer = null;
-      }
-      paymongoModalOpen.value = false;
-      if (activePaymongoOrder.value) {
-        store.clearCart();
-        store.activeOrder = activePaymongoOrder.value;
-        localStorage.setItem('gst_active_order_id', activePaymongoOrder.value.id);
-        store.currentView = 'track';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    };
-
-    Vue.onUnmounted(() => {
-      if (modalPollTimer) {
-        clearInterval(modalPollTimer);
-        modalPollTimer = null;
-      }
-    });
 
     const backToMenu = () => {
       store.currentView = 'menu';
@@ -1407,33 +1081,18 @@ export default {
         } catch (e) {
           // ignore
         }
-        // Immediately refresh ingredients & products inventory in background
-        store.fetchIngredients();
         store.fetchProducts();
 
-        // If PayMongo, open the interactive QR checkout modal directly in-page!
-        if (form.payment_method === 'PayMongo') {
-          activePaymongoOrder.value = createdOrder;
-          activePaymongoQr.value = res?.data?.qr_image || createdOrder.paymongo_qr_image;
-          activePaymongoCheckoutUrl.value = res?.data?.checkout_url || createdOrder.paymongo_checkout_url;
-          paymongoModalOpen.value = true;
-          paymongoPaymentConfirmed.value = false;
 
-          // Start polling PayMongo for payment confirmation
-          startModalPaymongoPolling(createdOrder.id);
-          return;
-        }
 
-        store.notify(`Order ${createdOrder.order_number || ''} confirmed! Ingredients deducted.`, 'success');
+        store.notify(`Order ${createdOrder.order_number || ''} confirmed!`, 'success');
 
         // Direct user to Track Order (Figure 11)
         store.currentView = 'track';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
         let msg = 'Failed to place order.';
-        if (err.response?.data?.insufficient_ingredients?.length) {
-          msg = 'Cannot place order: Insufficient kitchen stock for:\n\u2022 ' + err.response.data.insufficient_ingredients.join('\n\u2022 ');
-        } else if (err.response?.data?.message) {
+        if (err.response?.data?.message) {
           msg = err.response.data.message;
         } else if (err.response?.data?.errors) {
           msg = Object.values(err.response.data.errors).flat().join(' ');
@@ -1472,14 +1131,6 @@ export default {
       useCurrentLocation,
       backToMenu,
       submitOrder,
-      paymongoModalOpen,
-      activePaymongoOrder,
-      activePaymongoQr,
-      activePaymongoCheckoutUrl,
-      paymongoPaymentConfirmed,
-      isCheckingModalPayment,
-      checkModalPaymongoStatus,
-      dismissPaymongoModal,
       isLocatingGPS,
       gpsPromptModalOpen,
       gpsErrorMessage,

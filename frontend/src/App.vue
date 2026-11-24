@@ -245,7 +245,6 @@
 import * as Vue from 'vue';
 import { ref, reactive, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue';
 import { useGShotStore } from '@/stores/useGShotStore';
-import GST_API from '@/services/api';
 
 // G Shot Teas — Vue 3 Main Application Root
 
@@ -309,44 +308,6 @@ export default {
       await store.init();
       enforceWorkerDashboardOnly();
       nextTick(() => updateActiveSectionOnScroll());
-
-      // Handle PayMongo Hosted Checkout return redirect
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const paymongoStatus = urlParams.get('paymongo_status');
-        const orderId = urlParams.get('order_id');
-
-        if (paymongoStatus && orderId) {
-          // Clean URL parameters without reloading page
-          window.history.replaceState({}, document.title, window.location.pathname);
-
-          if (paymongoStatus === 'success') {
-            store.notify('Verifying PayMongo online payment...', 'info');
-            try {
-              const res = await GST_API.verifyPayMongoPayment(orderId);
-              if (res.data?.order) {
-                store.activeOrder = res.data.order;
-                localStorage.setItem('gst_active_order_id', res.data.order.id);
-                store.currentView = 'track';
-                store.activeSection = 'track';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                store.notify(res.data.message || 'Payment verified! Order confirmed and is now being prepared.', 'success');
-              }
-            } catch (vErr) {
-              console.error('PayMongo verification error:', vErr);
-              store.notify('Payment processed! Loading order tracker...', 'success');
-              await store.fetchActiveOrder();
-              store.currentView = 'track';
-            }
-          } else if (paymongoStatus === 'cancelled') {
-            store.notify('PayMongo payment was cancelled. You can retry paying or choose Cash.', 'warning');
-            store.currentView = 'track';
-            await store.fetchActiveOrder();
-          }
-        }
-      } catch (e) {
-        console.error('Error handling PayMongo URL params:', e);
-      }
     });
 
     onUnmounted(() => {

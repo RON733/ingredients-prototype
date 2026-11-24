@@ -2,9 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Ingredient;
 use App\Models\Product;
-use App\Models\Recipe;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Env;
 use Tests\TestCase;
@@ -35,27 +33,13 @@ class ChatbotStockAwarenessTest extends TestCase
             'is_available' => false,
         ]);
 
-        $cheese = Ingredient::create([
-            'id' => 'cheese-sauce',
-            'name' => 'Cheese Sauce',
-            'unit' => 'g',
-            'stock' => 0,
-            'min_stock' => 100,
-        ]);
-
         Product::create([
             'id' => 'cheesy-burger',
             'name' => 'Cheesy Burger',
             'category' => 'Burgers',
             'price' => 120,
             'description' => 'Beef patty with melted cheese.',
-            'is_available' => true,
-        ]);
-
-        Recipe::create([
-            'product_id' => 'cheesy-burger',
-            'ingredient_id' => $cheese->id,
-            'qty' => 50,
+            'is_available' => false,
         ]);
 
         $menuResponse = $this->postJson('/api/chatbot', [

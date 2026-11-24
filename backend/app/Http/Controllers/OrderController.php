@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\Ingredient;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Models\RiderNotice;
@@ -124,7 +123,7 @@ class OrderController extends Controller
             'delivery_address' => 'nullable|string',
             'customer_lat' => 'nullable|numeric',
             'customer_lng' => 'nullable|numeric',
-            'payment_method' => 'required|in:Cash,PayMongo',
+            'payment_method' => 'required|in:Cash',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|string|exists:products,id',
@@ -164,24 +163,15 @@ class OrderController extends Controller
             $detectedBarangay = $barangayMatch['barangay'];
         }
 
-        // 2.5 PayMongo Availability check
-        if ($validated['payment_method'] === 'PayMongo') {
-            $pmAvail = \App\Models\SystemSetting::where('key', 'paymongo_available')->value('value');
-            if ($pmAvail !== null && in_array(strtolower((string)$pmAvail), ['false', '0', 'no', 'off'], true)) {
-                return response()->json([
-                    'message' => 'Online payment is currently unavailable. Please select Cash on Delivery or Cash at Counter.'
-                ], 422);
-            }
-        }
+
 
 
 
         return DB::transaction(function () use ($validated, $request, $detectedBarangay) {
-            // 1. Gather all product IDs and batch-fetch products with recipes
+            // 1. Gather all product IDs and verify manual menu availability
             $productIds = array_unique(array_column($validated['items'], 'product_id'));
-            $products = Product::with('recipes.ingredient')->whereIn('id', $productIds)->get()->keyBy('id');
+            $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
-            $ingredientDeductions = [];
             foreach ($validated['items'] as $item) {
                 $product = $products->get($item['product_id']);
                 if (!$product) {
@@ -189,59 +179,11 @@ class OrderController extends Controller
                         'message' => "Selected product ({$item['product_id']}) is no longer available in the menu."
                     ], 422);
                 }
-                $qty = (int)$item['quantity'];
-                foreach ($product->recipes as $recipe) {
-                    $ingId = $recipe->ingredient_id;
-                    $needed = $recipe->qty * $qty;
-                    $ingredientDeductions[$ingId] = ($ingredientDeductions[$ingId] ?? 0) + $needed;
+                if (!$product->is_available) {
+                    return response()->json([
+                        'message' => "Cannot place order: {$product->name} is currently unavailable."
+                    ], 422);
                 }
-            }
-
-            // 2. Batch-fetch all required ingredients in ONE single query
-            $ingIds = array_keys($ingredientDeductions);
-            $ingredients = Ingredient::whereIn('id', $ingIds)->get()->keyBy('id');
-
-            // Verify stock sufficiency
-            $depletedAlerts = [];
-            foreach ($ingredientDeductions as $ingId => $totalNeeded) {
-                $ingredient = $ingredients->get($ingId);
-                if (!$ingredient || round((float)$ingredient->stock, 6) < round((float)$totalNeeded, 6)) {
-                    $available = $ingredient ? $ingredient->stock : 0;
-                    $unit = $ingredient ? $ingredient->unit : 'units';
-                    $name = $ingredient ? $ingredient->name : $ingId;
-                    $depletedAlerts[] = "{$name} (Needed: {$totalNeeded} {$unit}, Available: {$available} {$unit})";
-                }
-            }
-
-            if (!empty($depletedAlerts)) {
-                return response()->json([
-                    'message' => 'Cannot place order: Insufficient kitchen stock for ' . implode(', ', $depletedAlerts) . '.',
-                    'insufficient_ingredients' => $depletedAlerts,
-                ], 422);
-            }
-
-            // 3. High-Performance Bulk Deduct: Single batch query instead of N sequential round-trips to cloud DB
-            if (!empty($ingredientDeductions)) {
-                $cases = [];
-                $bindings = [];
-                foreach ($ingredientDeductions as $ingId => $totalNeeded) {
-                    $ingredient = $ingredients->get($ingId);
-                    if ($ingredient) {
-                        $newStock = max(0, (float)$ingredient->stock - (float)$totalNeeded);
-                        $cases[] = "WHEN id = ? THEN ?::numeric";
-                        $bindings[] = (string)$ingId;
-                        $bindings[] = $newStock;
-                    }
-                }
-                if (!empty($cases)) {
-                    $caseSql = implode(' ', $cases);
-                    $ids = array_keys($ingredientDeductions);
-                    $placeholders = implode(',', array_fill(0, count($ids), '?'));
-                    $bindings = array_merge($bindings, $ids);
-                    DB::update("UPDATE ingredients SET stock = CASE {$caseSql} ELSE stock END, updated_at = NOW() WHERE id IN ({$placeholders})", $bindings);
-                }
-                \Illuminate\Support\Facades\Cache::forget('ingredients_all');
-                \Illuminate\Support\Facades\Cache::forget('products_catalog_default');
             }
 
             // 4. Calculate pricing
@@ -390,46 +332,7 @@ class OrderController extends Controller
 
             $order->items()->createMany($itemsData);
 
-            $checkoutUrl = null;
-            $qrImage = null;
-            if ($validated['payment_method'] === 'PayMongo') {
-                try {
-                    $paymongoService = app(\App\Services\PayMongoService::class);
 
-                    // 1. Generate Direct QR Ph payment code via PayMongo
-                    $qrData = $paymongoService->createQrPhPayment($order);
-                    if ($qrData && !empty($qrData['qr_image'])) {
-                        $qrImage = $qrData['qr_image'];
-                    }
-
-                    // 2. Generate Hosted Checkout URL as fallback/alternative
-                    $origin = $request->header('origin') ?: $request->header('referer') ?: config('app.url', 'http://127.0.0.1:8000');
-                    $origin = rtrim($origin, '/');
-                    if (filter_var($origin, FILTER_VALIDATE_URL)) {
-                        $parsed = parse_url($origin);
-                        $port = !empty($parsed['port']) ? (':' . $parsed['port']) : '';
-                        $scheme = !empty($parsed['scheme']) ? $parsed['scheme'] : 'https';
-                        $origin = $scheme . '://' . $parsed['host'] . $port;
-                    } else {
-                        $origin = config('app.url', 'http://127.0.0.1:8000');
-                    }
-                    $successUrl = $origin . '/?paymongo_status=success&order_id=' . $order->id;
-                    $cancelUrl = $origin . '/?paymongo_status=cancelled&order_id=' . $order->id;
-
-                    $sessionData = $paymongoService->createCheckoutSession($order, $successUrl, $cancelUrl);
-
-                    $order->paymongo_session_id = $sessionData['session_id'];
-                    $order->paymongo_checkout_url = $sessionData['checkout_url'];
-                    $order->save();
-
-                    $checkoutUrl = $sessionData['checkout_url'];
-                } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error("PayMongo initialization error: " . $e->getMessage());
-                    if (!$qrImage) {
-                        throw new \Exception("Unable to initialize PayMongo checkout: " . $e->getMessage());
-                    }
-                }
-            }
 
             // Automatically push order to Loyverse POS ONLY if already Completed or Paid (e.g. staff created POS order)
             // Online pending orders will sync upon approval / completion
@@ -448,7 +351,7 @@ class OrderController extends Controller
                     'user_name' => $request->user()?->name ?? $validated['customer_name'],
                     'user_role' => $placingRole,
                     'action' => 'POS Order Placed',
-                    'details' => "Order {$orderNumber} processed by staff for ₱{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). Raw ingredients depleted automatically.",
+                    'details' => "Order {$orderNumber} processed by staff for ₱{$totalAmount} ({$validated['order_type']}, {$validated['payment_method']}). ",
                     'ip_address' => $request->ip(),
                 ]);
             }
@@ -458,8 +361,6 @@ class OrderController extends Controller
                 'order' => $order->load('items'),
                 'detected_barangay' => $detectedBarangay ? $detectedBarangay['name'] : null,
                 'estimated_delivery_time' => $detectedBarangay ? $detectedBarangay['eta'] : null,
-                'checkout_url' => $checkoutUrl,
-                'qr_image' => $qrImage ?? $order->paymongo_qr_image,
             ], 201);
         });
     }
@@ -483,13 +384,7 @@ class OrderController extends Controller
             ], 422);
         }
 
-        // Payment Pre-condition constraint:
-        // Online orders (PayMongo) MUST be Paid/Verified before kitchen preparation can begin!
-        if ($newStatus === 'Preparing' && $order->payment_method !== 'Cash' && !in_array($order->payment_status, ['Paid', 'Verified'])) {
-            return response()->json([
-                'message' => "Cannot start preparation. Online payment for order {$order->order_number} ({$order->payment_method}) is still pending and must be verified first."
-            ], 422);
-        }
+
 
         // Rider delivery constraint:
         // When a delivery order is Out for Delivery, ONLY the assigned rider has the authority to confirm and complete it!
@@ -513,33 +408,6 @@ class OrderController extends Controller
                 return response()->json([
                     'message' => 'Cancellation is not allowed once preparation has commenced.'
                 ], 403);
-            }
-        }
-
-        // Restore ingredients on cancellation (any status except already Cancelled/Completed)
-        if ($newStatus === 'Cancelled' && !in_array($oldStatus, ['Cancelled', 'Completed'])) {
-            $restoredIngredientIds = [];
-            foreach ($order->items as $item) {
-                $product = Product::with('recipes')->find($item->product_id);
-                if ($product) {
-                    foreach ($product->recipes as $recipe) {
-                        $ing = Ingredient::find($recipe->ingredient_id);
-                        if ($ing) {
-                            $ing->stock = max(0, (float) $ing->stock) + ($recipe->qty * $item->quantity);
-                            $ing->save();
-                            $restoredIngredientIds[] = $ing->id;
-                        }
-                    }
-                }
-            }
-            if (!empty($restoredIngredientIds)) {
-                \Illuminate\Support\Facades\Cache::forget('ingredients_all');
-                \Illuminate\Support\Facades\Cache::forget('products_catalog_default');
-                try {
-                    app(\App\Services\LoyverseService::class)->pushInventoryToLoyverse(array_values(array_unique($restoredIngredientIds)));
-                } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::warning('Loyverse restore push warning: ' . $e->getMessage());
-                }
             }
         }
 

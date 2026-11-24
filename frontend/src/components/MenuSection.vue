@@ -38,7 +38,7 @@
       Our <span class="text-yellow-400">Menu</span>
     </h2>
     <p class="text-xs sm:text-base text-gray-400 mt-2.5">
-      Explore our finest selection of food and drinks. Click on any item to view details, ingredient stocks, and add to your order.
+      Explore our finest selection of food and drinks. Click on any item to view details, availability, and add to your order.
     </p>
   </div>
 
@@ -71,7 +71,7 @@
         <input 
           v-model="searchQuery"
           type="text" 
-          placeholder="Search burger, milktea, pizza, ingredients..." 
+          placeholder="Search burger, milktea, pizza..." 
           class="w-full pl-9 sm:pl-10 pr-8 py-2.5 rounded-xl bg-surface-800 text-white placeholder-gray-500 text-xs sm:text-sm border border-surface-700/80 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-all shadow-inner"
         />
         <button 
@@ -267,7 +267,12 @@
 
           <!-- Stock Pill -->
           <span 
-            v-if="store.getProductMaxStock(product) > 8"
+            v-if="store.getProductMaxStock(product) >= 999"
+            class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50 backdrop-blur-sm pointer-events-none">
+            Available
+          </span>
+          <span 
+            v-else-if="store.getProductMaxStock(product) > 8"
             class="absolute bottom-1.5 left-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50 backdrop-blur-sm pointer-events-none">
             {{ store.getProductMaxStock(product) }} avail
           </span>
@@ -375,7 +380,7 @@
               type="button"
               class="w-full py-1.5 sm:py-2 rounded-xl font-bold text-[11px] sm:text-xs bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1">
               <i class="pi pi-check text-[9px]"></i>
-              <span>{{ store.getProductCartQty(product.id) > 0 ? 'Max in Cart' : 'Insufficient Ing.' }}</span>
+              <span>{{ store.getProductCartQty(product.id) > 0 ? 'Max in Cart' : 'Unavailable' }}</span>
             </button>
             <button 
               v-else
@@ -448,7 +453,12 @@
             </span>
 
             <span 
-              v-if="store.getProductMaxStock(product) > 8"
+              v-if="store.getProductMaxStock(product) >= 999"
+              class="absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.2 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50">
+              Avail
+            </span>
+            <span 
+              v-else-if="store.getProductMaxStock(product) > 8"
               class="absolute bottom-1 left-1 text-[7px] font-bold px-1 py-0.2 rounded bg-emerald-950/90 text-emerald-400 border border-emerald-700/50">
               {{ store.getProductMaxStock(product) }} avail
             </span>
@@ -515,7 +525,7 @@
               disabled
               type="button"
               class="mt-1.5 w-full py-1 rounded-lg font-bold text-[10px] bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-1">
-              <span>{{ store.getProductCartQty(product.id) > 0 ? 'Max in Cart' : 'Insufficient' }}</span>
+              <span>{{ store.getProductCartQty(product.id) > 0 ? 'Max in Cart' : 'Unavailable' }}</span>
             </button>
             <button 
               v-else
@@ -588,7 +598,13 @@
 
         <div class="absolute bottom-3 left-3 pointer-events-none">
           <span 
-            v-if="store.getProductMaxStock(product) > 8"
+            v-if="store.getProductMaxStock(product) >= 999"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/50 backdrop-blur-md">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            Available
+          </span>
+          <span 
+            v-else-if="store.getProductMaxStock(product) > 8"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-700/50 backdrop-blur-md">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             In Stock ({{ store.getProductMaxStock(product) }} avail)
@@ -633,20 +649,6 @@
             {{ product.description }}
           </p>
 
-          <div v-if="product.recipes && product.recipes.length > 0" class="mb-4 pt-2 border-t border-surface-700/40">
-            <p class="text-[10px] text-gray-400 font-medium mb-1">Kitchen Ingredients:</p>
-            <div class="flex flex-wrap gap-1">
-              <span 
-                v-for="rec in product.recipes.slice(0, 3)" 
-                :key="rec.id" 
-                class="text-[9px] px-1.5 py-0.5 rounded bg-surface-700 text-gray-300">
-                {{ rec.ingredient ? rec.ingredient.name : rec.ingredient_id }} ({{ rec.qty }})
-              </span>
-              <span v-if="product.recipes.length > 3" class="text-[9px] px-1.5 py-0.5 rounded bg-surface-700 text-gray-400">
-                +{{ product.recipes.length - 3 }} more
-              </span>
-            </div>
-          </div>
         </div>
 
         <div class="pt-2">
@@ -713,7 +715,7 @@
             type="button"
             class="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center justify-center gap-2">
             <i class="pi pi-check text-xs"></i>
-            <span>{{ store.getProductCartQty(product.id) > 0 ? `Max Stock in Cart (${store.getProductMaxStock(product)}/${store.getProductMaxStock(product)})` : 'Insufficient Ingredients' }}</span>
+            <span>{{ store.getProductCartQty(product.id) > 0 ? `Max Stock in Cart (${store.getProductMaxStock(product)}/${store.getProductMaxStock(product)})` : 'Unavailable' }}</span>
           </button>
           <button 
             v-else
@@ -888,8 +890,7 @@ export default {
         list = list.filter(p => 
           (p.name && p.name.toLowerCase().includes(q)) || 
           (p.description && p.description.toLowerCase().includes(q)) ||
-          (p.category && p.category.toLowerCase().includes(q)) ||
-          (p.recipes && p.recipes.some(r => (r.ingredient?.name || r.ingredient_id || '').toLowerCase().includes(q)))
+          (p.category && p.category.toLowerCase().includes(q))
         );
       }
 

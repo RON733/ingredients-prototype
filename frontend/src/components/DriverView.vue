@@ -330,7 +330,7 @@
                 <i class="pi pi-exclamation-triangle text-amber-400 mr-1 text-[10px]"></i>Collect ₱{{ Number(order.total_amount).toFixed(2) }} Cash
               </p>
               <p v-else class="text-[10px] text-emerald-400 font-bold mt-1">
-                <i class="pi pi-check text-emerald-400 mr-1 text-[10px]"></i>Paid Online (PayMongo)
+                <i class="pi pi-check text-emerald-400 mr-1 text-[10px]"></i>Paid
               </p>
             </div>
           </div>

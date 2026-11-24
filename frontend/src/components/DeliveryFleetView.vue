@@ -563,10 +563,10 @@
               <span class="text-xs font-bold text-amber-400 font-mono text-base">₱{{ order.total_amount }}</span>
               <span 
                 class="px-2 py-0.5 rounded-md text-[10px] font-bold border"
-                :class="order.payment_method === 'Cash on Delivery' || order.payment_method === 'COD' 
+                :class="['Cash', 'Cash on Delivery', 'COD'].includes(order.payment_method) 
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
                   : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'">
-                {{ order.payment_method === 'Cash on Delivery' || order.payment_method === 'COD' ? 'COD Cash' : 'Paid Online' }}
+                {{ ['Cash', 'Cash on Delivery', 'COD'].includes(order.payment_method) ? 'COD Cash' : (order.payment_method || 'Cash') }}
               </span>
             </div>
           </div>
@@ -744,10 +744,10 @@
               <span class="font-mono font-bold text-white text-sm">₱{{ order.total_amount }}</span>
               <span 
                 class="px-2 py-0.5 rounded text-[10px] font-bold border"
-                :class="order.payment_method === 'Cash on Delivery' || order.payment_method === 'COD' 
+                :class="['Cash', 'Cash on Delivery', 'COD'].includes(order.payment_method) 
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
                   : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'">
-                {{ order.payment_method === 'Cash on Delivery' || order.payment_method === 'COD' ? 'COD' : 'Online Paid' }}
+                {{ ['Cash', 'Cash on Delivery', 'COD'].includes(order.payment_method) ? 'COD' : (order.payment_method || 'Cash') }}
               </span>
             </div>
           </div>

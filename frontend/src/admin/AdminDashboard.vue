@@ -90,25 +90,10 @@
           </button>
 
           <button 
-            @click="selectTab('inventory')" 
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'inventory' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
-            <span>Inventory</span>
-          </button>
-
-          <button 
             @click="selectTab('products')" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
             :class="store.adminTab === 'products' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
             <span>Menu</span>
-          </button>
-
-          <button 
-            v-if="store.isAdminOrSuper"
-            @click="selectTab('recipes')" 
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 flex items-center gap-1.5 border cursor-pointer"
-            :class="store.adminTab === 'recipes' ? 'bg-surface-800 text-amber-400 border-amber-500/40 font-semibold' : 'bg-surface-900 text-gray-400 border-surface-800 hover:text-white'">
-            <span>Recipes</span>
           </button>
 
           <button 
@@ -242,22 +227,6 @@
                 <span>Completed Orders</span>
               </button>
 
-              <!-- Kitchen Inventory -->
-              <button 
-                @click="selectTab('inventory')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between transition-all border cursor-pointer"
-                :class="store.adminTab === 'inventory' 
-                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
-                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <div class="flex items-center gap-3">
-                  <i class="pi pi-server text-sm text-orange-400/85"></i>
-                  <span>Kitchen Inventory</span>
-                </div>
-                <span v-if="store.lowStockAlerts.length > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                  {{ store.lowStockAlerts.length }}
-                </span>
-              </button>
-
               <!-- COD Rider Remittances -->
               <button 
                 @click="selectTab('remittances')"
@@ -315,20 +284,6 @@
                 <div class="flex items-center gap-3">
                   <i class="pi pi-box text-sm text-amber-400/85"></i>
                   <span>Product Menu</span>
-                </div>
-              </button>
-
-              <!-- Recipe Engine (Admin / Super Admin Exclusive) -->
-              <button 
-                v-if="store.isAdminOrSuper"
-                @click="selectTab('recipes')"
-                class="w-full px-3.5 py-2.5 rounded-xl flex items-center gap-3 transition-all border cursor-pointer"
-                :class="store.adminTab === 'recipes' 
-                  ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/30 shadow-sm' 
-                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-surface-800/60 border-transparent'">
-                <div class="flex items-center gap-3">
-                  <i class="pi pi-book text-sm text-orange-300/85"></i>
-                  <span>Recipes & Portions</span>
                 </div>
               </button>
 
@@ -608,7 +563,7 @@
             </span>
             <h2 class="text-2xl font-black text-white tracking-tight">Dashboard Is Locked</h2>
             <p class="text-xs text-gray-400 max-w-xs mx-auto">
-              This terminal is locked to protect orders, inventory, and operations. Password required to resume.
+              This terminal is locked to protect orders, menu, and operations. Password required to resume.
             </p>
           </div>
 
@@ -1002,8 +957,6 @@ import AdminOrdersTab from './AdminOrdersTab.vue';
 import AdminCompletedTab from './AdminCompletedTab.vue';
 import AdminRemittancesTab from './AdminRemittancesTab.vue';
 import AdminProductsTab from './AdminProductsTab.vue';
-import AdminInventoryTab from './AdminInventoryTab.vue';
-import AdminRecipesTab from './AdminRecipesTab.vue';
 import AdminBookingsTab from './AdminBookingsTab.vue';
 import AdminAnnouncementsTab from './AdminAnnouncementsTab.vue';
 import AdminUsersTab from './AdminUsersTab.vue';
@@ -1020,8 +973,6 @@ export default {
     AdminCompletedTab,
     AdminRemittancesTab,
     AdminProductsTab,
-    AdminInventoryTab,
-    AdminRecipesTab,
     AdminBookingsTab,
     AdminAnnouncementsTab,
     AdminUsersTab,
@@ -1034,7 +985,7 @@ export default {
 
     const mobileNavOpen = ref(false);
     const selectTab = (tab) => {
-      if ((tab === 'users' || tab === 'recipes' || tab === 'analytics') && !store.isAdminOrSuper) {
+      if ((tab === 'users' || tab === 'analytics') && !store.isAdminOrSuper) {
         return;
       }
       if (tab === 'audit' && !store.isSuperAdmin) {
@@ -1140,8 +1091,6 @@ export default {
         case 'completed': return 'AdminCompletedTab';
         case 'remittances': return 'AdminRemittancesTab';
         case 'products': return 'AdminProductsTab';
-        case 'inventory': return 'AdminInventoryTab';
-        case 'recipes': return store.isAdminOrSuper ? 'AdminRecipesTab' : 'AdminOrdersTab';
         case 'bookings': return 'AdminBookingsTab';
         case 'announcements': return 'AdminAnnouncementsTab';
         case 'users': return store.isAdminOrSuper ? 'AdminUsersTab' : 'AdminOrdersTab';
@@ -1155,7 +1104,7 @@ export default {
     watch(
       () => [store.user?.role, store.adminTab],
       ([role, tab]) => {
-        if (role === 'staff' && ['users', 'audit', 'recipes', 'analytics'].includes(tab)) {
+        if (role === 'staff' && ['users', 'audit', 'analytics'].includes(tab)) {
           store.adminTab = 'orders';
         }
       },

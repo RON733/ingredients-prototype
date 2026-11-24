@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\SantaRosaDeliveryService;
@@ -23,14 +22,6 @@ class SantaRosaBarangayValidationTest extends TestCase
             'password' => Hash::make('password123'),
             'role' => 'customer',
             'status' => 'active',
-        ]);
-
-        Ingredient::create([
-            'id' => 'ing-tea',
-            'name' => 'Black Tea Base',
-            'stock' => 500,
-            'unit' => 'ml',
-            'min_stock' => 10,
         ]);
 
         $product = Product::create([

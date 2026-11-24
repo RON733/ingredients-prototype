@@ -45,7 +45,7 @@
             {{ store.maintenanceTitle || 'Website Under Scheduled Maintenance' }}
           </h1>
           <p class="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-xl mx-auto">
-            {{ store.maintenanceMessage || 'G Shot Teas is currently undergoing essential system updates, server optimization, and kitchen inventory synchronization. Online customer ordering and checkout are temporarily offline.' }}
+            {{ store.maintenanceMessage || 'G Shot Teas is currently undergoing essential system updates and server optimization. Online customer ordering and checkout are temporarily offline.' }}
           </p>
         </div>
 

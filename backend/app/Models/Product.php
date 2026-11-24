@@ -47,48 +47,13 @@ class Product extends Model
         return $this->original_price !== null && $this->original_price > $this->price && $this->discount_percent > 0;
     }
 
-    public function recipes()
-    {
-        return $this->hasMany(Recipe::class, 'product_id', 'id')->with('ingredient');
-    }
-
     public function getMaxPortionsAttribute()
     {
-        if (!$this->is_available) {
-            return 0;
-        }
-
-        $recipes = $this->recipes;
-        if ($recipes->isEmpty()) {
-            return 999; // If no recipe defined, unlimited
-        }
-
-        $max = INF;
-        foreach ($recipes as $recipe) {
-            if (!$recipe->ingredient || $recipe->qty <= 0) {
-                continue;
-            }
-            $possible = floor(($recipe->ingredient->stock + 1e-9) / $recipe->qty);
-            if ($possible < $max) {
-                $max = $possible;
-            }
-        }
-
-        return $max === INF ? 0 : (int)$max;
+        return $this->is_available ? 999 : 0;
     }
 
     public function getStockStatusAttribute()
     {
-        if (!$this->is_available) {
-            return 'unavailable';
-        }
-        $portions = $this->max_portions;
-        if ($portions <= 0) {
-            return 'soldout';
-        }
-        if ($portions <= 8) {
-            return 'low';
-        }
-        return 'available';
+        return $this->is_available ? 'available' : 'unavailable';
     }
 }

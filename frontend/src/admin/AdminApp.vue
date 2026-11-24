@@ -431,7 +431,7 @@ export default {
     const portalSubtext = computed(() => {
       if (activeRole.value === 'super_admin') return 'System settings, roles & audit logs';
       if (activeRole.value === 'driver') return 'Deliveries & live GPS';
-      if (activeRole.value === 'staff') return 'Orders & kitchen inventory';
+      if (activeRole.value === 'staff') return 'Orders & menu availability';
       return 'Sales, orders & store controls';
     });
 

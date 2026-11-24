@@ -4,86 +4,12 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
-use App\Models\Ingredient;
 use App\Models\Product;
-use App\Models\Recipe;
 
 class MenuCatalogSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Complete G'Shot Teas Ingredients Inventory (preserves existing IDs & tops up depleted stocks)
-        $ingredients = [
-            // Existing core ingredients
-            ['id' => 'brioche-bun',            'name' => 'Brioche Bun',                 'category' => 'Bakery',  'stock' => 60,  'unit' => 'pcs',      'low_threshold' => 15, 'cost' => 12.00],
-            ['id' => 'beef-patty',             'name' => 'Beef Patty',                  'category' => 'Meat',    'stock' => 80,  'unit' => 'pcs',      'low_threshold' => 20, 'cost' => 28.50],
-            ['id' => 'cheddar-slice',          'name' => 'Cheddar Slice',               'category' => 'Dairy',   'stock' => 90,  'unit' => 'slices',   'low_threshold' => 20, 'cost' => 6.50],
-            ['id' => 'lettuce',                'name' => 'Fresh Lettuce',               'category' => 'Produce', 'stock' => 60,  'unit' => 'pcs',      'low_threshold' => 15, 'cost' => 4.00],
-            ['id' => 'pizza-dough',            'name' => 'Pizza Dough Base',            'category' => 'Bakery',  'stock' => 60,  'unit' => 'pcs',      'low_threshold' => 12, 'cost' => 22.00],
-            ['id' => 'mozzarella',             'name' => 'Mozzarella Cheese',           'category' => 'Dairy',   'stock' => 90,  'unit' => 'slices',   'low_threshold' => 20, 'cost' => 14.00],
-            ['id' => 'tomato-sauce',           'name' => 'Italian Pizza Sauce',         'category' => 'Produce', 'stock' => 80,  'unit' => 'cups',     'low_threshold' => 15, 'cost' => 12.50],
-            ['id' => 'pepperoni',              'name' => 'Pepperoni Slices',            'category' => 'Meat',    'stock' => 120, 'unit' => 'slices',   'low_threshold' => 25, 'cost' => 3.50],
-            ['id' => 'potato-fries',           'name' => 'Cut Potato Fries',            'category' => 'Produce', 'stock' => 80,  'unit' => 'portions', 'low_threshold' => 15, 'cost' => 15.00],
-            ['id' => 'chicken-wings',          'name' => 'Crispy Wings Cut',            'category' => 'Meat',    'stock' => 120, 'unit' => 'pcs',      'low_threshold' => 24, 'cost' => 18.00],
-            ['id' => 'cooked-rice',            'name' => 'Steamed Rice',                'category' => 'Produce', 'stock' => 90,  'unit' => 'cups',     'low_threshold' => 20, 'cost' => 6.00],
-            ['id' => 'tea-base',               'name' => 'Brewed Tea Base',             'category' => 'Produce', 'stock' => 120, 'unit' => 'cups',     'low_threshold' => 25, 'cost' => 5.00],
-            ['id' => 'fresh-milk',             'name' => 'Fresh Dairy Milk',            'category' => 'Dairy',   'stock' => 120, 'unit' => 'cups',     'low_threshold' => 25, 'cost' => 14.00],
-            ['id' => 'tapioca-pearls',         'name' => 'Chewy Tapioca Pearls',        'category' => 'Bakery',  'stock' => 100, 'unit' => 'cups',     'low_threshold' => 20, 'cost' => 8.50],
-            ['id' => 'brown-sugar',            'name' => 'Brown Sugar Syrup',           'category' => 'Produce', 'stock' => 80,  'unit' => 'cups',     'low_threshold' => 15, 'cost' => 7.00],
-            ['id' => 'matcha-powder',          'name' => 'Matcha Powder',               'category' => 'Produce', 'stock' => 80,  'unit' => 'scoops',   'low_threshold' => 15, 'cost' => 15.00],
-            ['id' => 'taro-powder',            'name' => 'Taro Flavor Powder',          'category' => 'Produce', 'stock' => 60,  'unit' => 'scoops',   'low_threshold' => 12, 'cost' => 9.00],
-            ['id' => 'cream-cheese',           'name' => 'Cream Cheese Puff',           'category' => 'Dairy',   'stock' => 80,  'unit' => 'scoops',   'low_threshold' => 15, 'cost' => 16.00],
-            ['id' => 'coffee-beans',           'name' => 'Espresso Roast',              'category' => 'Produce', 'stock' => 100, 'unit' => 'shots',    'low_threshold' => 20, 'cost' => 8.00],
-
-            // New G'Shot Menu Ingredients
-            ['id' => 'bacon-strips',           'name' => 'Crispy Bacon Strips',         'category' => 'Meat',    'stock' => 70,  'unit' => 'slices',   'low_threshold' => 15, 'cost' => 12.00],
-            ['id' => 'ham-slices',             'name' => 'Sweet Ham Slices',            'category' => 'Meat',    'stock' => 80,  'unit' => 'slices',   'low_threshold' => 20, 'cost' => 6.00],
-            ['id' => 'pineapple-tidbits',      'name' => 'Pineapple Tidbits',           'category' => 'Produce', 'stock' => 60,  'unit' => 'portions', 'low_threshold' => 12, 'cost' => 8.00],
-            ['id' => 'ground-beef',            'name' => 'Seasoned Ground Beef',        'category' => 'Meat',    'stock' => 60,  'unit' => 'portions', 'low_threshold' => 12, 'cost' => 24.00],
-            ['id' => 'bell-pepper-onion',      'name' => 'Bell Peppers & Onions',       'category' => 'Produce', 'stock' => 70,  'unit' => 'portions', 'low_threshold' => 15, 'cost' => 6.00],
-            ['id' => 'chicken-fillet',         'name' => 'Crispy Chicken Fillet',       'category' => 'Meat',    'stock' => 60,  'unit' => 'pcs',      'low_threshold' => 15, 'cost' => 28.00],
-            ['id' => 'chicken-poppers-nuggets','name' => 'Chicken Poppers & Nuggets',   'category' => 'Meat',    'stock' => 60,  'unit' => 'portions', 'low_threshold' => 12, 'cost' => 25.00],
-            ['id' => 'hotdog-sausage',         'name' => 'Jumbo Hotdog Sausage',        'category' => 'Meat',    'stock' => 70,  'unit' => 'pcs',      'low_threshold' => 15, 'cost' => 14.00],
-            ['id' => 'hotdog-bun',             'name' => 'Soft Hotdog Bun',             'category' => 'Bakery',  'stock' => 70,  'unit' => 'pcs',      'low_threshold' => 15, 'cost' => 8.00],
-            ['id' => 'corndog-batter',         'name' => 'Corndog Batter Mix',          'category' => 'Bakery',  'stock' => 60,  'unit' => 'portions', 'low_threshold' => 12, 'cost' => 10.00],
-            ['id' => 'nachos-chips',           'name' => 'Crispy Tortilla Nacho Chips', 'category' => 'Bakery',  'stock' => 60,  'unit' => 'portions', 'low_threshold' => 12, 'cost' => 15.00],
-            ['id' => 'onion-rings-raw',        'name' => 'Breaded Onion Rings',         'category' => 'Produce', 'stock' => 60,  'unit' => 'portions', 'low_threshold' => 12, 'cost' => 18.00],
-            ['id' => 'mushroom-gravy',         'name' => 'Savory Mushroom Gravy',       'category' => 'Produce', 'stock' => 60,  'unit' => 'cups',     'low_threshold' => 12, 'cost' => 8.00],
-            ['id' => 'wings-glaze-sauce',      'name' => 'Signature Wings Glaze',       'category' => 'Produce', 'stock' => 120, 'unit' => 'portions', 'low_threshold' => 25, 'cost' => 6.00],
-            ['id' => 'cheese-sauce',           'name' => 'Melted Cheddar Cheese Sauce', 'category' => 'Dairy',   'stock' => 90,  'unit' => 'portions', 'low_threshold' => 20, 'cost' => 9.00],
-            ['id' => 'fries-seasoning',        'name' => 'Flavored Fries Powder & Mayo','category' => 'Produce', 'stock' => 100, 'unit' => 'portions', 'low_threshold' => 20, 'cost' => 4.00],
-            ['id' => 'fruit-syrup',            'name' => 'Fruit Series Syrup Blend',    'category' => 'Produce', 'stock' => 140, 'unit' => 'pumps',    'low_threshold' => 30, 'cost' => 7.00],
-            ['id' => 'yakult-bottle',          'name' => 'Yakult Probiotic Drink',      'category' => 'Dairy',   'stock' => 70,  'unit' => 'bottles',  'low_threshold' => 15, 'cost' => 12.00],
-            ['id' => 'soda-water',             'name' => 'Sparkling Soda Water',        'category' => 'Produce', 'stock' => 90,  'unit' => 'cups',     'low_threshold' => 20, 'cost' => 6.00],
-            ['id' => 'thai-tea-mix',           'name' => 'Thai Tea & Condensed Mix',    'category' => 'Produce', 'stock' => 60,  'unit' => 'cups',     'low_threshold' => 12, 'cost' => 12.00],
-            ['id' => 'chocolate-syrup',        'name' => 'Rich Chocolate & Mocha Sauce','category' => 'Produce', 'stock' => 100, 'unit' => 'pumps',    'low_threshold' => 20, 'cost' => 8.00],
-            ['id' => 'caramel-syrup',          'name' => 'Salted Caramel Syrup',        'category' => 'Produce', 'stock' => 100, 'unit' => 'pumps',    'low_threshold' => 20, 'cost' => 8.00],
-            ['id' => 'white-choco-sauce',      'name' => 'White Chocolate Sauce',       'category' => 'Dairy',   'stock' => 80,  'unit' => 'pumps',    'low_threshold' => 15, 'cost' => 9.00],
-            ['id' => 'coldbrew-concentrate',   'name' => 'Coldbrew Coffee Concentrate', 'category' => 'Produce', 'stock' => 80,  'unit' => 'cups',     'low_threshold' => 15, 'cost' => 12.00],
-            ['id' => 'frappe-base-powder',     'name' => 'Creamy Frappe Base & Cream',  'category' => 'Dairy',   'stock' => 100, 'unit' => 'scoops',   'low_threshold' => 20, 'cost' => 11.00],
-            ['id' => 'java-oreo-chips',        'name' => 'Java Chip & Oreo Crumbs',     'category' => 'Bakery',  'stock' => 70,  'unit' => 'scoops',   'low_threshold' => 15, 'cost' => 10.00],
-            ['id' => 'ube-avocado-mango-puree','name' => 'Ube, Avocado & Mango Puree',  'category' => 'Produce', 'stock' => 70,  'unit' => 'scoops',   'low_threshold' => 15, 'cost' => 14.00],
-        ];
-
-        foreach ($ingredients as $ing) {
-            $existing = Ingredient::find($ing['id']);
-            if ($existing) {
-                $existing->name = $ing['name'];
-                $existing->category = $ing['category'];
-                $existing->unit = $ing['unit'];
-                $existing->low_threshold = $ing['low_threshold'];
-                if ($existing->cost === null || (float) $existing->cost <= 0) {
-                    $existing->cost = $ing['cost'];
-                }
-                if ((float) $existing->stock < 30) {
-                    $existing->stock = $ing['stock'];
-                }
-                $existing->save();
-            } else {
-                Ingredient::create($ing);
-            }
-        }
-
         // Shared Customization Templates matching the 3 G'Shot Menu Boards
         $wingsFlavours = [
             ['name' => 'Fireball Buffalo',  'price' => 0],
@@ -1500,7 +1426,6 @@ class MenuCatalogSeeder extends Seeder
         ];
 
         foreach ($catalog as $entry) {
-            $recipes = $entry['recipes'] ?? [];
             unset($entry['recipes']);
             $entry['is_available'] = true;
 
@@ -1510,18 +1435,7 @@ class MenuCatalogSeeder extends Seeder
             } else {
                 Product::create($entry);
             }
-
-            Recipe::where('product_id', $entry['id'])->delete();
-            foreach ($recipes as [$ingId, $qty]) {
-                Recipe::create([
-                    'product_id' => $entry['id'],
-                    'ingredient_id' => $ingId,
-                    'qty' => $qty,
-                ]);
-            }
         }
-
-        Cache::forget('ingredients_all');
         Cache::forget('products_catalog_default');
     }
 }

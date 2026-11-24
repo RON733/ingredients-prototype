@@ -231,28 +231,9 @@
 
           <!-- Workflow Action Buttons (Staff & Admin Controls) -->
           <div class="pt-2 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-end gap-2 border-t border-surface-700/50">
-            <!-- Check PayMongo Status button if PayMongo pending -->
-            <button 
-              v-if="order.payment_method === 'PayMongo' && order.payment_status !== 'Paid' && order.payment_status !== 'Verified'"
-              @click="checkPayMongoStatus(order)"
-              :disabled="isCheckingPaymongoId === order.id"
-              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-black border border-emerald-500/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50">
-              <i class="pi" :class="isCheckingPaymongoId === order.id ? 'pi-spin pi-spinner' : 'pi-refresh'"></i>
-              <span>Check PayMongo Payment</span>
-            </button>
-
             <!-- State Transitions: Start Preparing -->
-            <!-- If Online order is NOT yet paid: Kitchen is LOCKED until customer pays! -->
-            <div 
-              v-if="order.status === 'Pending' && order.payment_method !== 'Cash' && order.payment_status !== 'Paid' && order.payment_status !== 'Verified'"
-              class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center justify-center gap-2 shadow-sm">
-              <i class="pi pi-lock text-xs text-amber-400"></i>
-              <span>Awaiting {{ order.payment_method }} Payment (₱{{ Number(order.total_amount).toFixed(2) }}) &bull; Kitchen Locked</span>
-            </div>
-
-            <!-- If Paid or Cash: Start Preparing is UNLOCKED -->
             <button 
-              v-else-if="order.status === 'Pending'"
+              v-if="order.status === 'Pending'"
               @click="updateStatus(order, 'Preparing')"
               class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-neutral-950 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/20 active:scale-95">
               <i class="pi pi-play"></i>
@@ -504,7 +485,7 @@
 
           <!-- Confirmation Notice -->
           <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-200 leading-relaxed">
-            Are you sure you want to cancel this order? This action cannot be undone and will return the order's ingredients to inventory.
+            Are you sure you want to cancel this order? This action cannot be undone.
           </div>
 
           <!-- Reason Input -->
@@ -675,7 +656,7 @@ export default {
     const cancelReasonError = Vue.ref('');
     const isCancelling = Vue.ref(false);
     const cancelReasonPresets = [
-      'Out of stock / ingredients unavailable',
+      'Item out of stock / unavailable',
       'Customer requested cancellation',
       'Unable to contact customer',
       'Duplicate order',
@@ -717,23 +698,7 @@ export default {
       }
     };
 
-    const isCheckingPaymongoId = Vue.ref(null);
-    const checkPayMongoStatus = async (order) => {
-      isCheckingPaymongoId.value = order.id;
-      try {
-        const res = await GST_API.verifyPayMongoPayment(order.id);
-        if (res.data?.paid) {
-          store.markOrderFieldsSynced(order, { payment_status: 'Paid' });
-          store.notify(`PayMongo Payment confirmed for ${order.order_number}! Kitchen preparation unlocked.`, 'success');
-        } else {
-          store.notify(`Payment for ${order.order_number} is still pending on PayMongo.`, 'info');
-        }
-      } catch (err) {
-        store.notify(err.response?.data?.message || 'Error checking payment status.', 'error');
-      } finally {
-        isCheckingPaymongoId.value = null;
-      }
-    };
+
 
     // Rider Dispatch Modal State & Logic for Staff
     const dispatchModalOrder = Vue.ref(null);
@@ -877,8 +842,6 @@ export default {
       openCancelModal,
       closeCancelModal,
       confirmCancelOrder,
-      checkPayMongoStatus,
-      isCheckingPaymongoId,
       refresh,
       dispatchModalOrder,
       driversList,

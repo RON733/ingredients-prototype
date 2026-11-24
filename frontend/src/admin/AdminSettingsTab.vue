@@ -20,68 +20,7 @@
     </button>
   </div>
 
-  <!-- PayMongo Payment Gateway -->
-  <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-800">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0">
-          <i class="pi pi-credit-card text-amber-400 text-sm"></i>
-        </div>
-        <div>
-          <h3 class="text-sm sm:text-base font-bold text-white">PayMongo Gateway</h3>
-          <p class="text-xs text-gray-400">QR Ph, e-wallets & online banking</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <span
-          class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border flex items-center gap-1.5"
-          :class="isPaymongoAvailable ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25' : 'bg-rose-500/10 text-rose-300 border-rose-500/25'">
-          <span class="w-1.5 h-1.5 rounded-full" :class="isPaymongoAvailable ? 'bg-emerald-400' : 'bg-rose-400'"></span>
-          <span>{{ isPaymongoAvailable ? 'Active' : 'Disabled' }}</span>
-        </span>
-        <button
-          type="button"
-          @click="togglePaymongoAvailability"
-          :disabled="isTogglingPaymongo"
-          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer border"
-          :class="isPaymongoAvailable ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/25' : 'bg-amber-500 hover:bg-amber-400 text-neutral-950 border-transparent'">
-          <i v-if="isTogglingPaymongo" class="pi pi-spin pi-spinner"></i>
-          <i v-else class="pi" :class="isPaymongoAvailable ? 'pi-power-off' : 'pi-check'"></i>
-          <span>{{ isPaymongoAvailable ? 'Disable' : 'Enable' }}</span>
-        </button>
-      </div>
-    </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-          <i class="pi pi-shield text-emerald-400 text-sm"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-[11px] font-semibold text-emerald-300/80 uppercase tracking-wider">Credentials</p>
-          <p class="text-xs font-medium text-gray-200 truncate">Server-managed</p>
-        </div>
-      </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-          <i class="pi pi-wallet text-amber-400 text-sm"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-[11px] font-semibold text-amber-300/80 uppercase tracking-wider">Channels</p>
-          <p class="text-xs font-medium text-gray-200 truncate">QR Ph, E-Wallets, Bank</p>
-        </div>
-      </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800 flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-teal-500/10 border border-surface-800 flex items-center justify-center shrink-0">
-          <i class="pi pi-sync text-teal-400 text-sm"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-[11px] font-semibold text-teal-300/80 uppercase tracking-wider">POS Sync</p>
-          <p class="text-xs font-medium text-gray-200 truncate">Auto POS Sync</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Event Booking Downpayment & Payment Accounts -->
   <div class="p-3.5 sm:p-5 rounded-2xl bg-surface-900 border border-surface-800 space-y-4">
@@ -401,13 +340,9 @@
       </span>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
       <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-amber-300/80 uppercase tracking-wider">Ingredients</p>
-        <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ store.ingredients.length }}</p>
-      </div>
-      <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-sky-400/80 uppercase tracking-wider">Recipes</p>
+        <p class="text-[10px] font-semibold text-amber-300/80 uppercase tracking-wider">Menu Products</p>
         <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ store.products.length }}</p>
       </div>
       <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
@@ -415,8 +350,8 @@
         <p class="text-base sm:text-lg font-bold text-white mt-0.5">{{ loyverseInfo.items_count }}</p>
       </div>
       <div class="p-3 rounded-xl bg-surface-950 border border-surface-800">
-        <p class="text-[10px] font-semibold text-emerald-300/80 uppercase tracking-wider">Stock Sync</p>
-        <p class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5">2-Way</p>
+        <p class="text-[10px] font-semibold text-emerald-300/80 uppercase tracking-wider">POS Sync</p>
+        <p class="text-base sm:text-lg font-bold text-emerald-300 mt-0.5">Active</p>
       </div>
     </div>
 
@@ -783,19 +718,7 @@ export default {
       checkLoyverse();
     });
 
-    const isTogglingPaymongo = Vue.ref(false);
-    const isPaymongoAvailable = Vue.computed(() => store.isPaymongoAvailable);
 
-    const togglePaymongoAvailability = async () => {
-      isTogglingPaymongo.value = true;
-      try {
-        await store.setPaymongoAvailability(!store.isPaymongoAvailable);
-      } catch (err) {
-        // handled in store
-      } finally {
-        isTogglingPaymongo.value = false;
-      }
-    };
 
     const reloadSettings = async () => {
       isLoading.value = true;
@@ -811,9 +734,6 @@ export default {
       store,
       isLoading,
       isSavingStore,
-      isPaymongoAvailable,
-      isTogglingPaymongo,
-      togglePaymongoAvailability,
       bookingPayForm,
       isSavingBookingPay,
       handleBookingQrUpload,

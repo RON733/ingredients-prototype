@@ -68,6 +68,12 @@
                       Almost Out ({{ item.max_portions }} left)
                     </span>
                     <span 
+                      v-else-if="item.max_portions >= 999"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-950/90 text-emerald-400 border border-emerald-700/60 backdrop-blur-md shadow">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      Available
+                    </span>
+                    <span 
                       v-else
                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-950/90 text-emerald-400 border border-emerald-700/60 backdrop-blur-md shadow">
                       <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -130,7 +136,7 @@
                   type="button"
                   class="px-4 py-2 rounded-xl text-xs font-bold bg-surface-800 text-amber-400/70 border border-amber-500/30 cursor-not-allowed flex items-center gap-1.5">
                   <i class="pi pi-check text-[10px]"></i>
-                  <span>{{ store.getProductCartQty(item.id) > 0 ? 'Max in Cart' : 'Insufficient Ing.' }}</span>
+                  <span>{{ store.getProductCartQty(item.id) > 0 ? 'Max in Cart' : 'Unavailable' }}</span>
                 </button>
                 <button 
                   v-else
@@ -413,8 +419,8 @@
               <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 font-black text-sm flex items-center justify-center mb-3">
                 2
               </span>
-              <h3 class="font-bold text-white text-sm">Pay Online via PayMongo or COD</h3>
-              <p class="text-xs text-gray-400 mt-1">Pay smoothly via PayMongo QR Ph instant checkout or convenient Cash on Delivery upon arrival.</p>
+              <h3 class="font-bold text-white text-sm">Cash on Delivery (COD)</h3>
+              <p class="text-xs text-gray-400 mt-1">Pay conveniently with Cash on Delivery upon arrival or Cash at Counter for store pickup.</p>
             </div>
 
             <div class="p-6 rounded-2xl bg-surface-900 border border-surface-800">
